@@ -116,7 +116,15 @@ Preferred communication style: Simple, everyday language.
   - Weight: kg → pounds (× 2.20462)
   - Time: HH:MM → decimal hours
   - Rooms: 1-12 → API codes 0-11
-- Returns Record<string, number> for prediction API POST body
+- Returns array format `[{ ID: "RIDAGEYR", Value: "57" }, ...]` for prediction API POST body
+
+**ML Prediction API Integration:**
+- Backend proxy endpoint at `/api/predict` forwards requests to external ML service
+- External service URL: `https://loretta-ml-prediction-dev-5oc2gjs2kq-el.a.run.app/predict` (configurable via PREDICTION_API_URL env var)
+- Request format: `{ features: [{ ID: string, Value: string }] }`
+- Response format: `{ diabetes_probability: number, risk_level: string }`
+- Onboarding flow calls prediction API after questionnaire completion
+- Fallback to local risk calculation if API fails
 
 ### External Dependencies
 

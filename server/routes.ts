@@ -123,6 +123,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ML Prediction API endpoint
+  const PREDICTION_API_URL = process.env.PREDICTION_API_URL || 'https://loretta-ml-prediction-dev-5oc2gjs2kq-el.a.run.app/predict';
+  
+  app.post("/api/predict", async (req, res) => {
+    try {
+      const { features } = req.body;
+      
+      if (!features || !Array.isArray(features)) {
+        return res.status(400).json({ error: "Features array is required" });
+      }
+
+      console.log('[Prediction API] Calling ML service with features:', JSON.stringify(features, null, 2));
+
+      const response = await fetch(PREDICTION_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ features }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Prediction API] Error from ML service:', response.status, errorText);
+        return res.status(response.status).json({ 
+          error: "Prediction service error", 
+          details: errorText 
+        });
+      }
+
+      const prediction = await response.json();
+      console.log('[Prediction API] Received prediction:', prediction);
+      
+      res.json(prediction);
+    } catch (error) {
+      console.error("[Prediction API] Error:", error);
+      res.status(500).json({ error: "Failed to get prediction from ML service" });
+    }
+  });
+
   // ========================
   // Questionnaire Endpoints
   // ========================
