@@ -1085,6 +1085,8 @@ export default function Onboarding() {
       const features = buildFeatureJson(currentAnswers);
       if (features.length === 0) return;
       
+      console.log('[LiveScore] Calling API with', features.length, 'features');
+      
       const response = await fetch('/api/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1093,15 +1095,25 @@ export default function Onboarding() {
       
       if (response.ok) {
         const data = await response.json();
+        console.log('[LiveScore] Response:', {
+          diabetes_probability: data.diabetes_probability,
+          risk_level: data.risk_level,
+          method: data._metadata?.method,
+          success: data._metadata?.success,
+          response_time_ms: data._metadata?.response_time_ms,
+        });
         setLiveScore({
           probability: data.diabetes_probability,
           riskLevel: data.risk_level,
           answeredCount: currentAnswers.length,
           isLoading: false,
         });
+      } else {
+        const errorData = await response.json();
+        console.warn('[LiveScore] API error:', errorData);
       }
     } catch (error) {
-      console.log('Live prediction not available yet');
+      console.log('[LiveScore] Prediction not available yet:', error);
       setLiveScore(prev => prev ? { ...prev, isLoading: false } : null);
     }
   };
@@ -1410,11 +1422,27 @@ export default function Onboarding() {
     
     try {
       const features = buildFeatureJson(finalAnswers);
-      console.log('Calling prediction API with features:', features);
+      console.log('[Prediction] Calling API with features:', features);
+      console.log('[Prediction] Feature count:', features.length);
       
       const response = await apiRequest('POST', '/api/predict', { features });
       const prediction = await response.json();
-      console.log('Prediction result:', prediction);
+      
+      console.log('[Prediction] Full response:', prediction);
+      if (prediction._metadata) {
+        console.log('[Prediction] === METADATA ===');
+        console.log('[Prediction] Method:', prediction._metadata.method);
+        console.log('[Prediction] Success:', prediction._metadata.success);
+        console.log('[Prediction] ML API URL:', prediction._metadata.ml_api_url);
+        console.log('[Prediction] Features received:', prediction._metadata.features_received);
+        console.log('[Prediction] Response time:', prediction._metadata.response_time_ms, 'ms');
+        console.log('[Prediction] ML response status:', prediction._metadata.ml_response_status);
+        if (prediction._metadata.error_message) {
+          console.warn('[Prediction] Error:', prediction._metadata.error_message);
+          console.warn('[Prediction] Error details:', prediction._metadata.error_details);
+        }
+        console.log('[Prediction] Features sent:', prediction._metadata.features_sent);
+      }
       
       const diabetesProbability = prediction.diabetes_probability || 0;
       const riskLevel = prediction.risk_level || 'Unknown';

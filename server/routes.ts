@@ -127,14 +127,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const PREDICTION_API_URL = process.env.PREDICTION_API_URL || 'https://loretta-ml-prediction-dev-5oc2gjs2kq-el.a.run.app/predict';
   
   app.post("/api/predict", async (req, res) => {
+    const startTime = Date.now();
+    const metadata: {
+      method: 'ml_api' | 'error';
+      success: boolean;
+      ml_api_url: string;
+      features_received: number;
+      features_sent: { ID: string; Value: string }[];
+      response_time_ms?: number;
+      ml_response_status?: number;
+      error_message?: string;
+      error_details?: string;
+    } = {
+      method: 'ml_api',
+      success: false,
+      ml_api_url: PREDICTION_API_URL,
+      features_received: 0,
+      features_sent: [],
+    };
+    
     try {
       const { features } = req.body;
       
       if (!features || !Array.isArray(features)) {
-        return res.status(400).json({ error: "Features array is required" });
+        metadata.error_message = 'Features array is required';
+        return res.status(400).json({ 
+          error: "Features array is required",
+          _metadata: metadata
+        });
       }
 
+      metadata.features_received = features.length;
+      metadata.features_sent = features;
+
       console.log('[Prediction API] Calling ML service with features:', JSON.stringify(features, null, 2));
+      console.log('[Prediction API] ML API URL:', PREDICTION_API_URL);
 
       const response = await fetch(PREDICTION_API_URL, {
         method: 'POST',
@@ -144,22 +171,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         body: JSON.stringify({ features }),
       });
 
+      metadata.ml_response_status = response.status;
+      metadata.response_time_ms = Date.now() - startTime;
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('[Prediction API] Error from ML service:', response.status, errorText);
+        metadata.error_message = 'ML service returned error';
+        metadata.error_details = errorText;
         return res.status(response.status).json({ 
           error: "Prediction service error", 
-          details: errorText 
+          details: errorText,
+          _metadata: metadata
         });
       }
 
       const prediction = await response.json();
       console.log('[Prediction API] Received prediction:', prediction);
       
-      res.json(prediction);
+      metadata.success = true;
+      
+      res.json({
+        ...prediction,
+        _metadata: metadata
+      });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error("[Prediction API] Error:", error);
-      res.status(500).json({ error: "Failed to get prediction from ML service" });
+      metadata.method = 'error';
+      metadata.error_message = errorMessage;
+      metadata.response_time_ms = Date.now() - startTime;
+      res.status(500).json({ 
+        error: "Failed to get prediction from ML service",
+        _metadata: metadata
+      });
     }
   });
 
