@@ -1072,6 +1072,8 @@ export default function Onboarding() {
     answeredCount: number;
     isLoading: boolean;
   } | null>(null);
+  const [showModuleSelection, setShowModuleSelection] = useState(false);
+  const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const userId = getUserId();
   
   const fetchLiveScore = async (currentAnswers: QuestionnaireAnswer[]) => {
@@ -1267,6 +1269,11 @@ export default function Onboarding() {
 
     const updatedQuestions = getQuestionsWithFollowUps(updatedAnswers);
     
+    if (currentQuestion === CORE_QUESTION_COUNT - 1 && !showModuleSelection) {
+      setShowModuleSelection(true);
+      return;
+    }
+    
     if (currentQuestion < updatedQuestions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
     } else {
@@ -1310,6 +1317,11 @@ export default function Onboarding() {
     
     fetchLiveScore(updatedAnswers);
 
+    if (currentQuestion === CORE_QUESTION_COUNT - 1 && !showModuleSelection) {
+      setShowModuleSelection(true);
+      return;
+    }
+
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
     } else {
@@ -1342,11 +1354,53 @@ export default function Onboarding() {
     
     fetchLiveScore(updatedAnswers);
 
+    if (currentQuestion === CORE_QUESTION_COUNT - 1 && !showModuleSelection) {
+      setShowModuleSelection(true);
+      return;
+    }
+
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
     } else {
       finishQuestionnaire(updatedAnswers);
     }
+  };
+  
+  const handleGetEarlyResults = () => {
+    finishQuestionnaire(answers);
+  };
+  
+  const handleContinueWithModules = () => {
+    setShowModuleSelection(false);
+    setCurrentQuestion(CORE_QUESTION_COUNT);
+  };
+  
+  const getModuleInfo = (module: string) => {
+    const moduleQuestions = baseQuestions.filter(q => q.module === module);
+    const moduleIcons: Record<string, typeof Activity> = {
+      medical: Stethoscope,
+      lifestyle: Moon,
+      oral: Smile,
+      financial: DollarSign,
+    };
+    const moduleNames: Record<string, string> = {
+      medical: 'Medical History',
+      lifestyle: 'Lifestyle & Sleep',
+      oral: 'Oral Health',
+      financial: 'Background & Financial',
+    };
+    const moduleDescriptions: Record<string, string> = {
+      medical: 'Heart conditions, kidney health, balance issues',
+      lifestyle: 'Sleep patterns, activity levels, alcohol use',
+      oral: 'Teeth and gum health, eating problems',
+      financial: 'Demographics, income, living situation',
+    };
+    return {
+      icon: moduleIcons[module] || Activity,
+      name: moduleNames[module] || module,
+      description: moduleDescriptions[module] || '',
+      questionCount: moduleQuestions.length,
+    };
   };
 
   const finishQuestionnaire = async (finalAnswers: QuestionnaireAnswer[]) => {
@@ -1770,11 +1824,125 @@ export default function Onboarding() {
     </motion.div>
   );
 
+  const renderModuleSelection = () => {
+    const modules = ['medical', 'lifestyle', 'oral', 'financial'];
+    const totalOptionalQuestions = modules.reduce((sum, m) => sum + getModuleInfo(m).questionCount, 0);
+    
+    const getLiveScoreColor = (probability: number) => {
+      if (probability >= 0.7) return 'from-red-500 to-red-600';
+      if (probability >= 0.5) return 'from-orange-500 to-orange-600';
+      if (probability >= 0.3) return 'from-yellow-500 to-yellow-600';
+      return 'from-green-500 to-green-600';
+    };
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="space-y-6"
+      >
+        <div className="text-center space-y-3">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', bounce: 0.5 }}
+            className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary via-chart-2 to-chart-3 flex items-center justify-center"
+          >
+            <Sparkles className="w-10 h-10 text-white" />
+          </motion.div>
+          <h2 className="text-2xl font-black text-foreground">Quick Check Complete!</h2>
+          <p className="text-muted-foreground">You've answered the most important questions.</p>
+        </div>
+
+        {liveScore && (
+          <Card className={`p-4 bg-gradient-to-r ${getLiveScoreColor(liveScore.probability)} text-white border-0`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm opacity-90">Your Preliminary Risk Score</p>
+                <p className="text-3xl font-black">{Math.round(liveScore.probability * 100)}%</p>
+                <p className="text-sm opacity-75">{liveScore.riskLevel}</p>
+              </div>
+              <div className="text-right">
+                <Badge className="bg-white/20 text-white border-0">
+                  Based on {liveScore.answeredCount} answers
+                </Badge>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        <div className="space-y-3">
+          <Button
+            onClick={handleGetEarlyResults}
+            className="w-full bg-gradient-to-r from-primary to-chart-2 font-bold py-6 text-lg"
+            data-testid="button-get-early-results"
+          >
+            <Flame className="w-5 h-5 mr-2" />
+            Get My Results Now
+          </Button>
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">or improve accuracy</span>
+            </div>
+          </div>
+        </div>
+
+        <Card className="p-4 bg-muted/30 space-y-4">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            <p className="font-bold text-sm">Want a more precise score?</p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Answer {totalOptionalQuestions} more questions across these optional topics:
+          </p>
+          
+          <div className="grid gap-2">
+            {modules.map((module) => {
+              const info = getModuleInfo(module);
+              const ModuleIcon = info.icon;
+              return (
+                <div key={module} className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <ModuleIcon className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium">{info.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{info.description}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-xs flex-shrink-0">
+                    {info.questionCount}
+                  </Badge>
+                </div>
+              );
+            })}
+          </div>
+          
+          <Button
+            variant="outline"
+            onClick={handleContinueWithModules}
+            className="w-full"
+            data-testid="button-continue-with-modules"
+          >
+            Continue for Better Accuracy
+            <ChevronRight className="w-4 h-4 ml-2" />
+          </Button>
+        </Card>
+      </motion.div>
+    );
+  };
+
   const renderQuestionnaire = () => {
+    if (showModuleSelection) {
+      return renderModuleSelection();
+    }
+    
     const question = questions[currentQuestion];
     const QuestionIcon = question.icon;
     const isFollowUp = question.followUpFor !== undefined;
-    const coreQuestions = questions.filter(q => q.module === 'core');
     const isInCoreSection = currentQuestion < CORE_QUESTION_COUNT;
     
     const getLiveScoreColor = (probability: number) => {
