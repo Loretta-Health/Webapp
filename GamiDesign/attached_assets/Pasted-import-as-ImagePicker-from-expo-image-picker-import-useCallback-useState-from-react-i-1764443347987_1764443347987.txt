@@ -1,0 +1,409 @@
+import * as ImagePicker from "expo-image-picker";
+import { useCallback, useState } from "react";
+import { Alert } from "react-native";
+import { MISSION_TRIGGERS } from "../constants/chat";
+import currentUser from "../data/currentUser";
+import { allmissions } from "../data/premadeMissions";
+import { SYSTEM_PROMPT } from "../data/prompts";
+import {
+  chatWithScaleway,
+  convertImageToBase64,
+  createMessage,
+  createMessageWithImage,
+  type ChatMessage,
+} from "../scalewayAccess";
+import type { ActivityContext, MetricCardData } from "../types/chat";
+
+interface UseChatLogicProps {
+  activityContext: ActivityContext | null;
+  contextAnnounced: boolean;
+  messages: ChatMessage[];
+  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+  setShowMissionCard: React.Dispatch<React.SetStateAction<boolean>>;
+  setSuggestedMissionId: React.Dispatch<React.SetStateAction<string | null>>;
+  setMissionActivated: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const useChatLogic = ({
+  activityContext,
+  contextAnnounced,
+  messages,
+  setMessages,
+  setShowMissionCard,
+  setSuggestedMissionId,
+  setMissionActivated,
+}: UseChatLogicProps) => {
+  const [inputText, setInputText] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const checkForMissionTriggers = useCallback(
+    (reply: string) => {
+      console.log("Checking reply for mission triggers:", reply);
+      console.log("Available triggers:", MISSION_TRIGGERS);
+
+      // Check each mission trigger phrase
+      for (const [key, trigger] of Object.entries(MISSION_TRIGGERS)) {
+        console.log(`Checking for "${trigger.phrase}" in reply...`);
+        if (reply.includes(trigger.phrase)) {
+          console.log(`✅ Found trigger! Mission ID: ${trigger.missionId}`);
+          setSuggestedMissionId(trigger.missionId);
+          setShowMissionCard(true);
+          return;
+        }
+      }
+      console.log("❌ No mission triggers found");
+      setShowMissionCard(false);
+      setSuggestedMissionId(null);
+    },
+    [setSuggestedMissionId, setShowMissionCard]
+  );
+
+  const handleMetricMessage = useCallback(
+    async (currentMessages: ChatMessage[], metric: any) => {
+      try {
+        setLoading(true);
+
+        // Create a text version for the AI to understand with explicit instruction
+        let textForAI = `The user has shared their ${metric.label.toLowerCase()} data: ${
+          metric.value
+        } ${metric.unit}.`;
+
+        // Add specific instructions based on metric type
+        if (metric.type === "steps" || metric.type === "calories") {
+          textForAI += ` Please analyze this metric. If it's below recommended levels or indicates low activity, suggest the activity mission by using this EXACT phrase: "Would you like to start the activity mission?"`;
+        } else if (metric.type === "sleep" || metric.type === "heart-rate") {
+          textForAI += ` Please analyze this metric and provide helpful feedback. (Note: There is no mission available for this metric yet, so only provide feedback.)`;
+        }
+
+        const convo = currentMessages.map((m) => ({
+          role: m.role,
+          content: m.role === "user" ? textForAI : m.content,
+        }));
+
+        const reply = await chatWithScaleway(convo);
+
+        const botMsg = createMessage(
+          "assistant",
+          reply.trimEnd() || "(empty response)",
+          `a-${Date.now()}`
+        );
+
+        setMessages((prev) => [...prev, botMsg]);
+
+        // Check for mission triggers
+        console.log("AI Reply:", reply);
+        console.log("Checking for mission triggers...");
+        checkForMissionTriggers(reply);
+      } catch (e: any) {
+        const errorMsg = createMessage(
+          "assistant",
+          `Error: ${e.message ?? e}`,
+          `e-${Date.now()}`
+        );
+        setMessages((prev) => [...prev, errorMsg]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [setMessages, setLoading, checkForMissionTriggers]
+  );
+
+  const handleImagePick = useCallback(async () => {
+    try {
+      Alert.alert("Add Image", "Choose an option", [
+        {
+          text: "Take Photo",
+          onPress: async () => {
+            const permissionResult =
+              await ImagePicker.requestCameraPermissionsAsync();
+
+            if (!permissionResult.granted) {
+              Alert.alert(
+                "Permission Required",
+                "Please grant permission to access your camera"
+              );
+              return;
+            }
+
+            const result = await ImagePicker.launchCameraAsync({
+              allowsEditing: false,
+              quality: 0.7,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+              setSelectedImage(result.assets[0].uri);
+            }
+          },
+        },
+        {
+          text: "Choose from Library",
+          onPress: async () => {
+            const permissionResult =
+              await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+            if (!permissionResult.granted) {
+              Alert.alert(
+                "Permission Required",
+                "Please grant permission to access your photos"
+              );
+              return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: false,
+              quality: 0.7,
+            });
+
+            if (!result.canceled && result.assets[0]) {
+              setSelectedImage(result.assets[0].uri);
+            }
+          },
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ]);
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to access image");
+    }
+  }, []);
+
+  const handleActivateMission = useCallback(
+    (suggestedMissionId: string | null) => {
+      if (!suggestedMissionId) return;
+
+      const mission = allmissions.find((m) => m.id === suggestedMissionId);
+
+      if (!mission) {
+        Alert.alert("Error", "Mission not found");
+        return;
+      }
+
+      if (currentUser.hasActiveMission(mission.id)) {
+        Alert.alert(
+          "Already Active",
+          "This mission is already in your active missions!"
+        );
+        setShowMissionCard(false);
+        return;
+      }
+
+      currentUser.addActiveMission(mission);
+      setMissionActivated(true);
+
+      const confirmMsg = createMessage(
+        "assistant",
+        `Perfect! I've activated the "${mission.task}" mission for you. You can track your progress on the home screen.`,
+        `a-confirm-${Date.now()}`
+      );
+      setMessages((prev) => [...prev, confirmMsg]);
+    },
+    [setMessages, setMissionActivated, setShowMissionCard]
+  );
+
+  const handleSend = useCallback(async () => {
+    const text = inputText.trim();
+    if ((!text && !selectedImage) || loading) return;
+
+    let userMsg: ChatMessage;
+
+    if (selectedImage) {
+      try {
+        const base64Image = await convertImageToBase64(selectedImage);
+        userMsg = createMessageWithImage(
+          "user",
+          text || "What can you tell me about this image?",
+          base64Image,
+          `u-${Date.now()}`
+        );
+      } catch (error) {
+        Alert.alert("Error", "Failed to process image");
+        return;
+      }
+    } else {
+      userMsg = createMessage("user", text, `u-${Date.now()}`);
+    }
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInputText("");
+    setSelectedImage(null);
+    setShowMissionCard(false);
+    setMissionActivated(false);
+
+    try {
+      setLoading(true);
+
+      const convo = messages
+        .concat(userMsg)
+        .map((m) => ({ role: m.role, content: m.content }))
+        .slice(-20);
+
+      if (activityContext && !contextAnnounced && messages.length < 5) {
+        convo.unshift({
+          role: "system",
+          content: `Remember: The user is asking about their activity data. They have ${activityContext.activityData.dailySteps} daily steps, ${activityContext.activityData.activeMinutes} active minutes, and ${activityContext.activityData.sleepHours} hours of sleep. Consider this context when providing advice.`,
+        });
+      }
+
+      const reply = await chatWithScaleway(convo);
+
+      const botMsg = createMessage(
+        "assistant",
+        reply.trimEnd() || "(empty response)",
+        `a-${Date.now()}`
+      );
+
+      setMessages((prev) => [...prev, botMsg]);
+
+      // Check for mission triggers
+      checkForMissionTriggers(reply);
+    } catch (e: any) {
+      const errorMsg = createMessage(
+        "assistant",
+        `Error: ${e.message ?? e}`,
+        `e-${Date.now()}`
+      );
+      setMessages((prev) => [...prev, errorMsg]);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    inputText,
+    loading,
+    messages,
+    selectedImage,
+    activityContext,
+    contextAnnounced,
+    setMessages,
+    setShowMissionCard,
+    setMissionActivated,
+    checkForMissionTriggers,
+  ]);
+
+  const initializeMessages = useCallback((params: any) => {
+    if (params.context && typeof params.context === "string") {
+      try {
+        const context = JSON.parse(params.context) as ActivityContext;
+
+        const enhancedSystemPrompt = `${SYSTEM_PROMPT}
+
+CURRENT USER CONTEXT:
+The user has just shared their activity metric from the home screen. Here's their current health and activity data:
+
+User Profile:
+- Name: ${context.profileData.name}
+- Age: ${context.profileData.age}
+- Height: ${context.profileData.height}
+- Weight: ${context.profileData.weight}
+
+Current Behaviors:
+- Diet: ${context.profileData.behaviors.diet}
+- Smoking: ${context.profileData.behaviors.smoking}
+- Alcohol: ${context.profileData.behaviors.alcohol}
+
+Recent Activity Data:
+- Daily Steps: ${context.activityData.dailySteps}
+- Average Heart Rate: ${context.activityData.avgHeartRate} bpm
+- Sleep Hours: ${context.activityData.sleepHours} hours
+- Active Minutes: ${context.activityData.activeMinutes} minutes
+- Calories Burned: ${context.activityData.caloriesBurned} calories
+- Last Sync: ${new Date(context.activityData.lastSyncTime).toLocaleString()}
+
+Use this information to provide personalized health guidance and insights. The user has shared a specific metric and wants to know about it.`;
+
+        // Check if there's metric data to display
+        const metricData = params.metricData as string | undefined;
+
+        let initialMessages: ChatMessage[];
+
+        if (metricData) {
+          // Parse metric data and create visual card
+          const metric = JSON.parse(metricData);
+          const metricCard: MetricCardData = {
+            type: "metric",
+            metricType: metric.type,
+            icon: metric.icon,
+            label: metric.label,
+            value: metric.value,
+            unit: metric.unit,
+            color: metric.color,
+          };
+
+          initialMessages = [
+            {
+              id: "sys-1",
+              role: "system",
+              content: enhancedSystemPrompt,
+              timestamp: new Date(),
+            },
+            {
+              id: "u-metric",
+              role: "user",
+              content: JSON.stringify(metricCard),
+              timestamp: new Date(),
+            },
+          ];
+
+          return { initialMessages, context, metric };
+        } else {
+          // Regular context greeting (fallback)
+          initialMessages = [
+            {
+              id: "sys-1",
+              role: "system",
+              content: enhancedSystemPrompt,
+              timestamp: new Date(),
+            },
+            {
+              id: "1",
+              role: "assistant",
+              content:
+                "Hello! I see you're checking your activity data. How can I help you today?",
+              timestamp: new Date(),
+            },
+          ];
+
+          return { initialMessages, context, metric: null };
+        }
+      } catch (error) {
+        console.error("Error parsing activity context:", error);
+      }
+    }
+
+    // Default messages
+    const initialMessages = [
+      {
+        id: "sys-1",
+        role: "system",
+        content: SYSTEM_PROMPT,
+        timestamp: new Date(),
+      },
+      {
+        id: "1",
+        role: "assistant",
+        content:
+          "Hello! I'm the Health Literacy Navigator. How can I help you today?",
+        timestamp: new Date(),
+      },
+    ];
+
+    return { initialMessages, context: null, metric: null };
+  }, []);
+
+  return {
+    inputText,
+    setInputText,
+    selectedImage,
+    setSelectedImage,
+    loading,
+    handleMetricMessage,
+    handleImagePick,
+    handleActivateMission,
+    handleSend,
+    initializeMessages,
+  };
+};

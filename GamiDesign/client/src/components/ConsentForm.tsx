@@ -1,0 +1,332 @@
+import { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { 
+  Shield, 
+  Lock, 
+  Eye, 
+  FileText, 
+  Watch, 
+  Database, 
+  UserX, 
+  Ban,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Heart,
+  Mail
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import lorettaLogo from '@assets/logos/loretta_logo.png';
+import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
+
+interface ConsentFormProps {
+  onAccept: (newsletterOptIn: boolean) => void;
+  onDecline: () => void;
+}
+
+const privacyPoints = [
+  {
+    icon: Eye,
+    title: "You control what you share",
+    description: "All identity fields are optional.",
+    color: "text-primary"
+  },
+  {
+    icon: Heart,
+    title: "Personalised insights",
+    description: "We use your data to provide personalised insights and support health equity.",
+    color: "text-destructive"
+  },
+  {
+    icon: FileText,
+    title: "Document privacy",
+    description: "Medical documents are deleted immediately after processing.",
+    color: "text-chart-2"
+  },
+  {
+    icon: Watch,
+    title: "Optional integrations",
+    description: "Wearable and location data are only used if you choose to enable them.",
+    color: "text-chart-3"
+  },
+  {
+    icon: Lock,
+    title: "Data security",
+    description: "We take appropriate measures to protect your data.",
+    color: "text-primary"
+  },
+  {
+    icon: UserX,
+    title: "Your choice",
+    description: "You may opt out of research and withdraw consent at any time.",
+    color: "text-chart-1"
+  },
+  {
+    icon: Ban,
+    title: "No data selling",
+    description: "We never sell your data.",
+    color: "text-destructive"
+  }
+];
+
+export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
+  const [showFullPolicy, setShowFullPolicy] = useState(false);
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-lg"
+      >
+        <Card className="overflow-hidden border-0 shadow-2xl">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 text-center">
+            <div className="flex justify-center mb-4">
+              <img src={lorettaLogo} alt="Loretta" className="h-12 object-contain" data-testid="logo-consent" />
+            </div>
+            <div className="flex justify-center mb-3">
+              <motion.img 
+                src={mascotImage} 
+                alt="Loretta Mascot" 
+                className="w-16 h-16 object-contain drop-shadow-lg"
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+            </div>
+            <h1 className="text-2xl font-black text-white mb-1">Welcome to Loretta</h1>
+            <p className="text-primary-foreground/80 text-sm">Your health companion</p>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Privacy Section Header */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-foreground">Privacy & Consent</h2>
+                <p className="text-xs text-muted-foreground">Before you begin, please review our privacy practices.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground bg-gradient-to-r from-primary/5 to-secondary/5 p-3 rounded-lg border border-primary/10">
+              Your trust and privacy are our top priorities.
+            </p>
+
+            {/* Privacy Points */}
+            <div className="space-y-3">
+              {privacyPoints.map((point, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 hover-elevate"
+                >
+                  <div className={`w-8 h-8 rounded-full bg-gradient-to-br from-${point.color.replace('text-', '')}/20 to-${point.color.replace('text-', '')}/10 flex items-center justify-center flex-shrink-0`}>
+                    <point.icon className={`w-4 h-4 ${point.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">{point.title}</p>
+                    <p className="text-xs text-muted-foreground">{point.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Full Privacy Policy Toggle */}
+            <Button
+              variant="ghost"
+              className="w-full justify-between text-primary"
+              onClick={() => setShowFullPolicy(!showFullPolicy)}
+              data-testid="button-toggle-policy"
+            >
+              <span className="flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
+                Read Full Privacy Policy
+              </span>
+              {showFullPolicy ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </Button>
+
+            <AnimatePresence>
+              {showFullPolicy && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-muted/50 rounded-lg p-4 text-xs text-muted-foreground space-y-4 max-h-72 overflow-y-auto" data-testid="policy-content">
+                    <div className="text-center border-b border-border pb-3">
+                      <h3 className="font-black text-foreground text-sm">LORETTA HEALTH UG — GDPR CONSENT & PRIVACY POLICY</h3>
+                      <p className="text-[10px] mt-1">Last Updated: November 25, 2026 | Effective Date: November 25, 2026</p>
+                    </div>
+                    
+                    <p>This Privacy and Consent Policy explains how Loretta Health UG (haftungsbeschränkt) ("Loretta", "we", "us") processes your personal and health data when you use the Loretta mobile application. Loretta provides wellbeing insights, behavioural support, and analysis of medical information. We do not provide diagnosis or medical treatment.</p>
+                    
+                    <p><strong>You choose what you share and may withdraw consent at any time.</strong></p>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">1. Controller</h4>
+                      <p>Loretta Health UG (haftungsbeschränkt)<br/>Cuvrystraße 53, 10997 Berlin, Germany<br/>Email: privacy@loretta.care</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">2. Categories of Data Processed</h4>
+                      <p><strong>2.1 Account Data:</strong> Name, email, password, age, gender identity, language, profile settings.</p>
+                      <p><strong>2.2 Health and Wellbeing Data:</strong> Self reported symptoms, stress indicators, lifestyle information, and optional identity attributes (ethnicity, sexuality, disability). These fields are always voluntary.</p>
+                      <p><strong>2.3 Wearable Data:</strong> With your consent, we may process data from Apple Health or Google Fit including: steps, activity, sleep, heart rate, HRV, blood oxygen, ECG (if available), cycle data, and other metrics supported by your device. You may disconnect wearables at any time.</p>
+                      <p><strong>2.4 Uploaded Medical Documents:</strong> Medical documents are used to generate explanations and are deleted immediately after processing.</p>
+                      <p><strong>2.5 Coarse Location:</strong> We process only approximate regional location to identify environmental and wellbeing factors. We do not collect precise GPS location.</p>
+                      <p><strong>2.6 Technical and Device Data:</strong> Operating system, device type, crash logs, app usage logs, IP address (anonymised), and permission settings.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">3. Purposes of Processing</h4>
+                      <p><strong>3.1 Service Delivery:</strong> To provide personalised insights, document explanations, behaviour support, and health-equity–aware features.</p>
+                      <p><strong>3.2 Fairness and Safety:</strong> To ensure equitable model performance, reduce bias, and maintain accuracy across demographic groups. Only authorised data scientists and engineers may access limited datasets where necessary.</p>
+                      <p><strong>3.3 Research and Development:</strong> Pseudonymised data may be used for statistical analysis and model improvement. You may opt out at any time.</p>
+                      <p><strong>3.4 Security and Compliance:</strong> To monitor system integrity, detect misuse, ensure secure operation, and fulfil regulatory requirements.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">4. Legal Bases</h4>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Explicit consent (Art. 6(1)(a), Art. 9(2)(a))</li>
+                        <li>Performance of a contract (Art. 6(1)(b))</li>
+                        <li>Legitimate interests for security and product improvement (Art. 6(1)(f))</li>
+                        <li>Research/statistics under safeguards (Art. 9(2)(j))</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">5. Special Category and Identity Data</h4>
+                      <p>Optional identity attributes are used only to improve fairness, accuracy, and representation. They are not used for advertising, exclusion, or automated decision-making with legal effect.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">6. Sharing of Data</h4>
+                      <p>Data may be shared with:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Staleaway (EU-based hosting provider)</li>
+                        <li>Google Workspace (email services)</li>
+                        <li>Pseudonymised research environments (EU-based)</li>
+                        <li>Individuals you choose to share data with</li>
+                      </ul>
+                      <p className="font-bold">We do not sell your data.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">7. International Transfers</h4>
+                      <p>Data is hosted in the EU. If transfers occur, we apply SCCs and supplementary safeguards.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">8. Retention</h4>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Account data: until deleted by the user</li>
+                        <li>Wearable and behavioural data: only as long as necessary</li>
+                        <li>Medical uploads: deleted immediately</li>
+                        <li>Research data: pseudonymised and retained under governance rules</li>
+                        <li>Logs: retained for security and stability</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">9. Security Measures</h4>
+                      <p>Access controls, monitoring, secure development environments, auditing, EU-based infrastructure.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">10. Access Restrictions</h4>
+                      <p>Only authorised data scientists and engineers may access certain data when required for maintenance or fairness monitoring.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">11. Automated Decision-Making</h4>
+                      <p>Loretta does not engage in automated decision-making producing legal or significant effects.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">12. User Rights</h4>
+                      <p>You have the right to access, correct, delete, restrict, object, withdraw consent, and request portability. Contact: privacy@loretta.care</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">13. Children</h4>
+                      <p>The service is not intended for users under 16.</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-foreground">14. Updates</h4>
+                      <p>We may update this Policy. Significant changes will be communicated.</p>
+                    </div>
+                    
+                    <div className="border-t border-border pt-3 mt-4">
+                      <p className="text-center text-[10px]">For the German version (Datenschutz- und Einwilligungserklärung), please contact privacy@loretta.care</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Acknowledgment Checkbox */}
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/10">
+              <Checkbox 
+                id="acknowledge" 
+                checked={acknowledged}
+                onCheckedChange={(checked) => setAcknowledged(checked as boolean)}
+                data-testid="checkbox-acknowledge"
+              />
+              <label htmlFor="acknowledge" className="text-xs text-muted-foreground cursor-pointer leading-relaxed">
+                By accepting, you acknowledge that you have read and understood our privacy practices.
+              </label>
+            </div>
+
+            {/* Newsletter Opt-in Checkbox */}
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+              <Checkbox 
+                id="newsletter" 
+                checked={newsletterOptIn}
+                onCheckedChange={(checked) => setNewsletterOptIn(checked as boolean)}
+                data-testid="checkbox-newsletter"
+              />
+              <label htmlFor="newsletter" className="text-xs text-muted-foreground cursor-pointer leading-relaxed flex items-start gap-2">
+                <Mail className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <span>I would like to receive the Loretta newsletter with health tips, product updates, and special offers. You can unsubscribe at any time.</span>
+              </label>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <Button
+                className="w-full bg-gradient-to-r from-primary to-chart-2 hover:from-primary/90 hover:to-chart-2/90 text-white font-bold py-6"
+                onClick={() => onAccept(newsletterOptIn)}
+                disabled={!acknowledged}
+                data-testid="button-accept-consent"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Accept & Continue
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full text-muted-foreground"
+                onClick={onDecline}
+                data-testid="button-decline-consent"
+              >
+                Decline
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+    </div>
+  );
+}

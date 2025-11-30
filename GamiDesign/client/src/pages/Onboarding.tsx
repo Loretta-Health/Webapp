@@ -1,0 +1,1538 @@
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { 
+  ChevronRight, 
+  ChevronLeft,
+  Shield,
+  Lock,
+  Eye,
+  FileText,
+  Watch,
+  UserX,
+  Ban,
+  Heart,
+  User,
+  Mail,
+  Sparkles,
+  Activity,
+  Moon,
+  Flame,
+  Pill,
+  Stethoscope,
+  Scale,
+  Ruler,
+  Clock,
+  Home,
+  GraduationCap,
+  DollarSign,
+  Ear,
+  Wine,
+  Video,
+  AlertTriangle,
+  Smile,
+  ChevronDown,
+  ChevronUp,
+  Briefcase,
+  TrendingUp,
+  HelpCircle
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'wouter';
+import { useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { getUserId } from '@/lib/userId';
+import lorettaLogo from '@assets/logos/loretta_logo.png';
+import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
+
+type OnboardingStep = 'welcome' | 'consent' | 'registration' | 'questionnaire' | 'riskScore';
+
+interface RegistrationData {
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+interface QuestionnaireAnswer {
+  questionId: string;
+  answer: string | number;
+  riskWeight: number;
+}
+
+const privacyPoints = [
+  { icon: Eye, title: "You control what you share", description: "All identity fields are optional.", color: "text-primary" },
+  { icon: Heart, title: "Personalised insights", description: "We use your data to provide personalised health insights.", color: "text-destructive" },
+  { icon: FileText, title: "Document privacy", description: "Medical documents are deleted immediately after processing.", color: "text-chart-2" },
+  { icon: Watch, title: "Optional integrations", description: "Wearable and location data are only used if you choose.", color: "text-chart-3" },
+  { icon: Lock, title: "Data security", description: "We take appropriate measures to protect your data.", color: "text-primary" },
+  { icon: UserX, title: "Your choice", description: "Withdraw consent at any time.", color: "text-chart-1" },
+  { icon: Ban, title: "No data selling", description: "We never sell your data.", color: "text-destructive" }
+];
+
+interface Question {
+  id: string;
+  text: string;
+  type: 'choice' | 'number' | 'time';
+  options?: { label: string; value: string; riskWeight: number }[];
+  placeholder?: string;
+  unit?: string;
+  min?: number;
+  max?: number;
+  icon: typeof Activity;
+  category: string;
+  followUpFor?: string;
+}
+
+const baseQuestions: Question[] = [
+  {
+    id: 'age',
+    text: "What is your age?",
+    type: 'number',
+    icon: User,
+    category: "Demographics",
+    placeholder: "Enter your age",
+    unit: "years",
+    min: 18,
+    max: 120,
+  },
+  {
+    id: 'height',
+    text: "What is your current height?",
+    type: 'number',
+    icon: Ruler,
+    category: "Body Measurements",
+    placeholder: "Enter height",
+    unit: "cm",
+    min: 100,
+    max: 250,
+  },
+  {
+    id: 'weight_current',
+    text: "What is your current weight?",
+    type: 'number',
+    icon: Scale,
+    category: "Body Measurements",
+    placeholder: "Enter weight",
+    unit: "kg",
+    min: 30,
+    max: 300,
+  },
+  {
+    id: 'weight_year_ago',
+    text: "What was your weight 1 year ago?",
+    type: 'number',
+    icon: Scale,
+    category: "Body Measurements",
+    placeholder: "Enter weight",
+    unit: "kg",
+    min: 30,
+    max: 300,
+  },
+  {
+    id: 'high_blood_pressure',
+    text: "Have you ever been told you have high blood pressure?",
+    type: 'choice',
+    icon: Heart,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 2 },
+      { label: 'No', value: 'no', riskWeight: 0 },
+      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'blood_test_3_years',
+    text: "Have you had your blood tested in the last 3 years?",
+    type: 'choice',
+    icon: Stethoscope,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 0 },
+      { label: 'No', value: 'no', riskWeight: 2 },
+      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'prediabetes',
+    text: "Have you ever been told you have prediabetes?",
+    type: 'choice',
+    icon: Activity,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 2 },
+      { label: 'No', value: 'no', riskWeight: 0 },
+      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'diabetes',
+    text: "Have you ever been told you have diabetes?",
+    type: 'choice',
+    icon: Activity,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 3 },
+      { label: 'No', value: 'no', riskWeight: 0 },
+      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'high_cholesterol',
+    text: "Have you been told you have high cholesterol?",
+    type: 'choice',
+    icon: Heart,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 2 },
+      { label: 'No', value: 'no', riskWeight: 0 },
+      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'arthritis',
+    text: "Has a doctor ever said you have arthritis?",
+    type: 'choice',
+    icon: Activity,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 1 },
+      { label: 'No', value: 'no', riskWeight: 0 },
+      { label: 'Not sure', value: 'unsure', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'prescription_medicine',
+    text: "Have you taken any prescription medicine in the past month?",
+    type: 'choice',
+    icon: Pill,
+    category: "Medications",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 1 },
+      { label: 'No', value: 'no', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'daily_aspirin',
+    text: "Have you been advised to take daily aspirin?",
+    type: 'choice',
+    icon: Pill,
+    category: "Medications",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 1 },
+      { label: 'No', value: 'no', riskWeight: 0 },
+      { label: 'Not sure', value: 'unsure', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'general_health',
+    text: "How would you rate your general health?",
+    type: 'choice',
+    icon: Heart,
+    category: "Health Ratings",
+    options: [
+      { label: 'Excellent', value: 'excellent', riskWeight: 0 },
+      { label: 'Very good', value: 'very_good', riskWeight: 0 },
+      { label: 'Good', value: 'good', riskWeight: 1 },
+      { label: 'Fair', value: 'fair', riskWeight: 2 },
+      { label: 'Poor', value: 'poor', riskWeight: 3 },
+    ],
+  },
+  {
+    id: 'dental_health',
+    text: "How would you rate your dental/gum health?",
+    type: 'choice',
+    icon: Smile,
+    category: "Health Ratings",
+    options: [
+      { label: 'Excellent', value: 'excellent', riskWeight: 0 },
+      { label: 'Very good', value: 'very_good', riskWeight: 0 },
+      { label: 'Good', value: 'good', riskWeight: 1 },
+      { label: 'Fair', value: 'fair', riskWeight: 2 },
+      { label: 'Poor', value: 'poor', riskWeight: 3 },
+    ],
+  },
+  {
+    id: 'hearing_health',
+    text: "How would you rate your hearing health?",
+    type: 'choice',
+    icon: Ear,
+    category: "Health Ratings",
+    options: [
+      { label: 'Excellent', value: 'excellent', riskWeight: 0 },
+      { label: 'Very good', value: 'very_good', riskWeight: 0 },
+      { label: 'Good', value: 'good', riskWeight: 1 },
+      { label: 'Fair', value: 'fair', riskWeight: 2 },
+      { label: 'Poor', value: 'poor', riskWeight: 3 },
+    ],
+  },
+  {
+    id: 'moderate_activity',
+    text: "How many hours per week do you do moderate physical activity?",
+    type: 'choice',
+    icon: Activity,
+    category: "Physical Activity",
+    options: [
+      { label: 'None', value: '0', riskWeight: 3 },
+      { label: '1-2 hours', value: '1-2', riskWeight: 2 },
+      { label: '3-5 hours', value: '3-5', riskWeight: 1 },
+      { label: '6+ hours', value: '6+', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'vigorous_activity',
+    text: "How many hours per week do you do vigorous physical activity?",
+    type: 'choice',
+    icon: Flame,
+    category: "Physical Activity",
+    options: [
+      { label: 'None', value: '0', riskWeight: 2 },
+      { label: '1-2 hours', value: '1-2', riskWeight: 1 },
+      { label: '3-5 hours', value: '3-5', riskWeight: 0 },
+      { label: '6+ hours', value: '6+', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'sedentary_minutes',
+    text: "How many minutes per day are you sedentary (sitting/lying)?",
+    type: 'choice',
+    icon: Activity,
+    category: "Physical Activity",
+    options: [
+      { label: 'Less than 2 hours', value: 'less_2h', riskWeight: 0 },
+      { label: '2-4 hours', value: '2-4h', riskWeight: 1 },
+      { label: '4-8 hours', value: '4-8h', riskWeight: 2 },
+      { label: 'More than 8 hours', value: 'more_8h', riskWeight: 3 },
+    ],
+  },
+  {
+    id: 'job_type',
+    text: "What type of work did you do last week?",
+    type: 'choice',
+    icon: Briefcase,
+    category: "Work",
+    options: [
+      { label: 'Mostly sitting', value: 'sitting', riskWeight: 2 },
+      { label: 'Standing or walking', value: 'standing', riskWeight: 1 },
+      { label: 'Physical labor', value: 'physical', riskWeight: 0 },
+      { label: 'Not working', value: 'not_working', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'weekday_sleep',
+    text: "How many hours do you typically sleep on weekdays?",
+    type: 'choice',
+    icon: Moon,
+    category: "Sleep",
+    options: [
+      { label: 'Less than 5 hours', value: 'less_5', riskWeight: 3 },
+      { label: '5-6 hours', value: '5-6', riskWeight: 2 },
+      { label: '7-8 hours', value: '7-8', riskWeight: 0 },
+      { label: 'More than 8 hours', value: 'more_8', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'weekend_sleep',
+    text: "How many hours do you typically sleep on weekends?",
+    type: 'choice',
+    icon: Moon,
+    category: "Sleep",
+    options: [
+      { label: 'Less than 5 hours', value: 'less_5', riskWeight: 3 },
+      { label: '5-6 hours', value: '5-6', riskWeight: 2 },
+      { label: '7-8 hours', value: '7-8', riskWeight: 0 },
+      { label: 'More than 8 hours', value: 'more_8', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'wake_time_weekday',
+    text: "What time do you usually wake up on weekdays?",
+    type: 'time',
+    icon: Clock,
+    category: "Sleep",
+    placeholder: "e.g., 6:30 AM",
+  },
+  {
+    id: 'sleep_time_weekday',
+    text: "What time do you usually go to sleep on weekdays?",
+    type: 'time',
+    icon: Clock,
+    category: "Sleep",
+    placeholder: "e.g., 10:30 PM",
+  },
+  {
+    id: 'wake_time_weekend',
+    text: "What time do you usually wake up on weekends?",
+    type: 'time',
+    icon: Clock,
+    category: "Sleep",
+    placeholder: "e.g., 8:00 AM",
+  },
+  {
+    id: 'sleep_time_weekend',
+    text: "What time do you usually go to sleep on weekends?",
+    type: 'time',
+    icon: Clock,
+    category: "Sleep",
+    placeholder: "e.g., 11:30 PM",
+  },
+  {
+    id: 'alcohol_frequency',
+    text: "How often did you drink alcohol in the past 12 months?",
+    type: 'choice',
+    icon: Wine,
+    category: "Lifestyle",
+    options: [
+      { label: 'Never', value: 'never', riskWeight: 0 },
+      { label: 'Monthly or less', value: 'monthly', riskWeight: 0 },
+      { label: '2-4 times a month', value: '2-4_month', riskWeight: 1 },
+      { label: '2-3 times a week', value: '2-3_week', riskWeight: 2 },
+      { label: '4+ times a week', value: '4+_week', riskWeight: 3 },
+    ],
+  },
+  {
+    id: 'video_consult',
+    text: "In the past 12 months, did you have a video consult with a doctor?",
+    type: 'choice',
+    icon: Video,
+    category: "Healthcare Access",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 0 },
+      { label: 'No', value: 'no', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'unsteadiness',
+    text: "In the past 12 months, have you had issues with unsteadiness or balance?",
+    type: 'choice',
+    icon: AlertTriangle,
+    category: "Recent Health",
+    options: [
+      { label: 'Yes', value: 'yes', riskWeight: 2 },
+      { label: 'No', value: 'no', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'mouth_eating_problems',
+    text: "In the past year, could you not eat because of mouth or teeth problems?",
+    type: 'choice',
+    icon: Smile,
+    category: "Oral Health",
+    options: [
+      { label: 'Yes, often', value: 'often', riskWeight: 3 },
+      { label: 'Yes, sometimes', value: 'sometimes', riskWeight: 2 },
+      { label: 'Rarely', value: 'rarely', riskWeight: 1 },
+      { label: 'Never', value: 'never', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'mouth_feel_bad',
+    text: "How often do you feel bad because of your mouth condition?",
+    type: 'choice',
+    icon: Smile,
+    category: "Oral Health",
+    options: [
+      { label: 'Very often', value: 'very_often', riskWeight: 3 },
+      { label: 'Often', value: 'often', riskWeight: 2 },
+      { label: 'Sometimes', value: 'sometimes', riskWeight: 1 },
+      { label: 'Rarely or never', value: 'rarely', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'education',
+    text: "What is your highest level of education?",
+    type: 'choice',
+    icon: GraduationCap,
+    category: "Background",
+    options: [
+      { label: 'Less than high school', value: 'less_hs', riskWeight: 2 },
+      { label: 'High school / GED', value: 'hs', riskWeight: 1 },
+      { label: 'Some college', value: 'some_college', riskWeight: 1 },
+      { label: 'College degree', value: 'college', riskWeight: 0 },
+      { label: 'Graduate degree', value: 'graduate', riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'income_poverty_ratio',
+    text: "How would you describe your household income relative to your needs?",
+    type: 'choice',
+    icon: DollarSign,
+    category: "Background",
+    options: [
+      { label: 'Struggling to meet basic needs', value: 'struggling', riskWeight: 3 },
+      { label: 'Just getting by', value: 'getting_by', riskWeight: 2 },
+      { label: 'Comfortable', value: 'comfortable', riskWeight: 1 },
+      { label: 'Well off', value: 'well_off', riskWeight: 0 },
+      { label: 'Prefer not to say', value: 'prefer_not', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'poverty_index',
+    text: "In a typical month, how often does your income cover all expenses?",
+    type: 'choice',
+    icon: TrendingUp,
+    category: "Background",
+    options: [
+      { label: 'Never - always short', value: 'never', riskWeight: 3 },
+      { label: 'Sometimes - often short', value: 'sometimes', riskWeight: 2 },
+      { label: 'Usually - occasional shortfall', value: 'usually', riskWeight: 1 },
+      { label: 'Always - comfortable margin', value: 'always', riskWeight: 0 },
+      { label: 'Prefer not to say', value: 'prefer_not', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'household_rooms',
+    text: "How many rooms are in your household (excluding bathrooms)?",
+    type: 'number',
+    icon: Home,
+    category: "Living Situation",
+    placeholder: "Number of rooms",
+    min: 1,
+    max: 20,
+  },
+];
+
+const followUpQuestions: Question[] = [
+  {
+    id: 'blood_test_followup',
+    text: "Let's clarify: Have you ever had a blood test done by a healthcare provider?",
+    type: 'choice',
+    icon: HelpCircle,
+    category: "Clarification",
+    followUpFor: 'blood_test_3_years',
+    options: [
+      { label: 'Yes, I have had blood tests before', value: 'yes', riskWeight: 0 },
+      { label: 'No, I have never had a blood test', value: 'no', riskWeight: 2 },
+    ],
+  },
+  {
+    id: 'prediabetes_followup',
+    text: "To confirm about prediabetes: Has any doctor mentioned elevated blood sugar or borderline diabetes?",
+    type: 'choice',
+    icon: HelpCircle,
+    category: "Clarification",
+    followUpFor: 'prediabetes',
+    options: [
+      { label: 'Yes, I was told about elevated blood sugar', value: 'yes', riskWeight: 2 },
+      { label: 'No, my blood sugar has been normal', value: 'no', riskWeight: 0 },
+      { label: 'I have never had it checked', value: 'never_checked', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'diabetes_followup',
+    text: "To confirm about diabetes: Have you ever been diagnosed with Type 1 or Type 2 diabetes?",
+    type: 'choice',
+    icon: HelpCircle,
+    category: "Clarification",
+    followUpFor: 'diabetes',
+    options: [
+      { label: 'Yes, I have diabetes', value: 'yes', riskWeight: 3 },
+      { label: 'No, I do not have diabetes', value: 'no', riskWeight: 0 },
+      { label: 'I have never been tested', value: 'never_tested', riskWeight: 1 },
+    ],
+  },
+  {
+    id: 'aspirin_followup',
+    text: "To clarify about aspirin: Has a doctor ever recommended you take aspirin regularly for heart health?",
+    type: 'choice',
+    icon: HelpCircle,
+    category: "Clarification",
+    followUpFor: 'daily_aspirin',
+    options: [
+      { label: 'Yes, I was advised to take aspirin', value: 'yes', riskWeight: 1 },
+      { label: 'No, I was not advised to take aspirin', value: 'no', riskWeight: 0 },
+    ],
+  },
+];
+
+function parseTimeToMinutes(timeStr: string): number {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function getTimeDifferenceMinutes(time1: string, time2: string): number {
+  const mins1 = parseTimeToMinutes(time1);
+  const mins2 = parseTimeToMinutes(time2);
+  
+  let diff = Math.abs(mins1 - mins2);
+  if (diff > 720) {
+    diff = 1440 - diff;
+  }
+  return diff;
+}
+
+function calculateNumericRiskWeight(questionId: string, value: number, allAnswers: QuestionnaireAnswer[]): number {
+  switch (questionId) {
+    case 'age':
+      if (value >= 75) return 3;
+      if (value >= 65) return 2;
+      if (value >= 50) return 1;
+      return 0;
+    
+    case 'height':
+      return 0;
+    
+    case 'weight_current': {
+      const heightAnswer = allAnswers.find(a => a.questionId === 'height');
+      if (heightAnswer && typeof heightAnswer.answer === 'number') {
+        const heightM = heightAnswer.answer / 100;
+        const bmi = value / (heightM * heightM);
+        if (bmi >= 35) return 3;
+        if (bmi >= 30) return 2;
+        if (bmi >= 25) return 1;
+        if (bmi < 18.5) return 2;
+        return 0;
+      }
+      return 0;
+    }
+    
+    case 'weight_year_ago': {
+      const currentWeightAnswer = allAnswers.find(a => a.questionId === 'weight_current');
+      if (currentWeightAnswer && typeof currentWeightAnswer.answer === 'number') {
+        const weightChange = currentWeightAnswer.answer - value;
+        const percentChange = Math.abs(weightChange) / value * 100;
+        if (percentChange > 10) return 2;
+        if (percentChange > 5) return 1;
+        return 0;
+      }
+      return 0;
+    }
+    
+    case 'household_rooms':
+      if (value <= 2) return 2;
+      if (value <= 3) return 1;
+      return 0;
+    
+    default:
+      return 0;
+  }
+}
+
+function calculateTimeRiskWeight(questionId: string, value: string, allAnswers: QuestionnaireAnswer[]): number {
+  switch (questionId) {
+    case 'wake_time_weekday':
+      return 0;
+    
+    case 'sleep_time_weekday':
+      return 0;
+    
+    case 'wake_time_weekend': {
+      const weekdayWake = allAnswers.find(a => a.questionId === 'wake_time_weekday');
+      if (weekdayWake && typeof weekdayWake.answer === 'string') {
+        const diffMinutes = getTimeDifferenceMinutes(value, weekdayWake.answer);
+        if (diffMinutes > 180) return 2;
+        if (diffMinutes > 120) return 1;
+        return 0;
+      }
+      return 0;
+    }
+    
+    case 'sleep_time_weekend': {
+      const weekdaySleep = allAnswers.find(a => a.questionId === 'sleep_time_weekday');
+      if (weekdaySleep && typeof weekdaySleep.answer === 'string') {
+        const diffMinutes = getTimeDifferenceMinutes(value, weekdaySleep.answer);
+        if (diffMinutes > 180) return 2;
+        if (diffMinutes > 120) return 1;
+        return 0;
+      }
+      return 0;
+    }
+    
+    default:
+      return 0;
+  }
+}
+
+function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; level: string; color: string } {
+  let totalWeight = 0;
+  let maxPossibleWeight = 0;
+  
+  for (const answer of answers) {
+    totalWeight += answer.riskWeight;
+    maxPossibleWeight += 3;
+  }
+  
+  if (maxPossibleWeight === 0) return { score: 50, level: 'Unknown', color: 'text-muted-foreground' };
+  
+  const normalizedScore = Math.round((1 - totalWeight / maxPossibleWeight) * 100);
+  
+  if (normalizedScore >= 80) return { score: normalizedScore, level: 'Excellent', color: 'text-primary' };
+  if (normalizedScore >= 60) return { score: normalizedScore, level: 'Good', color: 'text-chart-2' };
+  if (normalizedScore >= 40) return { score: normalizedScore, level: 'Moderate', color: 'text-chart-3' };
+  return { score: normalizedScore, level: 'Needs Attention', color: 'text-destructive' };
+}
+
+function getQuestionsWithFollowUps(answers: QuestionnaireAnswer[]): Question[] {
+  const questions = [...baseQuestions];
+  
+  const unsureAnswers = answers.filter(a => a.answer === 'unsure');
+  
+  for (const unsureAnswer of unsureAnswers) {
+    const followUp = followUpQuestions.find(q => q.followUpFor === unsureAnswer.questionId);
+    if (followUp) {
+      const originalIndex = questions.findIndex(q => q.id === unsureAnswer.questionId);
+      if (originalIndex !== -1 && !questions.find(q => q.id === followUp.id)) {
+        questions.splice(originalIndex + 1, 0, followUp);
+      }
+    }
+  }
+  
+  return questions;
+}
+
+export default function Onboarding() {
+  const [, navigate] = useLocation();
+  const [step, setStep] = useState<OnboardingStep>('welcome');
+  const [inviteData, setInviteData] = useState<{ inviterName?: string; organization?: string; code?: string } | null>(null);
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
+  const [showFullPolicy, setShowFullPolicy] = useState(false);
+  const [registration, setRegistration] = useState<RegistrationData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+  });
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<QuestionnaireAnswer[]>([]);
+  const [skippedQuestions, setSkippedQuestions] = useState<string[]>([]);
+  const [wantToSkip, setWantToSkip] = useState(false);
+  const [riskScore, setRiskScore] = useState<{ score: number; level: string; color: string } | null>(null);
+  const [numberInput, setNumberInput] = useState('');
+  const [timeInput, setTimeInput] = useState('');
+  const [inputError, setInputError] = useState('');
+  const userId = getUserId();
+
+  const savePreferencesMutation = useMutation({
+    mutationFn: async ({ consentAccepted, newsletterSubscribed }: { consentAccepted: boolean; newsletterSubscribed: boolean }) => {
+      return apiRequest('POST', '/api/preferences', {
+        userId,
+        consentAccepted,
+        consentDate: new Date().toISOString(),
+        newsletterSubscribed,
+      });
+    },
+  });
+
+  const saveProfileMutation = useMutation({
+    mutationFn: async (data: RegistrationData) => {
+      return apiRequest('POST', '/api/profile', {
+        userId,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
+    },
+  });
+
+  const saveQuestionnaireMutation = useMutation({
+    mutationFn: async (answersData: QuestionnaireAnswer[]) => {
+      const answersRecord: Record<string, string> = {};
+      answersData.forEach(a => {
+        answersRecord[a.questionId] = String(a.answer);
+      });
+      return apiRequest('POST', '/api/questionnaires', {
+        userId,
+        category: 'health_risk_assessment',
+        answers: answersRecord,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/questionnaires', userId] });
+    },
+  });
+
+  const saveRiskScoreMutation = useMutation({
+    mutationFn: async (scoreData: { overallScore: number; diabetesRisk: number; heartRisk: number; strokeRisk: number }) => {
+      return apiRequest('POST', '/api/risk-scores', {
+        userId,
+        ...scoreData,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', userId] });
+    },
+  });
+
+  const initializeGamificationMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('POST', '/api/gamification', {
+        userId,
+        xp: 100,
+        level: 1,
+        currentStreak: 1,
+        longestStreak: 1,
+        lives: 5,
+        achievements: ['first_steps'],
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+    },
+  });
+
+  useEffect(() => {
+    const stored = localStorage.getItem('loretta_invite');
+    if (stored) {
+      try {
+        setInviteData(JSON.parse(stored));
+      } catch (e) {
+        console.error('Failed to parse invite data:', e);
+      }
+    }
+  }, []);
+
+  const questions = getQuestionsWithFollowUps(answers);
+
+  const stepProgress = {
+    welcome: 0,
+    consent: 15,
+    registration: 30,
+    questionnaire: 30 + (currentQuestion / questions.length) * 60,
+    riskScore: 100,
+  };
+
+  const handleConsentAccept = () => {
+    localStorage.setItem('loretta_consent', 'accepted');
+    localStorage.setItem('loretta_newsletter', newsletterOptIn ? 'subscribed' : 'not_subscribed');
+    savePreferencesMutation.mutate({
+      consentAccepted: true,
+      newsletterSubscribed: newsletterOptIn,
+    });
+    setStep('registration');
+  };
+
+  const handleConsentDecline = () => {
+    savePreferencesMutation.mutate({
+      consentAccepted: false,
+      newsletterSubscribed: false,
+    });
+    navigate('/declined');
+  };
+
+  const handleRegistrationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem('loretta_user', JSON.stringify(registration));
+    saveProfileMutation.mutate(registration);
+    setStep('questionnaire');
+  };
+
+  const handleChoiceAnswer = (option: { label: string; value: string; riskWeight: number }) => {
+    const question = questions[currentQuestion];
+    const newAnswer: QuestionnaireAnswer = {
+      questionId: question.id,
+      answer: option.value,
+      riskWeight: option.riskWeight,
+    };
+    
+    const updatedAnswers = [...answers.filter(a => a.questionId !== newAnswer.questionId), newAnswer];
+    setAnswers(updatedAnswers);
+    setNumberInput('');
+    setTimeInput('');
+    setInputError('');
+    setWantToSkip(false);
+
+    const updatedQuestions = getQuestionsWithFollowUps(updatedAnswers);
+    
+    if (currentQuestion < updatedQuestions.length - 1) {
+      setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
+    } else {
+      finishQuestionnaire(updatedAnswers);
+    }
+  };
+
+  const handleNumberSubmit = () => {
+    const question = questions[currentQuestion];
+    const value = parseFloat(numberInput);
+    
+    if (isNaN(value)) {
+      setInputError('Please enter a valid number');
+      return;
+    }
+    
+    if (question.min !== undefined && value < question.min) {
+      setInputError(`Value must be at least ${question.min}`);
+      return;
+    }
+    
+    if (question.max !== undefined && value > question.max) {
+      setInputError(`Value must be at most ${question.max}`);
+      return;
+    }
+    
+    const updatedAnswersWithoutCurrent = answers.filter(a => a.questionId !== question.id);
+    const riskWeight = calculateNumericRiskWeight(question.id, value, updatedAnswersWithoutCurrent);
+    
+    const newAnswer: QuestionnaireAnswer = {
+      questionId: question.id,
+      answer: value,
+      riskWeight,
+    };
+    
+    const updatedAnswers = [...updatedAnswersWithoutCurrent, newAnswer];
+    setAnswers(updatedAnswers);
+    setNumberInput('');
+    setInputError('');
+    setWantToSkip(false);
+
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
+    } else {
+      finishQuestionnaire(updatedAnswers);
+    }
+  };
+
+  const handleTimeSubmit = () => {
+    const question = questions[currentQuestion];
+    
+    if (!timeInput) {
+      setInputError('Please select a time');
+      return;
+    }
+    
+    const updatedAnswersWithoutCurrent = answers.filter(a => a.questionId !== question.id);
+    const riskWeight = calculateTimeRiskWeight(question.id, timeInput, updatedAnswersWithoutCurrent);
+    
+    const newAnswer: QuestionnaireAnswer = {
+      questionId: question.id,
+      answer: timeInput,
+      riskWeight,
+    };
+    
+    const updatedAnswers = [...updatedAnswersWithoutCurrent, newAnswer];
+    setAnswers(updatedAnswers);
+    setTimeInput('');
+    setInputError('');
+    setWantToSkip(false);
+
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
+    } else {
+      finishQuestionnaire(updatedAnswers);
+    }
+  };
+
+  const finishQuestionnaire = (finalAnswers: QuestionnaireAnswer[]) => {
+    const score = calculateRiskScore(finalAnswers);
+    setRiskScore(score);
+    localStorage.setItem('loretta_risk_score', JSON.stringify(score));
+    localStorage.setItem('loretta_questionnaire', JSON.stringify(finalAnswers));
+    
+    saveQuestionnaireMutation.mutate(finalAnswers);
+    
+    saveRiskScoreMutation.mutate({
+      overallScore: score.score,
+      diabetesRisk: Math.round(score.score * 0.8),
+      heartRisk: Math.round(score.score * 0.9),
+      strokeRisk: Math.round(score.score * 0.7),
+    });
+    
+    initializeGamificationMutation.mutate();
+    
+    setStep('riskScore');
+  };
+
+  const handleComplete = () => {
+    navigate('/dashboard');
+  };
+
+  const goToPreviousQuestion = () => {
+    if (currentQuestion > 0) {
+      setCurrentQuestion(prev => prev - 1);
+      setNumberInput('');
+      setTimeInput('');
+      setInputError('');
+      setWantToSkip(false);
+    }
+  };
+
+  const handleSkipQuestion = () => {
+    const currentQuestions = questions;
+    const question = currentQuestions[currentQuestion];
+    
+    const newSkippedQuestions = skippedQuestions.includes(question.id) 
+      ? skippedQuestions 
+      : [...skippedQuestions, question.id];
+    setSkippedQuestions(newSkippedQuestions);
+    
+    const updatedAnswers = answers.filter(a => a.questionId !== question.id);
+    setAnswers(updatedAnswers);
+    setNumberInput('');
+    setTimeInput('');
+    setInputError('');
+    setWantToSkip(false);
+
+    const updatedQuestions = getQuestionsWithFollowUps(updatedAnswers);
+    
+    const currentQuestionIndex = currentQuestions.findIndex(q => q.id === question.id);
+    const nextQuestionId = currentQuestions[currentQuestionIndex + 1]?.id;
+    
+    if (nextQuestionId) {
+      const nextIndexInUpdated = updatedQuestions.findIndex(q => q.id === nextQuestionId);
+      if (nextIndexInUpdated !== -1) {
+        setTimeout(() => setCurrentQuestion(nextIndexInUpdated), 300);
+      } else if (currentQuestion < updatedQuestions.length - 1) {
+        setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
+      } else {
+        finishQuestionnaire(updatedAnswers);
+      }
+    } else {
+      finishQuestionnaire(updatedAnswers);
+    }
+  };
+
+  const renderWelcome = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="text-center space-y-6"
+    >
+      <motion.img
+        src={mascotImage}
+        alt="Loretta Mascot"
+        className="w-24 h-24 mx-auto"
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      
+      <div>
+        <h1 className="text-3xl font-black text-foreground mb-2">Welcome to Loretta!</h1>
+        {inviteData?.inviterName && (
+          <p className="text-muted-foreground">
+            You were invited by <span className="font-bold text-primary">{inviteData.inviterName}</span>
+          </p>
+        )}
+        {inviteData?.code && (
+          <p className="text-sm text-muted-foreground mt-1">
+            Invite code: <span className="font-mono">{inviteData.code}</span>
+          </p>
+        )}
+      </div>
+
+      <Card className="p-6 bg-gradient-to-br from-primary/10 to-chart-2/10 border-0">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-foreground">Gamified Health Journey</p>
+              <p className="text-sm text-muted-foreground">Earn XP, maintain streaks, unlock achievements</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-chart-2/20 flex items-center justify-center">
+              <Activity className="w-5 h-5 text-chart-2" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-foreground">Personalized Risk Score</p>
+              <p className="text-sm text-muted-foreground">Understand your health with AI-powered insights</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-chart-3/20 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-chart-3" />
+            </div>
+            <div className="text-left">
+              <p className="font-bold text-foreground">Privacy First</p>
+              <p className="text-sm text-muted-foreground">Your data stays yours, always</p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Button
+        onClick={() => setStep('consent')}
+        className="w-full bg-gradient-to-r from-primary to-chart-2 font-black text-lg py-6"
+        data-testid="button-start-onboarding"
+      >
+        Get Started
+        <ChevronRight className="w-5 h-5 ml-2" />
+      </Button>
+    </motion.div>
+  );
+
+  const renderConsent = () => (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-6"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center">
+          <Shield className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h2 className="text-xl font-black text-foreground">Privacy & Consent</h2>
+          <p className="text-sm text-muted-foreground">Please review our privacy practices</p>
+        </div>
+      </div>
+
+      <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+        {privacyPoints.map((point, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-muted/30 to-transparent"
+          >
+            <point.icon className={`w-5 h-5 ${point.color} flex-shrink-0 mt-0.5`} />
+            <div>
+              <p className="font-bold text-foreground text-sm">{point.title}</p>
+              <p className="text-xs text-muted-foreground">{point.description}</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <Button
+        variant="ghost"
+        className="w-full justify-between"
+        onClick={() => setShowFullPolicy(!showFullPolicy)}
+        data-testid="button-toggle-policy"
+      >
+        <span className="text-sm">Read Full Privacy Policy</span>
+        {showFullPolicy ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </Button>
+
+      <AnimatePresence>
+        {showFullPolicy && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <Card className="p-4 bg-muted/30 text-xs text-muted-foreground max-h-48 overflow-y-auto">
+              <p className="mb-2"><strong>GDPR Compliance:</strong> We process your data under GDPR Article 6(1)(a) - consent and Article 9(2)(a) for health data.</p>
+              <p className="mb-2"><strong>Data Retention:</strong> Your data is stored for the duration of your account plus 30 days after deletion.</p>
+              <p className="mb-2"><strong>Your Rights:</strong> Access, rectify, erase, port, and object to processing of your data.</p>
+              <p className="mb-2"><strong>Data Collection:</strong> We collect only the information you provide (name, email) and any health data you choose to share.</p>
+              <p className="mb-2"><strong>Third Parties:</strong> We do not share your personal data with third parties without your explicit consent.</p>
+              <p><strong>Contact:</strong> privacy@loretta.care</p>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="flex items-start gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5">
+        <Checkbox 
+          id="consent" 
+          checked={acknowledged}
+          onCheckedChange={(checked) => setAcknowledged(checked as boolean)}
+          data-testid="checkbox-consent"
+        />
+        <Label htmlFor="consent" className="text-sm cursor-pointer">
+          I have read and agree to the privacy policy and consent to the processing of my health data.
+        </Label>
+      </div>
+
+      <div className="flex items-start gap-3 p-3 rounded-lg border border-border bg-muted/30">
+        <Checkbox 
+          id="newsletter" 
+          checked={newsletterOptIn}
+          onCheckedChange={(checked) => setNewsletterOptIn(checked as boolean)}
+          data-testid="checkbox-newsletter"
+        />
+        <Label htmlFor="newsletter" className="text-sm cursor-pointer flex items-start gap-2">
+          <Mail className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+          <span>I would like to receive the Loretta newsletter with health tips and updates. You can unsubscribe at any time.</span>
+        </Label>
+      </div>
+
+      <div className="flex gap-3">
+        <Button
+          variant="outline"
+          onClick={handleConsentDecline}
+          className="flex-1"
+          data-testid="button-decline-consent"
+        >
+          Decline
+        </Button>
+        <Button
+          onClick={handleConsentAccept}
+          disabled={!acknowledged}
+          className="flex-1 bg-gradient-to-r from-primary to-chart-2"
+          data-testid="button-accept-consent"
+        >
+          Accept & Continue
+        </Button>
+      </div>
+    </motion.div>
+  );
+
+  const renderRegistration = () => (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="space-y-6"
+    >
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center">
+          <User className="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h2 className="text-xl font-black text-foreground">Create Your Profile</h2>
+          <p className="text-sm text-muted-foreground">Tell us a bit about yourself</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleRegistrationSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="firstName">First Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="firstName"
+                placeholder="First name"
+                value={registration.firstName}
+                onChange={(e) => setRegistration(prev => ({ ...prev, firstName: e.target.value }))}
+                className="pl-10"
+                required
+                data-testid="input-first-name"
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="lastName">Last Name</Label>
+            <Input
+              id="lastName"
+              placeholder="Last name"
+              value={registration.lastName}
+              onChange={(e) => setRegistration(prev => ({ ...prev, lastName: e.target.value }))}
+              required
+              data-testid="input-last-name"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email Address</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="your@email.com"
+              value={registration.email}
+              onChange={(e) => setRegistration(prev => ({ ...prev, email: e.target.value }))}
+              className="pl-10"
+              required
+              data-testid="input-email"
+            />
+          </div>
+        </div>
+
+        <Card className="p-3 bg-primary/5 border-primary/20">
+          <p className="text-xs text-muted-foreground">
+            <Lock className="w-3 h-3 inline mr-1" />
+            Your information is never shared without your consent.
+          </p>
+        </Card>
+
+        <Button
+          type="submit"
+          className="w-full bg-gradient-to-r from-primary to-chart-2 font-bold"
+          disabled={!registration.firstName || !registration.lastName || !registration.email}
+          data-testid="button-submit-registration"
+        >
+          Continue to Health Assessment
+          <ChevronRight className="w-4 h-4 ml-2" />
+        </Button>
+      </form>
+    </motion.div>
+  );
+
+  const renderQuestionnaire = () => {
+    const question = questions[currentQuestion];
+    const QuestionIcon = question.icon;
+    const isFollowUp = question.followUpFor !== undefined;
+    
+    return (
+      <motion.div
+        key={currentQuestion}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        className="space-y-6"
+      >
+        <div className="flex items-center justify-between">
+          <Badge variant={isFollowUp ? "default" : "secondary"} className="font-bold">
+            {isFollowUp ? "Follow-up" : question.category}
+          </Badge>
+          <span className="text-sm text-muted-foreground" data-testid="text-question-progress">
+            {currentQuestion + 1} of {questions.length}
+          </span>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${isFollowUp ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-chart-3 to-yellow-500'}`}>
+            <QuestionIcon className="w-6 h-6 text-white" />
+          </div>
+          <h2 className="text-lg font-bold text-foreground">{question.text}</h2>
+        </div>
+
+        {question.type === 'choice' && question.options && (
+          <div className="space-y-3">
+            {question.options.map((option, index) => (
+              <motion.div
+                key={option.value}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left h-auto py-4 px-4 hover:border-primary hover:bg-primary/5"
+                  onClick={() => handleChoiceAnswer(option)}
+                  data-testid={`option-${option.value}`}
+                >
+                  <span className="text-sm">{option.label}</span>
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {question.type === 'number' && (
+          <div className="space-y-4">
+            <div className="relative">
+              <Input
+                type="number"
+                placeholder={question.placeholder}
+                value={numberInput}
+                onChange={(e) => {
+                  setNumberInput(e.target.value);
+                  setInputError('');
+                }}
+                min={question.min}
+                max={question.max}
+                className={`text-lg py-6 ${inputError ? 'border-destructive' : ''}`}
+                data-testid="input-number"
+              />
+              {question.unit && (
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  {question.unit}
+                </span>
+              )}
+            </div>
+            {inputError && (
+              <p className="text-sm text-destructive flex items-center gap-1" data-testid="text-input-error">
+                <AlertTriangle className="w-4 h-4" />
+                {inputError}
+              </p>
+            )}
+            <Button
+              onClick={handleNumberSubmit}
+              disabled={!numberInput}
+              className="w-full bg-gradient-to-r from-primary to-chart-2"
+              data-testid="button-submit-number"
+            >
+              Continue
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        )}
+
+        {question.type === 'time' && (
+          <div className="space-y-4">
+            <Input
+              type="time"
+              placeholder={question.placeholder}
+              value={timeInput}
+              onChange={(e) => {
+                setTimeInput(e.target.value);
+                setInputError('');
+              }}
+              className={`text-lg py-6 ${inputError ? 'border-destructive' : ''}`}
+              data-testid="input-time"
+            />
+            {inputError && (
+              <p className="text-sm text-destructive flex items-center gap-1" data-testid="text-input-error">
+                <AlertTriangle className="w-4 h-4" />
+                {inputError}
+              </p>
+            )}
+            <Button
+              onClick={handleTimeSubmit}
+              disabled={!timeInput}
+              className="w-full bg-gradient-to-r from-primary to-chart-2"
+              data-testid="button-submit-time"
+            >
+              Continue
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        )}
+
+        <div className="border-t pt-4 mt-4">
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+            <Checkbox 
+              id="skip-question" 
+              checked={wantToSkip}
+              onCheckedChange={(checked) => setWantToSkip(checked as boolean)}
+              data-testid="checkbox-skip-question"
+            />
+            <Label htmlFor="skip-question" className="text-sm cursor-pointer text-muted-foreground">
+              I do not want to answer this question
+            </Label>
+          </div>
+          
+          {wantToSkip && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-3"
+            >
+              <Button
+                variant="outline"
+                onClick={handleSkipQuestion}
+                className="w-full"
+                data-testid="button-skip-question"
+              >
+                Skip This Question
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Button>
+            </motion.div>
+          )}
+        </div>
+
+        {currentQuestion > 0 && (
+          <Button
+            variant="ghost"
+            onClick={goToPreviousQuestion}
+            className="w-full"
+            data-testid="button-previous-question"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Previous Question
+          </Button>
+        )}
+      </motion.div>
+    );
+  };
+
+  const renderRiskScore = () => (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="text-center space-y-6"
+    >
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', bounce: 0.5 }}
+        className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-primary via-chart-2 to-chart-3 p-1"
+      >
+        <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
+          <div className="text-center">
+            <span className={`text-4xl font-black ${riskScore?.color}`} data-testid="text-risk-score">{riskScore?.score}</span>
+            <p className="text-xs text-muted-foreground">Health Score</p>
+          </div>
+        </div>
+      </motion.div>
+
+      <div>
+        <Badge 
+          className={`${riskScore?.color === 'text-primary' ? 'bg-primary' : riskScore?.color === 'text-chart-2' ? 'bg-chart-2' : riskScore?.color === 'text-chart-3' ? 'bg-chart-3' : 'bg-destructive'} text-white font-bold text-lg px-4 py-1`}
+          data-testid="badge-risk-level"
+        >
+          {riskScore?.level}
+        </Badge>
+      </div>
+
+      {skippedQuestions.length > 0 && (
+        <Card className="p-4 bg-muted/30 border-muted">
+          <p className="text-sm text-muted-foreground text-center" data-testid="text-skipped-count">
+            You did not answer {skippedQuestions.length} {skippedQuestions.length === 1 ? 'question' : 'questions'}
+          </p>
+        </Card>
+      )}
+
+      <Card className="p-6 bg-gradient-to-br from-card to-primary/5 border-0">
+        <div className="flex items-center gap-4">
+          <img src={mascotImage} alt="Mascot" className="w-16 h-16 object-contain" />
+          <div className="text-left">
+            <p className="font-bold text-foreground mb-1">
+              {riskScore && riskScore.score >= 60 
+                ? "Great start! Let's keep improving together." 
+                : "We've identified areas where we can help you improve."}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Complete daily quests and track your progress to boost your score!
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="p-3 text-center bg-primary/10 border-0">
+          <Sparkles className="w-6 h-6 text-primary mx-auto mb-1" />
+          <p className="text-xs text-muted-foreground">Earn XP</p>
+        </Card>
+        <Card className="p-3 text-center bg-chart-3/10 border-0">
+          <Flame className="w-6 h-6 text-chart-3 mx-auto mb-1" />
+          <p className="text-xs text-muted-foreground">Build Streaks</p>
+        </Card>
+        <Card className="p-3 text-center bg-chart-2/10 border-0">
+          <Heart className="w-6 h-6 text-chart-2 mx-auto mb-1" />
+          <p className="text-xs text-muted-foreground">Get Healthier</p>
+        </Card>
+      </div>
+
+      <Button
+        onClick={handleComplete}
+        className="w-full bg-gradient-to-r from-primary to-chart-2 font-black text-lg py-6"
+        data-testid="button-go-to-dashboard"
+      >
+        Start Your Health Journey
+        <ChevronRight className="w-5 h-5 ml-2" />
+      </Button>
+    </motion.div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
+        <div className="max-w-lg mx-auto flex items-center justify-center gap-3">
+          <img src={lorettaLogo} alt="Loretta" className="h-8" />
+        </div>
+      </div>
+      
+      <div className="max-w-lg mx-auto p-4">
+        <div className="mb-6">
+          <Progress value={stepProgress[step]} className="h-2" />
+          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+            <span>Welcome</span>
+            <span>Consent</span>
+            <span>Profile</span>
+            <span>Assessment</span>
+            <span>Complete</span>
+          </div>
+        </div>
+
+        <Card className="p-6 border-0 shadow-xl">
+          <AnimatePresence mode="wait">
+            {step === 'welcome' && renderWelcome()}
+            {step === 'consent' && renderConsent()}
+            {step === 'registration' && renderRegistration()}
+            {step === 'questionnaire' && renderQuestionnaire()}
+            {step === 'riskScore' && renderRiskScore()}
+          </AnimatePresence>
+        </Card>
+      </div>
+    </div>
+  );
+}

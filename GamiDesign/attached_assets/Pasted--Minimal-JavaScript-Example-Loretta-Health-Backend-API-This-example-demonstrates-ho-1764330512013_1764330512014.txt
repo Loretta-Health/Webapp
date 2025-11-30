@@ -1,0 +1,482 @@
+/**
+ * Minimal JavaScript Example - Loretta Health Backend API
+ *
+ * This example demonstrates how to use all backend endpoints:
+ * - Authentication (signin, token refresh)
+ * - Health Risk Prediction (ML model)
+ * - Chat with AI Agent (Scaleway)
+ *
+ * Prerequisites:
+ * - Backend running at: https://loretta-backend-dev-5oc2gjs2kq-el.a.run.app
+ * - Scaleway API key for chat functionality
+ * - Environment variables configured
+ */
+
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+
+const LORETTA_BASE_URL = 'https://loretta-backend-dev-5oc2gjs2kq-el.a.run.app/api/v1';
+const SCALEWAY_BASE_URL = 'https://api.scaleway.ai/v1';
+const SCALEWAY_MODEL = 'gemma-3-27b-it';
+
+// Replace with your credentials
+const AUTH_EMAIL = process.env.AUTH_EMAIL || 'your-email@example.com';
+const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'your-password';
+const SCALEWAY_API_KEY = process.env.SCALEWAY_API_KEY || 'your-scaleway-api-key';
+
+// Store tokens globally (in production, use secure storage)
+let authToken = null;
+let authRefreshToken = null;
+let tokenExpiresAt = null;
+
+// ============================================================================
+// AUTHENTICATION ENDPOINTS
+// ============================================================================
+
+/**
+ * Sign in to Loretta backend
+ * POST /api/v1/auth/signin
+ */
+async function signIn(email, password) {
+  try {
+    console.log('🔐 Signing in...');
+
+    const response = await fetch(`${LORETTA_BASE_URL}/auth/signin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Authentication failed (${response.status}): ${text}`);
+    }
+
+    const data = await response.json();
+
+    // Store tokens
+    authToken = data.idToken;
+    authRefreshToken = data.refreshToken;
+    tokenExpiresAt = Date.now() + parseInt(data.expiresIn) * 1000;
+
+    console.log('✅ Sign in successful!');
+    console.log('User:', data.user.email, '| Role:', data.user.role);
+    console.log('Token expires in:', data.expiresIn, 'seconds');
+
+    return data;
+  } catch (error) {
+    console.error('❌ Sign in error:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Refresh authentication token
+ * POST /api/v1/auth/refresh
+ */
+async function refreshToken() {
+  try {
+    console.log('🔄 Refreshing token...');
+
+    const response = await fetch(`${LORETTA_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshToken: authRefreshToken }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Token refresh failed (${response.status}): ${text}`);
+    }
+
+    const data = await response.json();
+
+    // Update tokens
+    authToken = data.idToken;
+    authRefreshToken = data.refreshToken;
+    tokenExpiresAt = Date.now() + parseInt(data.expiresIn) * 1000;
+
+    console.log('✅ Token refresh successful!');
+    return data;
+  } catch (error) {
+    console.error('❌ Token refresh error:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Check if token is expired (with 5 minute buffer)
+ */
+function isTokenExpired() {
+  if (!tokenExpiresAt) return true;
+  // Consider token expired 5 minutes before actual expiration
+  return Date.now() >= tokenExpiresAt - 5 * 60 * 1000;
+}
+
+/**
+ * Ensure we have a valid token, refresh if needed
+ */
+async function ensureValidToken() {
+  if (!authToken) {
+    throw new Error('Not authenticated. Please sign in first.');
+  }
+
+  if (isTokenExpired()) {
+    console.log('Token expired, refreshing...');
+    await refreshToken();
+  }
+
+  return authToken;
+}
+
+// ============================================================================
+// HEALTH RISK PREDICTION ENDPOINTS
+// ============================================================================
+
+/**
+ * Predict health risk using ML model
+ * POST /api/v1/ml/predict
+ *
+ * Features are questionnaire responses with ID and Value pairs
+ */
+async function predictHealthRisk(features) {
+  try {
+    console.log('\n🔮 Making risk prediction request...');
+    console.log('Features:', features);
+
+    const token = await ensureValidToken();
+
+    const response = await fetch(`${LORETTA_BASE_URL}/ml/predict`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ features }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Prediction failed (${response.status}): ${text}`);
+    }
+
+    const data = await response.json();
+
+    console.log('✅ Prediction successful!');
+    console.log('Risk Level:', data.risk_level);
+    console.log('Diabetes Probability:', (data.diabetes_probability * 100).toFixed(2) + '%');
+
+    return data;
+  } catch (error) {
+    console.error('❌ Prediction error:', error.message);
+    throw error;
+  }
+}
+
+// ============================================================================
+// CHAT / AI AGENT ENDPOINTS (SCALEWAY)
+// ============================================================================
+
+/**
+ * Chat with AI health assistant using Scaleway
+ * POST https://api.scaleway.ai/v1/chat/completions
+ *
+ * @param messages - Array of {role, content} objects
+ * @param options - Optional settings (temperature, max_tokens, stream)
+ */
+async function chatWithAgent(messages, options = {}) {
+  try {
+    console.log('\n💬 Sending chat request to AI agent...');
+    console.log('Messages:', messages.length);
+
+    if (!SCALEWAY_API_KEY) {
+      throw new Error('Missing SCALEWAY_API_KEY');
+    }
+
+    const response = await fetch(`${SCALEWAY_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SCALEWAY_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: options.model || SCALEWAY_MODEL,
+        messages,
+        temperature: options.temperature || 0.7,
+        max_tokens: options.max_tokens || 512,
+        stream: options.stream || false,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Scaleway API Error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    const assistantMessage = data?.choices?.[0]?.message?.content || '';
+
+    console.log('✅ Chat response received!');
+    console.log('Assistant:', assistantMessage.substring(0, 100) + '...');
+
+    return assistantMessage;
+  } catch (error) {
+    console.error('❌ Chat error:', error.message);
+    throw error;
+  }
+}
+
+/**
+ * Send a simple text message and get a response
+ */
+async function sendMessage(userMessage, conversationHistory = []) {
+  const messages = [
+    ...conversationHistory,
+    { role: 'user', content: userMessage }
+  ];
+
+  const response = await chatWithAgent(messages);
+
+  return {
+    userMessage,
+    assistantResponse: response,
+    updatedHistory: [
+      ...messages,
+      { role: 'assistant', content: response }
+    ]
+  };
+}
+
+/**
+ * Send a message with an image (multimodal)
+ */
+async function sendMessageWithImage(text, imageBase64, conversationHistory = []) {
+  const messages = [
+    ...conversationHistory,
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text },
+        {
+          type: 'image_url',
+          image_url: { url: imageBase64 } // Should be data:image/jpeg;base64,... format
+        }
+      ]
+    }
+  ];
+
+  const response = await chatWithAgent(messages);
+
+  return {
+    userMessage: text,
+    assistantResponse: response,
+    updatedHistory: [
+      ...messages,
+      { role: 'assistant', content: response }
+    ]
+  };
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Create a feature object for ML prediction
+ */
+function createFeature(id, value) {
+  return { ID: id, Value: value };
+}
+
+/**
+ * Prepare messages for API by limiting conversation history
+ */
+function prepareMessagesForAPI(messages, limit = 20) {
+  return messages.slice(-limit);
+}
+
+// ============================================================================
+// EXAMPLE DATA
+// ============================================================================
+
+// Example health risk features (questionnaire responses)
+const exampleFeatures = [
+  { ID: 'INQ300', Value: 'No' },   // Insurance coverage
+  { ID: 'BPQ020', Value: 'Yes' },  // High blood pressure
+  { ID: 'BPQ080', Value: 'Yes' },  // Taking BP medication
+];
+
+// Example chat messages
+const exampleChatHistory = [
+  {
+    role: 'system',
+    content: 'You are a helpful health assistant. Provide supportive and informative health advice.'
+  },
+  {
+    role: 'user',
+    content: 'How can I lower my blood pressure naturally?'
+  },
+  {
+    role: 'assistant',
+    content: 'Here are some natural ways to lower blood pressure: 1) Exercise regularly, 2) Reduce sodium intake, 3) Manage stress, 4) Maintain a healthy weight, 5) Limit alcohol consumption.'
+  }
+];
+
+// ============================================================================
+// EXAMPLE USAGE
+// ============================================================================
+
+async function runExample() {
+  console.log('🚀 Starting Loretta Health Backend API Example\n');
+  console.log('=' . repeat(60));
+
+  try {
+    // ========================================
+    // Example 1: Authentication
+    // ========================================
+    console.log('\n📝 Example 1: Sign In');
+    console.log('=' . repeat(60));
+    await signIn(AUTH_EMAIL, AUTH_PASSWORD);
+
+    // ========================================
+    // Example 2: Health Risk Prediction
+    // ========================================
+    console.log('\n🏥 Example 2: Predict Health Risk');
+    console.log('=' . repeat(60));
+    const riskPrediction = await predictHealthRisk(exampleFeatures);
+    console.log('\n📊 Results:');
+    console.log('  - Risk Level:', riskPrediction.risk_level);
+    console.log('  - Diabetes Probability:', (riskPrediction.diabetes_probability * 100).toFixed(2) + '%');
+
+    // ========================================
+    // Example 3: Simple Chat Message
+    // ========================================
+    console.log('\n💬 Example 3: Chat with AI Agent (Simple)');
+    console.log('=' . repeat(60));
+    const chatResult = await sendMessage(
+      'What should I do if I have high blood pressure?',
+      exampleChatHistory
+    );
+    console.log('\n📨 User:', chatResult.userMessage);
+    console.log('🤖 Assistant:', chatResult.assistantResponse);
+
+    // ========================================
+    // Example 4: Multi-turn Conversation
+    // ========================================
+    console.log('\n💬 Example 4: Multi-turn Conversation');
+    console.log('=' . repeat(60));
+    let conversationHistory = [];
+
+    // Turn 1
+    let result = await sendMessage(
+      "Hi, I'm feeling stressed lately",
+      conversationHistory
+    );
+    conversationHistory = result.updatedHistory;
+    console.log('\n👤 User: Hi, I\'m feeling stressed lately');
+    console.log('🤖 Assistant:', result.assistantResponse.substring(0, 150) + '...');
+
+    // Turn 2
+    result = await sendMessage(
+      'What exercises would you recommend?',
+      conversationHistory
+    );
+    conversationHistory = result.updatedHistory;
+    console.log('\n👤 User: What exercises would you recommend?');
+    console.log('🤖 Assistant:', result.assistantResponse.substring(0, 150) + '...');
+
+    // ========================================
+    // Example 5: Token Refresh
+    // ========================================
+    console.log('\n🔄 Example 5: Token Refresh');
+    console.log('=' . repeat(60));
+    await refreshToken();
+
+    // ========================================
+    // Example 6: Advanced Chat Options
+    // ========================================
+    console.log('\n🎛️  Example 6: Chat with Custom Options');
+    console.log('=' . repeat(60));
+    const advancedResponse = await chatWithAgent(
+      [
+        { role: 'user', content: 'Give me 3 tips for better sleep' }
+      ],
+      {
+        temperature: 0.5,  // Lower temperature for more focused responses
+        max_tokens: 300,
+        stream: false
+      }
+    );
+    console.log('🤖 Assistant:', advancedResponse);
+
+    console.log('\n' + '=' . repeat(60));
+    console.log('✅ All examples completed successfully!');
+    console.log('=' . repeat(60));
+
+  } catch (error) {
+    console.error('\n❌ Example failed:', error.message);
+    console.error('Stack:', error.stack);
+  }
+}
+
+// ============================================================================
+// COMPLETE API REFERENCE
+// ============================================================================
+
+/**
+ * API ENDPOINTS SUMMARY:
+ *
+ * 1. LORETTA BACKEND (https://loretta-backend-dev-5oc2gjs2kq-el.a.run.app/api/v1)
+ *    - POST /auth/signin        - Sign in with email/password
+ *    - POST /auth/refresh       - Refresh authentication token
+ *    - POST /ml/predict         - Predict health risk from features
+ *
+ * 2. SCALEWAY AI (https://api.scaleway.ai/v1)
+ *    - POST /chat/completions   - Chat with AI agent (supports text and images)
+ *
+ * AUTHENTICATION:
+ *    - Loretta endpoints require: Authorization: Bearer <token>
+ *    - Scaleway endpoints require: Authorization: Bearer <api-key>
+ *
+ * DATA FORMATS:
+ *    - Health features: [{ ID: string, Value: string }, ...]
+ *    - Chat messages: [{ role: 'user' | 'assistant' | 'system', content: string }, ...]
+ *    - Multimodal content: { role, content: [{ type, text }, { type, image_url }] }
+ */
+
+// ============================================================================
+// EXPORTS (for use in other modules)
+// ============================================================================
+
+module.exports = {
+  // Auth functions
+  signIn,
+  refreshToken,
+  isTokenExpired,
+  ensureValidToken,
+
+  // Health prediction functions
+  predictHealthRisk,
+  createFeature,
+
+  // Chat functions
+  chatWithAgent,
+  sendMessage,
+  sendMessageWithImage,
+  prepareMessagesForAPI,
+
+  // Example data
+  exampleFeatures,
+  exampleChatHistory,
+
+  // Run example
+  runExample,
+};
+
+// Uncomment to run the example
+// runExample();
