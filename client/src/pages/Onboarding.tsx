@@ -1293,28 +1293,62 @@ export default function Onboarding() {
       initializeGamificationMutation.mutate();
       setStep('riskScore');
     } catch (error) {
-      console.error('Failed to get prediction:', error);
-      const fallbackScore = calculateRiskScore(finalAnswers);
-      const diabetesProbabilityFallback = (100 - fallbackScore.score) / 100;
-      const fullScore = {
-        diabetes_probability: diabetesProbabilityFallback,
-        risk_level: fallbackScore.level,
-        score: fallbackScore.score,
-        level: fallbackScore.level,
-        color: fallbackScore.color,
-      };
-      setRiskScore(fullScore);
-      localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+      // ML prediction failed - use deprecated legacy endpoint as fallback
+      // Note: This is logged server-side for developers, not shown to end-user
+      console.log('[Fallback] ML prediction unavailable, using legacy calculation');
       
-      saveRiskScoreMutation.mutate({
-        overallScore: fallbackScore.score,
-        diabetesRisk: 100 - fallbackScore.score,
-        heartRisk: 0,
-        strokeRisk: 0,
-      });
-      
-      initializeGamificationMutation.mutate();
-      setStep('riskScore');
+      try {
+        // Call the deprecated server-side calculation endpoint
+        const fallbackResponse = await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
+        const fallbackData = await fallbackResponse.json();
+        
+        const diabetesProbabilityFallback = (fallbackData.diabetesRisk || 0) / 100;
+        const score = 100 - (fallbackData.overallScore || 50);
+        let color = 'text-muted-foreground';
+        let level = 'Unknown';
+        
+        if (score >= 80) { color = 'text-primary'; level = 'Low'; }
+        else if (score >= 60) { color = 'text-chart-2'; level = 'Moderate'; }
+        else if (score >= 40) { color = 'text-chart-3'; level = 'Elevated'; }
+        else { color = 'text-destructive'; level = 'High'; }
+        
+        const fullScore = {
+          diabetes_probability: diabetesProbabilityFallback,
+          risk_level: level,
+          score,
+          level,
+          color,
+        };
+        
+        setRiskScore(fullScore);
+        localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+        initializeGamificationMutation.mutate();
+        setStep('riskScore');
+      } catch (fallbackError) {
+        // Both ML and legacy fallback failed - use client-side calculation as last resort
+        console.log('[Fallback] Legacy endpoint also failed, using client-side calculation');
+        const fallbackScore = calculateRiskScore(finalAnswers);
+        const diabetesProbabilityFallback = (100 - fallbackScore.score) / 100;
+        const fullScore = {
+          diabetes_probability: diabetesProbabilityFallback,
+          risk_level: fallbackScore.level,
+          score: fallbackScore.score,
+          level: fallbackScore.level,
+          color: fallbackScore.color,
+        };
+        setRiskScore(fullScore);
+        localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+        
+        saveRiskScoreMutation.mutate({
+          overallScore: fallbackScore.score,
+          diabetesRisk: 100 - fallbackScore.score,
+          heartRisk: 0,
+          strokeRisk: 0,
+        });
+        
+        initializeGamificationMutation.mutate();
+        setStep('riskScore');
+      }
     } finally {
       setIsPredicting(false);
     }

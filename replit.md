@@ -124,7 +124,12 @@ Preferred communication style: Simple, everyday language.
 - Request format: `{ features: [{ ID: string, Value: string }] }`
 - Response format: `{ diabetes_probability: number, risk_level: string }`
 - Onboarding flow calls prediction API after questionnaire completion
-- Fallback to local risk calculation if API fails
+
+**Risk Calculation Fallback Chain:**
+1. Primary: External ML prediction API (`/api/predict`)
+2. Fallback: Deprecated server-side calculation (`/api/risk-scores/:userId/calculate`) - logs warning for developers
+3. Last resort: Client-side `calculateRiskScore` function
+- Fallbacks are silent to end-users, only logged for developers
 
 ### External Dependencies
 
