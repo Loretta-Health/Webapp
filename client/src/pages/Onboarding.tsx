@@ -94,52 +94,10 @@ const CORE_QUESTION_COUNT = 10;
 
 const baseQuestions: Question[] = [
   // ==========================================
-  // CORE QUESTIONS (10) - Most Important First
+  // CORE QUESTIONS (10) - Ordered by ML Feature Importance
   // ==========================================
   
-  // 1. Age - Important demographic (gain: 46.6)
-  {
-    id: 'age',
-    apiId: 'RIDAGEYR',
-    text: "What is your age?",
-    type: 'number',
-    icon: User,
-    category: "Quick Health Check",
-    module: 'core',
-    placeholder: "Enter your age",
-    unit: "years",
-    min: 18,
-    max: 120,
-  },
-  // 2. Height - For BMI calculation (gain: 11.4)
-  {
-    id: 'height',
-    apiId: 'WHD010',
-    text: "What is your current height?",
-    type: 'number',
-    icon: Ruler,
-    category: "Quick Health Check",
-    module: 'core',
-    placeholder: "Enter height",
-    unit: "cm",
-    min: 100,
-    max: 250,
-  },
-  // 3. Weight - For BMI calculation (gain: 21.9)
-  {
-    id: 'weight_current',
-    apiId: 'WHD020',
-    text: "What is your current weight?",
-    type: 'number',
-    icon: Scale,
-    category: "Quick Health Check",
-    module: 'core',
-    placeholder: "Enter weight",
-    unit: "kg",
-    min: 30,
-    max: 300,
-  },
-  // 4. Blood test - Highest importance (gain: 302.4)
+  // 1. Blood test - HIGHEST importance (gain: 302.4)
   {
     id: 'blood_test_3_years',
     apiId: 'DIQ180',
@@ -153,7 +111,7 @@ const baseQuestions: Question[] = [
       { label: 'No', value: 'no', apiValue: 0, riskWeight: 2 },
     ],
   },
-  // 5. Prescription medicine - 2nd highest (gain: 265.4)
+  // 2. Prescription medicine - 2nd highest (gain: 265.4)
   {
     id: 'prescription_medicine',
     apiId: 'RXQ033',
@@ -167,7 +125,7 @@ const baseQuestions: Question[] = [
       { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },
-  // 6. High blood pressure - Major clinical signal (gain: 93.7)
+  // 3. High blood pressure - Major clinical signal (gain: 93.7)
   {
     id: 'high_blood_pressure',
     apiId: 'BPQ020',
@@ -181,7 +139,7 @@ const baseQuestions: Question[] = [
       { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },
-  // 7. General health - Strong predictor (gain: 81.0)
+  // 4. General health - Strong predictor (gain: 81.0)
   {
     id: 'general_health',
     apiId: 'HUQ010',
@@ -197,6 +155,48 @@ const baseQuestions: Question[] = [
       { label: 'Fair', value: 'fair', apiValue: 3, riskWeight: 2 },
       { label: 'Poor', value: 'poor', apiValue: 4, riskWeight: 3 },
     ],
+  },
+  // 5. Age - Important demographic (gain: 46.6)
+  {
+    id: 'age',
+    apiId: 'RIDAGEYR',
+    text: "What is your age?",
+    type: 'number',
+    icon: User,
+    category: "Quick Health Check",
+    module: 'core',
+    placeholder: "Enter your age",
+    unit: "years",
+    min: 18,
+    max: 120,
+  },
+  // 6. Weight - For BMI calculation (gain: 21.9)
+  {
+    id: 'weight_current',
+    apiId: 'WHD020',
+    text: "What is your current weight?",
+    type: 'number',
+    icon: Scale,
+    category: "Quick Health Check",
+    module: 'core',
+    placeholder: "Enter weight",
+    unit: "kg",
+    min: 30,
+    max: 300,
+  },
+  // 7. Height - For BMI calculation (gain: 11.4)
+  {
+    id: 'height',
+    apiId: 'WHD010',
+    text: "What is your current height?",
+    type: 'number',
+    icon: Ruler,
+    category: "Quick Health Check",
+    module: 'core',
+    placeholder: "Enter height",
+    unit: "cm",
+    min: 100,
+    max: 250,
   },
   // 8. High cholesterol - Metabolic marker (gain: 72.2)
   {
