@@ -1,0 +1,430 @@
+[
+  {
+    "ID": "RIDAGEYR",
+    "Description": "Age in years at screening",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "RIDRETH3",
+    "Description": "Race/Hispanic origin w/ NH Asian",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Mexican American",
+      "1.0": "Other Hispanic",
+      "2.0": "Non-Hispanic White",
+      "3.0": "Non-Hispanic Black",
+      "4.0": "Non-Hispanic Asian",
+      "5.0": "Other Race - Including Multi-Racial"
+    }
+  },
+  {
+    "ID": "DMDEDUC2",
+    "Description": "Education level - Adults 20+",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Less than 9th grade",
+      "1.0": "9-11th grade (Includes 12th grade with no diploma)",
+      "2.0": "High school graduate/GED or equivalent",
+      "3.0": "Some college or AA degree",
+      "4.0": "College graduate or above"
+    }
+  },
+  {
+    "ID": "DMDMARTZ",
+    "Description": "Marital status",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Married/Living with partner",
+      "1.0": "Widowed/Divorced/Separated",
+      "2.0": "Never married"
+    }
+  },
+  {
+    "ID": "DMDHHSIZ",
+    "Description": "Total number of people in the Household",
+    "Value type": "Categorical",
+    "Value description": {}
+  },
+  {
+    "ID": "INDFMPIR",
+    "Description": "Ratio of family income to poverty",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "ALQ121",
+    "Description": "Past 12 mos how often drink alc bev",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Never in the last year",
+      "1.0": "Every day",
+      "2.0": "Nearly every day",
+      "3.0": "3 to 4 times a week",
+      "4.0": "2 times a week",
+      "5.0": "Once a week",
+      "6.0": "2 to 3 times a month",
+      "7.0": "Once a month",
+      "8.0": "7 to 11 times in the last year",
+      "9.0": "3 to 6 times in the last year",
+      "10.0": "1 to 2 times in the last year"
+    }
+  },
+  {
+    "ID": "AUQ054",
+    "Description": "General condition of hearing",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Excellent",
+      "1.0": "Good",
+      "2.0": "A little trouble",
+      "3.0": "Moderate hearing trouble",
+      "4.0": "A lot of trouble",
+      "5.0": "Deaf"
+    }
+  },
+  {
+    "ID": "BAQ321C",
+    "Description": "Past 12 months, problems with unsteady",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "BAQ530",
+    "Description": "Past 5 years, how many times fallen?",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Never",
+      "1.0": "1 or 2 times",
+      "2.0": "3 to 4 times",
+      "3.0": "About every year",
+      "4.0": "About every month",
+      "5.0": "About every week",
+      "6.0": "Daily or constantly"
+    }
+  },
+  {
+    "ID": "BPQ020",
+    "Description": "Ever told you had high blood pressure",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "BPQ080",
+    "Description": "Doctor told you - high cholesterol level",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "DIQ160",
+    "Description": "Ever told you have prediabetes",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "DIQ180",
+    "Description": "Had blood tested past three years",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "DPQ030",
+    "Description": "Trouble sleeping or sleeping too much",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Not at all",
+      "1.0": "Several days",
+      "2.0": "More than half the days",
+      "3.0": "Nearly every day"
+    }
+  },
+  {
+    "ID": "HOD051",
+    "Description": "Number of rooms in home",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "1",
+      "1.0": "2",
+      "2.0": "3",
+      "3.0": "4",
+      "4.0": "5",
+      "5.0": "6",
+      "6.0": "7",
+      "7.0": "8",
+      "8.0": "9",
+      "9.0": "10",
+      "10.0": "11",
+      "11.0": "12 or more"
+    }
+  },
+  {
+    "ID": "HUQ010",
+    "Description": "General health condition",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Excellent",
+      "1.0": "Very good",
+      "2.0": "Good",
+      "3.0": "Fair",
+      "4.0": "Poor"
+    }
+  },
+  {
+    "ID": "HUQ030",
+    "Description": "Routine place to go for healthcare",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Yes",
+      "1.0": "There is no place",
+      "2.0": "There is more than one place"
+    }
+  },
+  {
+    "ID": "HUQ055",
+    "Description": "Past 12 months had video conf w/Dr?",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "INDFMMPI",
+    "Description": "Family monthly poverty level index",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "INQ300",
+    "Description": "Family has savings more than $20,000",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "KIQ022",
+    "Description": "Ever told you had weak/failing kidneys?",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "MCQ160A",
+    "Description": "Doctor ever said you had arthritis",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "MCQ160B",
+    "Description": "Ever told had congestive heart failure",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "MCQ160C",
+    "Description": "Ever told you had coronary heart disease",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "MCQ160E",
+    "Description": "Ever told you had heart attack",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "MCQ560",
+    "Description": "Ever had gallbladder surgery?",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "OCD150",
+    "Description": "Type of work done last week",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Working at a job or business",
+      "1.0": "With a job or business but not at work",
+      "2.0": "Looking for work",
+      "3.0": "Not working at a job or business"
+    }
+  },
+  {
+    "ID": "OHQ845",
+    "Description": "Rate the health of your teeth and gums",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Excellent",
+      "1.0": "Very good",
+      "2.0": "Good",
+      "3.0": "Fair",
+      "4.0": "Poor"
+    }
+  },
+  {
+    "ID": "OHQ620",
+    "Description": "How often last yr. had aching in mouth?",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Very often",
+      "1.0": "Fairly often",
+      "2.0": "Occasionally",
+      "3.0": "Hardly ever",
+      "4.0": "Never"
+    }
+  },
+  {
+    "ID": "OHQ630",
+    "Description": "How often felt bad because of mouth?",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Very often",
+      "1.0": "Fairly often",
+      "2.0": "Occasionally",
+      "3.0": "Hardly ever",
+      "4.0": "Never"
+    }
+  },
+  {
+    "ID": "OHQ660",
+    "Description": "Last yr avoid some food because of mouth",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Very often",
+      "1.0": "Fairly often",
+      "2.0": "Occasionally",
+      "3.0": "Hardly ever",
+      "4.0": "Never"
+    }
+  },
+  {
+    "ID": "OHQ670",
+    "Description": "Last yr couldn't eat because of mouth",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "Very often",
+      "1.0": "Fairly often",
+      "2.0": "Occasionally",
+      "3.0": "Hardly ever",
+      "4.0": "Never"
+    }
+  },
+  {
+    "ID": "PAD790",
+    "Description": "Hour moderate LTPA/week",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "PAD680",
+    "Description": "Sedentary activity (hr/day)",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "RXQ510",
+    "Description": "Dr told to take daily low-dose aspirin?",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "RXQ033",
+    "Description": "Taken prescription medicine, past month",
+    "Value type": "Categorical",
+    "Value description": {
+      "0.0": "No",
+      "1.0": "Yes"
+    }
+  },
+  {
+    "ID": "SLD012",
+    "Description": "Sleep hours - weekdays or workdays",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "SLD013",
+    "Description": "Sleep hours - weekends",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "SLQ300",
+    "Description": "Usual sleep time on weekdays or workdays - Format: HH:MM (e.g., 22:30)",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "SLQ310",
+    "Description": "Usual wake time on weekdays or workdays - Format: HH:MM (e.g., 06:45)",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "SLQ320",
+    "Description": "Usual sleep time on weekends - Format: HH:MM (e.g., 23:00)",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "SLQ330",
+    "Description": "Usual wake time on weekends - Format: HH:MM (e.g., 08:00)",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "WHD010",
+    "Description": "Current self-reported height (inches)",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "WHD020",
+    "Description": "Current self-reported weight (pounds)",
+    "Value type": "Numerical",
+    "Value description": {}
+  },
+  {
+    "ID": "WHD050",
+    "Description": "Self-reported weight - 1 yr ago (pounds)",
+    "Value type": "Numerical",
+    "Value description": {}
+  }
+]
