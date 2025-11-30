@@ -1538,6 +1538,11 @@ export default function Onboarding() {
     setInputError('');
     setWantToSkip(false);
 
+    if (currentQuestion === CORE_QUESTION_COUNT - 1 && !showModuleSelection) {
+      setShowModuleSelection(true);
+      return;
+    }
+
     const updatedQuestions = getQuestionsWithFollowUps(updatedAnswers);
     
     const currentQuestionIndex = currentQuestions.findIndex(q => q.id === question.id);
