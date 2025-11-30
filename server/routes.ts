@@ -376,8 +376,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Risk score calculation endpoint
+  // @deprecated - Legacy risk score calculation endpoint
+  // Kept as fallback when ML prediction API is unavailable
+  // TODO: Remove once ML prediction service is stable in production
   app.post("/api/risk-scores/:userId/calculate", async (req, res) => {
+    console.warn("[DEPRECATED] /api/risk-scores/:userId/calculate endpoint called - using legacy risk calculation as fallback");
     try {
       const { userId } = req.params;
       
@@ -399,9 +402,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...riskScore,
       });
       
+      console.log("[DEPRECATED] Legacy risk calculation completed for user:", userId);
       res.json(saved);
     } catch (error) {
-      console.error("Error calculating risk score:", error);
+      console.error("[DEPRECATED] Error in legacy risk score calculation:", error);
       res.status(500).json({ error: "Failed to calculate risk score" });
     }
   });
