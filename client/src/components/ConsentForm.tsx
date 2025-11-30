@@ -166,7 +166,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                   <div className="bg-muted/50 rounded-lg p-4 text-xs text-muted-foreground space-y-4 max-h-72 overflow-y-auto" data-testid="policy-content">
                     <div className="text-center border-b border-border pb-3">
                       <h3 className="font-black text-foreground text-sm">LORETTA HEALTH UG — GDPR CONSENT & PRIVACY POLICY</h3>
-                      <p className="text-[10px] mt-1">Last Updated: November 25, 2026 | Effective Date: November 25, 2026</p>
+                      <p className="text-[10px] mt-1">Last Updated: November 25, 2025 | Effective Date: November 25, 2025</p>
                     </div>
                     
                     <p>This Privacy and Consent Policy explains how Loretta Health UG (haftungsbeschränkt) ("Loretta", "we", "us") processes your personal and health data when you use the Loretta mobile application. Loretta provides wellbeing insights, behavioural support, and analysis of medical information. We do not provide diagnosis or medical treatment.</p>
