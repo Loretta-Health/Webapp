@@ -86,6 +86,38 @@ Preferred communication style: Simple, everyday language.
 - Profile page loads/saves questionnaire answers and profile data from/to backend
 - All mutations properly invalidate React Query cache for data consistency
 
+### Health Questionnaire & Risk Prediction API
+
+**Questionnaire Structure:**
+- 46 questions mapped to NHANES-style API parameter IDs
+- Categories: Demographics, Body Measurements, Medical History, Recent Health, Medications, Health Ratings, Oral Health, Physical Activity, Work, Sleep, Lifestyle, Healthcare Access, Financial, Living Situation
+- Each question has: id, apiId, text, type (choice/number/time), and options with apiValue mappings
+
+**API Parameter Mapping (in Onboarding.tsx):**
+- Demographics: RIDAGEYR (age), RIDRETH3 (ethnicity), DMDEDUC2 (education), DMDMARTZ (marital status), DMDHHSIZ (household size)
+- Body: WHD010 (height in inches), WHD020 (weight in lbs), WHD050 (weight 1yr ago in lbs)
+- Medical History: BPQ020, BPQ080, DIQ160, DIQ180, MCQ160A/B/C/E, KIQ022, MCQ560
+- Balance/Falls: BAQ321C (unsteadiness), BAQ530 (falls), DPQ030 (sleep trouble)
+- Medications: RXQ033 (prescription), RXQ510 (aspirin)
+- Health Ratings: HUQ010 (general), AUQ054 (hearing), OHQ845 (dental)
+- Oral Health: OHQ620/630/660/670 (mouth problems)
+- Activity: PAD790 (moderate activity hours/week), PAD680 (sedentary hours/day)
+- Work: OCD150 (job type)
+- Sleep: SLD012/013 (sleep hours), SLQ300/310/320/330 (sleep/wake times)
+- Lifestyle: ALQ121 (alcohol frequency)
+- Healthcare: HUQ030 (routine healthcare), HUQ055 (video consult)
+- Financial: INDFMPIR, INDFMMPI (income ratios), INQ300 (savings)
+- Housing: HOD051 (rooms)
+
+**buildFeatureJson Function:**
+- Exported from Onboarding.tsx for API integration
+- Converts answers to API format with unit conversions:
+  - Height: cm → inches (÷ 2.54)
+  - Weight: kg → pounds (× 2.20462)
+  - Time: HH:MM → decimal hours
+  - Rooms: 1-12 → API codes 0-11
+- Returns Record<string, number> for prediction API POST body
+
 ### External Dependencies
 
 **Database & ORM:**
