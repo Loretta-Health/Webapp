@@ -769,6 +769,7 @@ const followUpQuestions: Question[] = [
     type: 'choice',
     icon: HelpCircle,
     category: "Clarification",
+    module: 'core',
     followUpFor: 'blood_test_3_years',
     options: [
       { label: 'Yes, I have had blood tests before', value: 'yes', riskWeight: 0 },
@@ -781,6 +782,7 @@ const followUpQuestions: Question[] = [
     type: 'choice',
     icon: HelpCircle,
     category: "Clarification",
+    module: 'core',
     followUpFor: 'prediabetes',
     options: [
       { label: 'Yes, I was told about elevated blood sugar', value: 'yes', riskWeight: 2 },
@@ -794,6 +796,7 @@ const followUpQuestions: Question[] = [
     type: 'choice',
     icon: HelpCircle,
     category: "Clarification",
+    module: 'core',
     followUpFor: 'diabetes',
     options: [
       { label: 'Yes, I have diabetes', value: 'yes', riskWeight: 3 },
@@ -807,6 +810,7 @@ const followUpQuestions: Question[] = [
     type: 'choice',
     icon: HelpCircle,
     category: "Clarification",
+    module: 'core',
     followUpFor: 'daily_aspirin',
     options: [
       { label: 'Yes, I was advised to take aspirin', value: 'yes', riskWeight: 1 },
@@ -1062,7 +1066,43 @@ export default function Onboarding() {
   const [numberInput, setNumberInput] = useState('');
   const [timeInput, setTimeInput] = useState('');
   const [inputError, setInputError] = useState('');
+  const [liveScore, setLiveScore] = useState<{
+    probability: number;
+    riskLevel: string;
+    answeredCount: number;
+    isLoading: boolean;
+  } | null>(null);
   const userId = getUserId();
+  
+  const fetchLiveScore = async (currentAnswers: QuestionnaireAnswer[]) => {
+    if (currentAnswers.length < 3) return;
+    
+    try {
+      setLiveScore(prev => prev ? { ...prev, isLoading: true } : { probability: 0, riskLevel: 'Unknown', answeredCount: 0, isLoading: true });
+      
+      const features = buildFeatureJson(currentAnswers);
+      if (features.length === 0) return;
+      
+      const response = await fetch('/api/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ features }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setLiveScore({
+          probability: data.diabetes_probability,
+          riskLevel: data.risk_level,
+          answeredCount: currentAnswers.length,
+          isLoading: false,
+        });
+      }
+    } catch (error) {
+      console.log('Live prediction not available yet');
+      setLiveScore(prev => prev ? { ...prev, isLoading: false } : null);
+    }
+  };
 
   const savePreferencesMutation = useMutation({
     mutationFn: async ({ consentAccepted, newsletterSubscribed }: { consentAccepted: boolean; newsletterSubscribed: boolean }) => {
@@ -1222,6 +1262,8 @@ export default function Onboarding() {
     setTimeInput('');
     setInputError('');
     setWantToSkip(false);
+    
+    fetchLiveScore(updatedAnswers);
 
     const updatedQuestions = getQuestionsWithFollowUps(updatedAnswers);
     
@@ -1265,6 +1307,8 @@ export default function Onboarding() {
     setNumberInput('');
     setInputError('');
     setWantToSkip(false);
+    
+    fetchLiveScore(updatedAnswers);
 
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
@@ -1295,6 +1339,8 @@ export default function Onboarding() {
     setTimeInput('');
     setInputError('');
     setWantToSkip(false);
+    
+    fetchLiveScore(updatedAnswers);
 
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
@@ -1728,6 +1774,15 @@ export default function Onboarding() {
     const question = questions[currentQuestion];
     const QuestionIcon = question.icon;
     const isFollowUp = question.followUpFor !== undefined;
+    const coreQuestions = questions.filter(q => q.module === 'core');
+    const isInCoreSection = currentQuestion < CORE_QUESTION_COUNT;
+    
+    const getLiveScoreColor = (probability: number) => {
+      if (probability >= 0.7) return 'from-red-500 to-red-600';
+      if (probability >= 0.5) return 'from-orange-500 to-orange-600';
+      if (probability >= 0.3) return 'from-yellow-500 to-yellow-600';
+      return 'from-green-500 to-green-600';
+    };
     
     return (
       <motion.div
@@ -1735,12 +1790,42 @@ export default function Onboarding() {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="space-y-6"
+        className="space-y-6 relative"
       >
+        {liveScore && liveScore.answeredCount >= 3 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="absolute -top-2 right-0 z-10"
+          >
+            <Card className={`px-3 py-2 bg-gradient-to-r ${getLiveScoreColor(liveScore.probability)} text-white shadow-lg border-0`}>
+              <div className="flex items-center gap-2">
+                <Activity className={`w-4 h-4 ${liveScore.isLoading ? 'animate-pulse' : ''}`} />
+                <div className="text-right">
+                  <div className="text-xs opacity-90">Live Risk</div>
+                  <div className="text-lg font-black">
+                    {liveScore.isLoading ? '...' : `${Math.round(liveScore.probability * 100)}%`}
+                  </div>
+                </div>
+              </div>
+              <div className="text-[10px] opacity-75 text-right mt-0.5">
+                {liveScore.answeredCount} answers
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
         <div className="flex items-center justify-between">
-          <Badge variant={isFollowUp ? "default" : "secondary"} className="font-bold">
-            {isFollowUp ? "Follow-up" : question.category}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant={isFollowUp ? "default" : "secondary"} className="font-bold">
+              {isFollowUp ? "Follow-up" : question.category}
+            </Badge>
+            {isInCoreSection && (
+              <Badge variant="outline" className="text-xs border-primary/50 text-primary">
+                Core
+              </Badge>
+            )}
+          </div>
           <span className="text-sm text-muted-foreground" data-testid="text-question-progress">
             {currentQuestion + 1} of {questions.length}
           </span>
