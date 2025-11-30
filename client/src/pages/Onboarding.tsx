@@ -76,9 +76,10 @@ const privacyPoints = [
 
 interface Question {
   id: string;
+  apiId?: string;
   text: string;
   type: 'choice' | 'number' | 'time';
-  options?: { label: string; value: string; riskWeight: number }[];
+  options?: { label: string; value: string; apiValue?: number; riskWeight: number }[];
   placeholder?: string;
   unit?: string;
   min?: number;
@@ -89,8 +90,10 @@ interface Question {
 }
 
 const baseQuestions: Question[] = [
+  // Demographics
   {
     id: 'age',
+    apiId: 'RIDAGEYR',
     text: "What is your age?",
     type: 'number',
     icon: User,
@@ -101,7 +104,65 @@ const baseQuestions: Question[] = [
     max: 120,
   },
   {
+    id: 'ethnicity',
+    apiId: 'RIDRETH3',
+    text: "What is your race or ethnic background?",
+    type: 'choice',
+    icon: User,
+    category: "Demographics",
+    options: [
+      { label: 'Mexican American', value: 'mexican_american', apiValue: 0, riskWeight: 0 },
+      { label: 'Other Hispanic', value: 'other_hispanic', apiValue: 1, riskWeight: 0 },
+      { label: 'Non-Hispanic White', value: 'white', apiValue: 2, riskWeight: 0 },
+      { label: 'Non-Hispanic Black', value: 'black', apiValue: 3, riskWeight: 0 },
+      { label: 'Non-Hispanic Asian', value: 'asian', apiValue: 4, riskWeight: 0 },
+      { label: 'Other or Multi-Racial', value: 'other', apiValue: 5, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'education',
+    apiId: 'DMDEDUC2',
+    text: "What is your highest level of education?",
+    type: 'choice',
+    icon: GraduationCap,
+    category: "Demographics",
+    options: [
+      { label: 'Less than 9th grade', value: 'less_9th', apiValue: 0, riskWeight: 2 },
+      { label: '9-11th grade (no diploma)', value: '9_11th', apiValue: 1, riskWeight: 2 },
+      { label: 'High school graduate / GED', value: 'hs_grad', apiValue: 2, riskWeight: 1 },
+      { label: 'Some college or AA degree', value: 'some_college', apiValue: 3, riskWeight: 1 },
+      { label: 'College graduate or above', value: 'college_grad', apiValue: 4, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'marital_status',
+    apiId: 'DMDMARTZ',
+    text: "What is your marital status?",
+    type: 'choice',
+    icon: User,
+    category: "Demographics",
+    options: [
+      { label: 'Married or living with partner', value: 'married', apiValue: 0, riskWeight: 0 },
+      { label: 'Widowed, divorced, or separated', value: 'separated', apiValue: 1, riskWeight: 1 },
+      { label: 'Never married', value: 'never_married', apiValue: 2, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'household_size',
+    apiId: 'DMDHHSIZ',
+    text: "How many people live in your household (including yourself)?",
+    type: 'number',
+    icon: Home,
+    category: "Demographics",
+    placeholder: "Number of people",
+    min: 1,
+    max: 20,
+  },
+
+  // Body Measurements (API expects inches/pounds)
+  {
     id: 'height',
+    apiId: 'WHD010',
     text: "What is your current height?",
     type: 'number',
     icon: Ruler,
@@ -113,6 +174,7 @@ const baseQuestions: Question[] = [
   },
   {
     id: 'weight_current',
+    apiId: 'WHD020',
     text: "What is your current weight?",
     type: 'number',
     icon: Scale,
@@ -124,6 +186,7 @@ const baseQuestions: Question[] = [
   },
   {
     id: 'weight_year_ago',
+    apiId: 'WHD050',
     text: "What was your weight 1 year ago?",
     type: 'number',
     icon: Scale,
@@ -133,366 +196,515 @@ const baseQuestions: Question[] = [
     min: 30,
     max: 300,
   },
+
+  // Medical History
   {
     id: 'high_blood_pressure',
+    apiId: 'BPQ020',
     text: "Have you ever been told you have high blood pressure?",
     type: 'choice',
     icon: Heart,
     category: "Medical History",
     options: [
-      { label: 'Yes', value: 'yes', riskWeight: 2 },
-      { label: 'No', value: 'no', riskWeight: 0 },
-      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 2 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },
   {
-    id: 'blood_test_3_years',
-    text: "Have you had your blood tested in the last 3 years?",
+    id: 'high_cholesterol',
+    apiId: 'BPQ080',
+    text: "Has a doctor told you that you have high cholesterol?",
     type: 'choice',
-    icon: Stethoscope,
+    icon: Heart,
     category: "Medical History",
     options: [
-      { label: 'Yes', value: 'yes', riskWeight: 0 },
-      { label: 'No', value: 'no', riskWeight: 2 },
-      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 2 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },
   {
     id: 'prediabetes',
+    apiId: 'DIQ160',
     text: "Have you ever been told you have prediabetes?",
     type: 'choice',
     icon: Activity,
     category: "Medical History",
     options: [
-      { label: 'Yes', value: 'yes', riskWeight: 2 },
-      { label: 'No', value: 'no', riskWeight: 0 },
-      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 2 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },
   {
-    id: 'diabetes',
-    text: "Have you ever been told you have diabetes?",
+    id: 'blood_test_3_years',
+    apiId: 'DIQ180',
+    text: "Have you had your blood tested in the past 3 years?",
     type: 'choice',
-    icon: Activity,
+    icon: Stethoscope,
     category: "Medical History",
     options: [
-      { label: 'Yes', value: 'yes', riskWeight: 3 },
-      { label: 'No', value: 'no', riskWeight: 0 },
-      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
-    ],
-  },
-  {
-    id: 'high_cholesterol',
-    text: "Have you been told you have high cholesterol?",
-    type: 'choice',
-    icon: Heart,
-    category: "Medical History",
-    options: [
-      { label: 'Yes', value: 'yes', riskWeight: 2 },
-      { label: 'No', value: 'no', riskWeight: 0 },
-      { label: 'Not sure', value: 'unsure', riskWeight: 1 },
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 0 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 2 },
     ],
   },
   {
     id: 'arthritis',
+    apiId: 'MCQ160A',
     text: "Has a doctor ever said you have arthritis?",
     type: 'choice',
     icon: Activity,
     category: "Medical History",
     options: [
-      { label: 'Yes', value: 'yes', riskWeight: 1 },
-      { label: 'No', value: 'no', riskWeight: 0 },
-      { label: 'Not sure', value: 'unsure', riskWeight: 0 },
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 1 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },
   {
+    id: 'heart_failure',
+    apiId: 'MCQ160B',
+    text: "Have you ever been told you had congestive heart failure?",
+    type: 'choice',
+    icon: Heart,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 3 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'coronary_disease',
+    apiId: 'MCQ160C',
+    text: "Have you ever been told you had coronary heart disease?",
+    type: 'choice',
+    icon: Heart,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 3 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'heart_attack',
+    apiId: 'MCQ160E',
+    text: "Have you ever been told you had a heart attack?",
+    type: 'choice',
+    icon: Heart,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 3 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'kidney_problems',
+    apiId: 'KIQ022',
+    text: "Have you ever been told you have weak or failing kidneys?",
+    type: 'choice',
+    icon: Activity,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 2 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'gallbladder_surgery',
+    apiId: 'MCQ560',
+    text: "Have you ever had gallbladder surgery?",
+    type: 'choice',
+    icon: Stethoscope,
+    category: "Medical History",
+    options: [
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 1 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
+    ],
+  },
+
+  // Recent Health & Balance
+  {
+    id: 'unsteadiness',
+    apiId: 'BAQ321C',
+    text: "In the past 12 months, have you had problems with feeling unsteady?",
+    type: 'choice',
+    icon: AlertTriangle,
+    category: "Recent Health",
+    options: [
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 2 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'falls',
+    apiId: 'BAQ530',
+    text: "In the past 5 years, how many times have you fallen?",
+    type: 'choice',
+    icon: AlertTriangle,
+    category: "Recent Health",
+    options: [
+      { label: 'Never', value: 'never', apiValue: 0, riskWeight: 0 },
+      { label: '1 or 2 times', value: '1_2', apiValue: 1, riskWeight: 1 },
+      { label: '3 to 4 times', value: '3_4', apiValue: 2, riskWeight: 1 },
+      { label: 'About every year', value: 'yearly', apiValue: 3, riskWeight: 2 },
+      { label: 'About every month', value: 'monthly', apiValue: 4, riskWeight: 2 },
+      { label: 'About every week', value: 'weekly', apiValue: 5, riskWeight: 3 },
+      { label: 'Daily or constantly', value: 'daily', apiValue: 6, riskWeight: 3 },
+    ],
+  },
+  {
+    id: 'sleep_trouble',
+    apiId: 'DPQ030',
+    text: "Over the last 2 weeks, how often have you had trouble sleeping or slept too much?",
+    type: 'choice',
+    icon: Moon,
+    category: "Recent Health",
+    options: [
+      { label: 'Not at all', value: 'not_at_all', apiValue: 0, riskWeight: 0 },
+      { label: 'Several days', value: 'several_days', apiValue: 1, riskWeight: 1 },
+      { label: 'More than half the days', value: 'more_than_half', apiValue: 2, riskWeight: 2 },
+      { label: 'Nearly every day', value: 'nearly_every_day', apiValue: 3, riskWeight: 3 },
+    ],
+  },
+
+  // Medications
+  {
     id: 'prescription_medicine',
+    apiId: 'RXQ033',
     text: "Have you taken any prescription medicine in the past month?",
     type: 'choice',
     icon: Pill,
     category: "Medications",
     options: [
-      { label: 'Yes', value: 'yes', riskWeight: 1 },
-      { label: 'No', value: 'no', riskWeight: 0 },
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 1 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },
   {
     id: 'daily_aspirin',
-    text: "Have you been advised to take daily aspirin?",
+    apiId: 'RXQ510',
+    text: "Has a doctor told you to take daily low-dose aspirin?",
     type: 'choice',
     icon: Pill,
     category: "Medications",
     options: [
-      { label: 'Yes', value: 'yes', riskWeight: 1 },
-      { label: 'No', value: 'no', riskWeight: 0 },
-      { label: 'Not sure', value: 'unsure', riskWeight: 0 },
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 1 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },
+
+  // Health Ratings
   {
     id: 'general_health',
-    text: "How would you rate your general health?",
+    apiId: 'HUQ010',
+    text: "How would you rate your general health condition?",
     type: 'choice',
     icon: Heart,
     category: "Health Ratings",
     options: [
-      { label: 'Excellent', value: 'excellent', riskWeight: 0 },
-      { label: 'Very good', value: 'very_good', riskWeight: 0 },
-      { label: 'Good', value: 'good', riskWeight: 1 },
-      { label: 'Fair', value: 'fair', riskWeight: 2 },
-      { label: 'Poor', value: 'poor', riskWeight: 3 },
-    ],
-  },
-  {
-    id: 'dental_health',
-    text: "How would you rate your dental/gum health?",
-    type: 'choice',
-    icon: Smile,
-    category: "Health Ratings",
-    options: [
-      { label: 'Excellent', value: 'excellent', riskWeight: 0 },
-      { label: 'Very good', value: 'very_good', riskWeight: 0 },
-      { label: 'Good', value: 'good', riskWeight: 1 },
-      { label: 'Fair', value: 'fair', riskWeight: 2 },
-      { label: 'Poor', value: 'poor', riskWeight: 3 },
+      { label: 'Excellent', value: 'excellent', apiValue: 0, riskWeight: 0 },
+      { label: 'Very good', value: 'very_good', apiValue: 1, riskWeight: 0 },
+      { label: 'Good', value: 'good', apiValue: 2, riskWeight: 1 },
+      { label: 'Fair', value: 'fair', apiValue: 3, riskWeight: 2 },
+      { label: 'Poor', value: 'poor', apiValue: 4, riskWeight: 3 },
     ],
   },
   {
     id: 'hearing_health',
-    text: "How would you rate your hearing health?",
+    apiId: 'AUQ054',
+    text: "What is the general condition of your hearing?",
     type: 'choice',
     icon: Ear,
     category: "Health Ratings",
     options: [
-      { label: 'Excellent', value: 'excellent', riskWeight: 0 },
-      { label: 'Very good', value: 'very_good', riskWeight: 0 },
-      { label: 'Good', value: 'good', riskWeight: 1 },
-      { label: 'Fair', value: 'fair', riskWeight: 2 },
-      { label: 'Poor', value: 'poor', riskWeight: 3 },
+      { label: 'Excellent', value: 'excellent', apiValue: 0, riskWeight: 0 },
+      { label: 'Good', value: 'good', apiValue: 1, riskWeight: 0 },
+      { label: 'A little trouble', value: 'little_trouble', apiValue: 2, riskWeight: 1 },
+      { label: 'Moderate hearing trouble', value: 'moderate', apiValue: 3, riskWeight: 2 },
+      { label: 'A lot of trouble', value: 'lot_trouble', apiValue: 4, riskWeight: 2 },
+      { label: 'Deaf', value: 'deaf', apiValue: 5, riskWeight: 3 },
     ],
   },
   {
-    id: 'moderate_activity',
-    text: "How many hours per week do you do moderate physical activity?",
+    id: 'dental_health',
+    apiId: 'OHQ845',
+    text: "How would you rate the health of your teeth and gums?",
     type: 'choice',
-    icon: Activity,
-    category: "Physical Activity",
+    icon: Smile,
+    category: "Health Ratings",
     options: [
-      { label: 'None', value: '0', riskWeight: 3 },
-      { label: '1-2 hours', value: '1-2', riskWeight: 2 },
-      { label: '3-5 hours', value: '3-5', riskWeight: 1 },
-      { label: '6+ hours', value: '6+', riskWeight: 0 },
+      { label: 'Excellent', value: 'excellent', apiValue: 0, riskWeight: 0 },
+      { label: 'Very good', value: 'very_good', apiValue: 1, riskWeight: 0 },
+      { label: 'Good', value: 'good', apiValue: 2, riskWeight: 1 },
+      { label: 'Fair', value: 'fair', apiValue: 3, riskWeight: 2 },
+      { label: 'Poor', value: 'poor', apiValue: 4, riskWeight: 3 },
     ],
   },
+
+  // Oral Health Details
   {
-    id: 'vigorous_activity',
-    text: "How many hours per week do you do vigorous physical activity?",
-    type: 'choice',
-    icon: Flame,
-    category: "Physical Activity",
-    options: [
-      { label: 'None', value: '0', riskWeight: 2 },
-      { label: '1-2 hours', value: '1-2', riskWeight: 1 },
-      { label: '3-5 hours', value: '3-5', riskWeight: 0 },
-      { label: '6+ hours', value: '6+', riskWeight: 0 },
-    ],
-  },
-  {
-    id: 'sedentary_minutes',
-    text: "How many minutes per day are you sedentary (sitting/lying)?",
-    type: 'choice',
-    icon: Activity,
-    category: "Physical Activity",
-    options: [
-      { label: 'Less than 2 hours', value: 'less_2h', riskWeight: 0 },
-      { label: '2-4 hours', value: '2-4h', riskWeight: 1 },
-      { label: '4-8 hours', value: '4-8h', riskWeight: 2 },
-      { label: 'More than 8 hours', value: 'more_8h', riskWeight: 3 },
-    ],
-  },
-  {
-    id: 'job_type',
-    text: "What type of work did you do last week?",
-    type: 'choice',
-    icon: Briefcase,
-    category: "Work",
-    options: [
-      { label: 'Mostly sitting', value: 'sitting', riskWeight: 2 },
-      { label: 'Standing or walking', value: 'standing', riskWeight: 1 },
-      { label: 'Physical labor', value: 'physical', riskWeight: 0 },
-      { label: 'Not working', value: 'not_working', riskWeight: 1 },
-    ],
-  },
-  {
-    id: 'weekday_sleep',
-    text: "How many hours do you typically sleep on weekdays?",
-    type: 'choice',
-    icon: Moon,
-    category: "Sleep",
-    options: [
-      { label: 'Less than 5 hours', value: 'less_5', riskWeight: 3 },
-      { label: '5-6 hours', value: '5-6', riskWeight: 2 },
-      { label: '7-8 hours', value: '7-8', riskWeight: 0 },
-      { label: 'More than 8 hours', value: 'more_8', riskWeight: 1 },
-    ],
-  },
-  {
-    id: 'weekend_sleep',
-    text: "How many hours do you typically sleep on weekends?",
-    type: 'choice',
-    icon: Moon,
-    category: "Sleep",
-    options: [
-      { label: 'Less than 5 hours', value: 'less_5', riskWeight: 3 },
-      { label: '5-6 hours', value: '5-6', riskWeight: 2 },
-      { label: '7-8 hours', value: '7-8', riskWeight: 0 },
-      { label: 'More than 8 hours', value: 'more_8', riskWeight: 1 },
-    ],
-  },
-  {
-    id: 'wake_time_weekday',
-    text: "What time do you usually wake up on weekdays?",
-    type: 'time',
-    icon: Clock,
-    category: "Sleep",
-    placeholder: "e.g., 6:30 AM",
-  },
-  {
-    id: 'sleep_time_weekday',
-    text: "What time do you usually go to sleep on weekdays?",
-    type: 'time',
-    icon: Clock,
-    category: "Sleep",
-    placeholder: "e.g., 10:30 PM",
-  },
-  {
-    id: 'wake_time_weekend',
-    text: "What time do you usually wake up on weekends?",
-    type: 'time',
-    icon: Clock,
-    category: "Sleep",
-    placeholder: "e.g., 8:00 AM",
-  },
-  {
-    id: 'sleep_time_weekend',
-    text: "What time do you usually go to sleep on weekends?",
-    type: 'time',
-    icon: Clock,
-    category: "Sleep",
-    placeholder: "e.g., 11:30 PM",
-  },
-  {
-    id: 'alcohol_frequency',
-    text: "How often did you drink alcohol in the past 12 months?",
-    type: 'choice',
-    icon: Wine,
-    category: "Lifestyle",
-    options: [
-      { label: 'Never', value: 'never', riskWeight: 0 },
-      { label: 'Monthly or less', value: 'monthly', riskWeight: 0 },
-      { label: '2-4 times a month', value: '2-4_month', riskWeight: 1 },
-      { label: '2-3 times a week', value: '2-3_week', riskWeight: 2 },
-      { label: '4+ times a week', value: '4+_week', riskWeight: 3 },
-    ],
-  },
-  {
-    id: 'video_consult',
-    text: "In the past 12 months, did you have a video consult with a doctor?",
-    type: 'choice',
-    icon: Video,
-    category: "Healthcare Access",
-    options: [
-      { label: 'Yes', value: 'yes', riskWeight: 0 },
-      { label: 'No', value: 'no', riskWeight: 0 },
-    ],
-  },
-  {
-    id: 'unsteadiness',
-    text: "In the past 12 months, have you had issues with unsteadiness or balance?",
-    type: 'choice',
-    icon: AlertTriangle,
-    category: "Recent Health",
-    options: [
-      { label: 'Yes', value: 'yes', riskWeight: 2 },
-      { label: 'No', value: 'no', riskWeight: 0 },
-    ],
-  },
-  {
-    id: 'mouth_eating_problems',
-    text: "In the past year, could you not eat because of mouth or teeth problems?",
+    id: 'mouth_aching',
+    apiId: 'OHQ620',
+    text: "In the past year, how often have you had aching anywhere in your mouth?",
     type: 'choice',
     icon: Smile,
     category: "Oral Health",
     options: [
-      { label: 'Yes, often', value: 'often', riskWeight: 3 },
-      { label: 'Yes, sometimes', value: 'sometimes', riskWeight: 2 },
-      { label: 'Rarely', value: 'rarely', riskWeight: 1 },
-      { label: 'Never', value: 'never', riskWeight: 0 },
+      { label: 'Very often', value: 'very_often', apiValue: 0, riskWeight: 3 },
+      { label: 'Fairly often', value: 'fairly_often', apiValue: 1, riskWeight: 2 },
+      { label: 'Occasionally', value: 'occasionally', apiValue: 2, riskWeight: 1 },
+      { label: 'Hardly ever', value: 'hardly_ever', apiValue: 3, riskWeight: 0 },
+      { label: 'Never', value: 'never', apiValue: 4, riskWeight: 0 },
     ],
   },
   {
     id: 'mouth_feel_bad',
-    text: "How often do you feel bad because of your mouth condition?",
+    apiId: 'OHQ630',
+    text: "How often have you felt bad or embarrassed because of your mouth?",
     type: 'choice',
     icon: Smile,
     category: "Oral Health",
     options: [
-      { label: 'Very often', value: 'very_often', riskWeight: 3 },
-      { label: 'Often', value: 'often', riskWeight: 2 },
-      { label: 'Sometimes', value: 'sometimes', riskWeight: 1 },
-      { label: 'Rarely or never', value: 'rarely', riskWeight: 0 },
+      { label: 'Very often', value: 'very_often', apiValue: 0, riskWeight: 3 },
+      { label: 'Fairly often', value: 'fairly_often', apiValue: 1, riskWeight: 2 },
+      { label: 'Occasionally', value: 'occasionally', apiValue: 2, riskWeight: 1 },
+      { label: 'Hardly ever', value: 'hardly_ever', apiValue: 3, riskWeight: 0 },
+      { label: 'Never', value: 'never', apiValue: 4, riskWeight: 0 },
     ],
   },
   {
-    id: 'education',
-    text: "What is your highest level of education?",
+    id: 'mouth_avoid_food',
+    apiId: 'OHQ660',
+    text: "In the past year, have you avoided particular foods because of problems with your mouth?",
     type: 'choice',
-    icon: GraduationCap,
-    category: "Background",
+    icon: Smile,
+    category: "Oral Health",
     options: [
-      { label: 'Less than high school', value: 'less_hs', riskWeight: 2 },
-      { label: 'High school / GED', value: 'hs', riskWeight: 1 },
-      { label: 'Some college', value: 'some_college', riskWeight: 1 },
-      { label: 'College degree', value: 'college', riskWeight: 0 },
-      { label: 'Graduate degree', value: 'graduate', riskWeight: 0 },
+      { label: 'Very often', value: 'very_often', apiValue: 0, riskWeight: 3 },
+      { label: 'Fairly often', value: 'fairly_often', apiValue: 1, riskWeight: 2 },
+      { label: 'Occasionally', value: 'occasionally', apiValue: 2, riskWeight: 1 },
+      { label: 'Hardly ever', value: 'hardly_ever', apiValue: 3, riskWeight: 0 },
+      { label: 'Never', value: 'never', apiValue: 4, riskWeight: 0 },
     ],
   },
+  {
+    id: 'mouth_eating_problems',
+    apiId: 'OHQ670',
+    text: "In the past year, were you unable to eat because of problems with your mouth?",
+    type: 'choice',
+    icon: Smile,
+    category: "Oral Health",
+    options: [
+      { label: 'Very often', value: 'very_often', apiValue: 0, riskWeight: 3 },
+      { label: 'Fairly often', value: 'fairly_often', apiValue: 1, riskWeight: 2 },
+      { label: 'Occasionally', value: 'occasionally', apiValue: 2, riskWeight: 1 },
+      { label: 'Hardly ever', value: 'hardly_ever', apiValue: 3, riskWeight: 0 },
+      { label: 'Never', value: 'never', apiValue: 4, riskWeight: 0 },
+    ],
+  },
+
+  // Physical Activity
+  {
+    id: 'moderate_activity',
+    apiId: 'PAD790',
+    text: "In a typical week, how many hours do you spend doing moderate leisure-time physical activity?",
+    type: 'number',
+    icon: Activity,
+    category: "Physical Activity",
+    placeholder: "Hours per week",
+    unit: "hours",
+    min: 0,
+    max: 40,
+  },
+  {
+    id: 'sedentary_hours',
+    apiId: 'PAD680',
+    text: "On a typical day, how many hours do you sit or recline (not including sleep)?",
+    type: 'number',
+    icon: Activity,
+    category: "Physical Activity",
+    placeholder: "Hours per day",
+    unit: "hours",
+    min: 0,
+    max: 24,
+  },
+
+  // Work
+  {
+    id: 'job_type',
+    apiId: 'OCD150',
+    text: "What type of work were you doing last week?",
+    type: 'choice',
+    icon: Briefcase,
+    category: "Work",
+    options: [
+      { label: 'Working at a job or business', value: 'working', apiValue: 0, riskWeight: 0 },
+      { label: 'With a job but not at work', value: 'with_job_not_working', apiValue: 1, riskWeight: 0 },
+      { label: 'Looking for work', value: 'looking', apiValue: 2, riskWeight: 1 },
+      { label: 'Not working at a job or business', value: 'not_working', apiValue: 3, riskWeight: 1 },
+    ],
+  },
+
+  // Sleep
+  {
+    id: 'weekday_sleep',
+    apiId: 'SLD012',
+    text: "How many hours of sleep do you usually get on weekdays or workdays?",
+    type: 'number',
+    icon: Moon,
+    category: "Sleep",
+    placeholder: "Hours of sleep",
+    unit: "hours",
+    min: 1,
+    max: 16,
+  },
+  {
+    id: 'weekend_sleep',
+    apiId: 'SLD013',
+    text: "How many hours of sleep do you usually get on weekends?",
+    type: 'number',
+    icon: Moon,
+    category: "Sleep",
+    placeholder: "Hours of sleep",
+    unit: "hours",
+    min: 1,
+    max: 16,
+  },
+  {
+    id: 'sleep_time_weekday',
+    apiId: 'SLQ300',
+    text: "What time do you usually go to sleep on weekdays?",
+    type: 'time',
+    icon: Clock,
+    category: "Sleep",
+    placeholder: "e.g., 22:30",
+  },
+  {
+    id: 'wake_time_weekday',
+    apiId: 'SLQ310',
+    text: "What time do you usually wake up on weekdays?",
+    type: 'time',
+    icon: Clock,
+    category: "Sleep",
+    placeholder: "e.g., 06:45",
+  },
+  {
+    id: 'sleep_time_weekend',
+    apiId: 'SLQ320',
+    text: "What time do you usually go to sleep on weekends?",
+    type: 'time',
+    icon: Clock,
+    category: "Sleep",
+    placeholder: "e.g., 23:00",
+  },
+  {
+    id: 'wake_time_weekend',
+    apiId: 'SLQ330',
+    text: "What time do you usually wake up on weekends?",
+    type: 'time',
+    icon: Clock,
+    category: "Sleep",
+    placeholder: "e.g., 08:00",
+  },
+
+  // Lifestyle
+  {
+    id: 'alcohol_frequency',
+    apiId: 'ALQ121',
+    text: "In the past 12 months, how often did you drink any type of alcoholic beverage?",
+    type: 'choice',
+    icon: Wine,
+    category: "Lifestyle",
+    options: [
+      { label: 'Never in the last year', value: 'never', apiValue: 0, riskWeight: 0 },
+      { label: 'Every day', value: 'every_day', apiValue: 1, riskWeight: 3 },
+      { label: 'Nearly every day', value: 'nearly_every_day', apiValue: 2, riskWeight: 3 },
+      { label: '3 to 4 times a week', value: '3_4_week', apiValue: 3, riskWeight: 2 },
+      { label: '2 times a week', value: '2_week', apiValue: 4, riskWeight: 2 },
+      { label: 'Once a week', value: '1_week', apiValue: 5, riskWeight: 1 },
+      { label: '2 to 3 times a month', value: '2_3_month', apiValue: 6, riskWeight: 1 },
+      { label: 'Once a month', value: '1_month', apiValue: 7, riskWeight: 0 },
+      { label: '7 to 11 times in the last year', value: '7_11_year', apiValue: 8, riskWeight: 0 },
+      { label: '3 to 6 times in the last year', value: '3_6_year', apiValue: 9, riskWeight: 0 },
+      { label: '1 to 2 times in the last year', value: '1_2_year', apiValue: 10, riskWeight: 0 },
+    ],
+  },
+
+  // Healthcare Access
+  {
+    id: 'routine_healthcare',
+    apiId: 'HUQ030',
+    text: "Is there a place you usually go to when you are sick or need advice about your health?",
+    type: 'choice',
+    icon: Stethoscope,
+    category: "Healthcare Access",
+    options: [
+      { label: 'Yes, there is a place', value: 'yes', apiValue: 0, riskWeight: 0 },
+      { label: 'There is no place', value: 'no', apiValue: 1, riskWeight: 1 },
+      { label: 'There is more than one place', value: 'multiple', apiValue: 2, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'video_consult',
+    apiId: 'HUQ055',
+    text: "In the past 12 months, have you had a video conference with a doctor or health professional?",
+    type: 'choice',
+    icon: Video,
+    category: "Healthcare Access",
+    options: [
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 0 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
+    ],
+  },
+
+  // Financial / Living Situation
   {
     id: 'income_poverty_ratio',
+    apiId: 'INDFMPIR',
     text: "How would you describe your household income relative to your needs?",
     type: 'choice',
     icon: DollarSign,
-    category: "Background",
+    category: "Financial",
     options: [
-      { label: 'Struggling to meet basic needs', value: 'struggling', riskWeight: 3 },
-      { label: 'Just getting by', value: 'getting_by', riskWeight: 2 },
-      { label: 'Comfortable', value: 'comfortable', riskWeight: 1 },
-      { label: 'Well off', value: 'well_off', riskWeight: 0 },
-      { label: 'Prefer not to say', value: 'prefer_not', riskWeight: 1 },
+      { label: 'Struggling to meet basic needs', value: 'struggling', apiValue: 0.5, riskWeight: 3 },
+      { label: 'Just getting by', value: 'getting_by', apiValue: 1.5, riskWeight: 2 },
+      { label: 'Comfortable', value: 'comfortable', apiValue: 3.0, riskWeight: 1 },
+      { label: 'Well off', value: 'well_off', apiValue: 5.0, riskWeight: 0 },
     ],
   },
   {
-    id: 'poverty_index',
+    id: 'monthly_poverty_index',
+    apiId: 'INDFMMPI',
     text: "In a typical month, how often does your income cover all expenses?",
     type: 'choice',
     icon: TrendingUp,
-    category: "Background",
+    category: "Financial",
     options: [
-      { label: 'Never - always short', value: 'never', riskWeight: 3 },
-      { label: 'Sometimes - often short', value: 'sometimes', riskWeight: 2 },
-      { label: 'Usually - occasional shortfall', value: 'usually', riskWeight: 1 },
-      { label: 'Always - comfortable margin', value: 'always', riskWeight: 0 },
-      { label: 'Prefer not to say', value: 'prefer_not', riskWeight: 1 },
+      { label: 'Never - always short', value: 'never', apiValue: 0.5, riskWeight: 3 },
+      { label: 'Sometimes - often short', value: 'sometimes', apiValue: 1.0, riskWeight: 2 },
+      { label: 'Usually - occasional shortfall', value: 'usually', apiValue: 2.0, riskWeight: 1 },
+      { label: 'Always - comfortable margin', value: 'always', apiValue: 4.0, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'savings',
+    apiId: 'INQ300',
+    text: "Does your family have savings of more than $20,000?",
+    type: 'choice',
+    icon: DollarSign,
+    category: "Financial",
+    options: [
+      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 0 },
+      { label: 'No', value: 'no', apiValue: 0, riskWeight: 1 },
     ],
   },
   {
     id: 'household_rooms',
-    text: "How many rooms are in your household (excluding bathrooms)?",
+    apiId: 'HOD051',
+    text: "How many rooms are in your home (excluding bathrooms)?",
     type: 'number',
     icon: Home,
     category: "Living Situation",
     placeholder: "Number of rooms",
     min: 1,
-    max: 20,
+    max: 12,
   },
 ];
 
@@ -607,6 +819,29 @@ function calculateNumericRiskWeight(questionId: string, value: number, allAnswer
       if (value <= 3) return 1;
       return 0;
     
+    case 'household_size':
+      return 0;
+    
+    case 'moderate_activity':
+      if (value >= 5) return 0;
+      if (value >= 2.5) return 1;
+      if (value >= 1) return 2;
+      return 3;
+    
+    case 'sedentary_hours':
+      if (value >= 10) return 3;
+      if (value >= 8) return 2;
+      if (value >= 6) return 1;
+      return 0;
+    
+    case 'weekday_sleep':
+    case 'weekend_sleep':
+      if (value < 5) return 3;
+      if (value < 6) return 2;
+      if (value > 9) return 1;
+      if (value >= 7 && value <= 9) return 0;
+      return 1;
+    
     default:
       return 0;
   }
@@ -664,6 +899,55 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   if (normalizedScore >= 60) return { score: normalizedScore, level: 'Good', color: 'text-chart-2' };
   if (normalizedScore >= 40) return { score: normalizedScore, level: 'Moderate', color: 'text-chart-3' };
   return { score: normalizedScore, level: 'Needs Attention', color: 'text-destructive' };
+}
+
+function convertTimeToDecimal(timeStr: string): number {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours + (minutes / 60);
+}
+
+function cmToInches(cm: number): number {
+  return cm / 2.54;
+}
+
+function kgToLbs(kg: number): number {
+  return kg * 2.20462;
+}
+
+export function buildFeatureJson(answers: QuestionnaireAnswer[]): Record<string, number> {
+  const features: Record<string, number> = {};
+  const allQuestions = [...baseQuestions, ...followUpQuestions];
+  
+  for (const answer of answers) {
+    const question = allQuestions.find(q => q.id === answer.questionId);
+    if (!question || !question.apiId) continue;
+    
+    if (question.type === 'choice' && question.options) {
+      const selectedOption = question.options.find(opt => opt.value === answer.answer);
+      if (selectedOption && selectedOption.apiValue !== undefined) {
+        features[question.apiId] = selectedOption.apiValue;
+      }
+    } else if (question.type === 'number' && typeof answer.answer === 'number') {
+      switch (question.apiId) {
+        case 'WHD010':
+          features[question.apiId] = cmToInches(answer.answer);
+          break;
+        case 'WHD020':
+        case 'WHD050':
+          features[question.apiId] = kgToLbs(answer.answer);
+          break;
+        case 'HOD051':
+          features[question.apiId] = Math.min(answer.answer - 1, 11);
+          break;
+        default:
+          features[question.apiId] = answer.answer;
+      }
+    } else if (question.type === 'time' && typeof answer.answer === 'string') {
+      features[question.apiId] = convertTimeToDecimal(answer.answer);
+    }
+  }
+  
+  return features;
 }
 
 function getQuestionsWithFollowUps(answers: QuestionnaireAnswer[]): Question[] {
