@@ -708,6 +708,7 @@ export default function Onboarding() {
 
   const savePreferencesMutation = useMutation({
     mutationFn: async ({ consentAccepted, newsletterSubscribed }: { consentAccepted: boolean; newsletterSubscribed: boolean }) => {
+      console.log('Saving preferences:', { userId, consentAccepted, newsletterSubscribed });
       return apiRequest('POST', '/api/preferences', {
         userId,
         consentAccepted,
@@ -715,10 +716,17 @@ export default function Onboarding() {
         newsletterSubscribed,
       });
     },
+    onSuccess: () => {
+      console.log('Preferences saved successfully');
+    },
+    onError: (error) => {
+      console.error('Failed to save preferences:', error);
+    },
   });
 
   const saveProfileMutation = useMutation({
     mutationFn: async (data: RegistrationData) => {
+      console.log('Saving profile:', { userId, ...data });
       return apiRequest('POST', '/api/profile', {
         userId,
         firstName: data.firstName,
@@ -727,7 +735,11 @@ export default function Onboarding() {
       });
     },
     onSuccess: () => {
+      console.log('Profile saved successfully');
       queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
+    },
+    onError: (error) => {
+      console.error('Failed to save profile:', error);
     },
   });
 
@@ -737,6 +749,7 @@ export default function Onboarding() {
       answersData.forEach(a => {
         answersRecord[a.questionId] = String(a.answer);
       });
+      console.log('Saving questionnaire:', { userId, category: 'health_risk_assessment', answersCount: Object.keys(answersRecord).length });
       return apiRequest('POST', '/api/questionnaires', {
         userId,
         category: 'health_risk_assessment',
@@ -744,24 +757,34 @@ export default function Onboarding() {
       });
     },
     onSuccess: () => {
+      console.log('Questionnaire saved successfully');
       queryClient.invalidateQueries({ queryKey: ['/api/questionnaires', userId] });
+    },
+    onError: (error) => {
+      console.error('Failed to save questionnaire:', error);
     },
   });
 
   const saveRiskScoreMutation = useMutation({
     mutationFn: async (scoreData: { overallScore: number; diabetesRisk: number; heartRisk: number; strokeRisk: number }) => {
+      console.log('Saving risk score:', { userId, ...scoreData });
       return apiRequest('POST', '/api/risk-scores', {
         userId,
         ...scoreData,
       });
     },
     onSuccess: () => {
+      console.log('Risk score saved successfully');
       queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', userId] });
+    },
+    onError: (error) => {
+      console.error('Failed to save risk score:', error);
     },
   });
 
   const initializeGamificationMutation = useMutation({
     mutationFn: async () => {
+      console.log('Initializing gamification:', { userId });
       return apiRequest('POST', '/api/gamification', {
         userId,
         xp: 100,
@@ -773,7 +796,11 @@ export default function Onboarding() {
       });
     },
     onSuccess: () => {
+      console.log('Gamification initialized successfully');
       queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+    },
+    onError: (error) => {
+      console.error('Failed to initialize gamification:', error);
     },
   });
 

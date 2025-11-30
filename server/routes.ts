@@ -130,10 +130,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/questionnaires/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
+      console.log("[API] GET /api/questionnaires/:userId - Fetching questionnaires for:", userId);
       const answers = await storage.getAllQuestionnaireAnswers(userId);
+      console.log("[API] Found", answers.length, "questionnaire records for user:", userId);
       res.json(answers);
     } catch (error) {
-      console.error("Error fetching questionnaires:", error);
+      console.error("[API] Error fetching questionnaires:", error);
       res.status(500).json({ error: "Failed to fetch questionnaire answers" });
     }
   });
@@ -141,21 +143,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/questionnaires/:userId/:category", async (req, res) => {
     try {
       const { userId, category } = req.params;
+      console.log("[API] GET /api/questionnaires/:userId/:category - Fetching for:", { userId, category });
       const answers = await storage.getQuestionnaireAnswers(userId, category);
       res.json(answers || null);
     } catch (error) {
-      console.error("Error fetching questionnaire:", error);
+      console.error("[API] Error fetching questionnaire:", error);
       res.status(500).json({ error: "Failed to fetch questionnaire answers" });
     }
   });
 
   app.post("/api/questionnaires", async (req, res) => {
     try {
+      console.log("[API] POST /api/questionnaires - Received body:", JSON.stringify(req.body));
       const validatedData = insertQuestionnaireSchema.parse(req.body);
+      console.log("[API] Validated questionnaire data:", JSON.stringify(validatedData));
       const saved = await storage.saveQuestionnaireAnswers(validatedData);
+      console.log("[API] Questionnaire saved successfully:", saved.id);
       res.json(saved);
     } catch (error) {
-      console.error("Error saving questionnaire:", error);
+      console.error("[API] Error saving questionnaire:", error);
       res.status(400).json({ error: "Invalid questionnaire data" });
     }
   });
@@ -167,21 +173,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/profile/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
+      console.log("[API] GET /api/profile/:userId - Fetching profile for:", userId);
       const profile = await storage.getUserProfile(userId);
+      console.log("[API] Profile found:", profile ? "yes" : "no");
       res.json(profile || null);
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("[API] Error fetching profile:", error);
       res.status(500).json({ error: "Failed to fetch user profile" });
     }
   });
 
   app.post("/api/profile", async (req, res) => {
     try {
+      console.log("[API] POST /api/profile - Received body:", JSON.stringify(req.body));
       const validatedData = insertUserProfileSchema.parse(req.body);
+      console.log("[API] Validated profile data for user:", validatedData.userId);
       const saved = await storage.saveUserProfile(validatedData);
+      console.log("[API] Profile saved successfully:", saved.id);
       res.json(saved);
     } catch (error) {
-      console.error("Error saving profile:", error);
+      console.error("[API] Error saving profile:", error);
       res.status(400).json({ error: "Invalid profile data" });
     }
   });
@@ -193,21 +204,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/preferences/:userId", async (req, res) => {
     try {
       const { userId } = req.params;
+      console.log("[API] GET /api/preferences/:userId - Fetching preferences for:", userId);
       const prefs = await storage.getUserPreferences(userId);
+      console.log("[API] Preferences found:", prefs ? "yes" : "no");
       res.json(prefs || null);
     } catch (error) {
-      console.error("Error fetching preferences:", error);
+      console.error("[API] Error fetching preferences:", error);
       res.status(500).json({ error: "Failed to fetch user preferences" });
     }
   });
 
   app.post("/api/preferences", async (req, res) => {
     try {
+      console.log("[API] POST /api/preferences - Received body:", JSON.stringify(req.body));
       const validatedData = insertUserPreferencesSchema.parse(req.body);
+      console.log("[API] Validated preferences for user:", validatedData.userId);
       const saved = await storage.saveUserPreferences(validatedData);
+      console.log("[API] Preferences saved successfully:", saved.id);
       res.json(saved);
     } catch (error) {
-      console.error("Error saving preferences:", error);
+      console.error("[API] Error saving preferences:", error);
       res.status(400).json({ error: "Invalid preferences data" });
     }
   });

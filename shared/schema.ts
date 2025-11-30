@@ -76,7 +76,18 @@ export const userPreferences = pgTable("user_preferences", {
 });
 
 export const insertUserPreferencesSchema = createInsertSchema(userPreferences, {
-  consentDate: z.union([z.date(), z.string().transform((s) => s ? new Date(s) : null), z.null()]).optional(),
+  consentDate: z.preprocess(
+    (val) => {
+      if (val === null || val === undefined) return null;
+      if (val instanceof Date) return val;
+      if (typeof val === 'string') {
+        const date = new Date(val);
+        return isNaN(date.getTime()) ? null : date;
+      }
+      return null;
+    },
+    z.date().nullable().optional()
+  ),
 }).omit({
   id: true,
   updatedAt: true,
