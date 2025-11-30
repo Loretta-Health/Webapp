@@ -1,4 +1,4 @@
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "postgresql-16"]
 [nix]
 channel = "stable-25_05"
 packages = ["unzip"]
@@ -14,6 +14,10 @@ build = ["sh", "-c", "npm run build "]
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 46803
+externalPort = 3000
 
 [workflows]
 runButton = "Project"
