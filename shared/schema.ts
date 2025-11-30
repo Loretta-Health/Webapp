@@ -41,6 +41,7 @@ export const userProfiles = pgTable("user_profiles", {
   userId: text("user_id").notNull().unique(),
   firstName: text("first_name"),
   lastName: text("last_name"),
+  email: text("email"),
   age: text("age"),
   height: text("height"),
   weight: text("weight"),

@@ -177,17 +177,29 @@ export class DatabaseStorage implements IStorage {
   async saveUserGamification(data: InsertUserGamification): Promise<UserGamification> {
     const existing = await this.getUserGamification(data.userId);
 
+    const updateData = {
+      userId: data.userId,
+      xp: data.xp,
+      level: data.level,
+      currentStreak: data.currentStreak,
+      longestStreak: data.longestStreak,
+      lastCheckIn: data.lastCheckIn,
+      lives: data.lives,
+      achievements: data.achievements as string[] | undefined,
+      updatedAt: new Date(),
+    };
+
     if (existing) {
       const [updated] = await db
         .update(userGamification)
-        .set({ ...data, updatedAt: new Date() })
+        .set(updateData)
         .where(eq(userGamification.id, existing.id))
         .returning();
       return updated;
     } else {
       const [created] = await db
         .insert(userGamification)
-        .values(data)
+        .values(updateData)
         .returning();
       return created;
     }
