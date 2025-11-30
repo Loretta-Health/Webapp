@@ -914,37 +914,50 @@ function kgToLbs(kg: number): number {
   return kg * 2.20462;
 }
 
-export function buildFeatureJson(answers: QuestionnaireAnswer[]): Record<string, number> {
-  const features: Record<string, number> = {};
+export interface FeatureItem {
+  ID: string;
+  Value: string;
+}
+
+export function buildFeatureJson(answers: QuestionnaireAnswer[]): FeatureItem[] {
+  const features: FeatureItem[] = [];
   const allQuestions = [...baseQuestions, ...followUpQuestions];
   
   for (const answer of answers) {
     const question = allQuestions.find(q => q.id === answer.questionId);
     if (!question || !question.apiId) continue;
     
+    let value: string;
+    
     if (question.type === 'choice' && question.options) {
       const selectedOption = question.options.find(opt => opt.value === answer.answer);
       if (selectedOption && selectedOption.apiValue !== undefined) {
-        features[question.apiId] = selectedOption.apiValue;
+        value = String(selectedOption.apiValue);
+      } else {
+        continue;
       }
     } else if (question.type === 'number' && typeof answer.answer === 'number') {
       switch (question.apiId) {
         case 'WHD010':
-          features[question.apiId] = cmToInches(answer.answer);
+          value = String(cmToInches(answer.answer));
           break;
         case 'WHD020':
         case 'WHD050':
-          features[question.apiId] = kgToLbs(answer.answer);
+          value = String(kgToLbs(answer.answer));
           break;
         case 'HOD051':
-          features[question.apiId] = Math.min(answer.answer - 1, 11);
+          value = String(Math.min(answer.answer - 1, 11));
           break;
         default:
-          features[question.apiId] = answer.answer;
+          value = String(answer.answer);
       }
     } else if (question.type === 'time' && typeof answer.answer === 'string') {
-      features[question.apiId] = convertTimeToDecimal(answer.answer);
+      value = String(convertTimeToDecimal(answer.answer));
+    } else {
+      continue;
     }
+    
+    features.push({ ID: question.apiId, Value: value });
   }
   
   return features;
@@ -984,7 +997,14 @@ export default function Onboarding() {
   const [answers, setAnswers] = useState<QuestionnaireAnswer[]>([]);
   const [skippedQuestions, setSkippedQuestions] = useState<string[]>([]);
   const [wantToSkip, setWantToSkip] = useState(false);
-  const [riskScore, setRiskScore] = useState<{ score: number; level: string; color: string } | null>(null);
+  const [riskScore, setRiskScore] = useState<{ 
+    diabetes_probability: number; 
+    risk_level: string;
+    score: number;
+    level: string;
+    color: string;
+  } | null>(null);
+  const [isPredicting, setIsPredicting] = useState(false);
   const [numberInput, setNumberInput] = useState('');
   const [timeInput, setTimeInput] = useState('');
   const [inputError, setInputError] = useState('');
@@ -1229,24 +1249,75 @@ export default function Onboarding() {
     }
   };
 
-  const finishQuestionnaire = (finalAnswers: QuestionnaireAnswer[]) => {
-    const score = calculateRiskScore(finalAnswers);
-    setRiskScore(score);
-    localStorage.setItem('loretta_risk_score', JSON.stringify(score));
+  const finishQuestionnaire = async (finalAnswers: QuestionnaireAnswer[]) => {
+    setIsPredicting(true);
     localStorage.setItem('loretta_questionnaire', JSON.stringify(finalAnswers));
-    
     saveQuestionnaireMutation.mutate(finalAnswers);
     
-    saveRiskScoreMutation.mutate({
-      overallScore: score.score,
-      diabetesRisk: Math.round(score.score * 0.8),
-      heartRisk: Math.round(score.score * 0.9),
-      strokeRisk: Math.round(score.score * 0.7),
-    });
-    
-    initializeGamificationMutation.mutate();
-    
-    setStep('riskScore');
+    try {
+      const features = buildFeatureJson(finalAnswers);
+      console.log('Calling prediction API with features:', features);
+      
+      const response = await apiRequest('POST', '/api/predict', { features });
+      const prediction = await response.json();
+      console.log('Prediction result:', prediction);
+      
+      const diabetesProbability = prediction.diabetes_probability || 0;
+      const riskLevel = prediction.risk_level || 'Unknown';
+      
+      const score = Math.round((1 - diabetesProbability) * 100);
+      let color = 'text-muted-foreground';
+      if (score >= 80) color = 'text-primary';
+      else if (score >= 60) color = 'text-chart-2';
+      else if (score >= 40) color = 'text-chart-3';
+      else color = 'text-destructive';
+      
+      const fullScore = {
+        diabetes_probability: diabetesProbability,
+        risk_level: riskLevel,
+        score,
+        level: riskLevel,
+        color,
+      };
+      
+      setRiskScore(fullScore);
+      localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+      
+      saveRiskScoreMutation.mutate({
+        overallScore: score,
+        diabetesRisk: Math.round(diabetesProbability * 100),
+        heartRisk: 0,
+        strokeRisk: 0,
+      });
+      
+      initializeGamificationMutation.mutate();
+      setStep('riskScore');
+    } catch (error) {
+      console.error('Failed to get prediction:', error);
+      const fallbackScore = calculateRiskScore(finalAnswers);
+      const diabetesProbabilityFallback = (100 - fallbackScore.score) / 100;
+      const fullScore = {
+        diabetes_probability: diabetesProbabilityFallback,
+        risk_level: fallbackScore.level,
+        score: fallbackScore.score,
+        level: fallbackScore.level,
+        color: fallbackScore.color,
+      };
+      setRiskScore(fullScore);
+      localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+      
+      saveRiskScoreMutation.mutate({
+        overallScore: fallbackScore.score,
+        diabetesRisk: 100 - fallbackScore.score,
+        heartRisk: 0,
+        strokeRisk: 0,
+      });
+      
+      initializeGamificationMutation.mutate();
+      setStep('riskScore');
+    } finally {
+      setIsPredicting(false);
+    }
   };
 
   const handleComplete = () => {
@@ -1741,76 +1812,90 @@ export default function Onboarding() {
       animate={{ opacity: 1, scale: 1 }}
       className="text-center space-y-6"
     >
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', bounce: 0.5 }}
-        className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-primary via-chart-2 to-chart-3 p-1"
-      >
-        <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
-          <div className="text-center">
-            <span className={`text-4xl font-black ${riskScore?.color}`} data-testid="text-risk-score">{riskScore?.score}</span>
-            <p className="text-xs text-muted-foreground">Health Score</p>
-          </div>
+      {isPredicting ? (
+        <div className="py-12">
+          <div className="w-16 h-16 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="mt-4 text-muted-foreground">Analyzing your health data...</p>
         </div>
-      </motion.div>
+      ) : (
+        <>
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', bounce: 0.5 }}
+            className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-primary via-chart-2 to-chart-3 p-1"
+          >
+            <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
+              <div className="text-center">
+                <span className={`text-4xl font-black ${riskScore?.color}`} data-testid="text-risk-score">{riskScore?.score}</span>
+                <p className="text-xs text-muted-foreground">Health Score</p>
+              </div>
+            </div>
+          </motion.div>
 
-      <div>
-        <Badge 
-          className={`${riskScore?.color === 'text-primary' ? 'bg-primary' : riskScore?.color === 'text-chart-2' ? 'bg-chart-2' : riskScore?.color === 'text-chart-3' ? 'bg-chart-3' : 'bg-destructive'} text-white font-bold text-lg px-4 py-1`}
-          data-testid="badge-risk-level"
-        >
-          {riskScore?.level}
-        </Badge>
-      </div>
+          <div className="space-y-2">
+            <Badge 
+              className={`${riskScore?.color === 'text-primary' ? 'bg-primary' : riskScore?.color === 'text-chart-2' ? 'bg-chart-2' : riskScore?.color === 'text-chart-3' ? 'bg-chart-3' : 'bg-destructive'} text-white font-bold text-lg px-4 py-1`}
+              data-testid="badge-risk-level"
+            >
+              {riskScore?.level} Risk
+            </Badge>
+            {riskScore?.diabetes_probability !== undefined && (
+              <p className="text-sm text-muted-foreground">
+                Diabetes Risk: {(riskScore.diabetes_probability * 100).toFixed(1)}%
+              </p>
+            )}
+          </div>
 
-      {skippedQuestions.length > 0 && (
-        <Card className="p-4 bg-muted/30 border-muted">
-          <p className="text-sm text-muted-foreground text-center" data-testid="text-skipped-count">
-            You did not answer {skippedQuestions.length} {skippedQuestions.length === 1 ? 'question' : 'questions'}
-          </p>
-        </Card>
+          {skippedQuestions.length > 0 && (
+            <Card className="p-4 bg-muted/30 border-muted">
+              <p className="text-sm text-muted-foreground text-center" data-testid="text-skipped-count">
+                You did not answer {skippedQuestions.length} {skippedQuestions.length === 1 ? 'question' : 'questions'}
+              </p>
+            </Card>
+          )}
+
+          <Card className="p-6 bg-gradient-to-br from-card to-primary/5 border-0">
+            <div className="flex items-center gap-4">
+              <img src={mascotImage} alt="Mascot" className="w-16 h-16 object-contain" />
+              <div className="text-left">
+                <p className="font-bold text-foreground mb-1">
+                  {riskScore && riskScore.score >= 60 
+                    ? "Great start! Let's keep improving together." 
+                    : "We've identified areas where we can help you improve."}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Complete daily quests and track your progress to boost your score!
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <div className="grid grid-cols-3 gap-3">
+            <Card className="p-3 text-center bg-primary/10 border-0">
+              <Sparkles className="w-6 h-6 text-primary mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">Earn XP</p>
+            </Card>
+            <Card className="p-3 text-center bg-chart-3/10 border-0">
+              <Flame className="w-6 h-6 text-chart-3 mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">Build Streaks</p>
+            </Card>
+            <Card className="p-3 text-center bg-chart-2/10 border-0">
+              <Heart className="w-6 h-6 text-chart-2 mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">Get Healthier</p>
+            </Card>
+          </div>
+
+          <Button
+            onClick={handleComplete}
+            className="w-full bg-gradient-to-r from-primary to-chart-2 font-black text-lg py-6"
+            data-testid="button-go-to-dashboard"
+          >
+            Start Your Health Journey
+            <ChevronRight className="w-5 h-5 ml-2" />
+          </Button>
+        </>
       )}
-
-      <Card className="p-6 bg-gradient-to-br from-card to-primary/5 border-0">
-        <div className="flex items-center gap-4">
-          <img src={mascotImage} alt="Mascot" className="w-16 h-16 object-contain" />
-          <div className="text-left">
-            <p className="font-bold text-foreground mb-1">
-              {riskScore && riskScore.score >= 60 
-                ? "Great start! Let's keep improving together." 
-                : "We've identified areas where we can help you improve."}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Complete daily quests and track your progress to boost your score!
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="p-3 text-center bg-primary/10 border-0">
-          <Sparkles className="w-6 h-6 text-primary mx-auto mb-1" />
-          <p className="text-xs text-muted-foreground">Earn XP</p>
-        </Card>
-        <Card className="p-3 text-center bg-chart-3/10 border-0">
-          <Flame className="w-6 h-6 text-chart-3 mx-auto mb-1" />
-          <p className="text-xs text-muted-foreground">Build Streaks</p>
-        </Card>
-        <Card className="p-3 text-center bg-chart-2/10 border-0">
-          <Heart className="w-6 h-6 text-chart-2 mx-auto mb-1" />
-          <p className="text-xs text-muted-foreground">Get Healthier</p>
-        </Card>
-      </div>
-
-      <Button
-        onClick={handleComplete}
-        className="w-full bg-gradient-to-r from-primary to-chart-2 font-black text-lg py-6"
-        data-testid="button-go-to-dashboard"
-      >
-        Start Your Health Journey
-        <ChevronRight className="w-5 h-5 ml-2" />
-      </Button>
     </motion.div>
   );
 
