@@ -4,6 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { 
   QrCode, 
   Camera, 
@@ -44,6 +52,9 @@ export default function QROnboarding() {
   const [manualCode, setManualCode] = useState('');
   const [validating, setValidating] = useState(false);
   const [showFullPolicy, setShowFullPolicy] = useState(false);
+  const [showDisclaimerDialog, setShowDisclaimerDialog] = useState(false);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [pendingInviteData, setPendingInviteData] = useState<InviteData | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannerContainerId = 'qr-reader';
 
@@ -129,14 +140,23 @@ export default function QROnboarding() {
         code: inviteCode,
       };
       
-      setScannedData(inviteData);
-      localStorage.setItem('loretta_invite', JSON.stringify({
-        inviterName: inviteData.inviterName,
-        organization: inviteData.organization,
-        code: inviteData.code,
-      }));
+      setPendingInviteData(inviteData);
+      setShowDisclaimerDialog(true);
       setValidating(false);
     }, 800);
+  };
+
+  const handleDisclaimerAccept = () => {
+    if (pendingInviteData) {
+      setScannedData(pendingInviteData);
+      localStorage.setItem('loretta_invite', JSON.stringify({
+        inviterName: pendingInviteData.inviterName,
+        organization: pendingInviteData.organization,
+        code: pendingInviteData.code,
+      }));
+      setDisclaimerAccepted(true);
+    }
+    setShowDisclaimerDialog(false);
   };
 
   const handleManualSubmit = (e: React.FormEvent) => {
@@ -335,20 +355,6 @@ export default function QROnboarding() {
                     <p className="font-bold text-foreground text-sm">Your Privacy Matters</p>
                     <p className="text-xs text-muted-foreground">
                       You'll review our privacy policy before creating your account. All data sharing is optional.
-                    </p>
-                  </div>
-                </div>
-              </Card>
-              
-              <Card className="p-4 bg-chart-3/10 border border-chart-3/30 mb-4" data-testid="disclaimer-notice-qr">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-chart-3 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-bold text-foreground text-sm">Important Disclaimer</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Loretta is not a diagnostic tool. The information provided is for educational purposes only 
-                      and should not replace professional medical advice, diagnosis, or treatment. 
-                      Always consult your healthcare provider.
                     </p>
                   </div>
                 </div>
@@ -620,6 +626,44 @@ export default function QROnboarding() {
           )}
         </AnimatePresence>
       </div>
+
+      <Dialog open={showDisclaimerDialog} onOpenChange={() => {}}>
+        <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 rounded-full bg-chart-3/20 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-chart-3" />
+              </div>
+              <DialogTitle className="text-xl font-black">Important Disclaimer</DialogTitle>
+            </div>
+            <DialogDescription className="text-left space-y-3 pt-2">
+              <p className="text-foreground font-medium">
+                Before you continue, please understand:
+              </p>
+              <div className="bg-chart-3/10 border border-chart-3/30 rounded-lg p-4">
+                <p className="text-sm text-foreground leading-relaxed">
+                  <strong>Loretta is not a diagnostic tool.</strong> The information provided is for 
+                  educational purposes only and should not replace professional medical advice, 
+                  diagnosis, or treatment.
+                </p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Always consult your healthcare provider for any health concerns or before making 
+                changes to your health routine.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4">
+            <Button
+              onClick={handleDisclaimerAccept}
+              className="w-full bg-gradient-to-r from-primary to-chart-2 font-bold py-6"
+              data-testid="button-accept-disclaimer"
+            >
+              I Understand
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
