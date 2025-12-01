@@ -27,7 +27,7 @@ const suggestedQuestions = [
   { icon: FileText, text: "Explain my lab results" },
   { icon: Pill, text: "What are my medication side effects?" },
   { icon: Heart, text: "How can I improve my heart health?" },
-  { icon: Activity, text: "What does my health score mean?" },
+  { icon: Activity, text: "What does my risk score mean?" },
 ];
 
 const initialMessages: ChatMessage[] = [

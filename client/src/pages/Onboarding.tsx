@@ -2417,7 +2417,7 @@ export default function Onboarding() {
             <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
               <div className="text-center">
                 <span className={`text-4xl font-black ${riskScore?.color}`} data-testid="text-risk-score">{riskScore?.score}</span>
-                <p className="text-xs text-muted-foreground">Health Score</p>
+                <p className="text-xs text-muted-foreground">Risk Score</p>
               </div>
             </div>
           </motion.div>
