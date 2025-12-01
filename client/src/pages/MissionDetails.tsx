@@ -164,7 +164,8 @@ export default function MissionDetails() {
   const isComplete = completedCount >= missionData.totalSteps;
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
+      <div className="w-full max-w-md min-h-screen bg-gradient-to-br from-background via-background to-primary/5 shadow-2xl">
       <AnimatePresence>
         {showCelebration && (
           <motion.div
@@ -453,6 +454,7 @@ export default function MissionDetails() {
           </TabsContent>
         </Tabs>
       </main>
+      </div>
     </div>
   );
 }

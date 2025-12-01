@@ -74,7 +74,8 @@ export default function Invite() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+    <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
+      <div className="w-full max-w-md min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 shadow-2xl">
       <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link href="/dashboard">
@@ -260,6 +261,7 @@ export default function Invite() {
             </div>
           </Card>
         </motion.div>
+      </div>
       </div>
     </div>
   );

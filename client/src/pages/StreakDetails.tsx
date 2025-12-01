@@ -42,7 +42,8 @@ export default function StreakDetails() {
   }));
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-chart-3/5 to-chart-1/5">
+    <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
+      <div className="w-full max-w-md min-h-screen bg-gradient-to-br from-background via-chart-3/5 to-chart-1/5 shadow-2xl">
       <div className="bg-gradient-to-r from-chart-3 via-chart-1 to-chart-3 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link href="/dashboard">
@@ -228,6 +229,7 @@ export default function StreakDetails() {
             </div>
           </div>
         </Card>
+      </div>
       </div>
     </div>
   );
