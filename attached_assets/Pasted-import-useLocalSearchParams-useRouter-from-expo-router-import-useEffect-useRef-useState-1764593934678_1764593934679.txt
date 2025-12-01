@@ -1,0 +1,278 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import {
+  ChatHeader,
+  CheckInConfirmationBanner,
+  ImagePreview,
+  InputArea,
+  MissionCardView,
+} from "./components/chat-ui";
+import { allmissions } from "./data/premadeMissions";
+import { useChatLogic } from "./hooks/useChatLogic";
+import type { ChatMessage } from "./scalewayAccess";
+import type { ActivityContext } from "./types/chat";
+import {
+  formatTime,
+  isMetricCard,
+  renderMessageContent,
+} from "./utils/chatHelpers";
+
+const ChatScreen = () => {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+
+  // State Management
+  const [activityContext, setActivityContext] =
+    useState<ActivityContext | null>(null);
+  const [contextAnnounced, setContextAnnounced] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [showMissionCard, setShowMissionCard] = useState(false);
+  const [suggestedMissionId, setSuggestedMissionId] = useState<string | null>(
+    null
+  );
+  const [missionActivated, setMissionActivated] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Custom hook for chat logic
+  const {
+    inputText,
+    setInputText,
+    selectedImage,
+    setSelectedImage,
+    loading,
+    handleMetricMessage,
+    handleImagePick,
+    handleActivateMission,
+    handleSend,
+    initializeMessages,
+    pendingEmotion,
+    isCheckInConfirmationPending,
+    handleConfirmEmotion,
+    handleDenyEmotion,
+  } = useChatLogic({
+    activityContext,
+    contextAnnounced,
+    messages,
+    setMessages,
+    setShowMissionCard,
+    setSuggestedMissionId,
+    setMissionActivated,
+  });
+
+  // Context Initialization
+  useEffect(() => {
+    const { initialMessages, context, metric } = initializeMessages(params);
+
+    setMessages(initialMessages as ChatMessage[]);
+
+    if (context) {
+      setActivityContext(context);
+      setContextAnnounced(true);
+
+      // Auto-send metric message if present
+      if (metric) {
+        setTimeout(() => {
+          handleMetricMessage(initialMessages as ChatMessage[], metric);
+        }, 500);
+      }
+    }
+  }, [params.context, params.metricData]);
+
+  // Auto-scroll Effects
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [messages, showMissionCard, missionActivated]);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  // Computed Values
+  const visibleMessages = messages.filter((m) => m.role !== "system");
+  const suggestedMission = suggestedMissionId
+    ? allmissions.find((m) => m.id === suggestedMissionId)
+    : null;
+
+  // Render
+  return (
+    <KeyboardAvoidingView
+      className="flex-1 bg-gray-50"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
+      <View className="flex-1">
+        {/* Header */}
+        <ChatHeader
+          loading={loading}
+          activityContext={activityContext}
+          onBack={() => router.back()}
+        />
+
+        {/* Messages Container */}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            ref={scrollViewRef}
+            className="flex-1 p-4"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            onContentSizeChange={() => {
+              scrollViewRef.current?.scrollToEnd({ animated: true });
+            }}
+            onLayout={() => {
+              scrollViewRef.current?.scrollToEnd({ animated: true });
+            }}
+          >
+            {visibleMessages.map((message, idx) => (
+              <View key={message.id}>
+                {/* Check if message is a metric card */}
+                {isMetricCard(message.content) ? (
+                  // Render metric card without bubble
+                  <View className="mb-4">
+                    {renderMessageContent(message.content)}
+                    {/* Timestamp */}
+                    <Text
+                      className={`text-xs mt-1 ${
+                        message.role === "user"
+                          ? "text-gray-500 self-end"
+                          : "text-gray-400 self-start"
+                      }`}
+                    >
+                      {formatTime(message.timestamp)}
+                    </Text>
+                  </View>
+                ) : (
+                  // Regular message bubble
+                  <>
+                    <View
+                      className={`mb-4 max-w-[85%] ${
+                        message.role === "user" ? "self-end" : "self-start"
+                      }`}
+                    >
+                      <View
+                        className={`rounded-2xl p-4 shadow-sm ${
+                          message.role === "user"
+                            ? "bg-blue-600 rounded-tr-none"
+                            : "bg-white border border-gray-200 rounded-tl-none"
+                        }`}
+                      >
+                        <View
+                          className={
+                            message.role === "user"
+                              ? "text-white"
+                              : "text-gray-800"
+                          }
+                        >
+                          {renderMessageContent(message.content)}
+                        </View>
+                      </View>
+
+                      {/* Timestamp */}
+                      <Text
+                        className={`text-xs mt-1 ${
+                          message.role === "user"
+                            ? "text-gray-500 self-end"
+                            : "text-gray-400 self-start"
+                        }`}
+                      >
+                        {formatTime(message.timestamp)}
+                      </Text>
+                    </View>
+                  </>
+                )}
+
+                {/* Mission Card + Check-in Confirmation Banner */}
+                {message.role === "assistant" &&
+                  idx === visibleMessages.length - 1 && (
+                    <>
+                      <MissionCardView
+                        suggestedMission={suggestedMission}
+                        showMissionCard={showMissionCard}
+                        missionActivated={missionActivated}
+                        onActivate={() =>
+                          handleActivateMission(suggestedMissionId)
+                        }
+                        onView={() =>
+                          router.push(
+                            `/mission-details?id=${suggestedMission?.id}`
+                          )
+                        }
+                      />
+
+                      {isCheckInConfirmationPending && pendingEmotion && (
+                        <CheckInConfirmationBanner
+                          emotion={pendingEmotion}
+                          onConfirm={handleConfirmEmotion}
+                          onDeny={handleDenyEmotion}
+                        />
+                      )}
+                    </>
+                  )}
+              </View>
+            ))}
+
+            {/* Loading Indicator */}
+            {loading && (
+              <View className="self-start mb-4">
+                <View className="bg-white border border-gray-200 rounded-2xl rounded-tl-none p-4 shadow-sm">
+                  <ActivityIndicator size="small" color="#013DC4" />
+                </View>
+              </View>
+            )}
+          </ScrollView>
+        </TouchableWithoutFeedback>
+
+        {/* Image Preview */}
+        <ImagePreview
+          selectedImage={selectedImage}
+          onRemove={() => setSelectedImage(null)}
+        />
+
+        {/* Input Area */}
+        <InputArea
+          inputText={inputText}
+          setInputText={setInputText}
+          onPickImage={handleImagePick}
+          onSend={handleSend}
+          loading={loading}
+          selectedImage={selectedImage}
+        />
+      </View>
+    </KeyboardAvoidingView>
+  );
+};
+
+export default ChatScreen;

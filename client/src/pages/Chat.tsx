@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Send, 
-  Bot, 
   User, 
   Sparkles,
   ChevronRight,
@@ -18,15 +17,11 @@ import {
   File
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'wouter';
+import { Link, useSearch } from 'wouter';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
+import { MissionCardView, CheckInConfirmationBanner, MetricCard } from '@/components/chat';
+import type { MetricData } from '@/components/chat';
+import { useChatLogic, type ChatMessage } from '@/hooks/useChatLogic';
 
 const suggestedQuestions = [
   { icon: FileText, text: "Explain my lab results" },
@@ -35,7 +30,7 @@ const suggestedQuestions = [
   { icon: Activity, text: "What does my health score mean?" },
 ];
 
-const initialMessages: Message[] = [
+const initialMessages: ChatMessage[] = [
   {
     id: '1',
     role: 'assistant',
@@ -45,18 +40,63 @@ const initialMessages: Message[] = [
 ];
 
 export default function Chat() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchParams = useSearch();
+
+  const {
+    inputText,
+    setInputText,
+    loading,
+    showMissionCard,
+    suggestedMission,
+    missionActivated,
+    pendingEmotion,
+    isCheckInConfirmationPending,
+    activityContext,
+    handleSend: chatHandleSend,
+    handleActivateMission,
+    handleConfirmEmotion,
+    handleDenyEmotion,
+    setActivityContext,
+  } = useChatLogic({ messages, setMessages });
+
+  useEffect(() => {
+    if (searchParams) {
+      const params = new URLSearchParams(searchParams);
+      const contextType = params.get('context');
+      const metricDataStr = params.get('metricData');
+
+      if (contextType && metricDataStr) {
+        try {
+          const metricData = JSON.parse(decodeURIComponent(metricDataStr)) as MetricData;
+          setActivityContext({
+            type: contextType as any,
+            metricData,
+          });
+
+          const contextMessage: ChatMessage = {
+            id: Date.now().toString(),
+            role: 'user',
+            content: `I'd like to discuss my ${metricData.label} data.`,
+            timestamp: new Date(),
+            metricData,
+          };
+          setMessages(prev => [...prev, contextMessage]);
+        } catch (e) {
+          console.error('Failed to parse metric data:', e);
+        }
+      }
+    }
+  }, [searchParams, setActivityContext]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, showMissionCard, isCheckInConfirmationPending]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { 
@@ -81,7 +121,7 @@ export default function Chat() {
   };
 
   const handleSend = async (text?: string) => {
-    const messageText = text || input;
+    const messageText = text || inputText;
     const hasFile = uploadedFile !== null;
     const fileName = uploadedFile?.name || '';
     
@@ -92,67 +132,18 @@ export default function Chat() {
       ? (hasFile ? `${fileInfo}\n${messageText}` : messageText)
       : fileInfo;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: displayContent,
-      timestamp: new Date(),
-    };
-
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
-    setInput('');
     setUploadedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    setIsTyping(true);
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: updatedMessages.map(msg => ({
-            role: msg.role,
-            content: msg.content,
-          })),
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
-
-      const data = await response.json();
-      
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.message,
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Chat error:', error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: "I'm sorry, I'm having trouble connecting right now. Please try again in a moment.",
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsTyping(false);
-    }
+    await chatHandleSend(displayContent);
   };
+
+  const visibleMessages = messages.filter(m => m.role !== 'system');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex flex-col">
-      {/* Header */}
       <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link href="/dashboard">
@@ -169,49 +160,83 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* Chat Area */}
       <div className="flex-1 max-w-4xl mx-auto w-full p-4 flex flex-col">
         <Card className="flex-1 flex flex-col border-0 shadow-xl overflow-hidden">
-          {/* Messages */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
             <div className="space-y-4">
               <AnimatePresence>
-                {messages.map((message) => (
-                  <motion.div
-                    key={message.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
-                    data-testid={`chat-message-${message.role}-${message.id}`}
-                  >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.role === 'user' 
-                        ? 'bg-gradient-to-br from-chart-2 to-chart-3' 
-                        : 'bg-gradient-to-br from-primary to-chart-2'
-                    }`}>
-                      {message.role === 'user' ? (
-                        <User className="w-5 h-5 text-white" />
-                      ) : (
-                        <img src={mascotImage} alt="Navigator" className="w-8 h-8 object-contain" />
-                      )}
-                    </div>
-                    <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : ''}`}>
-                      <div className={`p-4 rounded-2xl ${
-                        message.role === 'user'
-                          ? 'bg-gradient-to-r from-primary to-chart-2 text-white rounded-tr-none'
-                          : 'bg-muted/50 text-foreground rounded-tl-none'
-                      }`}>
-                        <p className="text-sm whitespace-pre-line">{message.content}</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatTime(message.timestamp)}
-                      </p>
-                    </div>
-                  </motion.div>
+                {visibleMessages.map((message, idx) => (
+                  <div key={message.id}>
+                    {message.metricData ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-4"
+                      >
+                        <MetricCard metric={message.metricData} />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatTime(message.timestamp)}
+                        </p>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
+                        data-testid={`chat-message-${message.role}-${message.id}`}
+                      >
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          message.role === 'user' 
+                            ? 'bg-gradient-to-br from-chart-2 to-chart-3' 
+                            : 'bg-gradient-to-br from-primary to-chart-2'
+                        }`}>
+                          {message.role === 'user' ? (
+                            <User className="w-5 h-5 text-white" />
+                          ) : (
+                            <img src={mascotImage} alt="Navigator" className="w-8 h-8 object-contain" />
+                          )}
+                        </div>
+                        <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : ''}`}>
+                          <div className={`p-4 rounded-2xl ${
+                            message.role === 'user'
+                              ? 'bg-gradient-to-r from-primary to-chart-2 text-white rounded-tr-none'
+                              : 'bg-muted/50 text-foreground rounded-tl-none'
+                          }`}>
+                            <p className="text-sm whitespace-pre-line">{message.content}</p>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {formatTime(message.timestamp)}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {message.role === 'assistant' && idx === visibleMessages.length - 1 && (
+                      <>
+                        {showMissionCard && suggestedMission && (
+                          <MissionCardView
+                            suggestedMission={suggestedMission}
+                            showMissionCard={showMissionCard}
+                            missionActivated={missionActivated}
+                            onActivate={handleActivateMission}
+                            onView={() => window.location.href = `/mission-details?id=${suggestedMission.id}`}
+                          />
+                        )}
+
+                        {isCheckInConfirmationPending && pendingEmotion && (
+                          <CheckInConfirmationBanner
+                            emotion={pendingEmotion}
+                            onConfirm={handleConfirmEmotion}
+                            onDeny={handleDenyEmotion}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
                 ))}
               </AnimatePresence>
 
-              {isTyping && (
+              {loading && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -232,7 +257,6 @@ export default function Chat() {
             </div>
           </ScrollArea>
 
-          {/* Suggested Questions */}
           {messages.length === 1 && (
             <div className="p-4 border-t border-border">
               <p className="text-xs text-muted-foreground mb-3">Ask about your medical documents:</p>
@@ -253,9 +277,7 @@ export default function Chat() {
             </div>
           )}
 
-          {/* Input */}
           <div className="p-4 border-t border-border bg-muted/20">
-            {/* Uploaded File Preview */}
             <AnimatePresence>
               {uploadedFile && (
                 <motion.div
@@ -305,23 +327,23 @@ export default function Chat() {
                 size="icon"
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isTyping}
+                disabled={loading}
                 className="flex-shrink-0"
                 data-testid="button-upload-file"
               >
                 <Upload className="w-4 h-4" />
               </Button>
               <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
                 placeholder="Ask about your health..."
                 className="flex-1"
-                disabled={isTyping}
+                disabled={loading}
                 data-testid="input-chat-message"
               />
               <Button 
                 type="submit" 
-                disabled={(!input.trim() && !uploadedFile) || isTyping}
+                disabled={(!inputText.trim() && !uploadedFile) || loading}
                 className="bg-gradient-to-r from-primary to-chart-2"
                 data-testid="button-send-message"
               >
