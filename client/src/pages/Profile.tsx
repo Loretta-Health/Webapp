@@ -845,8 +845,8 @@ export default function Profile() {
                 {t.editProfile}
               </button>
               <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
-                <Badge className="bg-gradient-to-r from-primary to-chart-2 text-white border-0">{t.level} 12</Badge>
-                <Badge variant="outline">14 {t.dayStreak}</Badge>
+                <Badge className="bg-gradient-to-r from-primary to-chart-2 text-white border-0">{t.level} 14</Badge>
+                <Badge variant="outline">59 {t.dayStreak}</Badge>
               </div>
             </div>
             <Link href="/calendar">

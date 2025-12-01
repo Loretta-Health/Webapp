@@ -84,9 +84,9 @@ export default function Dashboard() {
     },
   });
 
-  const xp = gamificationData?.xp ?? 750;
-  const level = gamificationData?.level ?? 12;
-  const streak = gamificationData?.currentStreak ?? 14;
+  const xp = gamificationData?.xp ?? 327;
+  const level = gamificationData?.level ?? 14;
+  const streak = gamificationData?.currentStreak ?? 59;
   const lives = gamificationData?.lives ?? 4;
   const nextLevelXP = level * 100;
   
@@ -352,7 +352,7 @@ export default function Dashboard() {
                       description="Reach level 15"
                       icon="crown"
                       unlocked={false}
-                      progress={12}
+                      progress={14}
                       maxProgress={15}
                       rarity="epic"
                     />
@@ -372,8 +372,8 @@ export default function Dashboard() {
                   </div>
                   
                   <DailyCheckIn
-                    streak={14}
-                    dayNumber={14}
+                    streak={59}
+                    dayNumber={59}
                     xpReward={50}
                     onStart={() => navigate('/chat')}
                   />
@@ -419,8 +419,9 @@ export default function Dashboard() {
                       description="Keep your streak alive!"
                       category="bonus"
                       xpReward={500}
-                      progress={14}
+                      progress={30}
                       maxProgress={30}
+                      completed
                       legendary
                       href="/streak"
                     />
@@ -439,7 +440,7 @@ export default function Dashboard() {
                       dosage="Omeprazole 20mg"
                       timing="Before breakfast"
                       frequency="daily"
-                      streak={14}
+                      streak={59}
                       taken
                       explanation="A proton pump inhibitor (PPI) that reduces stomach acid production by blocking the enzyme in the stomach wall that produces acid."
                       simpleExplanation="A medicine that helps reduce stomach acid to prevent heartburn and protect your stomach lining."
