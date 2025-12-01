@@ -78,7 +78,8 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
   const [newsletterOptIn, setNewsletterOptIn] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4">
+    <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
+      <div className="w-full max-w-md min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4 shadow-2xl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -440,6 +441,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
           </div>
         </Card>
       </motion.div>
+      </div>
     </div>
   );
 }
