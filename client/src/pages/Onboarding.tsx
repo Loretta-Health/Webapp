@@ -1084,38 +1084,19 @@ export default function Onboarding() {
     try {
       setLiveScore(prev => prev ? { ...prev, isLoading: true } : { probability: 0, riskLevel: 'Unknown', answeredCount: 0, isLoading: true });
       
-      const features = buildFeatureJson(currentAnswers);
-      if (features.length === 0) return;
+      console.log('[LiveScore] Using client-side calculation (ML backend disabled)');
       
-      console.log('[LiveScore] Calling API with', features.length, 'features');
+      const fallbackScore = calculateRiskScore(currentAnswers);
+      const probability = (100 - fallbackScore.score) / 100;
       
-      const response = await fetch('/api/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ features }),
+      setLiveScore({
+        probability: probability,
+        riskLevel: fallbackScore.level,
+        answeredCount: currentAnswers.length,
+        isLoading: false,
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('[LiveScore] Response:', {
-          diabetes_probability: data.diabetes_probability,
-          risk_level: data.risk_level,
-          method: data._metadata?.method,
-          success: data._metadata?.success,
-          response_time_ms: data._metadata?.response_time_ms,
-        });
-        setLiveScore({
-          probability: data.diabetes_probability,
-          riskLevel: data.risk_level,
-          answeredCount: currentAnswers.length,
-          isLoading: false,
-        });
-      } else {
-        const errorData = await response.json();
-        console.warn('[LiveScore] API error:', errorData);
-      }
     } catch (error) {
-      console.log('[LiveScore] Prediction not available yet:', error);
+      console.log('[LiveScore] Calculation error:', error);
       setLiveScore(prev => prev ? { ...prev, isLoading: false } : null);
     }
   };
@@ -1422,117 +1403,60 @@ export default function Onboarding() {
     localStorage.setItem('loretta_questionnaire', JSON.stringify(finalAnswers));
     saveQuestionnaireMutation.mutate(finalAnswers);
     
+    // ML backend disabled - using legacy calculation endpoint directly
+    console.log('[Prediction] Using legacy calculation (ML backend disabled)');
+    
     try {
-      const features = buildFeatureJson(finalAnswers);
-      console.log('[Prediction] Calling API with features:', features);
-      console.log('[Prediction] Feature count:', features.length);
+      // Call the server-side calculation endpoint
+      const fallbackResponse = await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
+      const fallbackData = await fallbackResponse.json();
       
-      const response = await apiRequest('POST', '/api/predict', { features });
-      const prediction = await response.json();
-      
-      console.log('[Prediction] Full response:', prediction);
-      if (prediction._metadata) {
-        console.log('[Prediction] === METADATA ===');
-        console.log('[Prediction] Method:', prediction._metadata.method);
-        console.log('[Prediction] Success:', prediction._metadata.success);
-        console.log('[Prediction] ML API URL:', prediction._metadata.ml_api_url);
-        console.log('[Prediction] Features received:', prediction._metadata.features_received);
-        console.log('[Prediction] Response time:', prediction._metadata.response_time_ms, 'ms');
-        console.log('[Prediction] ML response status:', prediction._metadata.ml_response_status);
-        if (prediction._metadata.error_message) {
-          console.warn('[Prediction] Error:', prediction._metadata.error_message);
-          console.warn('[Prediction] Error details:', prediction._metadata.error_details);
-        }
-        console.log('[Prediction] Features sent:', prediction._metadata.features_sent);
-      }
-      
-      const diabetesProbability = prediction.diabetes_probability || 0;
-      const riskLevel = prediction.risk_level || 'Unknown';
-      
-      const score = Math.round((1 - diabetesProbability) * 100);
+      const diabetesProbability = (fallbackData.diabetesRisk || 0) / 100;
+      const score = 100 - (fallbackData.overallScore || 50);
       let color = 'text-muted-foreground';
-      if (score >= 80) color = 'text-primary';
-      else if (score >= 60) color = 'text-chart-2';
-      else if (score >= 40) color = 'text-chart-3';
-      else color = 'text-destructive';
+      let level = 'Unknown';
+      
+      if (score >= 80) { color = 'text-primary'; level = 'Low'; }
+      else if (score >= 60) { color = 'text-chart-2'; level = 'Moderate'; }
+      else if (score >= 40) { color = 'text-chart-3'; level = 'Elevated'; }
+      else { color = 'text-destructive'; level = 'High'; }
       
       const fullScore = {
         diabetes_probability: diabetesProbability,
-        risk_level: riskLevel,
+        risk_level: level,
         score,
-        level: riskLevel,
+        level,
         color,
       };
       
       setRiskScore(fullScore);
       localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+      initializeGamificationMutation.mutate();
+      setStep('riskScore');
+    } catch (fallbackError) {
+      // Server-side calculation failed - use client-side calculation as fallback
+      console.log('[Fallback] Server calculation failed, using client-side calculation');
+      const fallbackScore = calculateRiskScore(finalAnswers);
+      const diabetesProbability = (100 - fallbackScore.score) / 100;
+      const fullScore = {
+        diabetes_probability: diabetesProbability,
+        risk_level: fallbackScore.level,
+        score: fallbackScore.score,
+        level: fallbackScore.level,
+        color: fallbackScore.color,
+      };
+      setRiskScore(fullScore);
+      localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
       
       saveRiskScoreMutation.mutate({
-        overallScore: score,
-        diabetesRisk: Math.round(diabetesProbability * 100),
+        overallScore: fallbackScore.score,
+        diabetesRisk: 100 - fallbackScore.score,
         heartRisk: 0,
         strokeRisk: 0,
       });
       
       initializeGamificationMutation.mutate();
       setStep('riskScore');
-    } catch (error) {
-      // ML prediction failed - use deprecated legacy endpoint as fallback
-      // Note: This is logged server-side for developers, not shown to end-user
-      console.log('[Fallback] ML prediction unavailable, using legacy calculation');
-      
-      try {
-        // Call the deprecated server-side calculation endpoint
-        const fallbackResponse = await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
-        const fallbackData = await fallbackResponse.json();
-        
-        const diabetesProbabilityFallback = (fallbackData.diabetesRisk || 0) / 100;
-        const score = 100 - (fallbackData.overallScore || 50);
-        let color = 'text-muted-foreground';
-        let level = 'Unknown';
-        
-        if (score >= 80) { color = 'text-primary'; level = 'Low'; }
-        else if (score >= 60) { color = 'text-chart-2'; level = 'Moderate'; }
-        else if (score >= 40) { color = 'text-chart-3'; level = 'Elevated'; }
-        else { color = 'text-destructive'; level = 'High'; }
-        
-        const fullScore = {
-          diabetes_probability: diabetesProbabilityFallback,
-          risk_level: level,
-          score,
-          level,
-          color,
-        };
-        
-        setRiskScore(fullScore);
-        localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
-        initializeGamificationMutation.mutate();
-        setStep('riskScore');
-      } catch (fallbackError) {
-        // Both ML and legacy fallback failed - use client-side calculation as last resort
-        console.log('[Fallback] Legacy endpoint also failed, using client-side calculation');
-        const fallbackScore = calculateRiskScore(finalAnswers);
-        const diabetesProbabilityFallback = (100 - fallbackScore.score) / 100;
-        const fullScore = {
-          diabetes_probability: diabetesProbabilityFallback,
-          risk_level: fallbackScore.level,
-          score: fallbackScore.score,
-          level: fallbackScore.level,
-          color: fallbackScore.color,
-        };
-        setRiskScore(fullScore);
-        localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
-        
-        saveRiskScoreMutation.mutate({
-          overallScore: fallbackScore.score,
-          diabetesRisk: 100 - fallbackScore.score,
-          heartRisk: 0,
-          strokeRisk: 0,
-        });
-        
-        initializeGamificationMutation.mutate();
-        setStep('riskScore');
-      }
     } finally {
       setIsPredicting(false);
     }
