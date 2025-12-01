@@ -377,6 +377,15 @@ export default function RiskScoreDetails() {
             </Button>
           </Link>
         </Card>
+
+        {/* Disclaimer */}
+        <div className="text-center pb-8">
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-md mx-auto">
+            <span className="font-semibold">Disclaimer:</span> Loretta is not a diagnostic tool. 
+            The information provided is for educational purposes only and should not replace 
+            professional medical advice, diagnosis, or treatment. Always consult your healthcare provider.
+          </p>
+        </div>
       </div>
     </div>
   );
