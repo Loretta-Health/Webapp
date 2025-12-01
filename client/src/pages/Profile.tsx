@@ -1081,6 +1081,37 @@ export default function Profile() {
                                 </div>
                               </div>
                             ))}
+                            
+                            <div className="pt-4 border-t border-border">
+                              <Button
+                                onClick={() => {
+                                  const categoryAnswers: Record<string, string> = {};
+                                  category.questions.forEach(q => {
+                                    if (questionnaireAnswers[q.id]) {
+                                      categoryAnswers[q.id] = questionnaireAnswers[q.id];
+                                    }
+                                  });
+                                  saveAnswersMutation.mutate({
+                                    category: category.key,
+                                    answers: categoryAnswers
+                                  });
+                                  toast({
+                                    title: language === 'en' ? 'Saved!' : 'Gespeichert!',
+                                    description: language === 'en' 
+                                      ? `${category.title} questionnaire has been submitted successfully.`
+                                      : `${category.title} Fragebogen wurde erfolgreich eingereicht.`,
+                                  });
+                                }}
+                                className="w-full bg-primary hover:bg-primary/90"
+                                disabled={saveAnswersMutation.isPending}
+                                data-testid={`submit-${category.key}`}
+                              >
+                                <Save className="w-4 h-4 mr-2" />
+                                {saveAnswersMutation.isPending 
+                                  ? (language === 'en' ? 'Saving...' : 'Speichern...') 
+                                  : (language === 'en' ? 'Submit' : 'Einreichen')}
+                              </Button>
+                            </div>
                           </div>
                         </CollapsibleContent>
                       </Collapsible>
