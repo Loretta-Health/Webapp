@@ -13,8 +13,7 @@ export default function Declined() {
   };
 
   return (
-    <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="w-full max-w-md min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4 shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 text-center border-0 shadow-2xl">
         <div className="flex justify-center mb-6">
           <img src={lorettaLogo} alt="Loretta" className="h-10 object-contain opacity-50" />
@@ -39,7 +38,6 @@ export default function Declined() {
           Go Back to Consent
         </Button>
       </Card>
-      </div>
     </div>
   );
 }

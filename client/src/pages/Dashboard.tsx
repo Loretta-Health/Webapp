@@ -104,8 +104,7 @@ export default function Dashboard() {
   };
   
   return (
-    <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="flex w-full max-w-md h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden shadow-2xl">
+    <div className="flex h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div 
@@ -119,7 +118,7 @@ export default function Dashboard() {
         className={`
           fixed lg:relative inset-y-0 left-0 z-50
           w-72 lg:w-80 
-          bg-sidebar
+          bg-gradient-to-b from-sidebar via-sidebar to-primary/10
           border-r border-sidebar-border 
           flex flex-col overflow-y-auto
           transform transition-transform duration-300 ease-in-out
@@ -562,7 +561,6 @@ export default function Dashboard() {
         unlocks={['New achievement category', 'Bonus XP multiplier', 'Custom avatar accessories']}
         onClose={() => setShowLevelUp(false)}
       />
-      </div>
     </div>
   );
 }

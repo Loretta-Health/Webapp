@@ -96,8 +96,7 @@ export default function Questionnaire() {
 
   if (completed) {
     return (
-      <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
-        <div className="w-full max-w-md min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4 shadow-2xl">
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -141,14 +140,12 @@ export default function Questionnaire() {
             </Button>
           </Card>
         </motion.div>
-        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="w-full max-w-md min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex flex-col shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex flex-col">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -274,7 +271,6 @@ export default function Questionnaire() {
             </span>
           </div>
         </div>
-      </div>
       </div>
     </div>
   );

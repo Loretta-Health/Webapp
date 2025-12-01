@@ -131,8 +131,7 @@ export default function Calendar() {
   const weekEndFormatted = format(addDays(currentWeekStart, 6), 'd MMM');
 
   return (
-    <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="w-full max-w-md min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
       {/* Header */}
       <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 pb-8">
         <div className="max-w-4xl mx-auto">
@@ -380,7 +379,6 @@ export default function Calendar() {
             ))
           )}
         </div>
-      </div>
       </div>
     </div>
   );
