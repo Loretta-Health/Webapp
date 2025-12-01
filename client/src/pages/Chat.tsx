@@ -353,6 +353,9 @@ export default function Chat() {
             <p className="text-xs text-muted-foreground mt-2 text-center">
               Upload medical documents (PDF, images) or ask questions about your health
             </p>
+            <p className="text-xs text-muted-foreground/70 mt-3 text-center border-t border-border pt-3">
+              <span className="font-semibold">Disclaimer:</span> Loretta is not a diagnostic tool and does not provide medical advice.
+            </p>
           </div>
         </Card>
       </div>
