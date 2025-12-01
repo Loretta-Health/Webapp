@@ -88,7 +88,7 @@ export default function Dashboard() {
   const level = gamificationData?.level ?? 14;
   const streak = gamificationData?.currentStreak ?? 59;
   const lives = gamificationData?.lives ?? 4;
-  const nextLevelXP = level * 100;
+  const nextLevelXP = 1400;
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -372,8 +372,8 @@ export default function Dashboard() {
                   </div>
                   
                   <DailyCheckIn
-                    streak={59}
-                    dayNumber={59}
+                    streak={streak}
+                    dayNumber={streak}
                     xpReward={50}
                     onStart={() => navigate('/chat')}
                   />
@@ -440,7 +440,7 @@ export default function Dashboard() {
                       dosage="Omeprazole 20mg"
                       timing="Before breakfast"
                       frequency="daily"
-                      streak={59}
+                      streak={streak}
                       taken
                       explanation="A proton pump inhibitor (PPI) that reduces stomach acid production by blocking the enzyme in the stomach wall that produces acid."
                       simpleExplanation="A medicine that helps reduce stomach acid to prevent heartburn and protect your stomach lining."
@@ -556,7 +556,7 @@ export default function Dashboard() {
       
       <LevelUpModal
         open={showLevelUp}
-        level={13}
+        level={level}
         xpEarned={500}
         badges={['Week Warrior', 'Hydration Hero']}
         unlocks={['New achievement category', 'Bonus XP multiplier', 'Custom avatar accessories']}
