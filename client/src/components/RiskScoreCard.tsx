@@ -39,7 +39,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
           <div>
             <h3 className="text-base lg:text-lg font-bold text-muted-foreground mb-1">
               <MedicalTerm
-                term="Health Score"
+                term="Risk Score"
                 explanation="A calculated health assessment based on various factors like lifestyle, vital signs, and medical history to predict potential health risks."
                 simpleExplanation="A number that shows your overall health status. Higher scores mean better health!"
                 category="metric"
@@ -110,7 +110,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
               <div>
                 <p className="text-xs font-bold text-chart-3 uppercase mb-1">Why this matters</p>
                 <p className="text-xs lg:text-sm text-foreground leading-relaxed">
-                  Your health score combines multiple factors to give you one easy number to track. 
+                  Your risk score combines multiple factors to give you one easy number to track. 
                   Improving any single factor can boost your overall score!
                 </p>
               </div>
@@ -159,7 +159,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
                 <Card className="p-4 bg-gradient-to-br from-card via-card to-primary/5 border-primary/20">
                   <div className="flex items-center gap-2 mb-3">
                     <Beaker className="w-5 h-5 text-primary" />
-                    <h4 className="font-bold text-foreground text-sm lg:text-base">The Science Behind Health Scores</h4>
+                    <h4 className="font-bold text-foreground text-sm lg:text-base">The Science Behind Risk Scores</h4>
                   </div>
                   
                   <ul className="space-y-3">
