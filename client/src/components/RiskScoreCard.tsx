@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'wouter';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, TrendingDown, ChevronDown, ChevronUp, Beaker, Lightbulb, Brain, GraduationCap, BookOpen } from 'lucide-react';
+import { TrendingUp, TrendingDown, ChevronDown, ChevronUp, Beaker, Lightbulb, Brain, GraduationCap, BookOpen, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from './MascotCharacter';
 import MedicalTerm from './MedicalTerm';
@@ -35,31 +36,33 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
       <div className={`absolute inset-0 bg-gradient-to-br ${getScoreColor()} opacity-5`} />
       
       <div className="relative p-4 lg:p-8">
-        <div className="flex items-start justify-between mb-4 lg:mb-6">
-          <div>
-            <h3 className="text-base lg:text-lg font-bold text-muted-foreground mb-1">
-              <MedicalTerm
-                term="Risk Score"
-                explanation="A calculated health assessment based on various factors like lifestyle, vital signs, and medical history to predict potential health risks."
-                simpleExplanation="A number that shows your overall health status. Higher scores mean better health!"
-                category="metric"
-              />
-            </h3>
-            <div className="flex items-center gap-2">
-              {trend === 'up' && <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-primary" data-testid="trend-up" />}
-              {trend === 'down' && <TrendingDown className="w-4 h-4 lg:w-5 lg:h-5 text-destructive" data-testid="trend-down" />}
-              <span className="text-xs lg:text-sm font-semibold text-muted-foreground">{getScoreLabel()}</span>
+        <Link href="/risk-score" className="block cursor-pointer group">
+          <div className="flex items-start justify-between mb-4 lg:mb-6">
+            <div>
+              <h3 className="text-base lg:text-lg font-bold text-muted-foreground mb-1 flex items-center gap-2">
+                <MedicalTerm
+                  term="Risk Score"
+                  explanation="A calculated health assessment based on various factors like lifestyle, vital signs, and medical history to predict potential health risks."
+                  simpleExplanation="A number that shows your overall health status. Higher scores mean better health!"
+                  category="metric"
+                />
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </h3>
+              <div className="flex items-center gap-2">
+                {trend === 'up' && <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-primary" data-testid="trend-up" />}
+                {trend === 'down' && <TrendingDown className="w-4 h-4 lg:w-5 lg:h-5 text-destructive" data-testid="trend-down" />}
+                <span className="text-xs lg:text-sm font-semibold text-muted-foreground">{getScoreLabel()}</span>
+              </div>
             </div>
+            
+            <MascotCharacter 
+              size="sm" 
+              pose={score >= 70 ? 'celebrate' : score >= 40 ? 'encourage' : 'concerned'}
+            />
           </div>
           
-          <MascotCharacter 
-            size="sm" 
-            pose={score >= 70 ? 'celebrate' : score >= 40 ? 'encourage' : 'concerned'}
-          />
-        </div>
-        
-        <div className="flex items-center justify-center mb-4 lg:mb-6">
-          <div className="relative w-32 h-32 lg:w-48 lg:h-48">
+          <div className="flex items-center justify-center mb-4 lg:mb-6">
+            <div className="relative w-32 h-32 lg:w-48 lg:h-48">
             <svg className="w-full h-full transform -rotate-90">
               <circle
                 cx="50%"
@@ -96,6 +99,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
             </div>
           </div>
         </div>
+        </Link>
         
         {message && (
           <p className="text-center text-xs lg:text-sm text-muted-foreground mb-4" data-testid="score-message">
