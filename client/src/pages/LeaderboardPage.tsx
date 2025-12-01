@@ -201,8 +201,7 @@ export default function LeaderboardPage() {
   const totalCount = achievements.length;
 
   return (
-    <div className="flex justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="w-full max-w-md min-h-screen bg-gradient-to-br from-background via-background to-primary/5 shadow-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -404,7 +403,6 @@ export default function LeaderboardPage() {
           </TabsContent>
         </Tabs>
       </main>
-      </div>
     </div>
   );
 }

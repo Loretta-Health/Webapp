@@ -58,9 +58,9 @@ export default function TreasureChest({
         className={`relative ${className} ${isAnimating ? 'animate-shake' : canOpen ? 'animate-pulse' : ''}`}
         data-testid="treasure-chest"
       >
-        <div className={`w-10 h-10 rounded-lg ${canOpen ? 'bg-gradient-to-br from-chart-3 to-chart-1' : 'bg-muted'} 
+        <div className={`w-16 h-16 rounded-lg ${canOpen ? 'bg-gradient-to-br from-chart-3 to-chart-1' : 'bg-muted'} 
           flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95`}>
-          <Gift className={`w-5 h-5 ${canOpen ? 'text-white' : 'text-muted-foreground'}`} />
+          <Gift className={`w-8 h-8 ${canOpen ? 'text-white' : 'text-muted-foreground'}`} />
         </div>
         
         {canOpen && (
