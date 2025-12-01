@@ -123,13 +123,13 @@ Preferred communication style: Simple, everyday language.
 - External service URL: `https://loretta-ml-prediction-dev-5oc2gjs2kq-el.a.run.app/predict` (configurable via PREDICTION_API_URL env var)
 - Request format: `{ features: [{ ID: string, Value: string }] }`
 - Response format: `{ diabetes_probability: number, risk_level: string }`
-- Onboarding flow calls prediction API after questionnaire completion
+- **CURRENTLY DISABLED**: ML backend producing incorrect predictions, using fallback route
 
-**Risk Calculation Fallback Chain:**
-1. Primary: External ML prediction API (`/api/predict`)
-2. Fallback: Deprecated server-side calculation (`/api/risk-scores/:userId/calculate`) - logs warning for developers
-3. Last resort: Client-side `calculateRiskScore` function
-- Fallbacks are silent to end-users, only logged for developers
+**Risk Calculation (Current Implementation):**
+1. Primary: Server-side calculation (`/api/risk-scores/:userId/calculate`)
+2. Fallback: Client-side `calculateRiskScore` function
+- ML prediction API bypassed until backend issues are resolved
+- Live score during questionnaire uses client-side calculation
 
 ### External Dependencies
 
