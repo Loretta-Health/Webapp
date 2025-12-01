@@ -18,6 +18,7 @@ import Invite from "@/pages/Invite";
 import Onboarding from "@/pages/Onboarding";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import Calendar from "@/pages/Calendar";
+import RiskScoreDetails from "@/pages/RiskScoreDetails";
 import NotFound from "@/pages/not-found";
 
 function ConsentGuard({ children }: { children: React.ReactNode }) {
@@ -91,6 +92,11 @@ function Router() {
       <Route path="/calendar">
         <ConsentGuard>
           <Calendar />
+        </ConsentGuard>
+      </Route>
+      <Route path="/risk-score">
+        <ConsentGuard>
+          <RiskScoreDetails />
         </ConsentGuard>
       </Route>
       <Route path="/declined" component={Declined} />
