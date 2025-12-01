@@ -1052,6 +1052,7 @@ export default function Onboarding() {
     lastName: '',
     email: '',
   });
+  const [contactConsent, setContactConsent] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<QuestionnaireAnswer[]>([]);
   const [skippedQuestions, setSkippedQuestions] = useState<string[]>([]);
@@ -2026,7 +2027,7 @@ export default function Onboarding() {
       <form onSubmit={handleRegistrationSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
+            <Label htmlFor="firstName">First Name <span className="text-destructive">*</span></Label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -2041,7 +2042,7 @@ export default function Onboarding() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
+            <Label htmlFor="lastName">Last Name <span className="text-destructive">*</span></Label>
             <Input
               id="lastName"
               placeholder="Last name"
@@ -2054,7 +2055,7 @@ export default function Onboarding() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="email">Email Address <span className="text-destructive">*</span></Label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -2070,6 +2071,21 @@ export default function Onboarding() {
           </div>
         </div>
 
+        <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+          <Checkbox
+            id="contactConsent"
+            checked={contactConsent}
+            onCheckedChange={(checked) => setContactConsent(checked === true)}
+            data-testid="checkbox-contact-consent"
+          />
+          <Label 
+            htmlFor="contactConsent" 
+            className="text-sm leading-relaxed cursor-pointer"
+          >
+            I consent to providing my name and email address. <span className="text-destructive">*</span>
+          </Label>
+        </div>
+
         <Card className="p-3 bg-primary/5 border-primary/20">
           <p className="text-xs text-muted-foreground">
             <Lock className="w-3 h-3 inline mr-1" />
@@ -2080,7 +2096,7 @@ export default function Onboarding() {
         <Button
           type="submit"
           className="w-full bg-gradient-to-r from-primary to-chart-2 font-bold"
-          disabled={!registration.firstName || !registration.lastName || !registration.email}
+          disabled={!registration.firstName || !registration.lastName || !registration.email || !contactConsent}
           data-testid="button-submit-registration"
         >
           Continue to Health Assessment
