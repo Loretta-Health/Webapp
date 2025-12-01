@@ -239,6 +239,308 @@ const missionsDatabase: Record<string, MissionData> = {
     ],
     communityTip: 'Set a timer every 2 hours to remind yourself to move. Your body and mind will perform better!',
     stepLabel: 'Break'
+  },
+  '101': {
+    id: 101,
+    title: 'Drink herbal tea',
+    frequency: 'daily',
+    description: 'Stay hydrated with calming herbal tea - a delicious alternative to plain water.',
+    xpReward: 25,
+    totalSteps: 6,
+    icon: Droplets,
+    color: 'chart-2',
+    details: 'Herbal teas like chamomile, peppermint, or ginger provide hydration along with additional health benefits. They\'re caffeine-free and can help with relaxation, digestion, and overall wellness.',
+    benefits: [
+      { icon: Droplets, text: 'Hydrates your body' },
+      { icon: Leaf, text: 'Natural antioxidants' },
+      { icon: Brain, text: 'Promotes relaxation' },
+      { icon: Heart, text: 'Supports digestion' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+      { id: 4, completed: false },
+      { id: 5, completed: false },
+      { id: 6, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Keep a variety of herbal teas at your desk. Peppermint is great for focus, chamomile for relaxation!',
+    stepLabel: 'Cup'
+  },
+  '102': {
+    id: 102,
+    title: 'Eat water-rich fruits',
+    frequency: 'daily',
+    description: 'Get your hydration from delicious fruits like watermelon, oranges, and grapes.',
+    xpReward: 20,
+    totalSteps: 4,
+    icon: Leaf,
+    color: 'chart-1',
+    details: 'Water-rich fruits like watermelon (92% water), strawberries, and oranges are excellent for hydration. They also provide vitamins, fiber, and natural sugars for energy.',
+    benefits: [
+      { icon: Droplets, text: 'Natural hydration' },
+      { icon: Zap, text: 'Natural energy boost' },
+      { icon: Leaf, text: 'Rich in vitamins' },
+      { icon: Heart, text: 'Fiber for digestion' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+      { id: 4, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Keep pre-cut fruit in your fridge for easy snacking. Frozen grapes make a refreshing treat!',
+    stepLabel: 'Serving'
+  },
+  '201': {
+    id: 201,
+    title: 'Do 20 squats',
+    frequency: 'daily',
+    description: 'Strengthen your legs and core with 20 squats throughout the day.',
+    xpReward: 45,
+    totalSteps: 4,
+    icon: Dumbbell,
+    color: 'chart-2',
+    details: 'Squats are a compound exercise that work multiple muscle groups including quads, hamstrings, glutes, and core. They\'re excellent for building lower body strength and improving mobility.',
+    benefits: [
+      { icon: Dumbbell, text: 'Builds leg strength' },
+      { icon: Flame, text: 'Burns calories' },
+      { icon: Activity, text: 'Improves mobility' },
+      { icon: Heart, text: 'Boosts circulation' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+      { id: 4, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Do 5 squats every hour. By the end of the day, you\'ll have done 40+ without even trying!',
+    stepLabel: 'Set of 5'
+  },
+  '202': {
+    id: 202,
+    title: 'Take a 5-min walk',
+    frequency: 'daily',
+    description: 'Get moving with short 5-minute walks throughout your day.',
+    xpReward: 35,
+    totalSteps: 4,
+    icon: Footprints,
+    color: 'chart-1',
+    details: 'Short walking breaks are perfect for those who prefer low-impact exercise. Walking improves mood, boosts creativity, and helps maintain cardiovascular health without the intensity of jumping exercises.',
+    benefits: [
+      { icon: Footprints, text: 'Low-impact exercise' },
+      { icon: Brain, text: 'Clears your mind' },
+      { icon: Heart, text: 'Heart-healthy' },
+      { icon: Wind, text: 'Fresh air boost' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+      { id: 4, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Walk during phone calls or after meals. It\'s an easy way to add more steps to your day!',
+    stepLabel: 'Walk'
+  },
+  '301': {
+    id: 301,
+    title: 'March in place for 5 mins',
+    frequency: '2 times daily',
+    description: 'Get your steps in without leaving your spot - perfect for bad weather or small spaces.',
+    xpReward: 25,
+    totalSteps: 2,
+    icon: Footprints,
+    color: 'chart-1',
+    details: 'Marching in place is a great indoor alternative to walking outside. It raises your heart rate, works your legs, and can be done anywhere - even while watching TV or waiting for coffee!',
+    benefits: [
+      { icon: Footprints, text: 'Indoor-friendly' },
+      { icon: Flame, text: 'Burns calories' },
+      { icon: Activity, text: 'Improves coordination' },
+      { icon: Zap, text: 'Boosts energy' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Add arm swings while marching to get an upper body workout too!',
+    stepLabel: 'Session'
+  },
+  '302': {
+    id: 302,
+    title: 'Climb stairs for 3 mins',
+    frequency: '2 times daily',
+    description: 'Take the stairs! A quick stair climb is an excellent cardio workout.',
+    xpReward: 30,
+    totalSteps: 2,
+    icon: Activity,
+    color: 'chart-2',
+    details: 'Stair climbing is one of the most effective exercises for cardiovascular health and lower body strength. Just 3 minutes of stair climbing can burn more calories than walking on flat ground.',
+    benefits: [
+      { icon: Flame, text: 'High calorie burn' },
+      { icon: Heart, text: 'Cardio boost' },
+      { icon: Dumbbell, text: 'Leg strength' },
+      { icon: Activity, text: 'Builds endurance' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Skip the elevator and take the stairs. Your heart and legs will thank you!',
+    stepLabel: 'Session'
+  },
+  '401': {
+    id: 401,
+    title: 'Read a book before bed',
+    frequency: 'Every night',
+    description: 'Wind down with 20 minutes of reading instead of screen time.',
+    xpReward: 20,
+    totalSteps: 1,
+    icon: Moon,
+    color: 'chart-2',
+    details: 'Reading before bed is a proven way to reduce stress and prepare your mind for sleep. Unlike screens, books don\'t emit blue light that disrupts your circadian rhythm.',
+    benefits: [
+      { icon: Brain, text: 'Reduces stress' },
+      { icon: Moon, text: 'Better sleep' },
+      { icon: Leaf, text: 'No blue light' },
+      { icon: Zap, text: 'Expands knowledge' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Keep a book on your nightstand so it\'s always ready. Fiction works great for relaxation!',
+    stepLabel: 'Night'
+  },
+  '402': {
+    id: 402,
+    title: 'Practice meditation',
+    frequency: 'Every night',
+    description: 'Calm your mind with 10 minutes of guided meditation before sleep.',
+    xpReward: 25,
+    totalSteps: 1,
+    icon: Moon,
+    color: 'chart-2',
+    details: 'Meditation before bed helps quiet the mind and release the day\'s tensions. Even just 10 minutes of mindfulness can significantly improve sleep quality and reduce anxiety.',
+    benefits: [
+      { icon: Brain, text: 'Calms the mind' },
+      { icon: Heart, text: 'Lowers heart rate' },
+      { icon: Moon, text: 'Deeper sleep' },
+      { icon: Leaf, text: 'Reduces anxiety' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Try apps like Headspace or Calm for guided sleep meditations. Start with just 5 minutes!',
+    stepLabel: 'Night'
+  },
+  '501': {
+    id: 501,
+    title: 'Try box breathing',
+    frequency: '3 times daily',
+    description: 'Use the box breathing technique to calm your nervous system.',
+    xpReward: 20,
+    totalSteps: 3,
+    icon: Heart,
+    color: 'chart-1',
+    details: 'Box breathing is a powerful technique used by Navy SEALs: breathe in for 4 seconds, hold for 4, exhale for 4, hold for 4. It activates your parasympathetic nervous system for instant calm.',
+    benefits: [
+      { icon: Heart, text: 'Lowers heart rate' },
+      { icon: Brain, text: 'Reduces anxiety' },
+      { icon: Zap, text: 'Increases focus' },
+      { icon: Leaf, text: 'Easy to learn' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Visualize tracing a square as you breathe: up (inhale), right (hold), down (exhale), left (hold).',
+    stepLabel: 'Session'
+  },
+  '502': {
+    id: 502,
+    title: 'Do gentle stretching',
+    frequency: '3 times daily',
+    description: 'Relax your muscles and calm your mind with gentle stretching.',
+    xpReward: 15,
+    totalSteps: 3,
+    icon: Activity,
+    color: 'chart-2',
+    details: 'Gentle stretching releases muscle tension and promotes relaxation. Focus on your neck, shoulders, and back - common areas where we hold stress.',
+    benefits: [
+      { icon: Activity, text: 'Releases tension' },
+      { icon: Heart, text: 'Calms the body' },
+      { icon: Brain, text: 'Reduces stress' },
+      { icon: Leaf, text: 'Improves flexibility' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Hold each stretch for 20-30 seconds and breathe deeply. Never bounce!',
+    stepLabel: 'Session'
+  },
+  '601': {
+    id: 601,
+    title: 'Do desk exercises',
+    frequency: 'Every 2 hours',
+    description: 'Stay active at your desk with simple exercises you can do in your chair.',
+    xpReward: 15,
+    totalSteps: 4,
+    icon: Dumbbell,
+    color: 'chart-2',
+    details: 'Desk exercises like seated leg raises, chair squats, and desk push-ups help you stay active even during long work sessions. They prevent stiffness and boost circulation.',
+    benefits: [
+      { icon: Activity, text: 'Prevents stiffness' },
+      { icon: Brain, text: 'Improves focus' },
+      { icon: Flame, text: 'Burns calories' },
+      { icon: Heart, text: 'Better circulation' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+      { id: 4, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Set a reminder every 2 hours. Even 2 minutes of desk exercises makes a difference!',
+    stepLabel: 'Break'
+  },
+  '602': {
+    id: 602,
+    title: 'Take the stairs',
+    frequency: 'Every 2 hours',
+    description: 'Skip the elevator and take the stairs for a quick energy boost.',
+    xpReward: 20,
+    totalSteps: 4,
+    icon: Activity,
+    color: 'chart-1',
+    details: 'Taking the stairs is an easy way to add more activity to your day. It\'s a natural HIIT workout that strengthens your legs and gets your heart pumping.',
+    benefits: [
+      { icon: Flame, text: 'High calorie burn' },
+      { icon: Dumbbell, text: 'Leg strength' },
+      { icon: Zap, text: 'Energy boost' },
+      { icon: Heart, text: 'Cardio workout' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+      { id: 4, completed: false },
+    ],
+    alternativeMissions: [],
+    communityTip: 'Challenge yourself: can you take the stairs every time today? Your body will adapt quickly!',
+    stepLabel: 'Trip'
   }
 };
 
@@ -562,24 +864,26 @@ export default function MissionDetails() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card 
-                  className="p-4 hover-elevate cursor-pointer transition-all"
-                  data-testid={`alternative-mission-${index}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center text-2xl">
-                      {alt.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-foreground">{alt.title}</h4>
-                      <div className="flex items-center gap-1 text-primary">
-                        <Zap className="w-4 h-4 fill-primary" />
-                        <span className="text-sm font-bold">+{alt.xp} XP</span>
+                <Link href={`/alternative-mission?id=${alt.id}&original=${missionId}`}>
+                  <Card 
+                    className="p-4 hover-elevate cursor-pointer transition-all"
+                    data-testid={`alternative-mission-${index}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center text-2xl">
+                        {alt.icon}
                       </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-foreground">{alt.title}</h4>
+                        <div className="flex items-center gap-1 text-primary">
+                          <Zap className="w-4 h-4 fill-primary" />
+                          <span className="text-sm font-bold">+{alt.xp} XP</span>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                </Card>
+                  </Card>
+                </Link>
               </motion.div>
             ))}
             
