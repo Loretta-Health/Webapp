@@ -16,7 +16,8 @@ import {
   ChevronUp,
   ExternalLink,
   Heart,
-  Mail
+  Mail,
+  AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
@@ -141,6 +142,27 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                 </motion.div>
               ))}
             </div>
+
+            {/* Important Disclaimer */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="flex items-start gap-3 p-4 rounded-lg bg-chart-3/10 border border-chart-3/30"
+              data-testid="disclaimer-notice"
+            >
+              <div className="w-8 h-8 rounded-full bg-chart-3/20 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-4 h-4 text-chart-3" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">Important Disclaimer</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Loretta is not a diagnostic tool. The information provided is for educational purposes only 
+                  and should not replace professional medical advice, diagnosis, or treatment. 
+                  Always consult your healthcare provider.
+                </p>
+              </div>
+            </motion.div>
 
             {/* Full Privacy Policy Toggle */}
             <Button
