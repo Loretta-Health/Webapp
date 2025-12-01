@@ -92,7 +92,7 @@ const achievements: Achievement[] = [
     icon: 'crown',
     unlocked: false,
     rarity: 'epic',
-    progress: 12,
+    progress: 14,
     maxProgress: 15,
   },
   {
