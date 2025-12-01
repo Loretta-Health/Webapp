@@ -41,18 +41,6 @@ const defaultMissions: Mission[] = [
     source: 'default',
   },
   {
-    id: 'medication',
-    title: 'Take medication',
-    description: 'Complete your daily medication routine',
-    category: 'daily',
-    xpReward: 40,
-    progress: 1,
-    maxProgress: 3,
-    completed: false,
-    href: '/medications',
-    source: 'default',
-  },
-  {
     id: 'streak-30',
     title: 'Maintain 30-day streak',
     description: 'Keep your streak alive!',
