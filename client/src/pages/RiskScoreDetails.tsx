@@ -19,7 +19,7 @@ const riskFactors: RiskFactor[] = [
 ];
 
 export default function RiskScoreDetails() {
-  const score = 72;
+  const score = 68;
 
   const getScoreColor = () => {
     if (score >= 80) return 'text-primary';
@@ -33,23 +33,23 @@ export default function RiskScoreDetails() {
       case 'negative':
         return {
           bg: 'bg-red-50',
-          border: 'border-red-100',
-          icon: <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />,
-          text: 'text-destructive',
+          border: 'border-red-200',
+          icon: <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />,
+          text: 'text-red-700',
         };
       case 'warning':
         return {
-          bg: 'bg-orange-50',
-          border: 'border-orange-100',
-          icon: <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />,
-          text: 'text-orange-600',
+          bg: 'bg-amber-50',
+          border: 'border-amber-200',
+          icon: <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />,
+          text: 'text-amber-700',
         };
       case 'positive':
         return {
           bg: 'bg-green-50',
-          border: 'border-green-100',
-          icon: <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />,
-          text: 'text-primary',
+          border: 'border-green-200',
+          icon: <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />,
+          text: 'text-green-700',
         };
     }
   };
