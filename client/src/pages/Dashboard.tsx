@@ -30,6 +30,7 @@ import EnergyBar from '@/components/EnergyBar';
 import HealthScienceSection from '@/components/HealthScienceSection';
 import CommunitySelector, { type CommunityType } from '@/components/CommunitySelector';
 import { useMissions } from '@/hooks/useMissions';
+import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 
 interface GamificationData {
   xp: number;
@@ -57,6 +58,8 @@ export default function Dashboard() {
   const [communityType, setCommunityType] = useState<CommunityType>('loretta');
   const userId = getUserId();
   const { missions, completedCount, totalCount } = useMissions();
+  const { medications, getTotalProgress } = useMedicationProgress();
+  const medicationProgress = getTotalProgress();
   
   const { data: gamificationData } = useQuery<GamificationData>({
     queryKey: ['/api/gamification', userId],
@@ -410,20 +413,26 @@ export default function Dashboard() {
                 
                 {/* Medications */}
                 <div className="bg-gradient-to-br from-card via-card to-chart-3/5 rounded-xl p-4 lg:p-6 border border-card-border">
-                  <h2 className="text-xl lg:text-2xl font-black text-foreground mb-4">Medications</h2>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
+                    <h2 className="text-xl lg:text-2xl font-black text-foreground">Medications</h2>
+                    <Badge className="bg-gradient-to-r from-chart-3 to-chart-1 text-white font-black border-0">
+                      {medicationProgress.taken}/{medicationProgress.total} Doses Today
+                    </Badge>
+                  </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 mb-4">
-                    <MedicationTracker
-                      name="Morning Medication"
-                      dosage="Omeprazole 20mg"
-                      timing="Before breakfast"
-                      frequency="daily"
-                      streak={streak}
-                      taken
-                      explanation="A proton pump inhibitor (PPI) that reduces stomach acid production by blocking the enzyme in the stomach wall that produces acid."
-                      simpleExplanation="A medicine that helps reduce stomach acid to prevent heartburn and protect your stomach lining."
-                      onTake={() => console.log('Medication taken')}
-                    />
+                    {medications.map((med) => (
+                      <MedicationTracker
+                        key={med.id}
+                        medicationId={med.id}
+                        name={med.name}
+                        dosage={med.dosage}
+                        timing={med.timing}
+                        frequency={med.frequency}
+                        explanation={med.explanation}
+                        simpleExplanation={med.simpleExplanation}
+                      />
+                    ))}
                   </div>
                   
                   <HealthScienceSection category="medication" />

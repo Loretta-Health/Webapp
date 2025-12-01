@@ -11,6 +11,7 @@ import Chat from "@/pages/Chat";
 import Questionnaire from "@/pages/Questionnaire";
 import MissionDetails from "@/pages/MissionDetails";
 import Medications from "@/pages/Medications";
+import MedicationDetails from "@/pages/MedicationDetails";
 import StreakDetails from "@/pages/StreakDetails";
 import ActivityDetails from "@/pages/ActivityDetails";
 import QROnboarding from "@/pages/QROnboarding";
@@ -65,6 +66,11 @@ function Router() {
       <Route path="/medications">
         <ConsentGuard>
           <Medications />
+        </ConsentGuard>
+      </Route>
+      <Route path="/medication-details">
+        <ConsentGuard>
+          <MedicationDetails />
         </ConsentGuard>
       </Route>
       <Route path="/streak">

@@ -1,109 +1,97 @@
-import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Pill, Check, Clock, Flame } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Pill, Check, Clock, Flame, ChevronRight } from 'lucide-react';
+import { Link } from 'wouter';
 import MedicalTerm from './MedicalTerm';
+import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 
 interface MedicationTrackerProps {
+  medicationId: string;
   name: string;
   dosage: string;
   timing: string;
   frequency: string;
-  taken?: boolean;
-  streak?: number;
   explanation?: string;
   simpleExplanation?: string;
-  onTake?: () => void;
   className?: string;
 }
 
 export default function MedicationTracker({
+  medicationId,
   name,
   dosage,
   timing,
   frequency,
-  taken = false,
-  streak = 0,
   explanation = 'A medication prescribed by your healthcare provider.',
   simpleExplanation = 'Medicine that helps keep you healthy.',
-  onTake,
   className = ''
 }: MedicationTrackerProps) {
-  const [isTaken, setIsTaken] = useState(taken);
-  const [showAnimation, setShowAnimation] = useState(false);
+  const { getProgress, getMedication } = useMedicationProgress();
+  const progress = getProgress(medicationId);
+  const medication = getMedication(medicationId);
+  const streak = medication?.streak || 0;
   
-  const handleTake = () => {
-    if (!isTaken) {
-      setIsTaken(true);
-      setShowAnimation(true);
-      onTake?.();
-      setTimeout(() => setShowAnimation(false), 1000);
-    }
-  };
+  const progressPercent = progress.total > 0 ? (progress.taken / progress.total) * 100 : 0;
   
   return (
-    <Card className={`relative overflow-hidden ${className}`} data-testid="medication-tracker">
-      {streak > 0 && (
-        <div className="absolute top-2 right-2">
-          <Badge variant="secondary" className="font-black text-xs">
-            <Flame className="w-3 h-3 mr-1 fill-chart-3 text-chart-3" />
-            {streak} days
-          </Badge>
-        </div>
-      )}
-      
-      {showAnimation && (
-        <div className="absolute inset-0 flex items-center justify-center bg-primary/20 z-10 pointer-events-none animate-bounce-in">
-          <Check className="w-16 h-16 text-primary" />
-        </div>
-      )}
-      
-      <div className="p-4">
-        <div className="flex items-start gap-3 mb-4">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-            isTaken ? 'bg-primary' : 'bg-muted'
-          } transition-all`}>
-            <Pill className={`w-6 h-6 ${isTaken ? 'text-white' : 'text-muted-foreground'}`} />
+    <Link href={`/medication-details?id=${medicationId}`}>
+      <Card className={`relative overflow-hidden cursor-pointer hover:border-primary/50 transition-all ${className}`} data-testid="medication-tracker">
+        {streak > 0 && (
+          <div className="absolute top-2 right-2">
+            <Badge variant="secondary" className="font-black text-xs">
+              <Flame className="w-3 h-3 mr-1 fill-chart-3 text-chart-3" />
+              {streak} days
+            </Badge>
+          </div>
+        )}
+        
+        <div className="p-4">
+          <div className="flex items-start gap-3 mb-4">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+              progress.isComplete ? 'bg-primary' : 'bg-muted'
+            } transition-all`}>
+              <Pill className={`w-6 h-6 ${progress.isComplete ? 'text-white' : 'text-muted-foreground'}`} />
+            </div>
+            
+            <div className="flex-1">
+              <h4 className="font-bold text-foreground mb-1" data-testid="medication-name">
+                <MedicalTerm 
+                  term={name}
+                  explanation={explanation}
+                  simpleExplanation={simpleExplanation}
+                  category="medication"
+                />
+              </h4>
+              <p className="text-sm text-muted-foreground mb-1">{dosage}</p>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Clock className="w-3 h-3" />
+                <span>{timing}</span>
+                <span>•</span>
+                <span className="capitalize">{frequency}</span>
+              </div>
+            </div>
+            
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </div>
           
-          <div className="flex-1">
-            <h4 className="font-bold text-foreground mb-1" data-testid="medication-name">
-              <MedicalTerm 
-                term={name}
-                explanation={explanation}
-                simpleExplanation={simpleExplanation}
-                category="medication"
-              />
-            </h4>
-            <p className="text-sm text-muted-foreground mb-1">{dosage}</p>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Clock className="w-3 h-3" />
-              <span>{timing}</span>
-              <span>•</span>
-              <span className="capitalize">{frequency}</span>
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Today's progress</span>
+              <span className="font-bold text-foreground">{progress.taken}/{progress.total}</span>
             </div>
+            <Progress value={progressPercent} className="h-2" />
           </div>
-        </div>
-        
-        <Button
-          size="sm"
-          className="w-full font-bold"
-          variant={isTaken ? 'secondary' : 'default'}
-          onClick={handleTake}
-          disabled={isTaken}
-          data-testid="button-take-medication"
-        >
-          {isTaken ? (
-            <>
-              <Check className="w-4 h-4 mr-2" />
-              Taken Today!
-            </>
-          ) : (
-            'Mark as Taken'
+          
+          {progress.isComplete && (
+            <div className="mt-3 flex items-center justify-center gap-2 text-sm text-primary font-bold">
+              <Check className="w-4 h-4" />
+              All doses taken today!
+            </div>
           )}
-        </Button>
-      </div>
-    </Card>
+        </div>
+      </Card>
+    </Link>
   );
 }
