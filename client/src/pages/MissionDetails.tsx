@@ -248,7 +248,7 @@ export default function MissionDetails() {
   const params = new URLSearchParams(searchString);
   const missionId = params.get('id') || '1';
   
-  const { missions, logMissionStep, updateMissionProgress } = useMissions();
+  const { missions, updateMissionProgress } = useMissions();
   
   const missionData = missionsDatabase[missionId] || missionsDatabase['1'];
   const MissionIcon = missionData.icon;
@@ -286,13 +286,15 @@ export default function MissionDetails() {
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
       
+      const newCompletedCount = completedCount + 1;
+      
       setSteps(prev => prev.map(step => 
         step.id === nextStep.id 
           ? { ...step, completed: true, time: timeString }
           : step
       ));
       
-      logMissionStep(missionId);
+      updateMissionProgress(missionId, newCompletedCount);
       
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 2000);

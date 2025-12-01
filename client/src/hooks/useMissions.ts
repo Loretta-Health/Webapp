@@ -121,7 +121,15 @@ export function useMissions() {
       
       let updated: Mission[];
       if (existingIndex >= 0) {
-        updated = prev;
+        const existingMission = prev[existingIndex];
+        const mergedMission: Mission = {
+          ...existingMission,
+          ...mission,
+          id,
+          progress: mission.progress ?? existingMission.progress,
+          completed: mission.completed ?? existingMission.completed,
+        };
+        updated = prev.map((m, i) => i === existingIndex ? mergedMission : m);
       } else {
         const newMission: Mission = {
           ...mission,
