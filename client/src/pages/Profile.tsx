@@ -10,6 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -485,6 +487,12 @@ export default function Profile() {
   });
   const [editForm, setEditForm] = useState<ProfileData>(profileData);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const [shareOptions, setShareOptions] = useState({
+    medications: true,
+    missions: true,
+    clinicalData: false,
+  });
   const [questionnaireAnswers, setQuestionnaireAnswers] = useState<Record<string, string>>(() => {
     const saved = localStorage.getItem('loretta_questionnaire_answers');
     return saved ? JSON.parse(saved) : {};
@@ -770,44 +778,7 @@ export default function Profile() {
                 variant="ghost" 
                 size="icon"
                 className="text-white hover:bg-white/20"
-                onClick={async () => {
-                  if (navigator.share) {
-                    try {
-                      await navigator.share({
-                        title: 'My Loretta Health Profile',
-                        text: `Check out my health journey with Loretta!`,
-                        url: window.location.href,
-                      });
-                    } catch (err) {
-                      if ((err as Error).name !== 'AbortError') {
-                        toast({
-                          title: language === 'en' ? 'Share failed' : 'Teilen fehlgeschlagen',
-                          description: language === 'en' ? 'Could not share profile' : 'Profil konnte nicht geteilt werden',
-                          variant: 'destructive',
-                        });
-                      }
-                    }
-                  } else if (navigator.clipboard) {
-                    try {
-                      await navigator.clipboard.writeText(window.location.href);
-                      toast({
-                        title: language === 'en' ? 'Link copied!' : 'Link kopiert!',
-                        description: language === 'en' ? 'Profile link copied to clipboard' : 'Profillink in Zwischenablage kopiert',
-                      });
-                    } catch (err) {
-                      toast({
-                        title: language === 'en' ? 'Copy failed' : 'Kopieren fehlgeschlagen',
-                        description: language === 'en' ? 'Could not copy link to clipboard' : 'Link konnte nicht kopiert werden',
-                        variant: 'destructive',
-                      });
-                    }
-                  } else {
-                    toast({
-                      title: language === 'en' ? 'Share not available' : 'Teilen nicht verfügbar',
-                      description: window.location.href,
-                    });
-                  }
-                }}
+                onClick={() => setIsShareOpen(true)}
                 data-testid="button-share-profile"
               >
                 <Share2 className="w-5 h-5" />
@@ -1199,6 +1170,123 @@ export default function Profile() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Share Dialog */}
+      <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black">
+              {language === 'en' ? 'Share with Family & Friends' : 'Mit Familie & Freunden teilen'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <p className="text-muted-foreground">
+              {language === 'en' ? 'Choose what information to share:' : 'Wählen Sie, welche Informationen geteilt werden sollen:'}
+            </p>
+            
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="font-bold text-foreground">
+                    {language === 'en' ? 'Medications' : 'Medikamente'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'en' 
+                      ? 'Share your medication schedule and adherence' 
+                      : 'Teilen Sie Ihren Medikamentenplan und die Einhaltung'}
+                  </p>
+                </div>
+                <Switch
+                  checked={shareOptions.medications}
+                  onCheckedChange={(checked) => 
+                    setShareOptions(prev => ({ ...prev, medications: checked }))
+                  }
+                  data-testid="switch-share-medications"
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="font-bold text-foreground">
+                    {language === 'en' ? 'Missions' : 'Missionen'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'en' 
+                      ? 'Share your health goals and mission progress' 
+                      : 'Teilen Sie Ihre Gesundheitsziele und Missionsfortschritte'}
+                  </p>
+                </div>
+                <Switch
+                  checked={shareOptions.missions}
+                  onCheckedChange={(checked) => 
+                    setShareOptions(prev => ({ ...prev, missions: checked }))
+                  }
+                  data-testid="switch-share-missions"
+                />
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="font-bold text-foreground">
+                    {language === 'en' ? 'Clinical Data' : 'Klinische Daten'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'en' 
+                      ? 'Share lab results and health measurements' 
+                      : 'Teilen Sie Laborergebnisse und Gesundheitsmessungen'}
+                  </p>
+                </div>
+                <Switch
+                  checked={shareOptions.clinicalData}
+                  onCheckedChange={(checked) => 
+                    setShareOptions(prev => ({ ...prev, clinicalData: checked }))
+                  }
+                  data-testid="switch-share-clinical"
+                />
+              </div>
+            </div>
+            
+            <Button
+              className="w-full bg-primary hover:bg-primary/90"
+              onClick={async () => {
+                const shareData = Object.entries(shareOptions)
+                  .filter(([_, enabled]) => enabled)
+                  .map(([key]) => key)
+                  .join(',');
+                const shareUrl = `${window.location.origin}/shared-profile/${userId}?data=${shareData}`;
+                
+                try {
+                  await navigator.clipboard.writeText(shareUrl);
+                  toast({
+                    title: language === 'en' ? 'Link copied!' : 'Link kopiert!',
+                    description: language === 'en' 
+                      ? 'Share link has been copied to clipboard' 
+                      : 'Der Freigabelink wurde in die Zwischenablage kopiert',
+                  });
+                  setIsShareOpen(false);
+                } catch (err) {
+                  toast({
+                    title: language === 'en' ? 'Copy failed' : 'Kopieren fehlgeschlagen',
+                    description: language === 'en' 
+                      ? 'Could not copy link to clipboard' 
+                      : 'Link konnte nicht kopiert werden',
+                    variant: 'destructive',
+                  });
+                }
+              }}
+              data-testid="button-copy-share-link"
+            >
+              <Copy className="w-4 h-4 mr-2" />
+              {language === 'en' ? 'Copy Share Link' : 'Freigabelink kopieren'}
+            </Button>
+            
+            <p className="text-center text-sm text-muted-foreground">
+              {language === 'en' ? 'Link expires in 7 days' : 'Link läuft in 7 Tagen ab'}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Profile Modal */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
