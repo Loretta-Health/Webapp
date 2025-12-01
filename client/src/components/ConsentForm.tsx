@@ -174,7 +174,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                       <TabsContent value="en" className="space-y-4 max-h-96 overflow-y-auto pr-2">
                         <div className="text-center border-b border-border pb-3">
                           <h3 className="font-black text-foreground text-sm">LORETTA HEALTH UG — GDPR CONSENT & PRIVACY POLICY (EN)</h3>
-                          <p className="text-[10px] mt-1">Last Updated: November 25, 2026 | Effective Date: November 25, 2026</p>
+                          <p className="text-[10px] mt-1">Last Updated: November 25, 2025 | Effective Date: November 25, 2025</p>
                         </div>
                         
                         <p>This Privacy and Consent Policy explains how Loretta Health UG (haftungsbeschränkt) ("Loretta", "we", "us") processes your personal and health data when you use the Loretta mobile application. Loretta provides wellbeing insights, behavioural support, and analysis of medical information. We do not provide diagnosis or medical treatment.</p>
@@ -281,7 +281,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                       <TabsContent value="de" className="space-y-4 max-h-96 overflow-y-auto pr-2">
                         <div className="text-center border-b border-border pb-3">
                           <h3 className="font-black text-foreground text-sm">LORETTA HEALTH UG — DATENSCHUTZ- UND EINWILLIGUNGSERKLÄRUNG (DE)</h3>
-                          <p className="text-[10px] mt-1">Letzte Aktualisierung: November 25, 2026 | Gültig ab: November 25, 2026</p>
+                          <p className="text-[10px] mt-1">Letzte Aktualisierung: November 25, 2025 | Gültig ab: November 25, 2025</p>
                         </div>
                         
                         <p>Diese Erklärung beschreibt, wie die Loretta Health UG (haftungsbeschränkt) („Loretta", „wir") personenbezogene und gesundheitsbezogene Daten verarbeitet. Loretta bietet personalisierte Einblicke, Wohlbefindensunterstützung und Erklärungen zu medizinischen Informationen. Wir stellen keine Diagnosen und führen keine medizinischen Behandlungen durch.</p>
