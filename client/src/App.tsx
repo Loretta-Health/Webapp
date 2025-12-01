@@ -20,6 +20,7 @@ import Onboarding from "@/pages/Onboarding";
 import LeaderboardPage from "@/pages/LeaderboardPage";
 import Calendar from "@/pages/Calendar";
 import RiskScoreDetails from "@/pages/RiskScoreDetails";
+import AlternativeMissionDetails from "@/pages/AlternativeMissionDetails";
 import NotFound from "@/pages/not-found";
 
 function ConsentGuard({ children }: { children: React.ReactNode }) {
@@ -61,6 +62,11 @@ function Router() {
       <Route path="/mission-details">
         <ConsentGuard>
           <MissionDetails />
+        </ConsentGuard>
+      </Route>
+      <Route path="/alternative-mission">
+        <ConsentGuard>
+          <AlternativeMissionDetails />
         </ConsentGuard>
       </Route>
       <Route path="/medications">
