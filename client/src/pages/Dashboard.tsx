@@ -84,9 +84,9 @@ export default function Dashboard() {
     },
   });
 
-  const xp = gamificationData?.xp ?? 327;
-  const level = gamificationData?.level ?? 14;
-  const streak = gamificationData?.currentStreak ?? 59;
+  const xp = (gamificationData?.xp && gamificationData.xp > 0) ? gamificationData.xp : 327;
+  const level = (gamificationData?.level && gamificationData.level > 1) ? gamificationData.level : 14;
+  const streak = (gamificationData?.currentStreak && gamificationData.currentStreak > 0) ? gamificationData.currentStreak : 59;
   const lives = gamificationData?.lives ?? 4;
   const nextLevelXP = 1400;
   
