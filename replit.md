@@ -131,6 +131,16 @@ Preferred communication style: Simple, everyday language.
 - ML prediction API bypassed until backend issues are resolved
 - Live score during questionnaire uses client-side calculation
 
+**Evidence-Based Risk Model:**
+The fallback risk calculation uses an improved evidence-based model that factors in:
+- **BMI**: Calculated from height (cm) and weight (kg) using metric formula, stratified per CDC/WHO guidelines (underweight, normal, overweight, obese classes I-III)
+- **Age**: Risk points increase progressively from 35+ to 75+ years
+- **Weight Change**: Significant gain (≥10kg) or moderate gain (≥5kg) in past year
+- **Medical History**: Diabetes/prediabetes, hypertension, high cholesterol, cardiovascular history (heart attack, heart failure, coronary disease, stroke), kidney disease
+- **Lifestyle**: Physical activity (moderate hours/week vs sedentary hours/day), sleep patterns (hours and quality), alcohol consumption
+- **Other Factors**: Balance/falls, oral health (linked to systemic inflammation), general health self-assessment
+- **Normalization**: Scores capped at 0-100, minimum baselines for older users, overall score weighted 60% toward highest domain risk + 40% average
+
 ### External Dependencies
 
 **Database & ORM:**
