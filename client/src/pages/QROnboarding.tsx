@@ -16,6 +16,7 @@ import {
   Shield,
   Heart,
   AlertCircle,
+  AlertTriangle,
   CheckCircle2,
   Keyboard,
   ExternalLink
@@ -334,6 +335,20 @@ export default function QROnboarding() {
                     <p className="font-bold text-foreground text-sm">Your Privacy Matters</p>
                     <p className="text-xs text-muted-foreground">
                       You'll review our privacy policy before creating your account. All data sharing is optional.
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              
+              <Card className="p-4 bg-chart-3/10 border border-chart-3/30 mb-4" data-testid="disclaimer-notice-qr">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-chart-3 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-foreground text-sm">Important Disclaimer</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Loretta is not a diagnostic tool. The information provided is for educational purposes only 
+                      and should not replace professional medical advice, diagnosis, or treatment. 
+                      Always consult your healthcare provider.
                     </p>
                   </div>
                 </div>

@@ -1698,6 +1698,24 @@ export default function Onboarding() {
         ))}
       </div>
 
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="flex items-start gap-3 p-4 rounded-lg bg-chart-3/10 border border-chart-3/30"
+        data-testid="disclaimer-notice-onboarding"
+      >
+        <AlertTriangle className="w-5 h-5 text-chart-3 flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="font-bold text-foreground text-sm">Important Disclaimer</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Loretta is not a diagnostic tool. The information provided is for educational purposes only 
+            and should not replace professional medical advice, diagnosis, or treatment. 
+            Always consult your healthcare provider.
+          </p>
+        </div>
+      </motion.div>
+
       <Button
         variant="ghost"
         className="w-full justify-between"
