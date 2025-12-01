@@ -29,6 +29,7 @@ import LevelUpModal from '@/components/LevelUpModal';
 import EnergyBar from '@/components/EnergyBar';
 import HealthScienceSection from '@/components/HealthScienceSection';
 import CommunitySelector, { type CommunityType } from '@/components/CommunitySelector';
+import { useMissions } from '@/hooks/useMissions';
 
 interface GamificationData {
   xp: number;
@@ -55,6 +56,7 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [communityType, setCommunityType] = useState<CommunityType>('loretta');
   const userId = getUserId();
+  const { missions, completedCount, totalCount } = useMissions();
   
   const { data: gamificationData } = useQuery<GamificationData>({
     queryKey: ['/api/gamification', userId],
@@ -383,48 +385,24 @@ export default function Dashboard() {
                 <div className="bg-gradient-to-br from-card via-card to-secondary/5 rounded-xl p-4 lg:p-6 border border-card-border">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
                     <h2 className="text-xl lg:text-2xl font-black text-foreground">Daily Missions</h2>
-                    <Badge className="bg-gradient-to-r from-chart-1 to-chart-2 text-white font-black border-0">2/4 Complete</Badge>
+                    <Badge className="bg-gradient-to-r from-chart-1 to-chart-2 text-white font-black border-0">{completedCount}/{totalCount} Complete</Badge>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4 mb-4">
-                    <QuestCard
-                      title="Complete 10 jumping jacks"
-                      category="daily"
-                      xpReward={50}
-                      progress={10}
-                      maxProgress={10}
-                      completed
-                      href="/mission-details?id=2"
-                    />
-                    <QuestCard
-                      title="Drink 8 glasses of water"
-                      description="Stay hydrated throughout the day"
-                      category="daily"
-                      xpReward={30}
-                      progress={5}
-                      maxProgress={8}
-                      href="/mission-details?id=1"
-                    />
-                    <QuestCard
-                      title="Take medication"
-                      description="Complete your daily medication routine"
-                      category="daily"
-                      xpReward={40}
-                      progress={1}
-                      maxProgress={3}
-                      href="/medications"
-                    />
-                    <QuestCard
-                      title="Maintain 30-day streak"
-                      description="Keep your streak alive!"
-                      category="bonus"
-                      xpReward={500}
-                      progress={30}
-                      maxProgress={30}
-                      completed
-                      legendary
-                      href="/streak"
-                    />
+                    {missions.map((mission) => (
+                      <QuestCard
+                        key={mission.id}
+                        title={mission.title}
+                        description={mission.description}
+                        category={mission.category}
+                        xpReward={mission.xpReward}
+                        progress={mission.progress}
+                        maxProgress={mission.maxProgress}
+                        completed={mission.completed}
+                        legendary={mission.legendary}
+                        href={mission.href}
+                      />
+                    ))}
                   </div>
                   
                   <HealthScienceSection category="activity" />
