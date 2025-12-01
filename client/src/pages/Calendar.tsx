@@ -51,7 +51,7 @@ export default function Calendar() {
     },
     {
       id: '2',
-      title: 'Take medication',
+      title: 'Take Vitamin D3',
       dateISO: format(new Date(), 'yyyy-MM-dd'),
       startTime: '08:00',
       endTime: '08:15',
