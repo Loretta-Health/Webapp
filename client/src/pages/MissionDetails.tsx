@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useLocation, Link, useSearch } from 'wouter';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,10 +20,14 @@ import {
   Dumbbell,
   Flame,
   Activity,
+  Footprints,
+  Moon,
+  Wind,
   type LucideIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from '@/components/MascotCharacter';
+import { useMissions } from '@/hooks/useMissions';
 
 interface MissionStep {
   id: number;
@@ -125,6 +129,116 @@ const missionsDatabase: Record<string, MissionData> = {
     ],
     communityTip: 'Try doing your jumping jacks in sets of 10 with short breaks. This helps maintain form and prevents fatigue!',
     stepLabel: 'Set'
+  },
+  'activity-steps': {
+    id: 3,
+    title: '5 minute outdoor walk',
+    frequency: '2 times daily',
+    description: 'Increase your daily activity by taking a brisk 5 minute walk outside.',
+    xpReward: 30,
+    totalSteps: 2,
+    icon: Footprints,
+    color: 'chart-1',
+    details: 'Walking is one of the best forms of exercise for overall health. A 5-minute brisk walk can boost your mood, improve circulation, and help you reach your daily step goals.',
+    benefits: [
+      { icon: Heart, text: 'Improves cardiovascular health' },
+      { icon: Brain, text: 'Boosts mood and mental clarity' },
+      { icon: Zap, text: 'Increases energy levels' },
+      { icon: Wind, text: 'Fresh air and vitamin D' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+    ],
+    alternativeMissions: [
+      { id: 301, title: 'March in place for 5 mins', xp: 25, icon: '🚶' },
+      { id: 302, title: 'Climb stairs for 3 mins', xp: 30, icon: '🪜' },
+    ],
+    communityTip: 'Try walking during phone calls or after meals. Every step counts toward your daily goal!',
+    stepLabel: 'Walk'
+  },
+  'activity-sleep': {
+    id: 4,
+    title: 'Wind down routine',
+    frequency: 'Every night',
+    description: 'Start a relaxing bedtime routine 30 minutes before sleep - no screens!',
+    xpReward: 25,
+    totalSteps: 1,
+    icon: Moon,
+    color: 'chart-2',
+    details: 'A consistent wind-down routine signals to your body that it\'s time to sleep. Reducing screen time before bed helps maintain your natural circadian rhythm.',
+    benefits: [
+      { icon: Brain, text: 'Better sleep quality' },
+      { icon: Heart, text: 'Reduced stress levels' },
+      { icon: Zap, text: 'More energy tomorrow' },
+      { icon: Leaf, text: 'Improved mental health' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+    ],
+    alternativeMissions: [
+      { id: 401, title: 'Read a book before bed', xp: 20, icon: '📖' },
+      { id: 402, title: 'Practice meditation', xp: 25, icon: '🧘' },
+    ],
+    communityTip: 'Try dimming the lights and reading a book instead of scrolling. Your body will thank you!',
+    stepLabel: 'Night'
+  },
+  'activity-heartRate': {
+    id: 5,
+    title: 'Deep breathing exercise',
+    frequency: '3 times daily',
+    description: 'Practice 5 minutes of deep breathing to help lower your heart rate naturally.',
+    xpReward: 20,
+    totalSteps: 3,
+    icon: Heart,
+    color: 'chart-1',
+    details: 'Deep breathing activates your parasympathetic nervous system, which helps reduce stress and lower your heart rate. Regular practice can improve your cardiovascular health.',
+    benefits: [
+      { icon: Heart, text: 'Lowers resting heart rate' },
+      { icon: Brain, text: 'Reduces anxiety and stress' },
+      { icon: Leaf, text: 'Improves oxygen flow' },
+      { icon: Zap, text: 'Increases focus' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+    ],
+    alternativeMissions: [
+      { id: 501, title: 'Try box breathing', xp: 20, icon: '📦' },
+      { id: 502, title: 'Do gentle stretching', xp: 15, icon: '🧘' },
+    ],
+    communityTip: 'Try the 4-7-8 technique: breathe in for 4 seconds, hold for 7, exhale for 8.',
+    stepLabel: 'Session'
+  },
+  'activity-calories': {
+    id: 6,
+    title: 'Active break',
+    frequency: 'Every 2 hours',
+    description: 'Take a 10-minute active break with stretching or light movement.',
+    xpReward: 15,
+    totalSteps: 4,
+    icon: Flame,
+    color: 'chart-2',
+    details: 'Regular movement breaks help prevent the negative effects of prolonged sitting. Even short bursts of activity can boost your metabolism and improve focus.',
+    benefits: [
+      { icon: Flame, text: 'Burns extra calories' },
+      { icon: Activity, text: 'Prevents muscle stiffness' },
+      { icon: Brain, text: 'Improves concentration' },
+      { icon: Heart, text: 'Better circulation' },
+    ],
+    initialSteps: [
+      { id: 1, completed: false },
+      { id: 2, completed: false },
+      { id: 3, completed: false },
+      { id: 4, completed: false },
+    ],
+    alternativeMissions: [
+      { id: 601, title: 'Do desk exercises', xp: 15, icon: '💪' },
+      { id: 602, title: 'Take the stairs', xp: 20, icon: '🪜' },
+    ],
+    communityTip: 'Set a timer every 2 hours to remind yourself to move. Your body and mind will perform better!',
+    stepLabel: 'Break'
   }
 };
 
@@ -134,12 +248,34 @@ export default function MissionDetails() {
   const params = new URLSearchParams(searchString);
   const missionId = params.get('id') || '1';
   
+  const { missions, logMissionStep, updateMissionProgress } = useMissions();
+  
   const missionData = missionsDatabase[missionId] || missionsDatabase['1'];
   const MissionIcon = missionData.icon;
   const colors = colorClasses[missionData.color] || colorClasses['chart-1'];
   
-  const [steps, setSteps] = useState<MissionStep[]>(missionData.initialSteps);
+  const existingMission = missions.find(m => m.id === missionId);
+  const initialProgress = existingMission?.progress || 0;
+  
+  const [steps, setSteps] = useState<MissionStep[]>(() => {
+    const stepsWithProgress = missionData.initialSteps.map((step, index) => ({
+      ...step,
+      completed: index < initialProgress,
+      time: index < initialProgress ? step.time : undefined,
+    }));
+    return stepsWithProgress;
+  });
   const [showCelebration, setShowCelebration] = useState(false);
+  
+  useEffect(() => {
+    if (existingMission) {
+      setSteps(missionData.initialSteps.map((step, index) => ({
+        ...step,
+        completed: index < existingMission.progress,
+        time: index < existingMission.progress ? step.time : undefined,
+      })));
+    }
+  }, [existingMission?.progress]);
   
   const completedCount = steps.filter(s => s.completed).length;
   const progressPercent = (completedCount / missionData.totalSteps) * 100;
@@ -155,6 +291,8 @@ export default function MissionDetails() {
           ? { ...step, completed: true, time: timeString }
           : step
       ));
+      
+      logMissionStep(missionId);
       
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 2000);

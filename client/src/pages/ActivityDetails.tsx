@@ -12,11 +12,13 @@ import {
   Clock,
   Target,
   TrendingUp,
-  Play
+  Play,
+  Check
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link, useSearch } from 'wouter';
+import { Link, useSearch, useLocation } from 'wouter';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
+import { useMissions } from '@/hooks/useMissions';
 
 interface MetricConfig {
   type: string;
@@ -107,13 +109,26 @@ const metricsConfig: Record<string, MetricConfig> = {
   },
 };
 
+const maxProgressMap: Record<string, number> = {
+  steps: 2,
+  sleep: 1,
+  heartRate: 3,
+  calories: 4,
+};
+
 export default function ActivityDetails() {
+  const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const metricType = params.get('type') || 'steps';
   
+  const { missions, addMission } = useMissions();
+  
   const metric = metricsConfig[metricType] || metricsConfig.steps;
   const Icon = metric.icon;
+  
+  const missionId = `activity-${metricType}`;
+  const isMissionAdded = missions.some(m => m.id === missionId);
   
   const [currentTime] = useState(() => {
     return new Date().toLocaleTimeString('en-US', { 
@@ -122,6 +137,24 @@ export default function ActivityDetails() {
       hour12: true 
     });
   });
+  
+  const handleStartMission = () => {
+    if (!isMissionAdded) {
+      addMission({
+        id: missionId,
+        title: metric.mission.title,
+        description: metric.mission.description,
+        category: 'daily',
+        xpReward: metric.mission.xpReward,
+        progress: 0,
+        maxProgress: maxProgressMap[metricType] || 2,
+        completed: false,
+        href: `/mission-details?id=${missionId}`,
+        source: 'activity',
+      });
+    }
+    navigate(`/mission-details?id=${missionId}`);
+  };
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
@@ -221,12 +254,26 @@ export default function ActivityDetails() {
               </div>
             </div>
             
-            <Link href={`/mission-details?id=activity-${metric.type}`}>
-              <Button className="w-full mt-4 bg-gradient-to-r from-primary to-chart-2 font-black" data-testid="button-start-mission">
-                <Play className="w-4 h-4 mr-2" />
-                Start This Mission
-              </Button>
-            </Link>
+            <Button 
+              className={`w-full mt-4 font-black ${isMissionAdded 
+                ? 'bg-gradient-to-r from-chart-2 to-emerald-500' 
+                : 'bg-gradient-to-r from-primary to-chart-2'
+              }`}
+              onClick={handleStartMission}
+              data-testid="button-start-mission"
+            >
+              {isMissionAdded ? (
+                <>
+                  <Check className="w-4 h-4 mr-2" />
+                  Continue Mission
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 mr-2" />
+                  Start This Mission
+                </>
+              )}
+            </Button>
           </Card>
         </motion.div>
         
