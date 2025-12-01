@@ -1,25 +1,52 @@
+import { useState } from 'react';
 import { Link } from 'wouter';
-import { ChevronLeft, AlertCircle, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { 
+  ChevronRight, 
+  AlertCircle, 
+  CheckCircle2, 
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Activity,
+  Heart,
+  Cigarette,
+  Utensils,
+  Dumbbell,
+  Pill,
+  Wine,
+  Info,
+  Target,
+  Sparkles
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface RiskFactor {
   id: string;
   text: string;
   type: 'negative' | 'warning' | 'positive';
+  icon: React.ReactNode;
+  category: string;
 }
 
 const riskFactors: RiskFactor[] = [
-  { id: '1', text: 'You smoke 10 cigarettes per day', type: 'negative' },
-  { id: '2', text: 'Limited physical activity', type: 'negative' },
-  { id: '3', text: 'High sugar diet', type: 'negative' },
-  { id: '4', text: 'Low vegetable intake', type: 'negative' },
-  { id: '5', text: 'Minimal protein consumption', type: 'negative' },
-  { id: '6', text: 'Moderate alcohol consumption (1 drink/day)', type: 'warning' },
-  { id: '7', text: 'Taking prescribed medication regularly', type: 'positive' },
+  { id: '1', text: 'Smoking 10 cigarettes per day', type: 'negative', icon: <Cigarette className="w-4 h-4" />, category: 'Lifestyle' },
+  { id: '2', text: 'Limited physical activity', type: 'negative', icon: <Dumbbell className="w-4 h-4" />, category: 'Activity' },
+  { id: '3', text: 'High sugar diet', type: 'negative', icon: <Utensils className="w-4 h-4" />, category: 'Diet' },
+  { id: '4', text: 'Low vegetable intake', type: 'negative', icon: <Utensils className="w-4 h-4" />, category: 'Diet' },
+  { id: '5', text: 'Minimal protein consumption', type: 'negative', icon: <Utensils className="w-4 h-4" />, category: 'Diet' },
+  { id: '6', text: 'Moderate alcohol (1 drink/day)', type: 'warning', icon: <Wine className="w-4 h-4" />, category: 'Lifestyle' },
+  { id: '7', text: 'Taking medication regularly', type: 'positive', icon: <Pill className="w-4 h-4" />, category: 'Medical' },
 ];
 
 export default function RiskScoreDetails() {
   const score = 68;
+  const previousScore = 62;
+  const trend = score > previousScore ? 'up' : score < previousScore ? 'down' : 'stable';
 
   const getScoreColor = () => {
     if (score >= 80) return 'text-primary';
@@ -28,120 +55,329 @@ export default function RiskScoreDetails() {
     return 'text-destructive';
   };
 
+  const getScoreGradient = () => {
+    if (score >= 80) return 'from-primary to-chart-2';
+    if (score >= 60) return 'from-chart-3 to-chart-2';
+    if (score >= 40) return 'from-chart-2 to-destructive';
+    return 'from-destructive to-red-700';
+  };
+
+  const getScoreLabel = () => {
+    if (score >= 80) return 'Excellent';
+    if (score >= 60) return 'Good';
+    if (score >= 40) return 'Fair';
+    return 'Needs Attention';
+  };
+
   const getFactorStyles = (type: RiskFactor['type']) => {
     switch (type) {
       case 'negative':
         return {
-          bg: 'bg-red-50',
-          border: 'border-red-200',
-          icon: <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />,
-          text: 'text-red-700',
+          bg: 'bg-destructive/10',
+          border: 'border-destructive/20',
+          iconBg: 'bg-destructive/20',
+          iconColor: 'text-destructive',
+          text: 'text-foreground',
         };
       case 'warning':
         return {
-          bg: 'bg-amber-50',
-          border: 'border-amber-200',
-          icon: <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0" />,
-          text: 'text-amber-700',
+          bg: 'bg-chart-3/10',
+          border: 'border-chart-3/20',
+          iconBg: 'bg-chart-3/20',
+          iconColor: 'text-chart-3',
+          text: 'text-foreground',
         };
       case 'positive':
         return {
-          bg: 'bg-green-50',
-          border: 'border-green-200',
-          icon: <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />,
-          text: 'text-green-700',
+          bg: 'bg-primary/10',
+          border: 'border-primary/20',
+          iconBg: 'bg-primary/20',
+          iconColor: 'text-primary',
+          text: 'text-foreground',
         };
     }
   };
 
+  const negativeFactors = riskFactors.filter(f => f.type === 'negative');
+  const warningFactors = riskFactors.filter(f => f.type === 'warning');
+  const positiveFactors = riskFactors.filter(f => f.type === 'positive');
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="bg-[#4355B9] text-white py-4 px-4 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto flex items-center gap-4">
-          <Link href="/dashboard">
-            <button className="p-1 hover:bg-white/10 rounded-lg transition-colors">
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-          </Link>
-          <div className="text-center flex-1 pr-10">
-            <h1 className="text-xl font-bold">Risk Score</h1>
-            <p className="text-sm text-white/80">Your Health Overview</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 pb-32">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <Link href="/dashboard">
+              <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
+                <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
+                Back
+              </Button>
+            </Link>
+            <div className="text-center">
+              <h1 className="text-xl font-black text-white">Risk Score</h1>
+              <p className="text-white/70 text-sm">Health Overview</p>
+            </div>
+            <div className="w-16" />
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-2xl mx-auto">
-        <section className="bg-slate-100 py-8 px-4">
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-foreground mb-6">Your Risk Score</h2>
-            
+      {/* Score Card - Overlapping Header */}
+      <div className="max-w-4xl mx-auto px-4 -mt-24">
+        <Card className="p-6 mb-6 border-0 shadow-xl">
+          <div className="flex flex-col items-center">
+            {/* Score Circle */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', bounce: 0.4 }}
-              className="relative w-32 h-32 mx-auto"
+              className="relative w-36 h-36 mb-4"
             >
               <svg className="w-full h-full transform -rotate-90">
                 <circle
                   cx="50%"
                   cy="50%"
                   r="45%"
-                  stroke="#e5e7eb"
-                  strokeWidth="10"
+                  stroke="currentColor"
+                  strokeWidth="8"
                   fill="none"
+                  className="text-muted/30"
                 />
                 <circle
                   cx="50%"
                   cy="50%"
                   r="45%"
-                  stroke="currentColor"
-                  strokeWidth="10"
+                  stroke="url(#scoreGradient)"
+                  strokeWidth="8"
                   fill="none"
                   strokeLinecap="round"
                   strokeDasharray={`${(score / 100) * 283} 283`}
-                  className={getScoreColor()}
                 />
+                <defs>
+                  <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" className={`${getScoreColor().replace('text-', 'stop-color-')}`} style={{ stopColor: score >= 60 ? '#84cc16' : '#f97316' }} />
+                    <stop offset="100%" style={{ stopColor: '#06b6d4' }} />
+                  </linearGradient>
+                </defs>
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className={`text-3xl font-black ${getScoreColor()}`}>{score}</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className={`text-4xl font-black ${getScoreColor()}`}>{score}</span>
+                <span className="text-xs text-muted-foreground font-medium">out of 100</span>
               </div>
             </motion.div>
+
+            {/* Score Label & Trend */}
+            <div className="flex items-center gap-3 mb-4">
+              <Badge className={`bg-gradient-to-r ${getScoreGradient()} text-white border-0 px-4 py-1`}>
+                {getScoreLabel()}
+              </Badge>
+              {trend === 'up' && (
+                <div className="flex items-center gap-1 text-primary text-sm font-medium">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>+{score - previousScore} pts</span>
+                </div>
+              )}
+              {trend === 'down' && (
+                <div className="flex items-center gap-1 text-destructive text-sm font-medium">
+                  <TrendingDown className="w-4 h-4" />
+                  <span>{score - previousScore} pts</span>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-4 w-full max-w-md">
+              <div className="text-center p-3 rounded-xl bg-destructive/10">
+                <p className="text-2xl font-black text-destructive">{negativeFactors.length}</p>
+                <p className="text-xs text-muted-foreground">Risk Factors</p>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-chart-3/10">
+                <p className="text-2xl font-black text-chart-3">{warningFactors.length}</p>
+                <p className="text-xs text-muted-foreground">Warnings</p>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-primary/10">
+                <p className="text-2xl font-black text-primary">{positiveFactors.length}</p>
+                <p className="text-xs text-muted-foreground">Positive</p>
+              </div>
+            </div>
           </div>
-        </section>
+        </Card>
 
-        <section className="px-4 py-6">
-          <h3 className="text-lg font-bold text-foreground mb-2">What does this mean?</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Your risk score is calculated based on your lifestyle, medical history, and daily habits. 
-            Below are the key factors affecting your score. Green items are positive factors, 
-            while orange and red items need attention.
-          </p>
-        </section>
+        {/* What This Means */}
+        <Card className="p-5 mb-4 border-0 shadow-lg">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Info className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold text-foreground mb-1">What does this mean?</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Your risk score is calculated from your lifestyle, medical history, and daily habits. 
+                Focus on improving red items first for the biggest impact on your health.
+              </p>
+            </div>
+          </div>
+        </Card>
 
-        <section className="px-4 pb-8">
-          <h3 className="text-lg font-bold text-foreground mb-4">Key Factors</h3>
+        {/* Risk Factors Section */}
+        <Card className="p-5 mb-4 border-0 shadow-lg">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertCircle className="w-4 h-4 text-destructive" />
+            </div>
+            <h3 className="font-bold text-foreground">Areas Needing Attention</h3>
+            <Badge variant="outline" className="ml-auto text-destructive border-destructive/30">
+              {negativeFactors.length} factors
+            </Badge>
+          </div>
           
-          <div className="space-y-3">
-            {riskFactors.map((factor, index) => {
+          <div className="space-y-2">
+            {negativeFactors.map((factor, index) => {
               const styles = getFactorStyles(factor.type);
               return (
                 <motion.div
                   key={factor.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`flex items-center gap-3 p-4 rounded-lg ${styles.bg} border ${styles.border}`}
+                  transition={{ delay: index * 0.05 }}
+                  className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
                 >
-                  {styles.icon}
-                  <span className={`text-sm font-medium ${styles.text}`}>
-                    {factor.text}
-                  </span>
+                  <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
+                    {factor.icon}
+                  </div>
+                  <div className="flex-1">
+                    <p className={`text-sm font-medium ${styles.text}`}>{factor.text}</p>
+                    <p className="text-xs text-muted-foreground">{factor.category}</p>
+                  </div>
                 </motion.div>
               );
             })}
           </div>
-        </section>
-      </main>
+        </Card>
+
+        {/* Warnings Section */}
+        {warningFactors.length > 0 && (
+          <Card className="p-5 mb-4 border-0 shadow-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-full bg-chart-3/10 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4 text-chart-3" />
+              </div>
+              <h3 className="font-bold text-foreground">Watch These</h3>
+              <Badge variant="outline" className="ml-auto text-chart-3 border-chart-3/30">
+                {warningFactors.length} factor{warningFactors.length > 1 ? 's' : ''}
+              </Badge>
+            </div>
+            
+            <div className="space-y-2">
+              {warningFactors.map((factor, index) => {
+                const styles = getFactorStyles(factor.type);
+                return (
+                  <motion.div
+                    key={factor.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (negativeFactors.length + index) * 0.05 }}
+                    className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
+                  >
+                    <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
+                      {factor.icon}
+                    </div>
+                    <div className="flex-1">
+                      <p className={`text-sm font-medium ${styles.text}`}>{factor.text}</p>
+                      <p className="text-xs text-muted-foreground">{factor.category}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+
+        {/* Positive Factors Section */}
+        <Card className="p-5 mb-4 border-0 shadow-lg">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4 text-primary" />
+            </div>
+            <h3 className="font-bold text-foreground">Keep It Up!</h3>
+            <Badge variant="outline" className="ml-auto text-primary border-primary/30">
+              {positiveFactors.length} factor{positiveFactors.length > 1 ? 's' : ''}
+            </Badge>
+          </div>
+          
+          <div className="space-y-2">
+            {positiveFactors.map((factor, index) => {
+              const styles = getFactorStyles(factor.type);
+              return (
+                <motion.div
+                  key={factor.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: (negativeFactors.length + warningFactors.length + index) * 0.05 }}
+                  className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
+                >
+                  <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
+                    {factor.icon}
+                  </div>
+                  <div className="flex-1">
+                    <p className={`text-sm font-medium ${styles.text}`}>{factor.text}</p>
+                    <p className="text-xs text-muted-foreground">{factor.category}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Improvement Tips */}
+        <Card className="p-5 mb-8 border-0 shadow-lg bg-gradient-to-br from-primary/5 to-chart-2/5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+              <Target className="w-4 h-4 text-primary" />
+            </div>
+            <h3 className="font-bold text-foreground">Quick Wins</h3>
+            <Sparkles className="w-4 h-4 text-chart-3 ml-auto" />
+          </div>
+          
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                1
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Add a 15-min daily walk</p>
+                <p className="text-xs text-muted-foreground">Could improve your score by +5 points</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                2
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Include one vegetable serving per meal</p>
+                <p className="text-xs text-muted-foreground">Could improve your score by +3 points</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                3
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Reduce smoking by 2 cigarettes daily</p>
+                <p className="text-xs text-muted-foreground">Could improve your score by +4 points</p>
+              </div>
+            </div>
+          </div>
+
+          <Link href="/chat">
+            <Button className="w-full mt-4 bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Get Personalized Tips
+            </Button>
+          </Link>
+        </Card>
+      </div>
     </div>
   );
 }
