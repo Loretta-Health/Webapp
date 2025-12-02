@@ -52,6 +52,7 @@ export default function QROnboarding() {
   const [manualCode, setManualCode] = useState('');
   const [validating, setValidating] = useState(false);
   const [showFullPolicy, setShowFullPolicy] = useState(false);
+  const [showAccessibility, setShowAccessibility] = useState(false);
   const [showDisclaimerDialog, setShowDisclaimerDialog] = useState(false);
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [pendingInviteData, setPendingInviteData] = useState<InviteData | null>(null);
@@ -602,6 +603,54 @@ export default function QROnboarding() {
                           </div>
                         </TabsContent>
                       </Tabs>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              {/* Inclusion & Accessibility Statement Toggle */}
+              <Button
+                variant="ghost"
+                className="w-full justify-between text-primary mb-2"
+                onClick={() => setShowAccessibility(!showAccessibility)}
+                data-testid="button-toggle-accessibility-qr"
+              >
+                <span className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  Read Inclusion & Accessibility Statement
+                </span>
+                {showAccessibility ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </Button>
+
+              <AnimatePresence>
+                {showAccessibility && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden mb-4"
+                  >
+                    <div className="bg-muted/50 rounded-lg p-4 text-xs text-muted-foreground space-y-4" data-testid="accessibility-content-qr">
+                      <div className="text-center border-b border-border pb-3">
+                        <h3 className="font-black text-foreground text-sm">Inclusion & Accessibility at Loretta</h3>
+                      </div>
+                      
+                      <p>At Loretta, we believe everyone deserves easy, respectful, and reliable access to health and wellbeing support. Our app is built to serve people with different backgrounds, abilities, and levels of health literacy.</p>
+                      
+                      <p>To make this possible, we design our experience with inclusion and accessibility at the center:</p>
+                      
+                      <ul className="list-disc list-inside space-y-2">
+                        <li>Clear, simple language is used throughout the app so information is easy to understand.</li>
+                        <li>Flexible navigation supports different levels of digital experience.</li>
+                        <li>Accessible color contrast and intuitive layouts are used throughout the app.</li>
+                        <li>Screen-reader compatibility is currently in development, and we are working toward full accessibility support.</li>
+                        <li>Respect for your identity is core to our work. You can always choose how you describe yourself.</li>
+                        <li>Support is available if something is unclear or difficult to use.</li>
+                      </ul>
+                      
+                      <p>If you encounter a barrier or need additional support, please contact us at <a href="mailto:info@loretta.care" className="text-primary font-semibold hover:underline">info@loretta.care</a>.</p>
+                      
+                      <p className="font-semibold text-foreground">Your feedback directly helps us improve accessibility for everyone.</p>
                     </div>
                   </motion.div>
                 )}
