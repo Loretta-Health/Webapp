@@ -3,8 +3,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
@@ -71,8 +69,6 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [communityType, setCommunityType] = useState<CommunityType>('loretta');
   const [showCheckInModal, setShowCheckInModal] = useState(false);
-  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
-  const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
   const userId = getUserId();
   const { missions, completedCount, totalCount } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
@@ -641,21 +637,25 @@ export default function Dashboard() {
             {/* Footer */}
             <footer className="mt-8 pt-6 border-t border-border">
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-muted-foreground">
-                <button
-                  onClick={() => setShowPrivacyPolicy(true)}
+                <a
+                  href="https://00d7b946-be50-448c-a2af-5ec70cf188e6-00-kmbxzepwre7i.picard.replit.dev/join?code=LORETTA-XTNN59"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-1.5 hover:text-primary transition-colors"
                 >
                   <Shield className="w-3.5 h-3.5" />
                   Privacy Policy
-                </button>
+                </a>
                 <span className="hidden sm:inline text-muted-foreground/50">•</span>
-                <button
-                  onClick={() => setShowAccessibilityPolicy(true)}
+                <a
+                  href="/attached_assets/Loretta_Inclusion_Accessibility_Policy_1764691870647.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-1.5 hover:text-primary transition-colors"
                 >
                   <Accessibility className="w-3.5 h-3.5" />
                   Inclusion & Accessibility
-                </button>
+                </a>
               </div>
               <p className="text-center text-[10px] text-muted-foreground/60 mt-3">
                 © 2025 Loretta Health UG. All rights reserved.
@@ -664,92 +664,6 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
-      
-      {/* Privacy Policy Dialog */}
-      <Dialog open={showPrivacyPolicy} onOpenChange={setShowPrivacyPolicy}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-primary" />
-              Privacy Policy
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="h-[60vh] pr-4">
-            <div className="space-y-4 text-sm text-muted-foreground">
-              <div className="text-center border-b border-border pb-3">
-                <h3 className="font-black text-foreground">LORETTA HEALTH UG — GDPR CONSENT & PRIVACY POLICY</h3>
-                <p className="text-xs mt-1">Last Updated: November 25, 2025 | Effective Date: November 25, 2025</p>
-              </div>
-              
-              <p>This Privacy and Consent Policy explains how Loretta Health UG (haftungsbeschränkt) ("Loretta", "we", "us") processes your personal and health data when you use the Loretta mobile application. Loretta provides wellbeing insights, behavioural support, and analysis of medical information. We do not provide diagnosis or medical treatment.</p>
-              
-              <p><strong className="text-foreground">You choose what you share and may withdraw consent at any time.</strong></p>
-              
-              <div className="space-y-2">
-                <h4 className="font-bold text-foreground">1. Controller</h4>
-                <p>Loretta Health UG (haftungsbeschränkt)<br/>Cuvrystraße 53, 10997 Berlin, Germany<br/>Email: privacy@loretta.care</p>
-              </div>
-              
-              <div className="space-y-2">
-                <h4 className="font-bold text-foreground">2. Categories of Data Processed</h4>
-                <p><strong>2.1 Account Data</strong><br/>Name, email, password (encrypted), age, gender identity, language, profile settings.</p>
-                <p><strong>2.2 Health and Wellbeing Data</strong><br/>Self reported symptoms, stress indicators, lifestyle information, and optional identity attributes (ethnicity, sexuality, disability). These fields are always voluntary.</p>
-                <p><strong>2.3 Wearable Data</strong><br/>With your consent, we may process data from Apple Health or Google Fit including: steps, activity, sleep, heart rate, HRV, blood oxygen, ECG (if available), cycle data, and other metrics supported by your device. You may disconnect wearables at any time.</p>
-                <p><strong>2.4 Uploaded Medical Documents</strong><br/>Medical documents are used to generate explanations and are deleted immediately after processing.</p>
-                <p><strong>2.5 Coarse Location</strong><br/>We process only approximate regional location to identify environmental and wellbeing factors. We do not collect precise GPS location.</p>
-                <p><strong>2.6 Technical and Device Data</strong><br/>Operating system, device type, crash logs, app usage logs, IP address (anonymised), and permission settings.</p>
-              </div>
-              
-              <div className="space-y-2">
-                <h4 className="font-bold text-foreground">3. Purposes of Processing</h4>
-                <p><strong>3.1 Service Delivery</strong><br/>To provide personalised insights, document explanations, behaviour support, and health-equity–aware features.</p>
-                <p><strong>3.2 Fairness and Safety</strong><br/>To ensure equitable model performance, reduce bias, and maintain accuracy across demographic groups.</p>
-                <p><strong>3.3 Research and Development</strong><br/>Pseudonymised data may be used for statistical analysis and model improvement. You may opt out at any time.</p>
-                <p><strong>3.4 Security and Compliance</strong><br/>To monitor system integrity, detect misuse, ensure secure operation, and fulfil regulatory requirements.</p>
-              </div>
-              
-              <div className="space-y-2">
-                <h4 className="font-bold text-foreground">4. Your Rights</h4>
-                <p>You have the right to access, correct, delete, restrict processing, object to processing, withdraw consent, and data portability. Contact: privacy@loretta.care</p>
-              </div>
-              
-              <p className="font-bold text-foreground">We do not sell your data.</p>
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Inclusion & Accessibility Dialog */}
-      <Dialog open={showAccessibilityPolicy} onOpenChange={setShowAccessibilityPolicy}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Accessibility className="w-5 h-5 text-primary" />
-              Inclusion & Accessibility at Loretta
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="h-[60vh] pr-4">
-            <div className="space-y-4 text-sm text-muted-foreground">
-              <p>At Loretta, we believe everyone deserves easy, respectful, and reliable access to health and wellbeing support. Our app is built to serve people with different backgrounds, abilities, and levels of health literacy.</p>
-              
-              <p>To make this possible, we design our experience with inclusion and accessibility at the center:</p>
-              
-              <ul className="list-disc list-inside space-y-2">
-                <li>Clear, simple language is used throughout the app so information is easy to understand.</li>
-                <li>Flexible navigation supports different levels of digital experience.</li>
-                <li>Accessible color contrast and intuitive layouts are used throughout the app.</li>
-                <li>Screen-reader compatibility is currently in development, and we are working toward full accessibility support.</li>
-                <li>Respect for your identity is core to our work. You can always choose how you describe yourself.</li>
-                <li>Support is available if something is unclear or difficult to use.</li>
-              </ul>
-              
-              <p>If you encounter a barrier or need additional support, please contact us at <a href="mailto:info@loretta.care" className="text-primary font-semibold hover:underline">info@loretta.care</a>.</p>
-              
-              <p className="font-semibold text-foreground">Your feedback directly helps us improve accessibility for everyone.</p>
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
       
       <LevelUpModal
         open={showLevelUp}
