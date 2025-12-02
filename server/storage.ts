@@ -311,6 +311,14 @@ export class DatabaseStorage implements IStorage {
     return checkin;
   }
 
+  async getAllEmotionalCheckins(userId: string): Promise<EmotionalCheckin[]> {
+    return await db
+      .select()
+      .from(emotionalCheckins)
+      .where(eq(emotionalCheckins.userId, userId))
+      .orderBy(desc(emotionalCheckins.checkedInAt));
+  }
+
   async saveEmotionalCheckin(data: InsertEmotionalCheckin): Promise<EmotionalCheckin> {
     const [created] = await db
       .insert(emotionalCheckins)

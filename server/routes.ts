@@ -470,6 +470,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/emotional-checkins/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const checkins = await storage.getAllEmotionalCheckins(userId);
+      res.json(checkins);
+    } catch (error) {
+      console.error("Error fetching all emotional check-ins:", error);
+      res.status(500).json({ error: "Failed to fetch emotional check-ins" });
+    }
+  });
+
   app.post("/api/emotional-checkins", async (req, res) => {
     try {
       const { userId, emotion, userMessage, aiResponse, xpAwarded = 10 } = req.body;
