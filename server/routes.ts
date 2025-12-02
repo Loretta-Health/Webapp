@@ -455,6 +455,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================
+  // Emotional Check-in Endpoints
+  // ========================
+
+  app.get("/api/emotional-checkins/:userId/latest", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const checkin = await storage.getLatestEmotionalCheckin(userId);
+      res.json(checkin || null);
+    } catch (error) {
+      console.error("Error fetching latest emotional check-in:", error);
+      res.status(500).json({ error: "Failed to fetch latest emotional check-in" });
+    }
+  });
+
+  app.post("/api/emotional-checkins", async (req, res) => {
+    try {
+      const { userId, emotion, userMessage, aiResponse, xpAwarded = 10 } = req.body;
+      
+      if (!userId || !emotion) {
+        return res.status(400).json({ error: "userId and emotion are required" });
+      }
+
+      const saved = await storage.saveEmotionalCheckin({
+        userId,
+        emotion,
+        userMessage,
+        aiResponse,
+        xpAwarded,
+      });
+
+      // Award XP for emotional check-in
+      await storage.addXP(userId, xpAwarded);
+
+      res.json(saved);
+    } catch (error) {
+      console.error("Error saving emotional check-in:", error);
+      res.status(500).json({ error: "Failed to save emotional check-in" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
