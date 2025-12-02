@@ -11,12 +11,15 @@ import {
   type InsertUserGamification,
   type RiskScore,
   type InsertRiskScore,
+  type EmotionalCheckin,
+  type InsertEmotionalCheckin,
   users,
   questionnaireAnswers,
   userProfiles,
   userPreferences,
   userGamification,
   riskScores,
+  emotionalCheckins,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -50,6 +53,10 @@ export interface IStorage {
   getLatestRiskScore(userId: string): Promise<RiskScore | undefined>;
   getAllRiskScores(userId: string): Promise<RiskScore[]>;
   saveRiskScore(data: InsertRiskScore): Promise<RiskScore>;
+
+  // Emotional check-in methods
+  getLatestEmotionalCheckin(userId: string): Promise<EmotionalCheckin | undefined>;
+  saveEmotionalCheckin(data: InsertEmotionalCheckin): Promise<EmotionalCheckin>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -288,6 +295,25 @@ export class DatabaseStorage implements IStorage {
   async saveRiskScore(data: InsertRiskScore): Promise<RiskScore> {
     const [created] = await db
       .insert(riskScores)
+      .values(data)
+      .returning();
+    return created;
+  }
+
+  // Emotional check-in methods
+  async getLatestEmotionalCheckin(userId: string): Promise<EmotionalCheckin | undefined> {
+    const [checkin] = await db
+      .select()
+      .from(emotionalCheckins)
+      .where(eq(emotionalCheckins.userId, userId))
+      .orderBy(desc(emotionalCheckins.checkedInAt))
+      .limit(1);
+    return checkin;
+  }
+
+  async saveEmotionalCheckin(data: InsertEmotionalCheckin): Promise<EmotionalCheckin> {
+    const [created] = await db
+      .insert(emotionalCheckins)
       .values(data)
       .returning();
     return created;

@@ -136,3 +136,22 @@ export const insertRiskScoreSchema = createInsertSchema(riskScores).omit({
 
 export type InsertRiskScore = z.infer<typeof insertRiskScoreSchema>;
 export type RiskScore = typeof riskScores.$inferSelect;
+
+// Emotional check-ins table - stores user emotional check-ins
+export const emotionalCheckins = pgTable("emotional_checkins", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  emotion: text("emotion").notNull(), // 'happy', 'stressed', 'sad', 'tired', etc.
+  userMessage: text("user_message"), // what the user said
+  aiResponse: text("ai_response"), // supportive message from AI
+  xpAwarded: integer("xp_awarded").default(10),
+  checkedInAt: timestamp("checked_in_at").defaultNow(),
+});
+
+export const insertEmotionalCheckinSchema = createInsertSchema(emotionalCheckins).omit({
+  id: true,
+  checkedInAt: true,
+});
+
+export type InsertEmotionalCheckin = z.infer<typeof insertEmotionalCheckinSchema>;
+export type EmotionalCheckin = typeof emotionalCheckins.$inferSelect;
