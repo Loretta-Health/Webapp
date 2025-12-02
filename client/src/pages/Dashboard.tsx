@@ -29,8 +29,10 @@ import LevelUpModal from '@/components/LevelUpModal';
 import EnergyBar from '@/components/EnergyBar';
 import HealthScienceSection from '@/components/HealthScienceSection';
 import CommunitySelector, { type CommunityType } from '@/components/CommunitySelector';
+import EmotionalCheckInModal from '@/components/EmotionalCheckInModal';
 import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
+import { format, isToday, isYesterday } from 'date-fns';
 
 interface GamificationData {
   xp: number;
@@ -49,6 +51,16 @@ interface RiskScoreData {
   strokeRisk: number;
 }
 
+interface EmotionalCheckinData {
+  id: string;
+  userId: string;
+  emotion: string;
+  userMessage: string | null;
+  aiResponse: string | null;
+  xpAwarded: number;
+  checkedInAt: string;
+}
+
 export default function Dashboard() {
   const [, navigate] = useLocation();
   const [darkMode, setDarkMode] = useState(false);
@@ -56,6 +68,7 @@ export default function Dashboard() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [communityType, setCommunityType] = useState<CommunityType>('loretta');
+  const [showCheckInModal, setShowCheckInModal] = useState(false);
   const userId = getUserId();
   const { missions, completedCount, totalCount } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
@@ -68,6 +81,11 @@ export default function Dashboard() {
 
   const { data: riskScoreData } = useQuery<RiskScoreData>({
     queryKey: ['/api/risk-scores', userId, 'latest'],
+    enabled: !!userId,
+  });
+
+  const { data: lastEmotionalCheckin } = useQuery<EmotionalCheckinData | null>({
+    queryKey: ['/api/emotional-checkins', userId, 'latest'],
     enabled: !!userId,
   });
 
@@ -106,6 +124,31 @@ export default function Dashboard() {
 
   const handleCompleteQuest = (xpReward: number) => {
     addXPMutation.mutate(xpReward);
+  };
+
+  const handleCheckInComplete = (emotion: string, xpAwarded: number) => {
+    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins', userId, 'latest'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+  };
+
+  const formatLastFeeling = () => {
+    if (!lastEmotionalCheckin?.checkedInAt || !lastEmotionalCheckin?.emotion) return null;
+    
+    const date = new Date(lastEmotionalCheckin.checkedInAt);
+    const time = format(date, 'h:mma').toLowerCase();
+    const emotion = lastEmotionalCheckin.emotion;
+    const capitalizedEmotion = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+    
+    let dateStr = '';
+    if (isToday(date)) {
+      dateStr = `at ${time}`;
+    } else if (isYesterday(date)) {
+      dateStr = `yesterday at ${time}`;
+    } else {
+      dateStr = `on ${format(date, 'MMM d')} at ${time}`;
+    }
+    
+    return `${capitalizedEmotion} ${dateStr}`;
   };
   
   return (
@@ -376,12 +419,26 @@ export default function Dashboard() {
                     />
                   </div>
                   
-                  <DailyCheckIn
-                    streak={streak}
-                    dayNumber={streak}
-                    xpReward={50}
-                    onStart={() => navigate('/chat')}
-                  />
+                  <div className="flex flex-col gap-3">
+                    <DailyCheckIn
+                      streak={streak}
+                      dayNumber={streak}
+                      xpReward={50}
+                      onStart={() => setShowCheckInModal(true)}
+                    />
+                    
+                    {formatLastFeeling() && (
+                      <div className="bg-gradient-to-r from-primary/10 to-chart-2/10 rounded-lg p-3 border border-primary/20">
+                        <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                          <span className="text-primary">!</span>
+                          <span>Note:</span>
+                          <span className="text-muted-foreground font-normal">
+                            Feeling {formatLastFeeling()}
+                          </span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Daily Missions */}
@@ -548,6 +605,13 @@ export default function Dashboard() {
         badges={['Week Warrior', 'Hydration Hero']}
         unlocks={['New achievement category', 'Bonus XP multiplier', 'Custom avatar accessories']}
         onClose={() => setShowLevelUp(false)}
+      />
+      
+      <EmotionalCheckInModal
+        open={showCheckInModal}
+        onClose={() => setShowCheckInModal(false)}
+        userId={userId}
+        onCheckInComplete={handleCheckInComplete}
       />
     </div>
   );

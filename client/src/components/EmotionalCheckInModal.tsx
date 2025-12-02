@@ -273,7 +273,7 @@ export default function EmotionalCheckInModal({
         <div className="flex justify-center mb-2">
           <MascotCharacter 
             size="md" 
-            pose={step === 'supportive' ? 'celebrate' : 'wave'}
+            pose={step === 'supportive' ? 'celebrate' : 'encourage'}
             speech={step === 'supportive' ? "Great job!" : undefined}
           />
         </div>
