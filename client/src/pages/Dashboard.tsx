@@ -131,7 +131,23 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
   };
 
-  const formatLastFeeling = () => {
+  const getEmotionEmoji = (emotion: string): string => {
+    const emojiMap: Record<string, string> = {
+      happy: '😊',
+      sad: '😢',
+      anxious: '😰',
+      stressed: '😓',
+      calm: '😌',
+      tired: '😴',
+      energetic: '⚡',
+      frustrated: '😤',
+      grateful: '🙏',
+      hopeful: '✨',
+    };
+    return emojiMap[emotion.toLowerCase()] || '💭';
+  };
+
+  const getLastFeelingData = () => {
     if (!lastEmotionalCheckin?.checkedInAt || !lastEmotionalCheckin?.emotion) return null;
     
     const date = new Date(lastEmotionalCheckin.checkedInAt);
@@ -148,7 +164,11 @@ export default function Dashboard() {
       dateStr = `on ${format(date, 'MMM d')} at ${time}`;
     }
     
-    return `${capitalizedEmotion} ${dateStr}`;
+    return {
+      emotion: capitalizedEmotion,
+      emoji: getEmotionEmoji(emotion),
+      dateStr,
+    };
   };
   
   return (
@@ -427,16 +447,26 @@ export default function Dashboard() {
                       onStart={() => setShowCheckInModal(true)}
                     />
                     
-                    {formatLastFeeling() && (
-                      <div className="bg-gradient-to-r from-primary/10 to-chart-2/10 rounded-lg p-3 border border-primary/20">
-                        <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-                          <span className="text-primary">!</span>
-                          <span>Note:</span>
-                          <span className="text-muted-foreground font-normal">
-                            Feeling {formatLastFeeling()}
-                          </span>
-                        </p>
-                      </div>
+                    {getLastFeelingData() && (
+                      <Card className="bg-gradient-to-br from-chart-2/20 via-primary/10 to-secondary/20 border-0 shadow-lg overflow-hidden">
+                        <div className="p-4 flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center text-2xl shadow-md">
+                            {getLastFeelingData()?.emoji}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                              Mood Check-In
+                            </p>
+                            <p className="text-base font-bold text-foreground truncate">
+                              Feeling {getLastFeelingData()?.emotion}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {getLastFeelingData()?.dateStr}
+                            </p>
+                          </div>
+                          <Heart className="w-5 h-5 text-primary/50" />
+                        </div>
+                      </Card>
                     )}
                   </div>
                 </div>
