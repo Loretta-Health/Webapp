@@ -84,8 +84,8 @@ export default function Dashboard() {
     enabled: !!userId,
   });
 
-  const { data: lastEmotionalCheckin } = useQuery<EmotionalCheckinData | null>({
-    queryKey: ['/api/emotional-checkins', userId, 'latest'],
+  const { data: allEmotionalCheckins } = useQuery<EmotionalCheckinData[]>({
+    queryKey: ['/api/emotional-checkins', userId],
     enabled: !!userId,
   });
 
@@ -127,7 +127,7 @@ export default function Dashboard() {
   };
 
   const handleCheckInComplete = (emotion: string, xpAwarded: number) => {
-    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins', userId, 'latest'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins', userId] });
     queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
   };
 
@@ -147,12 +147,10 @@ export default function Dashboard() {
     return emojiMap[emotion.toLowerCase()] || '💭';
   };
 
-  const getLastFeelingData = () => {
-    if (!lastEmotionalCheckin?.checkedInAt || !lastEmotionalCheckin?.emotion) return null;
-    
-    const date = new Date(lastEmotionalCheckin.checkedInAt);
+  const formatCheckinData = (checkin: EmotionalCheckinData) => {
+    const date = new Date(checkin.checkedInAt);
     const time = format(date, 'h:mma').toLowerCase();
-    const emotion = lastEmotionalCheckin.emotion;
+    const emotion = checkin.emotion;
     const capitalizedEmotion = emotion.charAt(0).toUpperCase() + emotion.slice(1);
     
     let dateStr = '';
@@ -165,6 +163,7 @@ export default function Dashboard() {
     }
     
     return {
+      id: checkin.id,
       emotion: capitalizedEmotion,
       emoji: getEmotionEmoji(emotion),
       dateStr,
@@ -447,24 +446,34 @@ export default function Dashboard() {
                       onStart={() => setShowCheckInModal(true)}
                     />
                     
-                    {getLastFeelingData() && (
+                    {allEmotionalCheckins && allEmotionalCheckins.length > 0 && (
                       <Card className="bg-gradient-to-br from-chart-2/20 via-primary/10 to-secondary/20 border-0 shadow-lg overflow-hidden">
-                        <div className="p-4 flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center text-2xl shadow-md">
-                            {getLastFeelingData()?.emoji}
+                        <div className="p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                              <Heart className="w-3 h-3" />
+                              Mood Journal
+                            </p>
+                            <span className="text-xs text-muted-foreground">{allEmotionalCheckins.length} entries</span>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                              Mood Check-In
-                            </p>
-                            <p className="text-base font-bold text-foreground truncate">
-                              Feeling {getLastFeelingData()?.emotion}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {getLastFeelingData()?.dateStr}
-                            </p>
+                          <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
+                            {allEmotionalCheckins.map((checkin) => {
+                              const data = formatCheckinData(checkin);
+                              return (
+                                <div key={data.id} className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors">
+                                  <span className="text-lg">{data.emoji}</span>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-foreground truncate">
+                                      {data.emotion}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {data.dateStr}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-                          <Heart className="w-5 h-5 text-primary/50" />
                         </div>
                       </Card>
                     )}
