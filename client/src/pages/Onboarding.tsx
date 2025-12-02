@@ -1823,56 +1823,6 @@ export default function Onboarding() {
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="p-4 rounded-lg bg-primary/5 border border-primary/20"
-        data-testid="inclusion-accessibility-onboarding"
-      >
-        <div className="flex items-center gap-2 mb-3">
-          <Heart className="w-5 h-5 text-primary" />
-          <p className="font-bold text-foreground text-sm">Inclusion & Accessibility at Loretta</p>
-        </div>
-        <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-          At Loretta, we believe everyone deserves easy, respectful, and reliable access to health and wellbeing support. Our app is built to serve people with different backgrounds, abilities, and levels of health literacy.
-        </p>
-        <p className="text-xs text-muted-foreground leading-relaxed mb-2">
-          To make this possible, we design our experience with inclusion and accessibility at the center:
-        </p>
-        <ul className="text-xs text-muted-foreground space-y-1 pl-3 mb-3">
-          <li className="flex items-start gap-1">
-            <span className="text-primary">•</span>
-            <span>Clear, simple language is used throughout the app so information is easy to understand.</span>
-          </li>
-          <li className="flex items-start gap-1">
-            <span className="text-primary">•</span>
-            <span>Flexible navigation supports different levels of digital experience.</span>
-          </li>
-          <li className="flex items-start gap-1">
-            <span className="text-primary">•</span>
-            <span>Accessible color contrast and intuitive layouts are used throughout the app.</span>
-          </li>
-          <li className="flex items-start gap-1">
-            <span className="text-primary">•</span>
-            <span>Screen-reader compatibility is currently in development, and we are working toward full accessibility support.</span>
-          </li>
-          <li className="flex items-start gap-1">
-            <span className="text-primary">•</span>
-            <span>Respect for your identity is core to our work. You can always choose how you describe yourself.</span>
-          </li>
-          <li className="flex items-start gap-1">
-            <span className="text-primary">•</span>
-            <span>Support is available if something is unclear or difficult to use.</span>
-          </li>
-        </ul>
-        <p className="text-xs text-muted-foreground leading-relaxed">
-          If you encounter a barrier or need additional support, please contact us at{' '}
-          <a href="mailto:info@loretta.care" className="text-primary hover:underline font-medium">info@loretta.care</a>.
-          Your feedback directly helps us improve accessibility for everyone.
-        </p>
-      </motion.div>
-
       <Button
         variant="ghost"
         className="w-full justify-between"
