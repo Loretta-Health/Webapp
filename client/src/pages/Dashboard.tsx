@@ -30,6 +30,7 @@ import EnergyBar from '@/components/EnergyBar';
 import HealthScienceSection from '@/components/HealthScienceSection';
 import CommunitySelector, { type CommunityType } from '@/components/CommunitySelector';
 import EmotionalCheckInModal from '@/components/EmotionalCheckInModal';
+import InclusionFooter from '@/components/InclusionFooter';
 import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { format, isToday, isYesterday } from 'date-fns';
@@ -652,6 +653,8 @@ export default function Dashboard() {
         userId={userId}
         onCheckInComplete={handleCheckInComplete}
       />
+      
+      <InclusionFooter />
     </div>
   );
 }
