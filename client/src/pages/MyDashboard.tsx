@@ -64,6 +64,21 @@ interface EmotionalCheckinData {
   checkedInAt: string;
 }
 
+interface ActivityData {
+  id?: string;
+  userId: string;
+  date: string;
+  steps: number;
+  stepsGoal: number;
+  sleepHours: number;
+  sleepGoal: number;
+  heartRate: number;
+  calories: number;
+  caloriesGoal: number;
+  water: number;
+  waterGoal: number;
+}
+
 export default function MyDashboard() {
   const [, navigate] = useLocation();
   const [darkMode, setDarkMode] = useState(false);
@@ -107,6 +122,11 @@ export default function MyDashboard() {
 
   const { data: questionnaireData } = useQuery<any[]>({
     queryKey: ['/api/questionnaires', userId],
+    enabled: !!userId && !!user,
+  });
+
+  const { data: activityData } = useQuery<ActivityData>({
+    queryKey: ['/api/activities', userId, 'today'],
     enabled: !!userId && !!user,
   });
 
@@ -719,11 +739,11 @@ export default function MyDashboard() {
                     <div className="grid grid-cols-2 gap-2 lg:gap-3">
                       <ActivityMetric
                         title="Steps"
-                        value={isNewUser ? 0 : 7234}
-                        goal="10,000"
+                        value={activityData?.steps ?? 0}
+                        goal={(activityData?.stepsGoal ?? 10000).toLocaleString()}
                         unit="steps"
                         icon={Footprints}
-                        progress={isNewUser ? 0 : 72}
+                        progress={Math.min(100, Math.round(((activityData?.steps ?? 0) / (activityData?.stepsGoal ?? 10000)) * 100))}
                         color="text-chart-1"
                         explanation="Total steps taken today"
                         simpleExplanation="Walking is great exercise!"
@@ -731,11 +751,11 @@ export default function MyDashboard() {
                       />
                       <ActivityMetric
                         title="Sleep"
-                        value={isNewUser ? 0 : 7.5}
-                        goal="8h"
+                        value={activityData?.sleepHours ?? 0}
+                        goal={`${activityData?.sleepGoal ?? 8}h`}
                         unit="hours"
                         icon={MoonIcon}
-                        progress={isNewUser ? 0 : 81}
+                        progress={Math.min(100, Math.round(((activityData?.sleepHours ?? 0) / (activityData?.sleepGoal ?? 8)) * 100))}
                         color="text-chart-2"
                         explanation="Hours of sleep last night"
                         simpleExplanation="Good sleep helps your body recover"
@@ -743,11 +763,11 @@ export default function MyDashboard() {
                       />
                       <ActivityMetric
                         title="Heart Rate"
-                        value={isNewUser ? 0 : 72}
-                        goal="<80"
+                        value={activityData?.heartRate ?? 0}
+                        goal="60-100"
                         unit="bpm"
                         icon={Heart}
-                        progress={90}
+                        progress={activityData?.heartRate ? (activityData.heartRate >= 60 && activityData.heartRate <= 100 ? 100 : 50) : 0}
                         color="text-destructive"
                         explanation="Your resting heart rate"
                         simpleExplanation="Lower is usually healthier when resting"
@@ -755,11 +775,11 @@ export default function MyDashboard() {
                       />
                       <ActivityMetric
                         title="Calories"
-                        value={isNewUser ? 0 : 1850}
-                        goal="2,000"
+                        value={activityData?.calories ?? 0}
+                        goal={(activityData?.caloriesGoal ?? 2000).toLocaleString()}
                         unit="cal"
                         icon={Flame}
-                        progress={isNewUser ? 0 : 84}
+                        progress={Math.min(100, Math.round(((activityData?.calories ?? 0) / (activityData?.caloriesGoal ?? 2000)) * 100))}
                         color="text-chart-3"
                         explanation="Calories burned today"
                         simpleExplanation="Energy you've used"
