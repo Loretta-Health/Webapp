@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import Dashboard from "@/pages/Dashboard";
+import MyDashboard from "@/pages/MyDashboard";
 import Welcome from "@/pages/Welcome";
 import Declined from "@/pages/Declined";
 import Profile from "@/pages/Profile";
@@ -42,6 +43,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomeRoute} />
       <Route path="/dashboard" component={Dashboard} />
+      <ProtectedRoute path="/my-dashboard" component={MyDashboard} />
       <ProtectedRoute path="/welcome" component={Welcome} />
       <ProtectedRoute path="/profile" component={() => (
         <ConsentGuard><Profile /></ConsentGuard>
