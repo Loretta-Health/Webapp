@@ -700,6 +700,8 @@ export default function MyDashboard() {
                         progress={mission.progress}
                         maxProgress={mission.maxProgress}
                         completed={mission.completed}
+                        legendary={mission.legendary}
+                        href={mission.href}
                         onComplete={() => handleCompleteQuest(mission.id, mission.xpReward)}
                       />
                     ))}
