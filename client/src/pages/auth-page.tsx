@@ -91,7 +91,7 @@ export default function AuthPage() {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600"
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                     disabled={loginMutation.isPending}
                   >
                     {loginMutation.isPending ? (
@@ -146,7 +146,7 @@ export default function AuthPage() {
                   )}
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600"
+                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                     disabled={registerMutation.isPending}
                   >
                     {registerMutation.isPending ? (
@@ -165,7 +165,7 @@ export default function AuthPage() {
         </Card>
       </div>
       
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-cyan-400 via-teal-400 to-emerald-500 p-12 items-center justify-center">
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 p-12 items-center justify-center">
         <div className="max-w-md text-white">
           <div className="flex items-center gap-3 mb-6">
             <Heart className="h-10 w-10" />
