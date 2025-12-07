@@ -155,3 +155,37 @@ export const insertEmotionalCheckinSchema = createInsertSchema(emotionalCheckins
 
 export type InsertEmotionalCheckin = z.infer<typeof insertEmotionalCheckinSchema>;
 export type EmotionalCheckin = typeof emotionalCheckins.$inferSelect;
+
+// User missions table - stores per-user mission/quest data
+export const userMissions = pgTable("user_missions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  missionKey: text("mission_key").notNull(), // unique identifier for the mission type
+  title: text("title").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // 'daily', 'weekly', 'bonus'
+  xpReward: integer("xp_reward").default(0),
+  progress: integer("progress").default(0),
+  maxProgress: integer("max_progress").default(1),
+  completed: boolean("completed").default(false),
+  legendary: boolean("legendary").default(false),
+  href: text("href"),
+  source: text("source").default("default"), // 'default', 'activity', 'chat'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserMissionSchema = createInsertSchema(userMissions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateUserMissionSchema = z.object({
+  progress: z.number().optional(),
+  completed: z.boolean().optional(),
+});
+
+export type InsertUserMission = z.infer<typeof insertUserMissionSchema>;
+export type UpdateUserMission = z.infer<typeof updateUserMissionSchema>;
+export type UserMission = typeof userMissions.$inferSelect;
