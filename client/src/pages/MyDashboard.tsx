@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import { Link, useLocation, Redirect } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -94,6 +95,36 @@ export default function MyDashboard() {
     enabled: !!userId && !!user,
   });
 
+  const { data: preferencesData } = useQuery<{ consentGiven: boolean; consentDate: string | null }>({
+    queryKey: ['/api/preferences', userId],
+    enabled: !!userId && !!user,
+  });
+
+  const { data: profileData } = useQuery<{ firstName: string | null; lastName: string | null; dateOfBirth: string | null }>({
+    queryKey: ['/api/profile', userId],
+    enabled: !!userId && !!user,
+  });
+
+  const { data: questionnaireData } = useQuery<any[]>({
+    queryKey: ['/api/questionnaires', userId],
+    enabled: !!userId && !!user,
+  });
+
+  const consentComplete = preferencesData?.consentGiven === true || localStorage.getItem('loretta_consent') === 'accepted';
+  const profileComplete = !!(profileData?.firstName && profileData?.lastName);
+  const questionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
+  const firstCheckInComplete = Array.isArray(allEmotionalCheckins) && allEmotionalCheckins.length > 0;
+  
+  const setupSteps = [
+    { id: 'consent', complete: consentComplete },
+    { id: 'questionnaire', complete: questionnaireComplete },
+    { id: 'profile', complete: profileComplete },
+    { id: 'checkin', complete: firstCheckInComplete },
+  ];
+  const completedStepsCount = setupSteps.filter(s => s.complete).length;
+  const setupProgress = (completedStepsCount / setupSteps.length) * 100;
+  const allSetupComplete = completedStepsCount === setupSteps.length;
+
   const checkInMutation = useMutation({
     mutationFn: async () => {
       return apiRequest('POST', `/api/gamification/${userId}/checkin`, {});
@@ -118,7 +149,8 @@ export default function MyDashboard() {
   const lives = gamificationData?.lives ?? 5;
   const nextLevelXP = level * 100 + 200;
   
-  const isNewUser = level === 1 && xp === 0;
+  const isNewUser = !allSetupComplete;
+  const showSetupChecklist = !allSetupComplete;
   const displayName = user?.username || 'Friend';
   
   const toggleDarkMode = () => {
@@ -424,7 +456,7 @@ export default function MyDashboard() {
               </div>
             </div>
             
-            {isNewUser && (
+            {showSetupChecklist && (
               <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-chart-2/5">
                 <div className="p-4 lg:p-6">
                   <div className="flex items-start gap-4">
@@ -432,68 +464,134 @@ export default function MyDashboard() {
                       <Sparkles className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h2 className="text-xl font-black text-foreground mb-2">Getting Started</h2>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Complete these steps to set up your profile, earn your first XP, and join the leaderboard!
-                      </p>
+                      <div className="flex items-center justify-between mb-2">
+                        <h2 className="text-xl font-black text-foreground">Setup Checklist</h2>
+                        <Badge variant="secondary" className="font-bold">
+                          {completedStepsCount}/{setupSteps.length} Complete
+                        </Badge>
+                      </div>
+                      <div className="mb-4">
+                        <Progress value={setupProgress} className="h-2" />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {setupProgress === 100 ? 'All done! Your dashboard is ready.' : 'Complete these steps to unlock your full dashboard experience'}
+                        </p>
+                      </div>
                       
                       <div className="space-y-3">
                         <Link href="/welcome">
-                          <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer">
-                            <div className="w-8 h-8 rounded-full bg-chart-2/20 flex items-center justify-center">
-                              <Shield className="w-4 h-4 text-chart-2" />
+                          <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                            consentComplete 
+                              ? 'bg-chart-2/10 border-chart-2/30' 
+                              : 'bg-card border-border hover:border-primary/50'
+                          }`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              consentComplete ? 'bg-chart-2 text-white' : 'bg-chart-2/20'
+                            }`}>
+                              {consentComplete ? <Check className="w-4 h-4" /> : <Shield className="w-4 h-4 text-chart-2" />}
                             </div>
                             <div className="flex-1">
-                              <p className="font-bold text-sm">Accept Privacy & Consent</p>
-                              <p className="text-xs text-muted-foreground">Review and accept our privacy practices</p>
+                              <p className={`font-bold text-sm ${consentComplete ? 'line-through text-muted-foreground' : ''}`}>
+                                Accept Privacy & Consent
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {consentComplete ? 'Completed' : 'Review and accept our privacy practices'}
+                              </p>
                             </div>
-                            <Badge variant="outline" className="text-chart-2 border-chart-2">+10 XP</Badge>
+                            {consentComplete ? (
+                              <Badge className="bg-chart-2 text-white border-0">Done</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-chart-2 border-chart-2">+10 XP</Badge>
+                            )}
                           </div>
                         </Link>
                         
                         <Link href="/onboarding">
-                          <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer">
-                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                              <ClipboardList className="w-4 h-4 text-primary" />
+                          <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                            questionnaireComplete 
+                              ? 'bg-primary/10 border-primary/30' 
+                              : 'bg-card border-border hover:border-primary/50'
+                          }`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              questionnaireComplete ? 'bg-primary text-white' : 'bg-primary/20'
+                            }`}>
+                              {questionnaireComplete ? <Check className="w-4 h-4" /> : <ClipboardList className="w-4 h-4 text-primary" />}
                             </div>
                             <div className="flex-1">
-                              <p className="font-bold text-sm">Complete Health Questionnaire</p>
-                              <p className="text-xs text-muted-foreground">Answer questions to get your personalized risk score</p>
+                              <p className={`font-bold text-sm ${questionnaireComplete ? 'line-through text-muted-foreground' : ''}`}>
+                                Complete Health Questionnaire
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {questionnaireComplete ? 'Completed' : 'Answer questions to get your personalized risk score'}
+                              </p>
                             </div>
-                            <Badge variant="outline" className="text-primary border-primary">+50 XP</Badge>
+                            {questionnaireComplete ? (
+                              <Badge className="bg-primary text-white border-0">Done</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-primary border-primary">+50 XP</Badge>
+                            )}
                           </div>
                         </Link>
                         
                         <Link href="/profile">
-                          <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer">
-                            <div className="w-8 h-8 rounded-full bg-chart-3/20 flex items-center justify-center">
-                              <User className="w-4 h-4 text-chart-3" />
+                          <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                            profileComplete 
+                              ? 'bg-chart-3/10 border-chart-3/30' 
+                              : 'bg-card border-border hover:border-primary/50'
+                          }`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              profileComplete ? 'bg-chart-3 text-white' : 'bg-chart-3/20'
+                            }`}>
+                              {profileComplete ? <Check className="w-4 h-4" /> : <User className="w-4 h-4 text-chart-3" />}
                             </div>
                             <div className="flex-1">
-                              <p className="font-bold text-sm">Set Up Your Profile</p>
-                              <p className="text-xs text-muted-foreground">Add your details to personalize your experience</p>
+                              <p className={`font-bold text-sm ${profileComplete ? 'line-through text-muted-foreground' : ''}`}>
+                                Set Up Your Profile
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {profileComplete ? 'Completed' : 'Add your details to personalize your experience'}
+                              </p>
                             </div>
-                            <Badge variant="outline" className="text-chart-3 border-chart-3">+25 XP</Badge>
+                            {profileComplete ? (
+                              <Badge className="bg-chart-3 text-white border-0">Done</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-chart-3 border-chart-3">+25 XP</Badge>
+                            )}
                           </div>
                         </Link>
                         
                         <div 
-                          className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer"
-                          onClick={() => setShowCheckInModal(true)}
+                          className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                            firstCheckInComplete 
+                              ? 'bg-destructive/10 border-destructive/30' 
+                              : 'bg-card border-border hover:border-primary/50'
+                          }`}
+                          onClick={() => !firstCheckInComplete && setShowCheckInModal(true)}
                         >
-                          <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center">
-                            <Heart className="w-4 h-4 text-destructive" />
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            firstCheckInComplete ? 'bg-destructive text-white' : 'bg-destructive/20'
+                          }`}>
+                            {firstCheckInComplete ? <Check className="w-4 h-4" /> : <Heart className="w-4 h-4 text-destructive" />}
                           </div>
                           <div className="flex-1">
-                            <p className="font-bold text-sm">Do Your First Check-In</p>
-                            <p className="text-xs text-muted-foreground">Start tracking how you're feeling each day</p>
+                            <p className={`font-bold text-sm ${firstCheckInComplete ? 'line-through text-muted-foreground' : ''}`}>
+                              Do Your First Check-In
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {firstCheckInComplete ? 'Completed' : 'Start tracking how you feel each day'}
+                            </p>
                           </div>
-                          <Badge variant="outline" className="text-destructive border-destructive">+15 XP</Badge>
+                          {firstCheckInComplete ? (
+                            <Badge className="bg-destructive text-white border-0">Done</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-destructive border-destructive">+15 XP</Badge>
+                          )}
                         </div>
                       </div>
                       
                       <p className="text-xs text-muted-foreground mt-4 italic">
-                        Complete all steps to unlock the leaderboard and start competing with your community!
+                        {allSetupComplete 
+                          ? 'Great job! You\'ve completed all setup steps.' 
+                          : 'Complete all steps to unlock the leaderboard and start competing with your community!'}
                       </p>
                     </div>
                   </div>
