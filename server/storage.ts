@@ -25,6 +25,9 @@ import {
   type UserAchievement,
   type InsertUserAchievement,
   type UpdateUserAchievement,
+  type UserActivity,
+  type InsertUserActivity,
+  type UpdateUserActivity,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -37,6 +40,7 @@ import {
   teamMembers,
   teamInvites,
   userAchievements,
+  userActivities,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -116,6 +120,12 @@ export interface IStorage {
   ensureDefaultAchievementsForUser(userId: string): Promise<UserAchievement[]>;
   updateUserAchievement(id: string, data: UpdateUserAchievement): Promise<UserAchievement | undefined>;
   unlockAchievement(userId: string, achievementKey: string): Promise<UserAchievement | undefined>;
+
+  // User activity methods
+  getUserActivityForDate(userId: string, date: string): Promise<UserActivity | undefined>;
+  getUserActivities(userId: string, days?: number): Promise<UserActivity[]>;
+  saveUserActivity(data: InsertUserActivity): Promise<UserActivity>;
+  updateUserActivity(userId: string, date: string, data: UpdateUserActivity): Promise<UserActivity | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -748,6 +758,71 @@ export class DatabaseStorage implements IStorage {
       )
       .returning();
     return updated;
+  }
+
+  // User activity methods
+  async getUserActivityForDate(userId: string, date: string): Promise<UserActivity | undefined> {
+    const [activity] = await db
+      .select()
+      .from(userActivities)
+      .where(
+        and(
+          eq(userActivities.userId, userId),
+          eq(userActivities.date, date)
+        )
+      );
+    return activity;
+  }
+
+  async getUserActivities(userId: string, days: number = 7): Promise<UserActivity[]> {
+    return await db
+      .select()
+      .from(userActivities)
+      .where(eq(userActivities.userId, userId))
+      .orderBy(desc(userActivities.date))
+      .limit(days);
+  }
+
+  async saveUserActivity(data: InsertUserActivity): Promise<UserActivity> {
+    const existing = await this.getUserActivityForDate(data.userId, data.date);
+
+    if (existing) {
+      const [updated] = await db
+        .update(userActivities)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(userActivities.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(userActivities)
+        .values(data)
+        .returning();
+      return created;
+    }
+  }
+
+  async updateUserActivity(userId: string, date: string, data: UpdateUserActivity): Promise<UserActivity | undefined> {
+    const existing = await this.getUserActivityForDate(userId, date);
+
+    if (existing) {
+      const [updated] = await db
+        .update(userActivities)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(userActivities.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(userActivities)
+        .values({
+          userId,
+          date,
+          ...data,
+        })
+        .returning();
+      return created;
+    }
   }
 }
 

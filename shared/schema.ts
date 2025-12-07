@@ -282,3 +282,43 @@ export const updateUserAchievementSchema = z.object({
 export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
 export type UpdateUserAchievement = z.infer<typeof updateUserAchievementSchema>;
 export type UserAchievement = typeof userAchievements.$inferSelect;
+
+// User activities table - stores daily activity metrics (steps, sleep, heart rate, calories)
+export const userActivities = pgTable("user_activities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD format for easy querying
+  steps: integer("steps").default(0),
+  stepsGoal: integer("steps_goal").default(10000),
+  sleepHours: real("sleep_hours").default(0),
+  sleepGoal: real("sleep_goal").default(8),
+  heartRate: integer("heart_rate"), // resting heart rate in bpm
+  calories: integer("calories").default(0),
+  caloriesGoal: integer("calories_goal").default(2000),
+  water: integer("water").default(0), // glasses of water
+  waterGoal: integer("water_goal").default(8),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserActivitySchema = createInsertSchema(userActivities).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateUserActivitySchema = z.object({
+  steps: z.number().optional(),
+  stepsGoal: z.number().optional(),
+  sleepHours: z.number().optional(),
+  sleepGoal: z.number().optional(),
+  heartRate: z.number().optional(),
+  calories: z.number().optional(),
+  caloriesGoal: z.number().optional(),
+  water: z.number().optional(),
+  waterGoal: z.number().optional(),
+});
+
+export type InsertUserActivity = z.infer<typeof insertUserActivitySchema>;
+export type UpdateUserActivity = z.infer<typeof updateUserActivitySchema>;
+export type UserActivity = typeof userActivities.$inferSelect;
