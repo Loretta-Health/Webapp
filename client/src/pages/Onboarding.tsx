@@ -1401,6 +1401,26 @@ export default function Onboarding() {
     },
   });
 
+  const initializeMissionsMutation = useMutation({
+    mutationFn: async () => {
+      console.log('Initializing missions:', { userId });
+      const response = await fetch(`/api/missions/${userId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to initialize missions');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      console.log('Missions initialized successfully');
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+    },
+    onError: (error) => {
+      console.error('Failed to initialize missions:', error);
+    },
+  });
+
   useEffect(() => {
     const stored = localStorage.getItem('loretta_invite');
     if (stored) {
@@ -1635,6 +1655,7 @@ export default function Onboarding() {
       localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
       initializeGamificationMutation.mutate();
       initializeAchievementsMutation.mutate();
+      initializeMissionsMutation.mutate();
       setStep('riskScore');
     } catch (fallbackError) {
       // Server-side calculation failed - use client-side calculation as fallback
@@ -1660,6 +1681,7 @@ export default function Onboarding() {
       
       initializeGamificationMutation.mutate();
       initializeAchievementsMutation.mutate();
+      initializeMissionsMutation.mutate();
       setStep('riskScore');
     } finally {
       setIsPredicting(false);
