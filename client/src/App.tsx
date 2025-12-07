@@ -25,6 +25,7 @@ import Calendar from "@/pages/Calendar";
 import RiskScoreDetails from "@/pages/RiskScoreDetails";
 import AlternativeMissionDetails from "@/pages/AlternativeMissionDetails";
 import AuthPage from "@/pages/auth-page";
+import TeamInvite from "@/pages/TeamInvite";
 import NotFound from "@/pages/not-found";
 
 function ConsentGuard({ children }: { children: React.ReactNode }) {
@@ -106,6 +107,9 @@ function Router() {
         <ConsentGuard><RiskScoreDetails /></ConsentGuard>
       )} />
       <Route path="/declined" component={Declined} />
+      <ProtectedRoute path="/team-invite" component={() => (
+        <ConsentGuard><TeamInvite /></ConsentGuard>
+      )} />
       <Route component={NotFound} />
     </Switch>
   );

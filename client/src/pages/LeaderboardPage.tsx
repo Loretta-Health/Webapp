@@ -21,18 +21,41 @@ import {
   Heart,
   Shield,
   Sun,
-  Moon
+  Moon,
+  Loader2,
+  Plus
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/hooks/use-auth';
+
+interface Team {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+interface TeamMember {
+  id: string;
+  teamId: string;
+  userId: string;
+  role: string;
+  username: string;
+  xp: number;
+  level: number;
+  currentStreak: number;
+  consentGiven: boolean;
+}
 
 interface LeaderboardEntry {
   rank: number;
   name: string;
   xp: number;
+  level: number;
+  streak: number;
   change?: number;
   isCurrentUser?: boolean;
-  isFamily?: boolean;
+  isOwner?: boolean;
 }
 
 interface Achievement {
@@ -46,25 +69,6 @@ interface Achievement {
   progress?: number;
   maxProgress?: number;
 }
-
-const lorettaEntries: LeaderboardEntry[] = [
-  { rank: 1, name: 'Sarah M.', xp: 2450, change: 2 },
-  { rank: 2, name: 'John D.', xp: 2380, change: -1 },
-  { rank: 3, name: 'Emma W.', xp: 2290, change: 1 },
-  { rank: 4, name: 'Marc Lewis', xp: 2150, change: 3, isCurrentUser: true },
-  { rank: 5, name: 'Lisa K.', xp: 2080, change: -2 },
-  { rank: 6, name: 'Mike R.', xp: 1950, change: 0 },
-  { rank: 7, name: 'Anna P.', xp: 1820, change: 1 },
-  { rank: 8, name: 'Chris T.', xp: 1740, change: -1 },
-];
-
-const familyEntries: LeaderboardEntry[] = [
-  { rank: 1, name: 'Marc Lewis', xp: 2150, change: 1, isCurrentUser: true, isFamily: true },
-  { rank: 2, name: 'Linda Lewis', xp: 1890, change: 0, isFamily: true },
-  { rank: 3, name: 'David Lewis', xp: 1720, change: 2, isFamily: true },
-  { rank: 4, name: 'Amy Lewis', xp: 1540, change: -1, isFamily: true },
-  { rank: 5, name: 'Tom Lewis', xp: 980, change: 0, isFamily: true },
-];
 
 const achievements: Achievement[] = [
   {
@@ -176,10 +180,59 @@ const rarityBorderColors = {
 };
 
 export default function LeaderboardPage() {
-  const [communityType, setCommunityType] = useState<'loretta' | 'family'>('loretta');
+  const { user } = useAuth();
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loadingTeams, setLoadingTeams] = useState(true);
+  const [loadingMembers, setLoadingMembers] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     return document.documentElement.classList.contains('dark');
   });
+
+  useEffect(() => {
+    if (user) {
+      fetchTeams();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (selectedTeamId) {
+      fetchTeamMembers(selectedTeamId);
+    }
+  }, [selectedTeamId]);
+
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch(`/api/teams/user/${user?.id}`, {
+        credentials: 'include',
+      });
+      const data = await response.json();
+      setTeams(data);
+      if (data.length > 0) {
+        setSelectedTeamId(data[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to fetch teams:', err);
+    } finally {
+      setLoadingTeams(false);
+    }
+  };
+
+  const fetchTeamMembers = async (teamId: string) => {
+    setLoadingMembers(true);
+    try {
+      const response = await fetch(`/api/teams/${teamId}/members`, {
+        credentials: 'include',
+      });
+      const data = await response.json();
+      setTeamMembers(data);
+    } catch (err) {
+      console.error('Failed to fetch team members:', err);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
 
   const toggleDarkMode = () => {
     const newMode = !darkMode;
@@ -188,7 +241,23 @@ export default function LeaderboardPage() {
     localStorage.setItem('loretta_theme', newMode ? 'dark' : 'light');
   };
 
-  const displayEntries = communityType === 'family' ? familyEntries : lorettaEntries;
+  const getLeaderboardEntries = (): LeaderboardEntry[] => {
+    const sortedMembers = [...teamMembers]
+      .filter(m => m.consentGiven)
+      .sort((a, b) => b.xp - a.xp);
+    
+    return sortedMembers.map((member, index) => ({
+      rank: index + 1,
+      name: member.username,
+      xp: member.xp,
+      level: member.level,
+      streak: member.currentStreak,
+      isCurrentUser: member.userId === user?.id,
+      isOwner: member.role === 'owner',
+    }));
+  };
+
+  const displayEntries = getLeaderboardEntries();
 
   const getRankColor = (rank: number) => {
     if (rank === 1) return 'text-chart-3';
@@ -205,7 +274,7 @@ export default function LeaderboardPage() {
       <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/dashboard">
+            <Link href="/my-dashboard">
               <Button size="icon" variant="ghost" data-testid="button-back">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -244,77 +313,106 @@ export default function LeaderboardPage() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                   <Trophy className="w-6 h-6 text-chart-3" />
-                  <h3 className="text-2xl font-black text-foreground">Weekly Rankings</h3>
+                  <h3 className="text-2xl font-black text-foreground">Team Rankings</h3>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant={communityType === 'loretta' ? 'default' : 'outline'}
-                    onClick={() => setCommunityType('loretta')}
-                    data-testid="button-community"
-                  >
-                    <Users className="w-4 h-4 mr-1" />
-                    Community
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={communityType === 'family' ? 'default' : 'outline'}
-                    onClick={() => setCommunityType('family')}
-                    data-testid="button-family"
-                  >
-                    <Home className="w-4 h-4 mr-1" />
-                    Family
-                  </Button>
-                </div>
+                {teams.length > 0 && (
+                  <div className="flex gap-2 flex-wrap">
+                    {teams.map(team => (
+                      <Button
+                        key={team.id}
+                        size="sm"
+                        variant={selectedTeamId === team.id ? 'default' : 'outline'}
+                        onClick={() => setSelectedTeamId(team.id)}
+                      >
+                        <Users className="w-4 h-4 mr-1" />
+                        {team.name}
+                      </Button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-3">
-                {displayEntries.map((entry, index) => (
-                  <motion.div
-                    key={entry.rank}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`flex items-center gap-3 p-4 rounded-lg transition-all ${
-                      entry.isCurrentUser
-                        ? 'bg-primary/10 border-2 border-primary'
-                        : 'bg-muted/30 hover:bg-muted/50'
-                    } ${entry.rank <= 3 ? 'shadow-md' : ''}`}
-                    data-testid={`leaderboard-entry-${entry.rank}`}
-                  >
-                    <div className={`w-12 h-12 rounded-full bg-card flex items-center justify-center font-black text-lg ${getRankColor(entry.rank)}`}>
-                      #{entry.rank}
-                    </div>
-                    
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-chart-2 text-white font-bold">
-                        {entry.name.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1">
-                      <p className={`font-bold ${entry.isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
-                        {entry.name}
-                        {entry.isCurrentUser && (
-                          <Badge variant="secondary" className="ml-2 text-xs">You</Badge>
-                        )}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {entry.xp.toLocaleString()} XP
-                      </p>
-                    </div>
-                    
-                    {entry.change !== undefined && (
-                      <div className={`flex items-center gap-1 text-sm font-bold ${
-                        entry.change > 0 ? 'text-chart-2' : entry.change < 0 ? 'text-destructive' : 'text-muted-foreground'
-                      }`}>
-                        {entry.change > 0 ? <TrendingUp className="w-4 h-4" /> : entry.change < 0 ? <TrendingDown className="w-4 h-4" /> : null}
-                        <span>{entry.change !== 0 ? Math.abs(entry.change) : '-'}</span>
+              {loadingTeams ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : teams.length === 0 ? (
+                <div className="text-center py-12">
+                  <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h4 className="text-lg font-bold mb-2">No Teams Yet</h4>
+                  <p className="text-muted-foreground mb-4">
+                    Create a team and invite friends or family to compare progress!
+                  </p>
+                  <Link href="/invite">
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create a Team
+                    </Button>
+                  </Link>
+                </div>
+              ) : loadingMembers ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : displayEntries.length === 0 ? (
+                <div className="text-center py-12">
+                  <Shield className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h4 className="text-lg font-bold mb-2">Waiting for Members</h4>
+                  <p className="text-muted-foreground">
+                    Team members will appear here once they accept the invite and agree to share their stats.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {displayEntries.map((entry, index) => (
+                    <motion.div
+                      key={entry.rank}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`flex items-center gap-3 p-4 rounded-lg transition-all ${
+                        entry.isCurrentUser
+                          ? 'bg-primary/10 border-2 border-primary'
+                          : 'bg-muted/30 hover:bg-muted/50'
+                      } ${entry.rank <= 3 ? 'shadow-md' : ''}`}
+                      data-testid={`leaderboard-entry-${entry.rank}`}
+                    >
+                      <div className={`w-12 h-12 rounded-full bg-card flex items-center justify-center font-black text-lg ${getRankColor(entry.rank)}`}>
+                        #{entry.rank}
                       </div>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
+                      
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-chart-2 text-white font-bold">
+                          {entry.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1">
+                        <p className={`font-bold flex items-center gap-2 ${entry.isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
+                          {entry.name}
+                          {entry.isOwner && (
+                            <Crown className="w-4 h-4 text-chart-3" />
+                          )}
+                          {entry.isCurrentUser && (
+                            <Badge variant="secondary" className="text-xs">You</Badge>
+                          )}
+                        </p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-3">
+                          <span>{entry.xp.toLocaleString()} XP</span>
+                          <span className="flex items-center gap-1">
+                            <Flame className="w-3 h-3 text-chart-3" />
+                            {entry.streak} day streak
+                          </span>
+                        </p>
+                      </div>
+                      
+                      <Badge className="bg-primary/20 text-primary">
+                        Lvl {entry.level}
+                      </Badge>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </Card>
           </TabsContent>
 
