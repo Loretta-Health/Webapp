@@ -425,6 +425,21 @@ const questionCategories = {
   },
 };
 
+const ratingQuestions = new Set([
+  'general_health',
+  'dental_health',
+  'hearing_health',
+  'sleep_quality',
+  'stress_level',
+]);
+
+const ratingOptions = [
+  { value: 'excellent', en: 'Excellent', de: 'Ausgezeichnet', color: 'bg-chart-2' },
+  { value: 'very_good', en: 'Very Good', de: 'Sehr Gut', color: 'bg-primary' },
+  { value: 'good', en: 'Good', de: 'Gut', color: 'bg-chart-3' },
+  { value: 'fair', en: 'Fair', de: 'Mäßig', color: 'bg-chart-1' },
+  { value: 'poor', en: 'Poor', de: 'Schlecht', color: 'bg-destructive' },
+];
 
 interface ProfileData {
   firstName: string;
@@ -1447,79 +1462,106 @@ export default function Profile() {
                                     onValueChange={(value) => handleAnswerChange(question.id, value)}
                                     className="flex flex-wrap gap-2"
                                   >
-                                    <div className="flex items-center">
-                                      <RadioGroupItem 
-                                        value="yes" 
-                                        id={`${question.id}-yes`}
-                                        className="peer sr-only"
-                                      />
-                                      <Label
-                                        htmlFor={`${question.id}-yes`}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
-                                          questionnaireAnswers[question.id] === 'yes'
-                                            ? 'bg-chart-2 text-white border-chart-2'
-                                            : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                        }`}
-                                        data-testid={`answer-${question.id}-yes`}
-                                      >
-                                        {language === 'en' ? 'Yes' : 'Ja'}
-                                      </Label>
-                                    </div>
-                                    <div className="flex items-center">
-                                      <RadioGroupItem 
-                                        value="no" 
-                                        id={`${question.id}-no`}
-                                        className="peer sr-only"
-                                      />
-                                      <Label
-                                        htmlFor={`${question.id}-no`}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
-                                          questionnaireAnswers[question.id] === 'no'
-                                            ? 'bg-destructive text-white border-destructive'
-                                            : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                        }`}
-                                        data-testid={`answer-${question.id}-no`}
-                                      >
-                                        {language === 'en' ? 'No' : 'Nein'}
-                                      </Label>
-                                    </div>
-                                    <div className="flex items-center">
-                                      <RadioGroupItem 
-                                        value="sometimes" 
-                                        id={`${question.id}-sometimes`}
-                                        className="peer sr-only"
-                                      />
-                                      <Label
-                                        htmlFor={`${question.id}-sometimes`}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
-                                          questionnaireAnswers[question.id] === 'sometimes'
-                                            ? 'bg-chart-3 text-white border-chart-3'
-                                            : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                        }`}
-                                        data-testid={`answer-${question.id}-sometimes`}
-                                      >
-                                        {language === 'en' ? 'Sometimes' : 'Manchmal'}
-                                      </Label>
-                                    </div>
-                                    <div className="flex items-center">
-                                      <RadioGroupItem 
-                                        value="skipped" 
-                                        id={`${question.id}-skipped`}
-                                        className="peer sr-only"
-                                      />
-                                      <Label
-                                        htmlFor={`${question.id}-skipped`}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border flex items-center gap-1 ${
-                                          questionnaireAnswers[question.id] === 'skipped'
-                                            ? 'bg-muted text-foreground border-muted-foreground/30'
-                                            : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                        }`}
-                                        data-testid={`answer-${question.id}-skip`}
-                                      >
-                                        <Check className="w-3 h-3" />
-                                        {language === 'en' ? 'Skip' : 'Überspringen'}
-                                      </Label>
-                                    </div>
+                                    {ratingQuestions.has(question.id) ? (
+                                      <>
+                                        {ratingOptions.map((option) => (
+                                          <div key={option.value} className="flex items-center">
+                                            <RadioGroupItem 
+                                              value={option.value} 
+                                              id={`${question.id}-${option.value}`}
+                                              className="peer sr-only"
+                                            />
+                                            <Label
+                                              htmlFor={`${question.id}-${option.value}`}
+                                              className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
+                                                questionnaireAnswers[question.id] === option.value
+                                                  ? `${option.color} text-white border-transparent`
+                                                  : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                                              }`}
+                                              data-testid={`answer-${question.id}-${option.value}`}
+                                            >
+                                              {language === 'en' ? option.en : option.de}
+                                            </Label>
+                                          </div>
+                                        ))}
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="flex items-center">
+                                          <RadioGroupItem 
+                                            value="yes" 
+                                            id={`${question.id}-yes`}
+                                            className="peer sr-only"
+                                          />
+                                          <Label
+                                            htmlFor={`${question.id}-yes`}
+                                            className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
+                                              questionnaireAnswers[question.id] === 'yes'
+                                                ? 'bg-chart-2 text-white border-chart-2'
+                                                : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                                            }`}
+                                            data-testid={`answer-${question.id}-yes`}
+                                          >
+                                            {language === 'en' ? 'Yes' : 'Ja'}
+                                          </Label>
+                                        </div>
+                                        <div className="flex items-center">
+                                          <RadioGroupItem 
+                                            value="no" 
+                                            id={`${question.id}-no`}
+                                            className="peer sr-only"
+                                          />
+                                          <Label
+                                            htmlFor={`${question.id}-no`}
+                                            className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
+                                              questionnaireAnswers[question.id] === 'no'
+                                                ? 'bg-destructive text-white border-destructive'
+                                                : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                                            }`}
+                                            data-testid={`answer-${question.id}-no`}
+                                          >
+                                            {language === 'en' ? 'No' : 'Nein'}
+                                          </Label>
+                                        </div>
+                                        <div className="flex items-center">
+                                          <RadioGroupItem 
+                                            value="sometimes" 
+                                            id={`${question.id}-sometimes`}
+                                            className="peer sr-only"
+                                          />
+                                          <Label
+                                            htmlFor={`${question.id}-sometimes`}
+                                            className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
+                                              questionnaireAnswers[question.id] === 'sometimes'
+                                                ? 'bg-chart-3 text-white border-chart-3'
+                                                : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                                            }`}
+                                            data-testid={`answer-${question.id}-sometimes`}
+                                          >
+                                            {language === 'en' ? 'Sometimes' : 'Manchmal'}
+                                          </Label>
+                                        </div>
+                                        <div className="flex items-center">
+                                          <RadioGroupItem 
+                                            value="skipped" 
+                                            id={`${question.id}-skipped`}
+                                            className="peer sr-only"
+                                          />
+                                          <Label
+                                            htmlFor={`${question.id}-skipped`}
+                                            className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border flex items-center gap-1 ${
+                                              questionnaireAnswers[question.id] === 'skipped'
+                                                ? 'bg-muted text-foreground border-muted-foreground/30'
+                                                : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                                            }`}
+                                            data-testid={`answer-${question.id}-skip`}
+                                          >
+                                            <Check className="w-3 h-3" />
+                                            {language === 'en' ? 'Skip' : 'Überspringen'}
+                                          </Label>
+                                        </div>
+                                      </>
+                                    )}
                                   </RadioGroup>
                                 </div>
                               </div>
