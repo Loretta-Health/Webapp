@@ -29,11 +29,8 @@ import {
   Home,
   Users,
   ClipboardList,
-  Activity,
   ChevronRight,
   ChevronDown,
-  Cigarette,
-  Wine,
   Utensils,
   Moon,
   Footprints,
@@ -49,12 +46,13 @@ import {
   Clock,
   DollarSign,
   Share2,
-  CalendarDays
+  CalendarDays,
+  Camera,
+  Upload
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import marcPhoto from '@assets/image_1764091454235.png';
 
 type Language = 'en' | 'de';
 
@@ -427,23 +425,6 @@ const questionCategories = {
   },
 };
 
-const behaviors = [
-  { icon: Cigarette, label: 'Smoking', value: 'Former smoker', status: 'caution', detail: 'Quit 2 years ago' },
-  { icon: Wine, label: 'Alcohol', value: 'Occasional', status: 'good', detail: '2-3 drinks per week' },
-  { icon: Utensils, label: 'Diet', value: 'Balanced', status: 'good', detail: 'Mediterranean style' },
-  { icon: Moon, label: 'Sleep', value: '6.5 hours avg', status: 'caution', detail: 'Below recommended' },
-  { icon: Activity, label: 'Exercise', value: 'Moderate', status: 'good', detail: '3x per week' },
-];
-
-const activityData = [
-  { day: 'Mon', steps: 8500 },
-  { day: 'Tue', steps: 6200 },
-  { day: 'Wed', steps: 9100 },
-  { day: 'Thu', steps: 7800 },
-  { day: 'Fri', steps: 5400 },
-  { day: 'Sat', steps: 11200 },
-  { day: 'Sun', steps: 4300 },
-];
 
 interface ProfileData {
   firstName: string;
@@ -458,6 +439,7 @@ interface ProfileData {
   educationLevel: string;
   employmentStatus: string;
   housingStatus: string;
+  profilePhoto: string;
 }
 
 const emptyProfile: ProfileData = {
@@ -473,6 +455,7 @@ const emptyProfile: ProfileData = {
   educationLevel: '',
   employmentStatus: '',
   housingStatus: '',
+  profilePhoto: '',
 };
 
 interface BackendProfile {
@@ -488,6 +471,7 @@ interface BackendProfile {
   educationLevel: string | null;
   employmentStatus: string | null;
   housingStatus: string | null;
+  profilePhoto: string | null;
 }
 
 export default function Profile() {
@@ -536,6 +520,7 @@ export default function Profile() {
         educationLevel: backendProfile.educationLevel || '',
         employmentStatus: backendProfile.employmentStatus || '',
         housingStatus: backendProfile.housingStatus || '',
+        profilePhoto: backendProfile.profilePhoto || '',
       };
       setProfileData(loadedProfile);
       setEditForm(loadedProfile);
@@ -547,6 +532,31 @@ export default function Profile() {
 
   const { data: backendAnswers } = useQuery<Array<{ category: string; answers: Record<string, string> }>>({
     queryKey: ['/api/questionnaires', userId],
+    enabled: !!userId,
+  });
+
+  interface ActivityData {
+    id: number;
+    userId: string;
+    date: string;
+    steps: number;
+    stepsGoal: number;
+    sleepHours: number | null;
+    sleepGoal: number;
+    heartRate: number | null;
+    calories: number;
+    caloriesGoal: number;
+    water: number;
+    waterGoal: number;
+  }
+
+  const { data: activitiesData } = useQuery<ActivityData[]>({
+    queryKey: ['/api/activities', userId],
+    queryFn: async () => {
+      const res = await fetch(`/api/activities/${userId}?days=7`);
+      if (!res.ok) throw new Error('Failed to fetch activities');
+      return res.json();
+    },
     enabled: !!userId,
   });
 
@@ -651,6 +661,7 @@ export default function Profile() {
         educationLevel: data.educationLevel,
         employmentStatus: data.employmentStatus,
         housingStatus: data.housingStatus,
+        profilePhoto: data.profilePhoto,
       });
     },
     onSuccess: () => {
@@ -667,6 +678,36 @@ export default function Profile() {
       title: t.editModal.saved,
       description: t.editModal.savedDescription,
     });
+  };
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: language === 'en' ? 'File too large' : 'Datei zu groß',
+        description: language === 'en' ? 'Please select an image under 2MB' : 'Bitte wählen Sie ein Bild unter 2MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: language === 'en' ? 'Invalid file type' : 'Ungültiger Dateityp',
+        description: language === 'en' ? 'Please select an image file' : 'Bitte wählen Sie eine Bilddatei',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setEditForm({ ...editForm, profilePhoto: base64String });
+    };
+    reader.readAsDataURL(file);
   };
 
   const getDisplayValue = (key: string, value: string) => {
@@ -775,11 +816,162 @@ export default function Profile() {
     },
   ];
 
+  const getDietSummary = (): string => {
+    const fruits = questionnaireAnswers['diet_fruits_vegetables'];
+    const protein = questionnaireAnswers['diet_protein'];
+    const sugar = questionnaireAnswers['diet_sugar'];
+    const water = questionnaireAnswers['diet_water'];
+    const processed = questionnaireAnswers['diet_processed_foods'];
+    
+    if (!fruits && !protein && !sugar && !water && !processed) {
+      return language === 'en' ? 'No data yet' : 'Noch keine Daten';
+    }
+    
+    const parts: string[] = [];
+    
+    if (fruits) {
+      if (fruits === '5+' || fruits === '4-5') {
+        parts.push(language === 'en' ? 'Good fruit/veg intake' : 'Gute Obst/Gemüse-Aufnahme');
+      } else if (fruits === '0-1') {
+        parts.push(language === 'en' ? 'Low fruit/veg' : 'Wenig Obst/Gemüse');
+      }
+    }
+    
+    if (protein) {
+      if (protein === 'high' || protein === 'adequate') {
+        parts.push(language === 'en' ? 'Adequate protein' : 'Ausreichend Protein');
+      } else if (protein === 'low') {
+        parts.push(language === 'en' ? 'Low protein' : 'Wenig Protein');
+      }
+    }
+    
+    if (sugar) {
+      if (sugar === 'rarely' || sugar === 'never') {
+        parts.push(language === 'en' ? 'Low sugar' : 'Wenig Zucker');
+      } else if (sugar === 'daily' || sugar === 'often') {
+        parts.push(language === 'en' ? 'High sugar' : 'Viel Zucker');
+      }
+    }
+    
+    return parts.length > 0 ? parts.join(', ') : (language === 'en' ? 'Balanced diet' : 'Ausgewogene Ernährung');
+  };
+
+  const getSleepSummary = (): string => {
+    const quality = questionnaireAnswers['sleep_quality'];
+    const duration = questionnaireAnswers['sleep_duration'];
+    const consistency = questionnaireAnswers['sleep_consistency'];
+    const disturbances = questionnaireAnswers['sleep_disturbances'];
+    
+    if (!quality && !duration && !consistency && !disturbances) {
+      return language === 'en' ? 'No data yet' : 'Noch keine Daten';
+    }
+    
+    const parts: string[] = [];
+    
+    if (duration) {
+      const hours = parseFloat(duration);
+      if (!isNaN(hours)) {
+        if (hours >= 7 && hours <= 9) {
+          parts.push(language === 'en' ? `${hours}h avg (good)` : `${hours}h Durchschnitt (gut)`);
+        } else if (hours < 6) {
+          parts.push(language === 'en' ? `${hours}h avg (low)` : `${hours}h Durchschnitt (niedrig)`);
+        } else {
+          parts.push(language === 'en' ? `${hours}h avg` : `${hours}h Durchschnitt`);
+        }
+      }
+    }
+    
+    if (quality) {
+      if (quality === 'excellent' || quality === 'good') {
+        parts.push(language === 'en' ? 'Good quality' : 'Gute Qualität');
+      } else if (quality === 'poor' || quality === 'very_poor') {
+        parts.push(language === 'en' ? 'Poor quality' : 'Schlechte Qualität');
+      }
+    }
+    
+    if (disturbances) {
+      if (disturbances === 'often' || disturbances === 'always') {
+        parts.push(language === 'en' ? 'Frequent disturbances' : 'Häufige Störungen');
+      }
+    }
+    
+    return parts.length > 0 ? parts.join(', ') : (language === 'en' ? 'Sleep patterns recorded' : 'Schlafmuster erfasst');
+  };
+
+  const getStressSummary = (): string => {
+    const level = questionnaireAnswers['stress_level'];
+    const frequency = questionnaireAnswers['stress_frequency'];
+    const coping = questionnaireAnswers['stress_coping'];
+    const work = questionnaireAnswers['stress_work'];
+    
+    if (!level && !frequency && !coping && !work) {
+      return language === 'en' ? 'No data yet' : 'Noch keine Daten';
+    }
+    
+    const parts: string[] = [];
+    
+    if (level) {
+      if (level === 'low' || level === 'very_low') {
+        parts.push(language === 'en' ? 'Low stress' : 'Niedriger Stress');
+      } else if (level === 'high' || level === 'very_high') {
+        parts.push(language === 'en' ? 'High stress' : 'Hoher Stress');
+      } else {
+        parts.push(language === 'en' ? 'Moderate stress' : 'Mäßiger Stress');
+      }
+    }
+    
+    if (coping) {
+      if (coping === 'well' || coping === 'very_well') {
+        parts.push(language === 'en' ? 'Coping well' : 'Gute Bewältigung');
+      } else if (coping === 'poorly' || coping === 'very_poorly') {
+        parts.push(language === 'en' ? 'Needs support' : 'Braucht Unterstützung');
+      }
+    }
+    
+    if (work && (work === 'high' || work === 'very_high')) {
+      parts.push(language === 'en' ? 'Work-related' : 'Arbeitsbedingt');
+    }
+    
+    return parts.length > 0 ? parts.join(', ') : (language === 'en' ? 'Stress data recorded' : 'Stressdaten erfasst');
+  };
+
   const getBehaviors = () => [
-    { icon: Utensils, label: t.behaviors.diet, value: t.behaviors.dietValue, iconColor: 'text-chart-3', bgColor: 'bg-chart-3/10' },
-    { icon: Cigarette, label: t.behaviors.smoking, value: t.behaviors.smokingValue, iconColor: 'text-destructive', bgColor: 'bg-destructive/10' },
-    { icon: Wine, label: t.behaviors.alcohol, value: t.behaviors.alcoholValue, iconColor: 'text-chart-2', bgColor: 'bg-chart-2/10' },
+    { icon: Utensils, label: t.behaviors.diet, value: getDietSummary(), iconColor: 'text-chart-3', bgColor: 'bg-chart-3/10' },
+    { icon: Moon, label: t.questionnaires.sleep, value: getSleepSummary(), iconColor: 'text-chart-2', bgColor: 'bg-chart-2/10' },
+    { icon: Brain, label: t.questionnaires.stress, value: getStressSummary(), iconColor: 'text-destructive', bgColor: 'bg-destructive/10' },
   ];
+
+  const getActivityDisplayData = () => {
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayNamesDE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+    
+    if (!activitiesData || activitiesData.length === 0) {
+      return [];
+    }
+    
+    const sortedData = [...activitiesData].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    return sortedData.slice(-7).map(activity => {
+      const date = new Date(activity.date);
+      const dayIndex = date.getDay();
+      return {
+        day: language === 'en' ? dayNames[dayIndex] : dayNamesDE[dayIndex],
+        steps: activity.steps || 0,
+        stepsGoal: activity.stepsGoal || 10000
+      };
+    });
+  };
+
+  const getWeeklyStats = () => {
+    const displayData = getActivityDisplayData();
+    const hasData = displayData.length > 0;
+    const totalSteps = displayData.reduce((sum, d) => sum + d.steps, 0);
+    const avgSteps = hasData ? Math.round(totalSteps / displayData.length) : 0;
+    const avgGoal = hasData ? Math.round(displayData.reduce((sum, d) => sum + d.stepsGoal, 0) / displayData.length) : 10000;
+    return { avgSteps, avgGoal, displayData, hasData };
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -1069,13 +1261,17 @@ export default function Profile() {
         <Card className="p-6 mb-6 border-0 shadow-xl">
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary shadow-lg">
-                <img 
-                  src={marcPhoto} 
-                  alt="Marc Lewis" 
-                  className="w-full h-full object-cover"
-                  data-testid="img-profile-avatar"
-                />
+              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary shadow-lg bg-muted flex items-center justify-center">
+                {profileData.profilePhoto ? (
+                  <img 
+                    src={profileData.profilePhoto} 
+                    alt={`${profileData.firstName} ${profileData.lastName}`} 
+                    className="w-full h-full object-cover"
+                    data-testid="img-profile-avatar"
+                  />
+                ) : (
+                  <User className="w-12 h-12 text-muted-foreground" data-testid="img-profile-avatar" />
+                )}
               </div>
               <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
                 <Heart className="w-4 h-4 text-white" />
@@ -1405,43 +1601,63 @@ export default function Profile() {
                 <Footprints className="w-5 h-5 text-primary" />
                 {t.activity.title}
               </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-primary/10 to-chart-2/10">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t.activity.weeklyAverage}</p>
-                    <p className="text-2xl font-black text-foreground">7.500 {t.activity.steps}</p>
+              {(() => {
+                const { avgSteps, avgGoal, displayData, hasData } = getWeeklyStats();
+                return (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-primary/10 to-chart-2/10">
+                      <div>
+                        <p className="text-sm text-muted-foreground">{t.activity.weeklyAverage}</p>
+                        <p className="text-2xl font-black text-foreground">
+                          {hasData ? avgSteps.toLocaleString() : '--'} {t.activity.steps}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">{t.activity.goal}</p>
+                        <p className="text-2xl font-black text-primary">{avgGoal.toLocaleString()} {t.activity.steps}</p>
+                      </div>
+                    </div>
+                    
+                    {!hasData ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Footprints className="w-12 h-12 mx-auto mb-4 opacity-30" />
+                        <p className="text-sm">
+                          {language === 'en' 
+                            ? 'No activity data recorded yet. Start tracking your steps to see your progress!' 
+                            : 'Noch keine Aktivitätsdaten erfasst. Beginnen Sie mit dem Tracking Ihrer Schritte!'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-7 gap-2">
+                        {displayData.map((day, index) => {
+                          const percentage = Math.min((day.steps / day.stepsGoal) * 100, 100);
+                          return (
+                            <motion.div
+                              key={`${day.day}-${index}`}
+                              initial={{ opacity: 0, scaleY: 0 }}
+                              animate={{ opacity: 1, scaleY: 1 }}
+                              transition={{ delay: index * 0.1 }}
+                              className="flex flex-col items-center"
+                              data-testid={`activity-day-${day.day.toLowerCase()}`}
+                            >
+                              <div className="w-full h-24 bg-muted/30 rounded-lg relative overflow-hidden">
+                                <div 
+                                  className="absolute bottom-0 w-full bg-gradient-to-t from-primary to-chart-2 rounded-lg transition-all"
+                                  style={{ height: `${percentage}%` }}
+                                />
+                              </div>
+                              <p className="text-xs font-bold mt-2 text-muted-foreground">{day.day}</p>
+                              <p className="text-xs text-foreground">
+                                {day.steps > 0 ? (day.steps / 1000).toFixed(1) + 'k' : '0'}
+                              </p>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-muted-foreground">{t.activity.goal}</p>
-                    <p className="text-2xl font-black text-primary">10.000 {t.activity.steps}</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-7 gap-2">
-                  {activityData.map((day, index) => {
-                    const percentage = Math.min((day.steps / 10000) * 100, 100);
-                    return (
-                      <motion.div
-                        key={day.day}
-                        initial={{ opacity: 0, scaleY: 0 }}
-                        animate={{ opacity: 1, scaleY: 1 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="flex flex-col items-center"
-                        data-testid={`activity-day-${day.day.toLowerCase()}`}
-                      >
-                        <div className="w-full h-24 bg-muted/30 rounded-lg relative overflow-hidden">
-                          <div 
-                            className="absolute bottom-0 w-full bg-gradient-to-t from-primary to-chart-2 rounded-lg transition-all"
-                            style={{ height: `${percentage}%` }}
-                          />
-                        </div>
-                        <p className="text-xs font-bold mt-2 text-muted-foreground">{day.day}</p>
-                        <p className="text-xs text-foreground">{(day.steps / 1000).toFixed(1)}k</p>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
+                );
+              })()}
             </Card>
           </TabsContent>
         </Tabs>
@@ -1572,6 +1788,62 @@ export default function Profile() {
           </DialogHeader>
           
           <div className="space-y-6 py-4">
+            {/* Photo Upload Section */}
+            <div className="space-y-4">
+              <h4 className="font-bold text-foreground">{language === 'en' ? 'Profile Photo' : 'Profilfoto'}</h4>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-primary/30 bg-muted flex items-center justify-center">
+                  {editForm.profilePhoto ? (
+                    <img 
+                      src={editForm.profilePhoto} 
+                      alt="Profile preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-10 h-10 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="file"
+                    id="photo-upload"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    data-testid="input-photo-upload"
+                  />
+                  <label htmlFor="photo-upload">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      className="w-full cursor-pointer"
+                      onClick={() => document.getElementById('photo-upload')?.click()}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {language === 'en' ? 'Upload Photo' : 'Foto hochladen'}
+                    </Button>
+                  </label>
+                  {editForm.profilePhoto && (
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm"
+                      className="text-destructive hover:text-destructive w-full"
+                      onClick={() => setEditForm({ ...editForm, profilePhoto: '' })}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      {language === 'en' ? 'Remove Photo' : 'Foto entfernen'}
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {language === 'en' ? 'Max file size: 2MB. Supported formats: JPG, PNG, GIF' : 'Max. Dateigröße: 2MB. Unterstützte Formate: JPG, PNG, GIF'}
+              </p>
+            </div>
+
+            <Separator />
+
             {/* Name Section */}
             <div className="space-y-4">
               <h4 className="font-bold text-foreground">{t.editModal.name}</h4>
