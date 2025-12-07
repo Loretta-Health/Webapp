@@ -1,203 +1,143 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from './use-auth';
+import { apiRequest } from '../lib/queryClient';
 
 export interface Mission {
   id: string;
   title: string;
-  description?: string;
-  category: 'daily' | 'bonus' | 'weekly';
+  description?: string | null;
+  category: 'daily' | 'bonus' | 'weekly' | string;
   xpReward: number;
   progress: number;
   maxProgress: number;
   completed: boolean;
-  legendary?: boolean;
-  href?: string;
-  source?: 'default' | 'activity' | 'chat';
-}
-
-const MISSIONS_STORAGE_KEY = 'loretta_active_missions';
-
-const defaultMissions: Mission[] = [
-  {
-    id: '2',
-    title: 'Complete 10 jumping jacks',
-    category: 'daily',
-    xpReward: 50,
-    progress: 10,
-    maxProgress: 10,
-    completed: true,
-    href: '/mission-details?id=2',
-    source: 'default',
-  },
-  {
-    id: '1',
-    title: 'Drink 8 glasses of water',
-    description: 'Stay hydrated throughout the day',
-    category: 'daily',
-    xpReward: 30,
-    progress: 5,
-    maxProgress: 8,
-    completed: false,
-    href: '/mission-details?id=1',
-    source: 'default',
-  },
-  {
-    id: 'streak-30',
-    title: 'Maintain 30-day streak',
-    description: 'Keep your streak alive!',
-    category: 'bonus',
-    xpReward: 500,
-    progress: 30,
-    maxProgress: 30,
-    completed: true,
-    legendary: true,
-    href: '/streak',
-    source: 'default',
-  },
-];
-
-function loadMissionsFromStorage(): Mission[] {
-  try {
-    const stored = localStorage.getItem(MISSIONS_STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-    }
-  } catch (e) {
-    console.error('Failed to load missions from storage:', e);
-  }
-  return defaultMissions;
-}
-
-function saveMissionsToStorage(missions: Mission[]) {
-  try {
-    localStorage.setItem(MISSIONS_STORAGE_KEY, JSON.stringify(missions));
-    window.dispatchEvent(new CustomEvent('missions-updated', { detail: missions }));
-  } catch (e) {
-    console.error('Failed to save missions to storage:', e);
-  }
+  legendary?: boolean | null;
+  href?: string | null;
+  source?: 'default' | 'activity' | 'chat' | string | null;
+  missionKey?: string;
+  userId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export function useMissions() {
-  const [missions, setMissions] = useState<Mission[]>(() => loadMissionsFromStorage());
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const userId = user?.id;
 
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === MISSIONS_STORAGE_KEY) {
-        setMissions(loadMissionsFromStorage());
+  const { data: missions = [], isLoading, error } = useQuery<Mission[]>({
+    queryKey: ['/api/missions', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const response = await fetch(`/api/missions/${userId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch missions');
       }
-    };
+      return response.json();
+    },
+    enabled: !!userId,
+  });
 
-    const handleMissionsUpdate = (e: CustomEvent<Mission[]>) => {
-      setMissions(e.detail);
-    };
+  const createMissionMutation = useMutation({
+    mutationFn: async (mission: Omit<Mission, 'id'> & { id?: string }) => {
+      const response = await apiRequest('POST', '/api/missions', {
+        ...mission,
+        userId,
+        missionKey: mission.missionKey || mission.id || `mission-${Date.now()}`,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+    },
+  });
 
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('missions-updated', handleMissionsUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('missions-updated', handleMissionsUpdate as EventListener);
-    };
-  }, []);
+  const updateMissionMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: { progress?: number; completed?: boolean } }) => {
+      const response = await apiRequest('PATCH', `/api/missions/${id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+    },
+  });
+
+  const deleteMissionMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest('DELETE', `/api/missions/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+    },
+  });
+
+  const resetMissionsMutation = useMutation({
+    mutationFn: async () => {
+      if (!userId) throw new Error('No user ID');
+      const response = await apiRequest('POST', `/api/missions/${userId}/reset`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+    },
+  });
 
   const addMission = useCallback((mission: Omit<Mission, 'id'> & { id?: string }) => {
-    setMissions(prev => {
-      const id = mission.id || `mission-${Date.now()}`;
-      const existingIndex = prev.findIndex(m => m.id === id);
-      
-      let updated: Mission[];
-      if (existingIndex >= 0) {
-        const existingMission = prev[existingIndex];
-        const mergedMission: Mission = {
-          ...existingMission,
-          ...mission,
-          id,
-          progress: mission.progress ?? existingMission.progress,
-          completed: mission.completed ?? existingMission.completed,
-        };
-        updated = prev.map((m, i) => i === existingIndex ? mergedMission : m);
-      } else {
-        const newMission: Mission = {
-          ...mission,
-          id,
-          completed: mission.completed ?? false,
-          progress: mission.progress ?? 0,
-        };
-        updated = [...prev, newMission];
-      }
-      
-      saveMissionsToStorage(updated);
-      return updated;
-    });
-  }, []);
+    createMissionMutation.mutate(mission);
+  }, [createMissionMutation]);
 
   const updateMissionProgress = useCallback((missionId: string, progress: number) => {
-    setMissions(prev => {
-      const updated = prev.map(m => {
-        if (m.id === missionId) {
-          const newProgress = Math.min(progress, m.maxProgress);
-          return {
-            ...m,
-            progress: newProgress,
-            completed: newProgress >= m.maxProgress,
-          };
-        }
-        return m;
+    const mission = missions.find(m => m.id === missionId);
+    if (mission) {
+      const newProgress = Math.min(progress, mission.maxProgress);
+      updateMissionMutation.mutate({
+        id: missionId,
+        data: {
+          progress: newProgress,
+          completed: newProgress >= mission.maxProgress,
+        },
       });
-      saveMissionsToStorage(updated);
-      return updated;
-    });
-  }, []);
+    }
+  }, [missions, updateMissionMutation]);
 
   const completeMission = useCallback((missionId: string) => {
-    setMissions(prev => {
-      const updated = prev.map(m => {
-        if (m.id === missionId) {
-          return {
-            ...m,
-            progress: m.maxProgress,
-            completed: true,
-          };
-        }
-        return m;
+    const mission = missions.find(m => m.id === missionId);
+    if (mission) {
+      updateMissionMutation.mutate({
+        id: missionId,
+        data: {
+          progress: mission.maxProgress,
+          completed: true,
+        },
       });
-      saveMissionsToStorage(updated);
-      return updated;
-    });
-  }, []);
+    }
+  }, [missions, updateMissionMutation]);
 
   const logMissionStep = useCallback((missionId: string) => {
-    setMissions(prev => {
-      const updated = prev.map(m => {
-        if (m.id === missionId && m.progress < m.maxProgress) {
-          const newProgress = m.progress + 1;
-          return {
-            ...m,
-            progress: newProgress,
-            completed: newProgress >= m.maxProgress,
-          };
-        }
-        return m;
+    const mission = missions.find(m => m.id === missionId);
+    if (mission && mission.progress < mission.maxProgress) {
+      const newProgress = mission.progress + 1;
+      updateMissionMutation.mutate({
+        id: missionId,
+        data: {
+          progress: newProgress,
+          completed: newProgress >= mission.maxProgress,
+        },
       });
-      saveMissionsToStorage(updated);
-      return updated;
-    });
-  }, []);
+    }
+  }, [missions, updateMissionMutation]);
 
   const removeMission = useCallback((missionId: string) => {
-    setMissions(prev => {
-      const updated = prev.filter(m => m.id !== missionId);
-      saveMissionsToStorage(updated);
-      return updated;
-    });
-  }, []);
+    deleteMissionMutation.mutate(missionId);
+  }, [deleteMissionMutation]);
 
   const resetMissions = useCallback(() => {
-    setMissions(defaultMissions);
-    saveMissionsToStorage(defaultMissions);
-  }, []);
+    resetMissionsMutation.mutate();
+  }, [resetMissionsMutation]);
 
   const completedCount = missions.filter(m => m.completed).length;
   const totalCount = missions.length;
@@ -212,5 +152,7 @@ export function useMissions() {
     resetMissions,
     completedCount,
     totalCount,
+    isLoading,
+    error,
   };
 }

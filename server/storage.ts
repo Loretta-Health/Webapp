@@ -13,6 +13,9 @@ import {
   type InsertRiskScore,
   type EmotionalCheckin,
   type InsertEmotionalCheckin,
+  type UserMission,
+  type InsertUserMission,
+  type UpdateUserMission,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -20,6 +23,7 @@ import {
   userGamification,
   riskScores,
   emotionalCheckins,
+  userMissions,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -64,6 +68,14 @@ export interface IStorage {
   // Emotional check-in methods
   getLatestEmotionalCheckin(userId: string): Promise<EmotionalCheckin | undefined>;
   saveEmotionalCheckin(data: InsertEmotionalCheckin): Promise<EmotionalCheckin>;
+
+  // User mission methods
+  getUserMissions(userId: string): Promise<UserMission[]>;
+  createUserMission(data: InsertUserMission): Promise<UserMission>;
+  updateUserMission(id: string, data: UpdateUserMission): Promise<UserMission | undefined>;
+  deleteUserMission(id: string): Promise<void>;
+  ensureDefaultMissionsForUser(userId: string): Promise<UserMission[]>;
+  resetUserMissions(userId: string): Promise<UserMission[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -341,6 +353,98 @@ export class DatabaseStorage implements IStorage {
       .values(data)
       .returning();
     return created;
+  }
+
+  // User mission methods
+  async getUserMissions(userId: string): Promise<UserMission[]> {
+    return await db
+      .select()
+      .from(userMissions)
+      .where(eq(userMissions.userId, userId));
+  }
+
+  async createUserMission(data: InsertUserMission): Promise<UserMission> {
+    const [created] = await db
+      .insert(userMissions)
+      .values(data)
+      .returning();
+    return created;
+  }
+
+  async updateUserMission(id: string, data: UpdateUserMission): Promise<UserMission | undefined> {
+    const [updated] = await db
+      .update(userMissions)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(userMissions.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteUserMission(id: string): Promise<void> {
+    await db.delete(userMissions).where(eq(userMissions.id, id));
+  }
+
+  async ensureDefaultMissionsForUser(userId: string): Promise<UserMission[]> {
+    const existingMissions = await this.getUserMissions(userId);
+    
+    if (existingMissions.length > 0) {
+      return existingMissions;
+    }
+
+    const defaultMissions: InsertUserMission[] = [
+      {
+        userId,
+        missionKey: 'jumping-jacks',
+        title: 'Complete 10 jumping jacks',
+        category: 'daily',
+        xpReward: 50,
+        progress: 0,
+        maxProgress: 10,
+        completed: false,
+        href: '/mission-details?id=2',
+        source: 'default',
+      },
+      {
+        userId,
+        missionKey: 'water-glasses',
+        title: 'Drink 8 glasses of water',
+        description: 'Stay hydrated throughout the day',
+        category: 'daily',
+        xpReward: 30,
+        progress: 0,
+        maxProgress: 8,
+        completed: false,
+        href: '/mission-details?id=1',
+        source: 'default',
+      },
+      {
+        userId,
+        missionKey: 'streak-30',
+        title: 'Maintain 30-day streak',
+        description: 'Keep your streak alive!',
+        category: 'bonus',
+        xpReward: 500,
+        progress: 0,
+        maxProgress: 30,
+        completed: false,
+        legendary: true,
+        href: '/streak',
+        source: 'default',
+      },
+    ];
+
+    const createdMissions: UserMission[] = [];
+    for (const mission of defaultMissions) {
+      const created = await this.createUserMission(mission);
+      createdMissions.push(created);
+    }
+
+    return createdMissions;
+  }
+
+  async resetUserMissions(userId: string): Promise<UserMission[]> {
+    await db.delete(userMissions).where(eq(userMissions.userId, userId));
+    return await this.ensureDefaultMissionsForUser(userId);
   }
 }
 

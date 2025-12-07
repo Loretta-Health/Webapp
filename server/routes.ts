@@ -7,7 +7,9 @@ import {
   insertUserProfileSchema,
   insertUserPreferencesSchema,
   insertUserGamificationSchema,
-  insertRiskScoreSchema 
+  insertRiskScoreSchema,
+  insertUserMissionSchema,
+  updateUserMissionSchema,
 } from "@shared/schema";
 
 // Scaleway AI configuration
@@ -508,6 +510,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error saving emotional check-in:", error);
       res.status(500).json({ error: "Failed to save emotional check-in" });
+    }
+  });
+
+  // ========================
+  // User Mission Endpoints
+  // ========================
+
+  app.get("/api/missions/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const missions = await storage.ensureDefaultMissionsForUser(userId);
+      res.json(missions);
+    } catch (error) {
+      console.error("Error fetching missions:", error);
+      res.status(500).json({ error: "Failed to fetch missions" });
+    }
+  });
+
+  app.post("/api/missions", async (req, res) => {
+    try {
+      const validatedData = insertUserMissionSchema.parse(req.body);
+      const created = await storage.createUserMission(validatedData);
+      res.json(created);
+    } catch (error) {
+      console.error("Error creating mission:", error);
+      res.status(400).json({ error: "Invalid mission data" });
+    }
+  });
+
+  app.patch("/api/missions/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = updateUserMissionSchema.parse(req.body);
+      const updated = await storage.updateUserMission(id, validatedData);
+      
+      if (!updated) {
+        return res.status(404).json({ error: "Mission not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating mission:", error);
+      res.status(400).json({ error: "Invalid mission data" });
+    }
+  });
+
+  app.delete("/api/missions/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteUserMission(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting mission:", error);
+      res.status(500).json({ error: "Failed to delete mission" });
+    }
+  });
+
+  app.post("/api/missions/:userId/reset", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const missions = await storage.resetUserMissions(userId);
+      res.json(missions);
+    } catch (error) {
+      console.error("Error resetting missions:", error);
+      res.status(500).json({ error: "Failed to reset missions" });
     }
   });
 
