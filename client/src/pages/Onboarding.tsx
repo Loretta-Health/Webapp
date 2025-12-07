@@ -1381,6 +1381,26 @@ export default function Onboarding() {
     },
   });
 
+  const initializeAchievementsMutation = useMutation({
+    mutationFn: async () => {
+      console.log('Initializing achievements:', { userId });
+      const response = await fetch(`/api/achievements/${userId}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to initialize achievements');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      console.log('Achievements initialized successfully');
+      queryClient.invalidateQueries({ queryKey: ['/api/achievements', userId] });
+    },
+    onError: (error) => {
+      console.error('Failed to initialize achievements:', error);
+    },
+  });
+
   useEffect(() => {
     const stored = localStorage.getItem('loretta_invite');
     if (stored) {
@@ -1614,6 +1634,7 @@ export default function Onboarding() {
       setRiskScore(fullScore);
       localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
       initializeGamificationMutation.mutate();
+      initializeAchievementsMutation.mutate();
       setStep('riskScore');
     } catch (fallbackError) {
       // Server-side calculation failed - use client-side calculation as fallback
@@ -1638,6 +1659,7 @@ export default function Onboarding() {
       });
       
       initializeGamificationMutation.mutate();
+      initializeAchievementsMutation.mutate();
       setStep('riskScore');
     } finally {
       setIsPredicting(false);

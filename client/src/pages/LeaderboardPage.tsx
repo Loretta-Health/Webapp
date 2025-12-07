@@ -70,82 +70,52 @@ interface Achievement {
   maxProgress?: number;
 }
 
-const achievements: Achievement[] = [
-  {
-    id: 'first-steps',
-    title: 'First Steps',
-    description: 'Complete your first daily check-in',
-    icon: 'target',
-    unlocked: true,
-    rarity: 'common',
-    unlockedDate: '2 days ago',
-  },
-  {
-    id: 'week-warrior',
-    title: 'Week Warrior',
-    description: 'Maintain a 7-day streak',
-    icon: 'flame',
-    unlocked: true,
-    rarity: 'rare',
-    unlockedDate: 'Today',
-  },
-  {
-    id: 'health-champion',
-    title: 'Health Champion',
-    description: 'Reach level 15',
-    icon: 'crown',
-    unlocked: false,
-    rarity: 'epic',
-    progress: 14,
-    maxProgress: 15,
-  },
-  {
-    id: 'medication-master',
-    title: 'Medication Master',
-    description: 'Take all medications on time for 30 days',
-    icon: 'shield',
-    unlocked: false,
-    rarity: 'legendary',
-    progress: 14,
-    maxProgress: 30,
-  },
-  {
-    id: 'hydration-hero',
-    title: 'Hydration Hero',
-    description: 'Drink 8 glasses of water for 7 days straight',
-    icon: 'zap',
-    unlocked: true,
-    rarity: 'rare',
-    unlockedDate: '5 days ago',
-  },
-  {
-    id: 'early-bird',
-    title: 'Early Bird',
-    description: 'Complete a check-in before 8 AM',
-    icon: 'star',
-    unlocked: true,
-    rarity: 'common',
-    unlockedDate: '1 week ago',
-  },
-  {
-    id: 'heart-healthy',
-    title: 'Heart Healthy',
-    description: 'Complete all heart health missions',
-    icon: 'heart',
-    unlocked: false,
-    rarity: 'epic',
-    progress: 3,
-    maxProgress: 5,
-  },
-  {
-    id: 'community-star',
-    title: 'Community Star',
-    description: 'Reach top 3 in the weekly leaderboard',
-    icon: 'award',
-    unlocked: false,
-    rarity: 'legendary',
-  },
-];
+interface DbAchievement {
+  id: string;
+  userId: string;
+  achievementKey: string;
+  title: string;
+  description: string;
+  icon: string;
+  rarity: string;
+  unlocked: boolean;
+  unlockedAt: string | null;
+  progress: number;
+  maxProgress: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function formatRelativeDate(dateString: string | null): string | undefined {
+  if (!dateString) return undefined;
+  
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 14) return '1 week ago';
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffDays < 60) return '1 month ago';
+  return `${Math.floor(diffDays / 30)} months ago`;
+}
+
+function mapDbToAchievement(dbAchievement: DbAchievement): Achievement {
+  return {
+    id: dbAchievement.achievementKey,
+    title: dbAchievement.title,
+    description: dbAchievement.description,
+    icon: dbAchievement.icon as Achievement['icon'],
+    unlocked: dbAchievement.unlocked,
+    rarity: dbAchievement.rarity as Achievement['rarity'],
+    unlockedDate: formatRelativeDate(dbAchievement.unlockedAt),
+    progress: dbAchievement.progress,
+    maxProgress: dbAchievement.maxProgress,
+  };
+}
 
 const iconMap = {
   target: Target,
@@ -186,6 +156,8 @@ export default function LeaderboardPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(true);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [loadingAchievements, setLoadingAchievements] = useState(true);
   const [darkMode, setDarkMode] = useState(() => {
     return document.documentElement.classList.contains('dark');
   });
@@ -193,8 +165,27 @@ export default function LeaderboardPage() {
   useEffect(() => {
     if (user) {
       fetchTeams();
+      fetchAchievements();
     }
   }, [user]);
+
+  const fetchAchievements = async () => {
+    if (!user?.id) return;
+    setLoadingAchievements(true);
+    try {
+      const response = await fetch(`/api/achievements/${user.id}`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data: DbAchievement[] = await response.json();
+        setAchievements(data.map(mapDbToAchievement));
+      }
+    } catch (err) {
+      console.error('Failed to fetch achievements:', err);
+    } finally {
+      setLoadingAchievements(false);
+    }
+  };
 
   useEffect(() => {
     if (selectedTeamId) {
@@ -417,6 +408,11 @@ export default function LeaderboardPage() {
           </TabsContent>
 
           <TabsContent value="achievements">
+            {loadingAchievements ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : (
             <div className="space-y-4">
               <Card className="p-4 bg-gradient-to-r from-chart-3/10 to-chart-3/5 border-chart-3/30">
                 <div className="flex items-center justify-between">
@@ -428,7 +424,7 @@ export default function LeaderboardPage() {
                     <Trophy className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                <Progress value={(unlockedCount / totalCount) * 100} className="mt-3 h-2" />
+                <Progress value={totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0} className="mt-3 h-2" />
               </Card>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -498,6 +494,7 @@ export default function LeaderboardPage() {
                 })}
               </div>
             </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>
