@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth } from "./auth";
 import { 
   insertQuestionnaireSchema, 
   insertUserProfileSchema,
@@ -97,6 +98,9 @@ IMPORTANT GUIDELINES:
 - Respect user privacy and handle health information sensitively`;
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication routes (/api/register, /api/login, /api/logout, /api/user)
+  setupAuth(app);
+  
   // Chat endpoint for Health Navigator
   app.post("/api/chat", async (req, res) => {
     try {
