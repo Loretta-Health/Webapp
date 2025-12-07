@@ -36,11 +36,16 @@ export default function QuestCard({
   const [showConfetti, setShowConfetti] = useState(false);
   
   const handleComplete = () => {
-    if (!isCompleted && progress >= maxProgress) {
-      setIsCompleted(true);
-      setShowConfetti(true);
-      onComplete?.();
-      setTimeout(() => setShowConfetti(false), 2000);
+    if (!isCompleted) {
+      // For simple quests (maxProgress = 1), allow direct completion via checkbox
+      // For multi-step quests, only allow completion when progress meets requirement
+      const canComplete = maxProgress === 1 || progress >= maxProgress;
+      if (canComplete) {
+        setIsCompleted(true);
+        setShowConfetti(true);
+        onComplete?.();
+        setTimeout(() => setShowConfetti(false), 2000);
+      }
     }
   };
   
