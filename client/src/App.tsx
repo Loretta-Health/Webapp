@@ -24,6 +24,7 @@ import LeaderboardPage from "@/pages/LeaderboardPage";
 import Calendar from "@/pages/Calendar";
 import RiskScoreDetails from "@/pages/RiskScoreDetails";
 import AlternativeMissionDetails from "@/pages/AlternativeMissionDetails";
+import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
 
 function ConsentGuard({ children }: { children: React.ReactNode }) {
@@ -59,6 +60,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={HomeRoute} />
+      <Route path="/auth" component={AuthPage} />
       <Route path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/my-dashboard" component={MyDashboard} />
       <ProtectedRoute path="/welcome" component={Welcome} />
