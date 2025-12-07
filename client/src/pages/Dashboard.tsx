@@ -11,9 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, LogIn, UserPlus, Loader2 } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
-import { getUserId } from '@/lib/userId';
 import { useAuth } from '@/hooks/use-auth';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import marcPhoto from '@assets/image_1764091454235.png';
@@ -36,8 +33,6 @@ import EnergyBar from '@/components/EnergyBar';
 import HealthScienceSection from '@/components/HealthScienceSection';
 import CommunitySelector, { type CommunityType } from '@/components/CommunitySelector';
 import EmotionalCheckInModal from '@/components/EmotionalCheckInModal';
-import { useMissions } from '@/hooks/useMissions';
-import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface GamificationData {
@@ -83,10 +78,24 @@ export default function Dashboard() {
   const [registerForm, setRegisterForm] = useState({ username: '', password: '', confirmPassword: '' });
   const [registerError, setRegisterError] = useState('');
   const { user, logoutMutation, loginMutation, registerMutation } = useAuth();
-  const userId = getUserId();
-  const { missions, completedCount, totalCount } = useMissions();
-  const { medications, getTotalProgress } = useMedicationProgress();
-  const medicationProgress = getTotalProgress();
+  
+  const demoMissions = [
+    { id: 'daily-checkin', title: 'Daily Check-In', description: 'Complete your daily health check-in', category: 'daily' as const, xpReward: 50, completed: true },
+    { id: 'medication-morning', title: 'Morning Medication', description: 'Take your morning medication', category: 'daily' as const, xpReward: 25, completed: true },
+    { id: 'log-activity', title: 'Log Activity', description: 'Record your daily activity', category: 'daily' as const, xpReward: 30, completed: false },
+    { id: 'weekly-summary', title: 'Weekly Summary', description: 'Review your weekly health summary', category: 'weekly' as const, xpReward: 100, completed: false },
+  ];
+  const missions = demoMissions;
+  const completedCount = demoMissions.filter(m => m.completed).length;
+  const totalCount = demoMissions.length;
+  
+  const demoMedications = [
+    { id: 'med-1', name: 'Metformin', dosage: '500mg', timing: 'With breakfast', frequency: 'daily', explanation: 'Helps control blood sugar levels', simpleExplanation: 'Keeps blood sugar stable' },
+    { id: 'med-2', name: 'Lisinopril', dosage: '10mg', timing: 'Every morning', frequency: 'daily', explanation: 'ACE inhibitor for blood pressure control', simpleExplanation: 'Maintains healthy blood pressure' },
+    { id: 'med-3', name: 'Atorvastatin', dosage: '20mg', timing: 'At bedtime', frequency: 'daily', explanation: 'Statin medication to lower cholesterol', simpleExplanation: 'Helps keep cholesterol low' },
+  ];
+  const medications = demoMedications;
+  const medicationProgress = { taken: 2, total: 3, percentage: 67 };
   
   const xp = 327;
   const level = 14;
@@ -111,9 +120,10 @@ export default function Dashboard() {
     // Demo mode - no actual data update
   };
   
+  const demoUserId = 'demo-marc-lewis';
   const demoEmotionalCheckins: EmotionalCheckinData[] = [
-    { id: '1', userId, emotion: 'happy', userMessage: 'Feeling great today!', aiResponse: 'Wonderful to hear!', xpAwarded: 15, checkedInAt: new Date().toISOString() },
-    { id: '2', userId, emotion: 'calm', userMessage: 'Had a peaceful morning', aiResponse: 'That sounds lovely!', xpAwarded: 15, checkedInAt: new Date(Date.now() - 86400000).toISOString() },
+    { id: '1', userId: demoUserId, emotion: 'happy', userMessage: 'Feeling great today!', aiResponse: 'Wonderful to hear!', xpAwarded: 15, checkedInAt: new Date().toISOString() },
+    { id: '2', userId: demoUserId, emotion: 'calm', userMessage: 'Had a peaceful morning', aiResponse: 'That sounds lovely!', xpAwarded: 15, checkedInAt: new Date(Date.now() - 86400000).toISOString() },
   ];
 
   const getEmotionEmoji = (emotion: string): string => {
@@ -1124,7 +1134,7 @@ export default function Dashboard() {
       <EmotionalCheckInModal
         open={showCheckInModal}
         onClose={() => setShowCheckInModal(false)}
-        userId={userId}
+        userId={demoUserId}
         onCheckInComplete={handleCheckInComplete}
       />
     </div>
