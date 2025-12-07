@@ -7,9 +7,9 @@ packages = ["unzip"]
 expertMode = true
 
 [deployment]
-run = ["sh", "-c", "npm run start"]
-deploymentTarget = "cloudrun"
-build = ["sh", "-c", "npm run build "]
+run = ["npm", "run", "start"]
+deploymentTarget = "autoscale"
+build = ["npm", "run", "build"]
 
 [[ports]]
 localPort = 5000
