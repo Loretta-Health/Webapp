@@ -661,6 +661,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========================
+  // Activity Endpoints
+  // ========================
+
+  app.get("/api/activities/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const days = parseInt(req.query.days as string) || 7;
+      const activities = await storage.getUserActivities(userId, days);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching activities:", error);
+      res.status(500).json({ error: "Failed to fetch activities" });
+    }
+  });
+
+  app.get("/api/activities/:userId/today", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const today = new Date().toISOString().split('T')[0];
+      const activity = await storage.getUserActivityForDate(userId, today);
+      res.json(activity || { 
+        userId, 
+        date: today, 
+        steps: 0, 
+        stepsGoal: 10000,
+        sleepHours: 0, 
+        sleepGoal: 8,
+        heartRate: null, 
+        calories: 0, 
+        caloriesGoal: 2000,
+        water: 0,
+        waterGoal: 8
+      });
+    } catch (error) {
+      console.error("Error fetching today's activity:", error);
+      res.status(500).json({ error: "Failed to fetch today's activity" });
+    }
+  });
+
+  app.post("/api/activities", async (req, res) => {
+    try {
+      const { userId, date, ...data } = req.body;
+      const activityDate = date || new Date().toISOString().split('T')[0];
+      const saved = await storage.saveUserActivity({ userId, date: activityDate, ...data });
+      res.json(saved);
+    } catch (error) {
+      console.error("Error saving activity:", error);
+      res.status(400).json({ error: "Failed to save activity" });
+    }
+  });
+
+  app.patch("/api/activities/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { date, ...data } = req.body;
+      const activityDate = date || new Date().toISOString().split('T')[0];
+      const updated = await storage.updateUserActivity(userId, activityDate, data);
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating activity:", error);
+      res.status(400).json({ error: "Failed to update activity" });
+    }
+  });
+
+  // ========================
   // Team Endpoints
   // ========================
 
