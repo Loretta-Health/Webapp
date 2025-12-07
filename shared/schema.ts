@@ -52,6 +52,7 @@ export const userProfiles = pgTable("user_profiles", {
   educationLevel: text("education_level"),
   employmentStatus: text("employment_status"),
   housingStatus: text("housing_status"),
+  profilePhoto: text("profile_photo"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
