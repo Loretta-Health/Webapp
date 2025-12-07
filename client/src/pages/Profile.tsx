@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
 import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -459,20 +460,35 @@ interface ProfileData {
   housingStatus: string;
 }
 
-const defaultProfile: ProfileData = {
-  firstName: 'Marc',
-  lastName: 'Lewis',
-  age: 47,
-  height: 175,
-  weight: 82,
-  bloodType: 'O+',
+const emptyProfile: ProfileData = {
+  firstName: '',
+  lastName: '',
+  age: 0,
+  height: 0,
+  weight: 0,
+  bloodType: '',
   allergies: '',
-  ethnicity: 'afro-caribbean',
-  socioeconomicStatus: 'lower-middle',
-  educationLevel: 'some-college',
-  employmentStatus: 'full-time',
-  housingStatus: 'own',
+  ethnicity: '',
+  socioeconomicStatus: '',
+  educationLevel: '',
+  employmentStatus: '',
+  housingStatus: '',
 };
+
+interface BackendProfile {
+  firstName: string | null;
+  lastName: string | null;
+  age: string | null;
+  height: string | null;
+  weight: string | null;
+  bloodType: string | null;
+  allergies: string | null;
+  ethnicity: string | null;
+  socioeconomicStatus: string | null;
+  educationLevel: string | null;
+  employmentStatus: string | null;
+  housingStatus: string | null;
+}
 
 export default function Profile() {
   const [activeTab, setActiveTab] = useState('basic');
@@ -481,11 +497,9 @@ export default function Profile() {
     return (saved === 'de' ? 'de' : 'en') as Language;
   });
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData>(() => {
-    const saved = localStorage.getItem('loretta_profile');
-    return saved ? JSON.parse(saved) : defaultProfile;
-  });
-  const [editForm, setEditForm] = useState<ProfileData>(profileData);
+  const [profileData, setProfileData] = useState<ProfileData>(emptyProfile);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [editForm, setEditForm] = useState<ProfileData>(emptyProfile);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareOptions, setShareOptions] = useState({
@@ -501,6 +515,35 @@ export default function Profile() {
   const { toast } = useToast();
 
   const userId = getUserId();
+
+  const { data: backendProfile, isLoading: isProfileLoading } = useQuery<BackendProfile | null>({
+    queryKey: ['/api/profile', userId],
+    enabled: !!userId,
+  });
+
+  useEffect(() => {
+    if (backendProfile && !profileLoaded) {
+      const loadedProfile: ProfileData = {
+        firstName: backendProfile.firstName || '',
+        lastName: backendProfile.lastName || '',
+        age: backendProfile.age ? parseInt(backendProfile.age) : 0,
+        height: backendProfile.height ? parseInt(backendProfile.height) : 0,
+        weight: backendProfile.weight ? parseInt(backendProfile.weight) : 0,
+        bloodType: backendProfile.bloodType || '',
+        allergies: backendProfile.allergies || '',
+        ethnicity: backendProfile.ethnicity || '',
+        socioeconomicStatus: backendProfile.socioeconomicStatus || '',
+        educationLevel: backendProfile.educationLevel || '',
+        employmentStatus: backendProfile.employmentStatus || '',
+        housingStatus: backendProfile.housingStatus || '',
+      };
+      setProfileData(loadedProfile);
+      setEditForm(loadedProfile);
+      setProfileLoaded(true);
+    } else if (backendProfile === null && !profileLoaded) {
+      setProfileLoaded(true);
+    }
+  }, [backendProfile, profileLoaded]);
 
   const { data: backendAnswers } = useQuery<Array<{ category: string; answers: Record<string, string> }>>({
     queryKey: ['/api/questionnaires', userId],
@@ -746,6 +789,239 @@ export default function Profile() {
       default: return 'bg-muted text-muted-foreground';
     }
   };
+
+  const isProfileEmpty = !profileData.firstName && !profileData.lastName;
+
+  if (isProfileLoading || !profileLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          <p className="text-muted-foreground">{language === 'en' ? 'Loading profile...' : 'Profil wird geladen...'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isProfileEmpty) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+        <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 pb-20">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <Link href="/my-dashboard">
+                <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
+                  <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
+                  {t.back}
+                </Button>
+              </Link>
+              <div className="text-center">
+                <h1 className="text-xl font-black text-white">{t.profile}</h1>
+                <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="text-white hover:bg-white/20 gap-2"
+                  onClick={toggleLanguage}
+                  data-testid="button-language-toggle"
+                >
+                  <Globe className="w-4 h-4" />
+                  {language === 'en' ? 'DE' : 'EN'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 -mt-16">
+          <Card className="p-8 mb-6 border-0 shadow-xl text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-chart-2/20 flex items-center justify-center mx-auto mb-6">
+                <User className="w-12 h-12 text-primary" />
+              </div>
+              <h2 className="text-2xl font-black text-foreground mb-3">
+                {language === 'en' ? 'Complete Your Profile' : 'Vervollständige dein Profil'}
+              </h2>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                {language === 'en' 
+                  ? "You haven't filled in your profile yet. Add your health information to get personalized insights and track your progress." 
+                  : 'Du hast dein Profil noch nicht ausgefüllt. Füge deine Gesundheitsinformationen hinzu, um personalisierte Einblicke zu erhalten und deinen Fortschritt zu verfolgen.'}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  onClick={openEditModal}
+                  className="bg-gradient-to-r from-primary to-chart-2 text-white font-bold px-8"
+                  data-testid="button-fill-profile"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  {language === 'en' ? 'Fill In Profile' : 'Profil ausfüllen'}
+                </Button>
+                <Link href="/onboarding">
+                  <Button 
+                    variant="outline"
+                    className="border-primary/30 hover:bg-primary/10"
+                    data-testid="button-complete-onboarding"
+                  >
+                    <ClipboardList className="w-4 h-4 mr-2" />
+                    {language === 'en' ? 'Complete Onboarding' : 'Onboarding abschließen'}
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </Card>
+
+          <Card className="p-6 border-2 border-dashed border-primary/30 bg-gradient-to-br from-primary/5 to-chart-2/5">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center flex-shrink-0">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground mb-2">
+                  {language === 'en' ? 'Why complete your profile?' : 'Warum dein Profil vervollständigen?'}
+                </h3>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-chart-2" />
+                    {language === 'en' ? 'Get personalized health recommendations' : 'Erhalte personalisierte Gesundheitsempfehlungen'}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-chart-2" />
+                    {language === 'en' ? 'Track your health metrics over time' : 'Verfolge deine Gesundheitswerte über Zeit'}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-chart-2" />
+                    {language === 'en' ? 'Calculate your health risk score' : 'Berechne deinen Gesundheitsrisiko-Score'}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-chart-2" />
+                    {language === 'en' ? 'Earn XP and unlock achievements' : 'Verdiene XP und schalte Erfolge frei'}
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Edit className="w-5 h-5 text-primary" />
+                {t.editModal.title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 py-4">
+              <div className="space-y-4">
+                <h4 className="font-bold text-sm text-muted-foreground uppercase">{t.editModal.name}</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">{t.editModal.firstName}</Label>
+                    <Input
+                      id="firstName"
+                      value={editForm.firstName}
+                      onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                      placeholder={language === 'en' ? 'Enter first name' : 'Vorname eingeben'}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">{t.editModal.lastName}</Label>
+                    <Input
+                      id="lastName"
+                      value={editForm.lastName}
+                      onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                      placeholder={language === 'en' ? 'Enter last name' : 'Nachname eingeben'}
+                    />
+                  </div>
+                </div>
+              </div>
+              <Separator />
+              <div className="space-y-4">
+                <h4 className="font-bold text-sm text-muted-foreground uppercase">{t.editModal.basicInfo}</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="age">{t.editModal.age}</Label>
+                    <Input
+                      id="age"
+                      type="number"
+                      value={editForm.age || ''}
+                      onChange={(e) => setEditForm({ ...editForm, age: parseInt(e.target.value) || 0 })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="height">{t.editModal.height}</Label>
+                    <Input
+                      id="height"
+                      type="number"
+                      value={editForm.height || ''}
+                      onChange={(e) => setEditForm({ ...editForm, height: parseInt(e.target.value) || 0 })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="weight">{t.editModal.weight}</Label>
+                    <Input
+                      id="weight"
+                      type="number"
+                      value={editForm.weight || ''}
+                      onChange={(e) => setEditForm({ ...editForm, weight: parseInt(e.target.value) || 0 })}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bloodType">{t.editModal.bloodType}</Label>
+                    <Select
+                      value={editForm.bloodType}
+                      onValueChange={(value) => setEditForm({ ...editForm, bloodType: value })}
+                    >
+                      <SelectTrigger id="bloodType">
+                        <SelectValue placeholder={language === 'en' ? 'Select blood type' : 'Blutgruppe wählen'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A+">A+</SelectItem>
+                        <SelectItem value="A-">A-</SelectItem>
+                        <SelectItem value="B+">B+</SelectItem>
+                        <SelectItem value="B-">B-</SelectItem>
+                        <SelectItem value="AB+">AB+</SelectItem>
+                        <SelectItem value="AB-">AB-</SelectItem>
+                        <SelectItem value="O+">O+</SelectItem>
+                        <SelectItem value="O-">O-</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="allergies">{t.editModal.allergies}</Label>
+                  <Input
+                    id="allergies"
+                    value={editForm.allergies}
+                    onChange={(e) => setEditForm({ ...editForm, allergies: e.target.value })}
+                    placeholder={language === 'en' ? 'None' : 'Keine'}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+                <X className="w-4 h-4 mr-2" />
+                {t.editModal.cancel}
+              </Button>
+              <Button onClick={handleSave} className="bg-gradient-to-r from-primary to-chart-2">
+                <Save className="w-4 h-4 mr-2" />
+                {t.editModal.save}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
