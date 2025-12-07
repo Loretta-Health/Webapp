@@ -3,10 +3,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, LogIn, UserPlus, Loader2 } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -75,7 +77,12 @@ export default function Dashboard() {
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
-  const { user, logoutMutation } = useAuth();
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [registerForm, setRegisterForm] = useState({ username: '', password: '', confirmPassword: '' });
+  const [registerError, setRegisterError] = useState('');
+  const { user, logoutMutation, loginMutation, registerMutation } = useAuth();
   const userId = getUserId();
   const { missions, completedCount, totalCount } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
@@ -346,21 +353,53 @@ export default function Dashboard() {
             
             <Separator className="my-2" />
             
-            <Button 
-              variant="outline" 
-              className="w-full justify-start text-sm bg-gradient-to-r from-muted/50 to-muted/30 border-muted-foreground/20 hover:border-muted-foreground/40 hover:bg-muted"
-              onClick={() => {
-                logoutMutation.mutate();
-                navigate('/auth');
-              }}
-              disabled={logoutMutation.isPending}
-              data-testid="button-logout"
-            >
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-muted-foreground to-slate-500 flex items-center justify-center mr-2">
-                <LogOut className="w-3 h-3 text-white" />
+            {user ? (
+              <Button 
+                variant="outline" 
+                className="w-full justify-start text-sm bg-gradient-to-r from-muted/50 to-muted/30 border-muted-foreground/20 hover:border-muted-foreground/40 hover:bg-muted"
+                onClick={() => {
+                  logoutMutation.mutate();
+                }}
+                disabled={logoutMutation.isPending}
+                data-testid="button-logout"
+              >
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-muted-foreground to-slate-500 flex items-center justify-center mr-2">
+                  <LogOut className="w-3 h-3 text-white" />
+                </div>
+                <span className="font-bold">{logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}</span>
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-sm bg-gradient-to-r from-primary/10 to-chart-2/10 border-primary/30 hover:border-primary/50"
+                  onClick={() => {
+                    setAuthTab('login');
+                    setShowAuthDialog(true);
+                  }}
+                  data-testid="button-login"
+                >
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center mr-2">
+                    <LogIn className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="font-bold">Sign In</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-sm bg-gradient-to-r from-chart-2/10 to-secondary/10 border-chart-2/30 hover:border-chart-2/50"
+                  onClick={() => {
+                    setAuthTab('register');
+                    setShowAuthDialog(true);
+                  }}
+                  data-testid="button-signup"
+                >
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-chart-2 to-secondary flex items-center justify-center mr-2">
+                    <UserPlus className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="font-bold">Sign Up</span>
+                </Button>
               </div>
-              <span className="font-bold">{logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}</span>
-            </Button>
+            )}
           </div>
         </div>
       </aside>
@@ -949,6 +988,156 @@ export default function Dashboard() {
               <p className="font-semibold text-foreground">Your feedback directly helps us improve accessibility for everyone.</p>
             </div>
           </ScrollArea>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Auth Dialog */}
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent className="max-w-md p-0 overflow-hidden">
+          <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 text-center">
+            <img src={lorettaLogo} alt="Loretta" className="h-10 mx-auto brightness-0 invert mb-2" />
+            <DialogTitle className="text-xl font-black text-white">
+              {authTab === 'login' ? 'Welcome Back' : 'Join Loretta'}
+            </DialogTitle>
+            <DialogDescription className="text-primary-foreground/80 text-sm">
+              {authTab === 'login' ? 'Sign in to your account' : 'Create your personal health companion account'}
+            </DialogDescription>
+          </div>
+          <div className="p-6">
+            <Tabs value={authTab} onValueChange={(v) => setAuthTab(v as 'login' | 'register')} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="login">Sign In</TabsTrigger>
+                <TabsTrigger value="register">Sign Up</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login">
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  loginMutation.mutate(loginForm, {
+                    onSuccess: () => {
+                      setShowAuthDialog(false);
+                      setLoginForm({ username: '', password: '' });
+                    }
+                  });
+                }} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dialog-login-username">Username</Label>
+                    <Input
+                      id="dialog-login-username"
+                      type="text"
+                      placeholder="Enter your username"
+                      value={loginForm.username}
+                      onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dialog-login-password">Password</Label>
+                    <Input
+                      id="dialog-login-password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={loginForm.password}
+                      onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-primary via-primary to-chart-2 hover:opacity-90 text-white font-bold"
+                    disabled={loginMutation.isPending}
+                  >
+                    {loginMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      'Sign In'
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+              
+              <TabsContent value="register">
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  setRegisterError('');
+                  
+                  if (registerForm.password !== registerForm.confirmPassword) {
+                    setRegisterError('Passwords do not match');
+                    return;
+                  }
+                  
+                  if (registerForm.password.length < 6) {
+                    setRegisterError('Password must be at least 6 characters');
+                    return;
+                  }
+                  
+                  registerMutation.mutate({
+                    username: registerForm.username,
+                    password: registerForm.password,
+                  }, {
+                    onSuccess: () => {
+                      setShowAuthDialog(false);
+                      setRegisterForm({ username: '', password: '', confirmPassword: '' });
+                    }
+                  });
+                }} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dialog-register-username">Username</Label>
+                    <Input
+                      id="dialog-register-username"
+                      type="text"
+                      placeholder="Choose a username"
+                      value={registerForm.username}
+                      onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dialog-register-password">Password</Label>
+                    <Input
+                      id="dialog-register-password"
+                      type="password"
+                      placeholder="Create a password (min 6 characters)"
+                      value={registerForm.password}
+                      onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="dialog-register-confirm">Confirm Password</Label>
+                    <Input
+                      id="dialog-register-confirm"
+                      type="password"
+                      placeholder="Confirm your password"
+                      value={registerForm.confirmPassword}
+                      onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
+                      required
+                    />
+                  </div>
+                  {registerError && (
+                    <p className="text-sm text-red-500">{registerError}</p>
+                  )}
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-primary via-primary to-chart-2 hover:opacity-90 text-white font-bold"
+                    disabled={registerMutation.isPending}
+                  >
+                    {registerMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating account...
+                      </>
+                    ) : (
+                      'Create Account'
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </div>
         </DialogContent>
       </Dialog>
       
