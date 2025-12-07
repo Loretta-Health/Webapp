@@ -13,6 +13,11 @@ declare global {
   }
 }
 
+function sanitizeUser(user: SelectUser): Omit<SelectUser, 'password'> {
+  const { password: _, ...safeUser } = user;
+  return safeUser;
+}
+
 const scryptAsync = promisify(scrypt);
 
 async function hashPassword(password: string) {
@@ -96,7 +101,7 @@ export function setupAuth(app: Express) {
 
       req.login(user, (err) => {
         if (err) return next(err);
-        res.status(201).json(user);
+        res.status(201).json(sanitizeUser(user));
       });
     } catch (error) {
       console.error("Registration error:", error);
@@ -112,7 +117,7 @@ export function setupAuth(app: Express) {
       }
       req.login(user, (err) => {
         if (err) return next(err);
-        res.status(200).json(user);
+        res.status(200).json(sanitizeUser(user));
       });
     })(req, res, next);
   });
@@ -126,6 +131,6 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(req.user);
+    res.json(sanitizeUser(req.user!));
   });
 }

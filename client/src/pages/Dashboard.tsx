@@ -6,12 +6,13 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility } from 'lucide-react';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { getUserId } from '@/lib/userId';
+import { useAuth } from '@/hooks/use-auth';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import marcPhoto from '@assets/image_1764091454235.png';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
@@ -74,6 +75,7 @@ export default function Dashboard() {
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
+  const { user, logoutMutation } = useAuth();
   const userId = getUserId();
   const { missions, completedCount, totalCount } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
@@ -341,6 +343,24 @@ export default function Dashboard() {
                 <span className="font-bold">Invite Friends</span>
               </Button>
             </Link>
+            
+            <Separator className="my-2" />
+            
+            <Button 
+              variant="outline" 
+              className="w-full justify-start text-sm bg-gradient-to-r from-muted/50 to-muted/30 border-muted-foreground/20 hover:border-muted-foreground/40 hover:bg-muted"
+              onClick={() => {
+                logoutMutation.mutate();
+                navigate('/auth');
+              }}
+              disabled={logoutMutation.isPending}
+              data-testid="button-logout"
+            >
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-muted-foreground to-slate-500 flex items-center justify-center mr-2">
+                <LogOut className="w-3 h-3 text-white" />
+              </div>
+              <span className="font-bold">{logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}</span>
+            </Button>
           </div>
         </div>
       </aside>
