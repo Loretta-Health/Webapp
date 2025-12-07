@@ -22,6 +22,9 @@ import {
   type InsertTeamMember,
   type TeamInvite,
   type InsertTeamInvite,
+  type UserAchievement,
+  type InsertUserAchievement,
+  type UpdateUserAchievement,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -33,6 +36,7 @@ import {
   teams,
   teamMembers,
   teamInvites,
+  userAchievements,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -106,6 +110,12 @@ export interface IStorage {
   getTeamInvites(teamId: string): Promise<TeamInvite[]>;
   useTeamInvite(code: string, userId: string): Promise<TeamInvite | undefined>;
   deleteTeamInvite(id: string): Promise<void>;
+
+  // User achievement methods
+  getUserAchievements(userId: string): Promise<UserAchievement[]>;
+  ensureDefaultAchievementsForUser(userId: string): Promise<UserAchievement[]>;
+  updateUserAchievement(id: string, data: UpdateUserAchievement): Promise<UserAchievement | undefined>;
+  unlockAchievement(userId: string, achievementKey: string): Promise<UserAchievement | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -593,6 +603,151 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTeamInvite(id: string): Promise<void> {
     await db.delete(teamInvites).where(eq(teamInvites.id, id));
+  }
+
+  // User achievement methods
+  async getUserAchievements(userId: string): Promise<UserAchievement[]> {
+    return await db
+      .select()
+      .from(userAchievements)
+      .where(eq(userAchievements.userId, userId));
+  }
+
+  async ensureDefaultAchievementsForUser(userId: string): Promise<UserAchievement[]> {
+    const existing = await this.getUserAchievements(userId);
+    
+    if (existing.length > 0) {
+      return existing;
+    }
+
+    const defaultAchievements: InsertUserAchievement[] = [
+      {
+        userId,
+        achievementKey: 'first-steps',
+        title: 'First Steps',
+        description: 'Complete your first daily check-in',
+        icon: 'target',
+        rarity: 'common',
+        unlocked: false,
+        progress: 0,
+        maxProgress: 1,
+      },
+      {
+        userId,
+        achievementKey: 'week-warrior',
+        title: 'Week Warrior',
+        description: 'Maintain a 7-day streak',
+        icon: 'flame',
+        rarity: 'rare',
+        unlocked: false,
+        progress: 0,
+        maxProgress: 7,
+      },
+      {
+        userId,
+        achievementKey: 'health-champion',
+        title: 'Health Champion',
+        description: 'Reach level 15',
+        icon: 'crown',
+        rarity: 'epic',
+        unlocked: false,
+        progress: 0,
+        maxProgress: 15,
+      },
+      {
+        userId,
+        achievementKey: 'medication-master',
+        title: 'Medication Master',
+        description: 'Take all medications on time for 30 days',
+        icon: 'shield',
+        rarity: 'legendary',
+        unlocked: false,
+        progress: 0,
+        maxProgress: 30,
+      },
+      {
+        userId,
+        achievementKey: 'hydration-hero',
+        title: 'Hydration Hero',
+        description: 'Drink 8 glasses of water for 7 days straight',
+        icon: 'zap',
+        rarity: 'rare',
+        unlocked: false,
+        progress: 0,
+        maxProgress: 7,
+      },
+      {
+        userId,
+        achievementKey: 'early-bird',
+        title: 'Early Bird',
+        description: 'Complete a check-in before 8 AM',
+        icon: 'star',
+        rarity: 'common',
+        unlocked: false,
+        progress: 0,
+        maxProgress: 1,
+      },
+      {
+        userId,
+        achievementKey: 'heart-healthy',
+        title: 'Heart Healthy',
+        description: 'Complete all heart health missions',
+        icon: 'heart',
+        rarity: 'epic',
+        unlocked: false,
+        progress: 0,
+        maxProgress: 5,
+      },
+      {
+        userId,
+        achievementKey: 'community-star',
+        title: 'Community Star',
+        description: 'Reach top 3 in the weekly leaderboard',
+        icon: 'award',
+        rarity: 'legendary',
+        unlocked: false,
+        progress: 0,
+        maxProgress: 1,
+      },
+    ];
+
+    const createdAchievements: UserAchievement[] = [];
+    for (const achievement of defaultAchievements) {
+      const [created] = await db
+        .insert(userAchievements)
+        .values(achievement)
+        .returning();
+      createdAchievements.push(created);
+    }
+
+    return createdAchievements;
+  }
+
+  async updateUserAchievement(id: string, data: UpdateUserAchievement): Promise<UserAchievement | undefined> {
+    const [updated] = await db
+      .update(userAchievements)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(userAchievements.id, id))
+      .returning();
+    return updated;
+  }
+
+  async unlockAchievement(userId: string, achievementKey: string): Promise<UserAchievement | undefined> {
+    const [updated] = await db
+      .update(userAchievements)
+      .set({ 
+        unlocked: true, 
+        unlockedAt: new Date(),
+        updatedAt: new Date() 
+      })
+      .where(
+        and(
+          eq(userAchievements.userId, userId),
+          eq(userAchievements.achievementKey, achievementKey)
+        )
+      )
+      .returning();
+    return updated;
   }
 }
 
