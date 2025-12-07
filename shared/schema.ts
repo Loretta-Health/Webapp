@@ -189,3 +189,63 @@ export const updateUserMissionSchema = z.object({
 export type InsertUserMission = z.infer<typeof insertUserMissionSchema>;
 export type UpdateUserMission = z.infer<typeof updateUserMissionSchema>;
 export type UserMission = typeof userMissions.$inferSelect;
+
+// Teams table - stores team info (family, friends groups)
+export const teams = pgTable("teams", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdBy: text("created_by").notNull(), // userId of team creator
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type Team = typeof teams.$inferSelect;
+
+// Team members table - stores team memberships
+export const teamMembers = pgTable("team_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: text("team_id").notNull(),
+  userId: text("user_id").notNull(),
+  role: text("role").default("member"), // 'owner', 'admin', 'member'
+  consentGiven: boolean("consent_given").default(false), // user agreed to share stats
+  consentDate: timestamp("consent_date"),
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
+  id: true,
+  joinedAt: true,
+});
+
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+export type TeamMember = typeof teamMembers.$inferSelect;
+
+// Team invites table - stores pending invitations
+export const teamInvites = pgTable("team_invites", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: text("team_id").notNull(),
+  inviteCode: text("invite_code").notNull().unique(), // short unique code for link/QR
+  createdBy: text("created_by").notNull(), // userId who created invite
+  expiresAt: timestamp("expires_at"), // optional expiration
+  usedBy: text("used_by"), // userId who used the invite (null if unused)
+  usedAt: timestamp("used_at"), // when invite was used
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertTeamInviteSchema = createInsertSchema(teamInvites).omit({
+  id: true,
+  usedBy: true,
+  usedAt: true,
+  createdAt: true,
+});
+
+export type InsertTeamInvite = z.infer<typeof insertTeamInviteSchema>;
+export type TeamInvite = typeof teamInvites.$inferSelect;

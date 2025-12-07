@@ -10,7 +10,11 @@ import {
   insertRiskScoreSchema,
   insertUserMissionSchema,
   updateUserMissionSchema,
+  insertTeamSchema,
+  insertTeamMemberSchema,
+  insertTeamInviteSchema,
 } from "@shared/schema";
+import { nanoid } from "nanoid";
 
 // Scaleway AI configuration
 const SCALEWAY_BASE_URL = 'https://api.scaleway.ai/v1';
@@ -593,6 +597,385 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error resetting missions:", error);
       res.status(500).json({ error: "Failed to reset missions" });
+    }
+  });
+
+  // ========================
+  // Team Endpoints
+  // ========================
+
+  app.post("/api/teams", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const validatedData = insertTeamSchema.parse({
+        ...req.body,
+        createdBy: userId,
+      });
+      const team = await storage.createTeam(validatedData);
+      
+      await storage.addTeamMember({
+        teamId: team.id,
+        userId,
+        role: "owner",
+        consentGiven: true,
+        consentDate: new Date(),
+      });
+      
+      res.json(team);
+    } catch (error) {
+      console.error("Error creating team:", error);
+      res.status(400).json({ error: "Invalid team data" });
+    }
+  });
+
+  app.get("/api/teams/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { id } = req.params;
+      const userId = (req.user as any).id;
+      const team = await storage.getTeam(id);
+      
+      if (!team) {
+        return res.status(404).json({ error: "Team not found" });
+      }
+      
+      const member = await storage.getTeamMember(id, userId);
+      if (!member) {
+        return res.status(403).json({ error: "Not a member of this team" });
+      }
+      
+      res.json(team);
+    } catch (error) {
+      console.error("Error fetching team:", error);
+      res.status(500).json({ error: "Failed to fetch team" });
+    }
+  });
+
+  app.get("/api/teams/user/:userId", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const teams = await storage.getUserTeams(userId);
+      res.json(teams);
+    } catch (error) {
+      console.error("Error fetching user teams:", error);
+      res.status(500).json({ error: "Failed to fetch user teams" });
+    }
+  });
+
+  app.patch("/api/teams/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { id } = req.params;
+      const userId = (req.user as any).id;
+      
+      const member = await storage.getTeamMember(id, userId);
+      if (!member || member.role !== "owner") {
+        return res.status(403).json({ error: "Only team owners can update the team" });
+      }
+      
+      const updated = await storage.updateTeam(id, req.body);
+      
+      if (!updated) {
+        return res.status(404).json({ error: "Team not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating team:", error);
+      res.status(400).json({ error: "Invalid team data" });
+    }
+  });
+
+  app.delete("/api/teams/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { id } = req.params;
+      const userId = (req.user as any).id;
+      
+      const member = await storage.getTeamMember(id, userId);
+      if (!member || member.role !== "owner") {
+        return res.status(403).json({ error: "Only team owners can delete the team" });
+      }
+      
+      await storage.deleteTeam(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      res.status(500).json({ error: "Failed to delete team" });
+    }
+  });
+
+  // ========================
+  // Team Members Endpoints
+  // ========================
+
+  app.get("/api/teams/:teamId/members", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { teamId } = req.params;
+      const currentUserId = (req.user as any).id;
+      
+      const currentMember = await storage.getTeamMember(teamId, currentUserId);
+      if (!currentMember) {
+        return res.status(403).json({ error: "Not a member of this team" });
+      }
+      
+      const members = await storage.getTeamMembers(teamId);
+      
+      const membersWithUserInfo = await Promise.all(
+        members.map(async (member) => {
+          const user = await storage.getUser(member.userId);
+          const gamification = await storage.getUserGamification(member.userId);
+          return {
+            ...member,
+            username: user?.username || "Unknown",
+            xp: gamification?.xp || 0,
+            level: gamification?.level || 1,
+            currentStreak: gamification?.currentStreak || 0,
+          };
+        })
+      );
+      
+      res.json(membersWithUserInfo);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      res.status(500).json({ error: "Failed to fetch team members" });
+    }
+  });
+
+  app.post("/api/teams/:teamId/members/:userId/consent", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { teamId, userId } = req.params;
+      const currentUserId = (req.user as any).id;
+      const { consent } = req.body;
+      
+      if (currentUserId !== userId) {
+        return res.status(403).json({ error: "Can only update your own consent" });
+      }
+      
+      if (typeof consent !== "boolean") {
+        return res.status(400).json({ error: "Consent must be a boolean" });
+      }
+      
+      const updated = await storage.updateTeamMemberConsent(teamId, userId, consent);
+      
+      if (!updated) {
+        return res.status(404).json({ error: "Team member not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating consent:", error);
+      res.status(500).json({ error: "Failed to update consent" });
+    }
+  });
+
+  app.delete("/api/teams/:teamId/members/:userId", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { teamId, userId } = req.params;
+      const currentUserId = (req.user as any).id;
+      
+      const currentMember = await storage.getTeamMember(teamId, currentUserId);
+      if (!currentMember) {
+        return res.status(403).json({ error: "Not a member of this team" });
+      }
+      
+      if (currentUserId !== userId && currentMember.role !== "owner") {
+        return res.status(403).json({ error: "Only team owners can remove other members" });
+      }
+      
+      await storage.removeTeamMember(teamId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing team member:", error);
+      res.status(500).json({ error: "Failed to remove team member" });
+    }
+  });
+
+  // ========================
+  // Team Invite Endpoints
+  // ========================
+
+  app.post("/api/teams/:teamId/invites", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { teamId } = req.params;
+      const userId = (req.user as any).id;
+      const { expiresAt } = req.body;
+      
+      const member = await storage.getTeamMember(teamId, userId);
+      if (!member || member.role !== "owner") {
+        return res.status(403).json({ error: "Only team owners can create invites" });
+      }
+      
+      const inviteCode = nanoid(10);
+      
+      const invite = await storage.createTeamInvite({
+        teamId,
+        inviteCode,
+        createdBy: userId,
+        expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+      });
+      
+      res.json(invite);
+    } catch (error) {
+      console.error("Error creating invite:", error);
+      res.status(400).json({ error: "Invalid invite data" });
+    }
+  });
+
+  app.get("/api/invites/:code", async (req, res) => {
+    try {
+      const { code } = req.params;
+      const invite = await storage.getTeamInviteByCode(code);
+      
+      if (!invite) {
+        return res.status(404).json({ error: "Invite not found" });
+      }
+      
+      if (invite.usedBy) {
+        return res.status(400).json({ error: "Invite already used" });
+      }
+      
+      if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
+        return res.status(400).json({ error: "Invite expired" });
+      }
+      
+      const team = await storage.getTeam(invite.teamId);
+      const inviter = await storage.getUser(invite.createdBy);
+      
+      res.json({
+        ...invite,
+        teamName: team?.name || "Unknown Team",
+        inviterUsername: inviter?.username || "Unknown",
+      });
+    } catch (error) {
+      console.error("Error fetching invite:", error);
+      res.status(500).json({ error: "Failed to fetch invite" });
+    }
+  });
+
+  app.post("/api/invites/:code/accept", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { code } = req.params;
+      const userId = (req.user as any).id;
+      const { consentGiven } = req.body;
+      
+      if (typeof consentGiven !== "boolean") {
+        return res.status(400).json({ error: "consentGiven is required" });
+      }
+      
+      const invite = await storage.getTeamInviteByCode(code);
+      
+      if (!invite) {
+        return res.status(404).json({ error: "Invite not found" });
+      }
+      
+      if (invite.usedBy) {
+        return res.status(400).json({ error: "Invite already used" });
+      }
+      
+      if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
+        return res.status(400).json({ error: "Invite expired" });
+      }
+      
+      const existingMember = await storage.getTeamMember(invite.teamId, userId);
+      if (existingMember) {
+        return res.status(400).json({ error: "Already a member of this team" });
+      }
+      
+      await storage.addTeamMember({
+        teamId: invite.teamId,
+        userId,
+        role: "member",
+        consentGiven,
+        consentDate: consentGiven ? new Date() : undefined,
+      });
+      
+      await storage.useTeamInvite(code, userId);
+      
+      const team = await storage.getTeam(invite.teamId);
+      
+      res.json({ 
+        success: true, 
+        team,
+        message: "Successfully joined team" 
+      });
+    } catch (error) {
+      console.error("Error accepting invite:", error);
+      res.status(500).json({ error: "Failed to accept invite" });
+    }
+  });
+
+  app.get("/api/teams/:teamId/invites", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { teamId } = req.params;
+      const userId = (req.user as any).id;
+      
+      const member = await storage.getTeamMember(teamId, userId);
+      if (!member || member.role !== "owner") {
+        return res.status(403).json({ error: "Only team owners can view invites" });
+      }
+      
+      const invites = await storage.getTeamInvites(teamId);
+      res.json(invites);
+    } catch (error) {
+      console.error("Error fetching invites:", error);
+      res.status(500).json({ error: "Failed to fetch invites" });
+    }
+  });
+
+  app.delete("/api/invites/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { id } = req.params;
+      await storage.deleteTeamInvite(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting invite:", error);
+      res.status(500).json({ error: "Failed to delete invite" });
     }
   });
 

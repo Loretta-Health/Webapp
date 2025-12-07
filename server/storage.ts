@@ -16,6 +16,12 @@ import {
   type UserMission,
   type InsertUserMission,
   type UpdateUserMission,
+  type Team,
+  type InsertTeam,
+  type TeamMember,
+  type InsertTeamMember,
+  type TeamInvite,
+  type InsertTeamInvite,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -24,6 +30,9 @@ import {
   riskScores,
   emotionalCheckins,
   userMissions,
+  teams,
+  teamMembers,
+  teamInvites,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -76,6 +85,27 @@ export interface IStorage {
   deleteUserMission(id: string): Promise<void>;
   ensureDefaultMissionsForUser(userId: string): Promise<UserMission[]>;
   resetUserMissions(userId: string): Promise<UserMission[]>;
+
+  // Team methods
+  createTeam(data: InsertTeam): Promise<Team>;
+  getTeam(id: string): Promise<Team | undefined>;
+  getUserTeams(userId: string): Promise<Team[]>;
+  updateTeam(id: string, data: Partial<InsertTeam>): Promise<Team | undefined>;
+  deleteTeam(id: string): Promise<void>;
+
+  // Team member methods
+  addTeamMember(data: InsertTeamMember): Promise<TeamMember>;
+  getTeamMembers(teamId: string): Promise<TeamMember[]>;
+  getTeamMember(teamId: string, userId: string): Promise<TeamMember | undefined>;
+  updateTeamMemberConsent(teamId: string, userId: string, consent: boolean): Promise<TeamMember | undefined>;
+  removeTeamMember(teamId: string, userId: string): Promise<void>;
+
+  // Team invite methods
+  createTeamInvite(data: InsertTeamInvite): Promise<TeamInvite>;
+  getTeamInviteByCode(code: string): Promise<TeamInvite | undefined>;
+  getTeamInvites(teamId: string): Promise<TeamInvite[]>;
+  useTeamInvite(code: string, userId: string): Promise<TeamInvite | undefined>;
+  deleteTeamInvite(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -445,6 +475,124 @@ export class DatabaseStorage implements IStorage {
   async resetUserMissions(userId: string): Promise<UserMission[]> {
     await db.delete(userMissions).where(eq(userMissions.userId, userId));
     return await this.ensureDefaultMissionsForUser(userId);
+  }
+
+  // Team methods
+  async createTeam(data: InsertTeam): Promise<Team> {
+    const [team] = await db.insert(teams).values(data).returning();
+    return team;
+  }
+
+  async getTeam(id: string): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team;
+  }
+
+  async getUserTeams(userId: string): Promise<Team[]> {
+    const memberships = await db
+      .select()
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, userId));
+    
+    if (memberships.length === 0) return [];
+    
+    const teamIds = memberships.map(m => m.teamId);
+    const userTeams: Team[] = [];
+    
+    for (const teamId of teamIds) {
+      const team = await this.getTeam(teamId);
+      if (team) userTeams.push(team);
+    }
+    
+    return userTeams;
+  }
+
+  async updateTeam(id: string, data: Partial<InsertTeam>): Promise<Team | undefined> {
+    const [updated] = await db
+      .update(teams)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(teams.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteTeam(id: string): Promise<void> {
+    await db.delete(teamMembers).where(eq(teamMembers.teamId, id));
+    await db.delete(teamInvites).where(eq(teamInvites.teamId, id));
+    await db.delete(teams).where(eq(teams.id, id));
+  }
+
+  // Team member methods
+  async addTeamMember(data: InsertTeamMember): Promise<TeamMember> {
+    const [member] = await db.insert(teamMembers).values(data).returning();
+    return member;
+  }
+
+  async getTeamMembers(teamId: string): Promise<TeamMember[]> {
+    return await db
+      .select()
+      .from(teamMembers)
+      .where(eq(teamMembers.teamId, teamId));
+  }
+
+  async getTeamMember(teamId: string, userId: string): Promise<TeamMember | undefined> {
+    const [member] = await db
+      .select()
+      .from(teamMembers)
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
+    return member;
+  }
+
+  async updateTeamMemberConsent(teamId: string, userId: string, consent: boolean): Promise<TeamMember | undefined> {
+    const [updated] = await db
+      .update(teamMembers)
+      .set({ 
+        consentGiven: consent, 
+        consentDate: consent ? new Date() : null 
+      })
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)))
+      .returning();
+    return updated;
+  }
+
+  async removeTeamMember(teamId: string, userId: string): Promise<void> {
+    await db
+      .delete(teamMembers)
+      .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId)));
+  }
+
+  // Team invite methods
+  async createTeamInvite(data: InsertTeamInvite): Promise<TeamInvite> {
+    const [invite] = await db.insert(teamInvites).values(data).returning();
+    return invite;
+  }
+
+  async getTeamInviteByCode(code: string): Promise<TeamInvite | undefined> {
+    const [invite] = await db
+      .select()
+      .from(teamInvites)
+      .where(eq(teamInvites.inviteCode, code));
+    return invite;
+  }
+
+  async getTeamInvites(teamId: string): Promise<TeamInvite[]> {
+    return await db
+      .select()
+      .from(teamInvites)
+      .where(eq(teamInvites.teamId, teamId));
+  }
+
+  async useTeamInvite(code: string, userId: string): Promise<TeamInvite | undefined> {
+    const [updated] = await db
+      .update(teamInvites)
+      .set({ usedBy: userId, usedAt: new Date() })
+      .where(eq(teamInvites.inviteCode, code))
+      .returning();
+    return updated;
+  }
+
+  async deleteTeamInvite(id: string): Promise<void> {
+    await db.delete(teamInvites).where(eq(teamInvites.id, id));
   }
 }
 
