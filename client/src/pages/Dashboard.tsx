@@ -82,7 +82,7 @@ export default function Dashboard() {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [registerForm, setRegisterForm] = useState({ username: '', password: '', confirmPassword: '' });
   const [registerError, setRegisterError] = useState('');
-  const { user, logoutMutation, loginMutation, registerMutation } = useAuth();
+  const { user, isLoading: isAuthLoading, logoutMutation, loginMutation, registerMutation } = useAuth();
   const userId = getUserId();
   const { missions, completedCount, totalCount } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
@@ -193,6 +193,17 @@ export default function Dashboard() {
       dateStr,
     };
   };
+  
+  if (isAuthLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="flex h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
