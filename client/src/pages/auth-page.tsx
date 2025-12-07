@@ -4,9 +4,9 @@ import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Heart, Loader2, Sparkles, Trophy, Target, Shield } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 
 export default function AuthPage() {
@@ -48,15 +48,17 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      <div className="flex-1 flex items-center justify-center p-8 bg-slate-50">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
+    <div className="min-h-screen flex bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+      <div className="flex-1 flex items-center justify-center p-8">
+        <Card className="w-full max-w-md overflow-hidden border-0 shadow-2xl">
+          <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 text-center">
             <div className="flex justify-center mb-4">
-              <img src={lorettaLogo} alt="Loretta" className="h-12" />
+              <img src={lorettaLogo} alt="Loretta" className="h-12 brightness-0 invert" />
             </div>
-            <CardTitle className="text-2xl font-bold">Welcome to Loretta</CardTitle>
-            <CardDescription>Your personal health companion</CardDescription>
+            <h1 className="text-2xl font-black text-white mb-1">Welcome to Loretta</h1>
+            <p className="text-primary-foreground/80 text-sm">Your personal health companion</p>
+          </div>
+          <CardHeader className="text-center pt-6 pb-2">
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
@@ -91,7 +93,7 @@ export default function AuthPage() {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                    className="w-full bg-gradient-to-r from-primary via-primary to-chart-2 hover:opacity-90 text-white font-bold"
                     disabled={loginMutation.isPending}
                   >
                     {loginMutation.isPending ? (
@@ -146,7 +148,7 @@ export default function AuthPage() {
                   )}
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                    className="w-full bg-gradient-to-r from-primary via-primary to-chart-2 hover:opacity-90 text-white font-bold"
                     disabled={registerMutation.isPending}
                   >
                     {registerMutation.isPending ? (
@@ -165,60 +167,6 @@ export default function AuthPage() {
         </Card>
       </div>
       
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 p-12 items-center justify-center">
-        <div className="max-w-md text-white">
-          <div className="flex items-center gap-3 mb-6">
-            <Heart className="h-10 w-10" />
-            <h2 className="text-3xl font-bold">Your Health Journey Starts Here</h2>
-          </div>
-          
-          <p className="text-white/90 text-lg mb-8">
-            Loretta is your personal health companion that makes wellness fun and engaging through gamification.
-          </p>
-          
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="bg-white/20 rounded-lg p-2">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Personalized Insights</h3>
-                <p className="text-white/80 text-sm">Get health recommendations tailored to your unique profile</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="bg-white/20 rounded-lg p-2">
-                <Trophy className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Gamified Progress</h3>
-                <p className="text-white/80 text-sm">Earn XP, maintain streaks, and unlock achievements</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="bg-white/20 rounded-lg p-2">
-                <Target className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Daily Missions</h3>
-                <p className="text-white/80 text-sm">Complete fun health missions to build better habits</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="bg-white/20 rounded-lg p-2">
-                <Shield className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Privacy First</h3>
-                <p className="text-white/80 text-sm">Your health data is encrypted and you control what you share</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
