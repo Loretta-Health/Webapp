@@ -76,7 +76,7 @@ export default function MyDashboard() {
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
   const userId = getUserId();
-  const { missions, completedCount, totalCount } = useMissions();
+  const { missions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
   const medicationProgress = getTotalProgress();
   
@@ -162,7 +162,8 @@ export default function MyDashboard() {
     checkInMutation.mutate();
   };
 
-  const handleCompleteQuest = (xpReward: number) => {
+  const handleCompleteQuest = (missionId: string, xpReward: number) => {
+    completeMission(missionId);
     addXPMutation.mutate(xpReward);
   };
 
@@ -699,7 +700,7 @@ export default function MyDashboard() {
                         progress={mission.progress}
                         maxProgress={mission.maxProgress}
                         completed={mission.completed}
-                        onComplete={() => handleCompleteQuest(mission.xpReward)}
+                        onComplete={() => handleCompleteQuest(mission.id, mission.xpReward)}
                       />
                     ))}
                     <Link href="/mission-details">
