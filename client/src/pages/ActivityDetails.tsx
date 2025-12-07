@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { 
   ChevronRight, 
   Footprints,
@@ -13,23 +14,32 @@ import {
   Target,
   TrendingUp,
   Play,
-  Check
+  Check,
+  Pencil,
+  Save,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link, useSearch, useLocation } from 'wouter';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { getUserId } from '@/lib/userId';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 import { useMissions } from '@/hooks/useMissions';
 
 interface MetricConfig {
   type: string;
   label: string;
-  value: string;
+  defaultValue: string;
   unit: string;
   goal: string;
+  goalValue: number;
   icon: typeof Footprints;
   color: string;
   bgGradient: string;
   aiResponse: string;
+  dbField: string;
+  inputType: 'number' | 'decimal';
   mission: {
     title: string;
     description: string;
@@ -42,13 +52,16 @@ const metricsConfig: Record<string, MetricConfig> = {
   steps: {
     type: 'steps',
     label: 'Steps',
-    value: '8,432',
+    defaultValue: '0',
     unit: 'steps',
     goal: '10,000',
+    goalValue: 10000,
     icon: Footprints,
     color: 'text-primary',
     bgGradient: 'from-primary/20 to-chart-2/20',
-    aiResponse: "That's great—8,432 steps is a solid amount of movement for today! It shows you're making an effort to stay active, which is wonderful for your overall health. Keeping up with regular steps can help boost your energy and improve your mood. Would you like to start the activity mission?",
+    aiResponse: "Tracking your steps is a great way to stay active! Regular walking helps boost your energy, improve your mood, and supports overall cardiovascular health. Would you like to start the activity mission?",
+    dbField: 'steps',
+    inputType: 'number',
     mission: {
       title: '5 minute outdoor walk',
       description: 'Increase your daily activity by taking a brisk 5 minute walk outside.',
@@ -59,13 +72,16 @@ const metricsConfig: Record<string, MetricConfig> = {
   sleep: {
     type: 'sleep',
     label: 'Sleep',
-    value: '6.5',
+    defaultValue: '0',
     unit: 'hours',
     goal: '8 hours',
+    goalValue: 8,
     icon: Moon,
     color: 'text-chart-2',
     bgGradient: 'from-chart-2/20 to-indigo-500/20',
-    aiResponse: "You got 6.5 hours of sleep last night. While this is reasonable, aiming for 7-8 hours would help your body recover better and improve your focus during the day. Quality sleep is essential for maintaining your immune system and managing stress levels.",
+    aiResponse: "Quality sleep is essential for maintaining your immune system and managing stress levels. Aim for 7-8 hours to help your body recover and improve your focus during the day.",
+    dbField: 'sleepHours',
+    inputType: 'decimal',
     mission: {
       title: 'Wind down routine',
       description: 'Start a relaxing bedtime routine 30 minutes before sleep - no screens!',
@@ -76,13 +92,16 @@ const metricsConfig: Record<string, MetricConfig> = {
   heartRate: {
     type: 'heartRate',
     label: 'Heart Rate',
-    value: '72',
+    defaultValue: '0',
     unit: 'bpm',
     goal: '60-100 bpm',
+    goalValue: 80,
     icon: Heart,
     color: 'text-destructive',
     bgGradient: 'from-destructive/20 to-pink-500/20',
-    aiResponse: "Your resting heart rate of 72 bpm is within the healthy range! A lower resting heart rate generally indicates better cardiovascular fitness. Regular exercise and stress management can help maintain or even lower this number over time.",
+    aiResponse: "A lower resting heart rate generally indicates better cardiovascular fitness. Regular exercise and stress management can help maintain or even lower this number over time.",
+    dbField: 'heartRate',
+    inputType: 'number',
     mission: {
       title: 'Deep breathing exercise',
       description: 'Practice 5 minutes of deep breathing to help lower your heart rate naturally.',
@@ -93,13 +112,16 @@ const metricsConfig: Record<string, MetricConfig> = {
   calories: {
     type: 'calories',
     label: 'Calories',
-    value: '1,847',
+    defaultValue: '0',
     unit: 'kcal',
-    goal: '2,200 kcal',
+    goal: '2,000 kcal',
+    goalValue: 2000,
     icon: Flame,
     color: 'text-chart-3',
     bgGradient: 'from-chart-3/20 to-orange-500/20',
-    aiResponse: "You've burned 1,847 calories so far today! This is a good level of energy expenditure. To reach your daily goal of 2,200 calories, try adding a short walk or some light exercise later in the day.",
+    aiResponse: "Tracking your calorie expenditure helps you understand your energy output. To reach your daily goal, try adding a short walk or some light exercise later in the day.",
+    dbField: 'calories',
+    inputType: 'number',
     mission: {
       title: 'Active break',
       description: 'Take a 10-minute active break with stretching or light movement.',
@@ -116,11 +138,27 @@ const maxProgressMap: Record<string, number> = {
   calories: 4,
 };
 
+interface ActivityData {
+  id?: string;
+  userId: string;
+  date: string;
+  steps: number;
+  stepsGoal: number;
+  sleepHours: number;
+  sleepGoal: number;
+  heartRate: number;
+  calories: number;
+  caloriesGoal: number;
+  water: number;
+  waterGoal: number;
+}
+
 export default function ActivityDetails() {
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const metricType = params.get('type') || 'steps';
+  const userId = getUserId();
   
   const { missions, addMission } = useMissions();
   
@@ -129,6 +167,111 @@ export default function ActivityDetails() {
   
   const missionId = `activity-${metricType}`;
   const isMissionAdded = missions.some(m => m.id === missionId);
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [optimisticValue, setOptimisticValue] = useState<string | null>(null);
+  
+  const { data: activityData, isLoading, isFetching } = useQuery<ActivityData>({
+    queryKey: ['/api/activities', userId, 'today'],
+    enabled: !!userId,
+  });
+  
+  const getValueFromData = (data: ActivityData | undefined): string => {
+    if (!data) return metric.defaultValue;
+    
+    switch (metricType) {
+      case 'steps':
+        return data.steps?.toString() || '0';
+      case 'sleep':
+        return data.sleepHours?.toString() || '0';
+      case 'heartRate':
+        return data.heartRate?.toString() || '0';
+      case 'calories':
+        return data.calories?.toString() || '0';
+      default:
+        return '0';
+    }
+  };
+  
+  const getCurrentValue = (): string => {
+    if (optimisticValue !== null) return optimisticValue;
+    return getValueFromData(activityData);
+  };
+  
+  const formatDisplayValue = (value: string): string => {
+    const numValue = parseFloat(value);
+    if (isNaN(numValue)) return '0';
+    
+    if (metricType === 'steps' || metricType === 'calories') {
+      return numValue.toLocaleString();
+    }
+    return value;
+  };
+  
+  useEffect(() => {
+    if (!isEditing && optimisticValue === null) {
+      setInputValue(getValueFromData(activityData));
+    }
+  }, [activityData, metricType, isEditing, optimisticValue]);
+  
+  useEffect(() => {
+    if (activityData && optimisticValue !== null) {
+      const serverValue = getValueFromData(activityData);
+      if (serverValue === optimisticValue) {
+        setOptimisticValue(null);
+      }
+    }
+  }, [activityData]);
+  
+  const saveActivityMutation = useMutation({
+    mutationFn: async (value: string) => {
+      const numValue = parseFloat(value);
+      if (isNaN(numValue)) throw new Error('Invalid number');
+      
+      const updateData: Record<string, number> = {};
+      
+      switch (metricType) {
+        case 'steps':
+          updateData.steps = Math.round(numValue);
+          break;
+        case 'sleep':
+          updateData.sleepHours = numValue;
+          break;
+        case 'heartRate':
+          updateData.heartRate = Math.round(numValue);
+          break;
+        case 'calories':
+          updateData.calories = Math.round(numValue);
+          break;
+      }
+      
+      return apiRequest('PATCH', `/api/activities/${userId}`, updateData);
+    },
+    onMutate: async (value: string) => {
+      setOptimisticValue(value);
+      setIsEditing(false);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/activities', userId] });
+    },
+    onError: () => {
+      setOptimisticValue(null);
+    },
+  });
+  
+  const handleSave = () => {
+    saveActivityMutation.mutate(inputValue);
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSave();
+    } else if (e.key === 'Escape') {
+      setInputValue(getCurrentValue());
+      setIsEditing(false);
+    }
+  };
   
   const [currentTime] = useState(() => {
     return new Date().toLocaleTimeString('en-US', { 
@@ -154,6 +297,54 @@ export default function ActivityDetails() {
       });
     }
     navigate(`/mission-details?id=${missionId}`);
+  };
+  
+  const currentValue = getCurrentValue();
+  const displayValue = formatDisplayValue(currentValue);
+  
+  const getPersonalizedAiResponse = (): string => {
+    const numValue = parseFloat(currentValue);
+    if (isNaN(numValue) || numValue === 0) {
+      return metric.aiResponse;
+    }
+    
+    switch (metricType) {
+      case 'steps':
+        if (numValue >= 10000) {
+          return `Amazing work! You've hit ${displayValue} steps today - that's meeting your daily goal! Consistent walking like this is fantastic for your cardiovascular health and energy levels. Keep up the great momentum!`;
+        } else if (numValue >= 5000) {
+          return `Great progress! ${displayValue} steps is a solid amount of movement for today! It shows you're making an effort to stay active. A short walk later could help you reach that 10,000 step goal!`;
+        } else {
+          return `You've taken ${displayValue} steps so far. Every step counts! Try to incorporate some short walks throughout your day to boost your activity level. Would you like to start the activity mission?`;
+        }
+      case 'sleep':
+        if (numValue >= 8) {
+          return `Excellent! ${numValue} hours of sleep is right on target! Getting enough rest is crucial for your immune system, mental clarity, and overall well-being. Keep maintaining this healthy sleep schedule!`;
+        } else if (numValue >= 6) {
+          return `You got ${numValue} hours of sleep last night. While this is reasonable, aiming for 7-8 hours would help your body recover better and improve your focus during the day.`;
+        } else {
+          return `${numValue} hours of sleep is less than recommended. Try to prioritize rest tonight - quality sleep is essential for your health, mood, and cognitive function.`;
+        }
+      case 'heartRate':
+        if (numValue >= 60 && numValue <= 100) {
+          return `Your resting heart rate of ${numValue} bpm is within the healthy range! A lower resting heart rate generally indicates better cardiovascular fitness. Regular exercise and stress management can help maintain this.`;
+        } else if (numValue < 60) {
+          return `Your heart rate of ${numValue} bpm is below 60. This can be normal for athletes, but if you're experiencing any symptoms, consider consulting with your healthcare provider.`;
+        } else {
+          return `Your heart rate of ${numValue} bpm is above the typical resting range. Consider relaxation techniques and monitor how you're feeling. Consult a healthcare provider if this persists.`;
+        }
+      case 'calories':
+        const calorieGoal = metric.goalValue;
+        if (numValue >= calorieGoal) {
+          return `You've burned ${displayValue} calories - exceeding your daily goal! This level of energy expenditure supports weight management and overall fitness. Great job staying active!`;
+        } else if (numValue >= calorieGoal * 0.7) {
+          return `You've burned ${displayValue} calories so far today! This is a good level of energy expenditure. A short walk or light exercise could help you reach your daily goal.`;
+        } else {
+          return `You've burned ${displayValue} calories today. Try adding some activity to increase your energy expenditure - every bit of movement helps!`;
+        }
+      default:
+        return metric.aiResponse;
+    }
   };
   
   return (
@@ -187,17 +378,66 @@ export default function ActivityDetails() {
                 <Icon className={`w-8 h-8 ${metric.color}`} />
               </div>
               <h2 className="text-lg font-bold text-muted-foreground mb-1">{metric.label}</h2>
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-black text-foreground" data-testid="metric-value">{metric.value}</span>
-                <span className="text-xl text-muted-foreground">{metric.unit}</span>
-              </div>
+              
+              {isEditing ? (
+                <div className="flex items-center gap-2 my-2">
+                  <Input
+                    type="number"
+                    step={metric.inputType === 'decimal' ? '0.1' : '1'}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="w-32 text-center text-2xl font-black"
+                    autoFocus
+                    data-testid="manual-entry-input"
+                  />
+                  <Button 
+                    size="sm" 
+                    onClick={handleSave}
+                    disabled={saveActivityMutation.isPending}
+                    className="bg-primary hover:bg-primary/90"
+                    data-testid="button-save-value"
+                  >
+                    {saveActivityMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Save className="w-4 h-4" />
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-baseline gap-2">
+                    {isLoading ? (
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                    ) : (
+                      <span className="text-5xl font-black text-foreground" data-testid="metric-value">
+                        {displayValue}
+                      </span>
+                    )}
+                    <span className="text-xl text-muted-foreground">{metric.unit}</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setIsEditing(true)}
+                    className="ml-2"
+                    data-testid="button-edit-value"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              
               <div className="flex items-center gap-2 mt-3">
                 <Target className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Goal: {metric.goal}</span>
-                <Badge variant="secondary" className="ml-2">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  +12%
-                </Badge>
+                {parseFloat(currentValue) > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    {Math.round((parseFloat(currentValue) / metric.goalValue) * 100)}%
+                  </Badge>
+                )}
               </div>
             </div>
           </Card>
@@ -220,7 +460,7 @@ export default function ActivityDetails() {
               <span className="text-xs text-muted-foreground">{currentTime}</span>
             </div>
             <p className="text-foreground leading-relaxed" data-testid="ai-response">
-              {metric.aiResponse}
+              {getPersonalizedAiResponse()}
             </p>
           </Card>
         </motion.div>
