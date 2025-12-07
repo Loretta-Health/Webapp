@@ -587,11 +587,20 @@ export default function MissionDetails() {
   const nextStep = steps.find(s => !s.completed);
   
   const handleLogCompletion = () => {
+    console.log('[MissionDetails] handleLogCompletion called', { 
+      nextStep: !!nextStep, 
+      dbMissionId, 
+      urlMissionId,
+      missionsCount: missions.length,
+      existingMission: existingMission ? { id: existingMission.id, href: existingMission.href } : null
+    });
+    
     if (nextStep && dbMissionId) {
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
       
       const newCompletedCount = completedCount + 1;
+      console.log('[MissionDetails] Updating progress', { dbMissionId, newCompletedCount });
       
       setSteps(prev => prev.map(step => 
         step.id === nextStep.id 
@@ -603,6 +612,8 @@ export default function MissionDetails() {
       
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 2000);
+    } else {
+      console.log('[MissionDetails] Cannot log - missing nextStep or dbMissionId');
     }
   };
   

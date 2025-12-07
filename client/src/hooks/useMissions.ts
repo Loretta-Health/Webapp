@@ -91,9 +91,12 @@ export function useMissions() {
   }, [createMissionMutation]);
 
   const updateMissionProgress = useCallback((missionId: string, progress: number) => {
+    console.log('[useMissions] updateMissionProgress called', { missionId, progress, missionsCount: missions.length });
     const mission = missions.find(m => m.id === missionId);
+    console.log('[useMissions] Found mission?', !!mission, mission ? { id: mission.id, progress: mission.progress } : null);
     if (mission) {
       const newProgress = Math.min(progress, mission.maxProgress);
+      console.log('[useMissions] Calling mutation', { missionId, newProgress, completed: newProgress >= mission.maxProgress });
       updateMissionMutation.mutate({
         id: missionId,
         data: {
@@ -101,6 +104,8 @@ export function useMissions() {
           completed: newProgress >= mission.maxProgress,
         },
       });
+    } else {
+      console.log('[useMissions] Mission not found in array!', { lookingFor: missionId, availableIds: missions.map(m => m.id) });
     }
   }, [missions, updateMissionMutation]);
 
