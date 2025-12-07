@@ -103,6 +103,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes (/api/register, /api/login, /api/logout, /api/user)
   setupAuth(app);
   
+  // =============================================================================
+  // TODO: SECURITY - Add authentication middleware to all user data endpoints
+  // =============================================================================
+  // CRITICAL: The following endpoints currently accept any userId without verification:
+  // - GET/POST /api/questionnaires/:userId
+  // - GET/POST /api/profile/:userId  
+  // - GET/POST /api/preferences/:userId
+  // - GET/POST /api/gamification/:userId
+  // - GET/POST /api/risk-scores/:userId
+  // - GET/POST /api/emotional-checkins/:userId
+  // - GET/POST/PATCH/DELETE /api/missions/:userId
+  //
+  // FIX REQUIRED:
+  // 1. Add authentication check: if (!req.isAuthenticated()) return res.sendStatus(401)
+  // 2. Verify userId matches logged-in user: if (req.user.id !== userId) return res.sendStatus(403)
+  // 3. Consider using middleware to DRY up these checks
+  // =============================================================================
+  
   // Chat endpoint for Health Navigator
   app.post("/api/chat", async (req, res) => {
     try {

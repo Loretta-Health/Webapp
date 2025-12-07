@@ -228,3 +228,11 @@ The fallback risk calculation uses an improved evidence-based model that factors
 - Screen reader-friendly tooltips and dialogs
 - Responsive design with mobile considerations
 - Test IDs on interactive elements for testing
+
+### Known Issues & TODOs
+
+**SECURITY - Authentication on API Endpoints (CRITICAL):**
+- All user data endpoints accept any userId without verifying authentication
+- Endpoints affected: questionnaires, profile, preferences, gamification, risk-scores, emotional-checkins, missions
+- Fix required: Add `req.isAuthenticated()` check and verify `req.user.id` matches the requested userId
+- See TODO comment in `server/routes.ts` for full details
