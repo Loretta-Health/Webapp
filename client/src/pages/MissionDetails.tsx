@@ -548,15 +548,18 @@ export default function MissionDetails() {
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
-  const missionId = params.get('id') || '1';
+  const urlMissionId = params.get('id') || '1';
   
   const { missions, updateMissionProgress } = useMissions();
   
-  const missionData = missionsDatabase[missionId] || missionsDatabase['1'];
+  const missionData = missionsDatabase[urlMissionId] || missionsDatabase['1'];
   const MissionIcon = missionData.icon;
   const colors = colorClasses[missionData.color] || colorClasses['chart-1'];
   
-  const existingMission = missions.find(m => m.id === missionId);
+  const existingMission = missions.find(m => 
+    m.href?.includes(`?id=${urlMissionId}`) || m.id === urlMissionId
+  );
+  const dbMissionId = existingMission?.id;
   const initialProgress = existingMission?.progress || 0;
   
   const [steps, setSteps] = useState<MissionStep[]>(() => {
@@ -584,7 +587,7 @@ export default function MissionDetails() {
   const nextStep = steps.find(s => !s.completed);
   
   const handleLogCompletion = () => {
-    if (nextStep) {
+    if (nextStep && dbMissionId) {
       const now = new Date();
       const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
       
@@ -596,7 +599,7 @@ export default function MissionDetails() {
           : step
       ));
       
-      updateMissionProgress(missionId, newCompletedCount);
+      updateMissionProgress(dbMissionId, newCompletedCount);
       
       setShowCelebration(true);
       setTimeout(() => setShowCelebration(false), 2000);
@@ -864,7 +867,7 @@ export default function MissionDetails() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Link href={`/alternative-mission?id=${alt.id}&original=${missionId}`}>
+                <Link href={`/alternative-mission?id=${alt.id}&original=${urlMissionId}`}>
                   <Card 
                     className="p-4 hover-elevate cursor-pointer transition-all"
                     data-testid={`alternative-mission-${index}`}
