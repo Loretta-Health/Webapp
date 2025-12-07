@@ -249,3 +249,36 @@ export const insertTeamInviteSchema = createInsertSchema(teamInvites).omit({
 
 export type InsertTeamInvite = z.infer<typeof insertTeamInviteSchema>;
 export type TeamInvite = typeof teamInvites.$inferSelect;
+
+// User achievements table - stores per-user achievement progress
+export const userAchievements = pgTable("user_achievements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  achievementKey: text("achievement_key").notNull(), // unique identifier for achievement type
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(), // 'target', 'flame', 'crown', 'star', 'zap', 'heart', 'shield', 'award'
+  rarity: text("rarity").notNull(), // 'common', 'rare', 'epic', 'legendary'
+  unlocked: boolean("unlocked").default(false),
+  unlockedAt: timestamp("unlocked_at"),
+  progress: integer("progress").default(0),
+  maxProgress: integer("max_progress").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserAchievementSchema = createInsertSchema(userAchievements).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateUserAchievementSchema = z.object({
+  progress: z.number().optional(),
+  unlocked: z.boolean().optional(),
+  unlockedAt: z.date().optional(),
+});
+
+export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
+export type UpdateUserAchievement = z.infer<typeof updateUserAchievementSchema>;
+export type UserAchievement = typeof userAchievements.$inferSelect;
