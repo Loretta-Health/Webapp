@@ -178,15 +178,29 @@ The fallback risk calculation uses an improved evidence-based model that factors
 ### Authentication & Authorization
 
 **Current Implementation:**
-- Consent-based access control via localStorage (`loretta_consent`)
-- Route guards (`ConsentGuard`) protecting dashboard access
-- Basic user schema prepared for authentication (username/password fields)
-- Session infrastructure ready (connect-pg-simple imported)
+- Full session-based authentication with Passport.js (local strategy)
+- PostgreSQL session store using connect-pg-simple for persistent sessions
+- Secure password hashing using Node.js crypto scrypt with random salt
+- Protected routes redirect unauthenticated users to /auth page
+- Auth page with login and sign-up forms (tabbed interface)
 
-**Prepared Infrastructure:**
-- Storage interface includes user CRUD methods
-- Session store package included but not yet implemented
-- Password fields in schema (authentication logic to be added)
+**Security Measures:**
+- sanitizeUser helper strips password hash from all API responses
+- 401 Unauthorized response when not authenticated
+- Session cookie configuration with secure settings for production
+- Password never exposed to client-side code
+
+**Auth API Endpoints:**
+- `POST /api/register` - Create new user account (username, password)
+- `POST /api/login` - Authenticate and create session
+- `POST /api/logout` - Destroy session and log out
+- `GET /api/user` - Get current authenticated user (sanitized)
+
+**Key Files:**
+- `server/auth.ts` - Auth configuration, routes, and password utilities
+- `client/src/hooks/use-auth.tsx` - AuthProvider context and useAuth hook
+- `client/src/lib/protected-route.tsx` - ProtectedRoute component
+- `client/src/pages/auth-page.tsx` - Login/signup UI
 
 ### Design Philosophy & Accessibility
 
