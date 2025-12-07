@@ -80,10 +80,10 @@ export default function Dashboard() {
   const { user, logoutMutation, loginMutation, registerMutation } = useAuth();
   
   const demoMissions = [
-    { id: 'daily-checkin', title: 'Daily Check-In', description: 'Complete your daily health check-in', category: 'daily' as const, xpReward: 50, completed: true },
-    { id: 'medication-morning', title: 'Morning Medication', description: 'Take your morning medication', category: 'daily' as const, xpReward: 25, completed: true },
-    { id: 'log-activity', title: 'Log Activity', description: 'Record your daily activity', category: 'daily' as const, xpReward: 30, completed: false },
-    { id: 'weekly-summary', title: 'Weekly Summary', description: 'Review your weekly health summary', category: 'weekly' as const, xpReward: 100, completed: false },
+    { id: 'daily-checkin', title: 'Daily Check-In', description: 'Complete your daily health check-in', category: 'daily' as const, xpReward: 50, completed: true, progress: 1, maxProgress: 1, legendary: false, href: '/mission-details?id=daily-checkin' },
+    { id: 'medication-morning', title: 'Morning Medication', description: 'Take your morning medication', category: 'daily' as const, xpReward: 25, completed: true, progress: 1, maxProgress: 1, legendary: false, href: '/medications' },
+    { id: 'log-activity', title: 'Log Activity', description: 'Record your daily activity', category: 'daily' as const, xpReward: 30, completed: false, progress: 0, maxProgress: 1, legendary: false, href: '/activity' },
+    { id: 'weekly-summary', title: 'Weekly Summary', description: 'Review your weekly health summary', category: 'weekly' as const, xpReward: 100, completed: false, progress: 4, maxProgress: 7, legendary: true, href: '/mission-details?id=weekly-summary' },
   ];
   const missions = demoMissions;
   const completedCount = demoMissions.filter(m => m.completed).length;
@@ -335,20 +335,34 @@ export default function Dashboard() {
             <Separator className="my-2" />
             
             {user ? (
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-sm bg-gradient-to-r from-muted/50 to-muted/30 border-muted-foreground/20 hover:border-muted-foreground/40 hover:bg-muted"
-                onClick={() => {
-                  logoutMutation.mutate();
-                }}
-                disabled={logoutMutation.isPending}
-                data-testid="button-logout"
-              >
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-muted-foreground to-slate-500 flex items-center justify-center mr-2">
-                  <LogOut className="w-3 h-3 text-white" />
-                </div>
-                <span className="font-bold">{logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}</span>
-              </Button>
+              <div className="space-y-2">
+                <Link href="/my-dashboard">
+                  <Button 
+                    variant="default" 
+                    className="w-full justify-start text-sm bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                    data-testid="button-my-dashboard"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                      <User className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="font-bold">Go to My Dashboard</span>
+                  </Button>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-sm bg-gradient-to-r from-muted/50 to-muted/30 border-muted-foreground/20 hover:border-muted-foreground/40 hover:bg-muted"
+                  onClick={() => {
+                    logoutMutation.mutate();
+                  }}
+                  disabled={logoutMutation.isPending}
+                  data-testid="button-logout"
+                >
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-muted-foreground to-slate-500 flex items-center justify-center mr-2">
+                    <LogOut className="w-3 h-3 text-white" />
+                  </div>
+                  <span className="font-bold">{logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}</span>
+                </Button>
+              </div>
             ) : (
               <div className="space-y-2">
                 <Button 
@@ -998,6 +1012,7 @@ export default function Dashboard() {
                     onSuccess: () => {
                       setShowAuthDialog(false);
                       setLoginForm({ username: '', password: '' });
+                      navigate('/my-dashboard');
                     }
                   });
                 }} className="space-y-4">
@@ -1062,6 +1077,7 @@ export default function Dashboard() {
                     onSuccess: () => {
                       setShowAuthDialog(false);
                       setRegisterForm({ username: '', password: '', confirmPassword: '' });
+                      navigate('/onboarding');
                     }
                   });
                 }} className="space-y-4">
