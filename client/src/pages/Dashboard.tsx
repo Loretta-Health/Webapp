@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, LogIn, UserPlus, Loader2 } from 'lucide-react';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, LogIn, UserPlus, Loader2, Sparkles, ClipboardList } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -121,11 +121,21 @@ export default function Dashboard() {
     },
   });
 
-  const xp = (gamificationData?.xp && gamificationData.xp > 0) ? gamificationData.xp : 327;
-  const level = (gamificationData?.level && gamificationData.level > 1) ? gamificationData.level : 14;
-  const streak = (gamificationData?.currentStreak && gamificationData.currentStreak > 0) ? gamificationData.currentStreak : 59;
-  const lives = gamificationData?.lives ?? 4;
-  const nextLevelXP = 1400;
+  const isDemo = !user;
+  
+  const demoXP = 327;
+  const demoLevel = 14;
+  const demoStreak = 59;
+  const demoLives = 4;
+  
+  const xp = isDemo ? demoXP : (gamificationData?.xp ?? 0);
+  const level = isDemo ? demoLevel : (gamificationData?.level ?? 1);
+  const streak = isDemo ? demoStreak : (gamificationData?.currentStreak ?? 0);
+  const lives = isDemo ? demoLives : (gamificationData?.lives ?? 5);
+  const nextLevelXP = level * 100 + 200;
+  
+  const isNewUser = !isDemo && level === 1 && xp === 0;
+  const displayName = isDemo ? 'Marc' : (user?.username || 'Friend');
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -229,12 +239,18 @@ export default function Dashboard() {
           <div className="text-center">
             <div className="relative inline-block mb-3">
               <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-4 border-primary shadow-lg bg-gradient-to-br from-primary/20 to-secondary/20">
-                <img 
-                  src={marcPhoto} 
-                  alt="Marc Lewis" 
-                  className="w-full h-full object-cover"
-                  data-testid="img-user-avatar"
-                />
+                {isDemo ? (
+                  <img 
+                    src={marcPhoto} 
+                    alt="Marc Lewis" 
+                    className="w-full h-full object-cover"
+                    data-testid="img-user-avatar"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-chart-2">
+                    <User className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
+                  </div>
+                )}
               </div>
               <div className="absolute -bottom-0 -right-0 w-6 h-6 lg:w-8 lg:h-8">
                 <img 
@@ -244,8 +260,12 @@ export default function Dashboard() {
                 />
               </div>
             </div>
-            <h2 className="text-lg lg:text-xl font-black text-sidebar-foreground">Marc Lewis</h2>
-            <p className="text-xs lg:text-sm text-muted-foreground">Health Champion</p>
+            <h2 className="text-lg lg:text-xl font-black text-sidebar-foreground">
+              {isDemo ? 'Marc Lewis' : user?.username}
+            </h2>
+            <p className="text-xs lg:text-sm text-muted-foreground">
+              {isDemo ? 'Health Champion' : (isNewUser ? 'New Member' : `Level ${level} Health Explorer`)}
+            </p>
           </div>
           
           <Separator />
@@ -446,15 +466,95 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
                 <div>
                   <h1 className="text-2xl lg:text-4xl font-black text-foreground mb-1">
-                    Welcome back, Marc!
+                    {isDemo ? 'Welcome back, Marc!' : (isNewUser ? `Welcome, ${displayName}!` : `Welcome back, ${displayName}!`)}
                   </h1>
                   <p className="text-sm lg:text-lg text-muted-foreground">
-                    You've made great progress today! Keep it up!
+                    {isDemo ? "You've made great progress today! Keep it up!" : 
+                     (isNewUser ? "Let's get you started on your health journey!" : 
+                      "You've made great progress today! Keep it up!")}
                   </p>
                 </div>
-                <MascotCharacter size="sm" pose="celebrate" className="hidden sm:block" />
+                <MascotCharacter size="sm" pose={isNewUser ? "encourage" : "celebrate"} className="hidden sm:block" />
               </div>
             </div>
+            
+            {/* Getting Started Guide for New Users */}
+            {isNewUser && (
+              <Card className="border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-chart-2/5">
+                <div className="p-4 lg:p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-xl font-black text-foreground mb-2">Getting Started</h2>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Complete these steps to set up your profile, earn your first XP, and join the leaderboard!
+                      </p>
+                      
+                      <div className="space-y-3">
+                        <Link href="/welcome">
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer">
+                            <div className="w-8 h-8 rounded-full bg-chart-2/20 flex items-center justify-center">
+                              <Shield className="w-4 h-4 text-chart-2" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-bold text-sm">Accept Privacy & Consent</p>
+                              <p className="text-xs text-muted-foreground">Review and accept our privacy practices</p>
+                            </div>
+                            <Badge variant="outline" className="text-chart-2 border-chart-2">+10 XP</Badge>
+                          </div>
+                        </Link>
+                        
+                        <Link href="/onboarding">
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer">
+                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                              <ClipboardList className="w-4 h-4 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-bold text-sm">Complete Health Questionnaire</p>
+                              <p className="text-xs text-muted-foreground">Answer questions to get your personalized risk score</p>
+                            </div>
+                            <Badge variant="outline" className="text-primary border-primary">+50 XP</Badge>
+                          </div>
+                        </Link>
+                        
+                        <Link href="/profile">
+                          <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer">
+                            <div className="w-8 h-8 rounded-full bg-chart-3/20 flex items-center justify-center">
+                              <User className="w-4 h-4 text-chart-3" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-bold text-sm">Set Up Your Profile</p>
+                              <p className="text-xs text-muted-foreground">Add your details to personalize your experience</p>
+                            </div>
+                            <Badge variant="outline" className="text-chart-3 border-chart-3">+25 XP</Badge>
+                          </div>
+                        </Link>
+                        
+                        <div 
+                          className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer"
+                          onClick={() => setShowCheckInModal(true)}
+                        >
+                          <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center">
+                            <Heart className="w-4 h-4 text-destructive" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-bold text-sm">Do Your First Check-In</p>
+                            <p className="text-xs text-muted-foreground">Start tracking how you're feeling each day</p>
+                          </div>
+                          <Badge variant="outline" className="text-destructive border-destructive">+15 XP</Badge>
+                        </div>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground mt-4 italic">
+                        Complete all steps to unlock the leaderboard and start competing with your community!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
             
             {showLeaderboard ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
