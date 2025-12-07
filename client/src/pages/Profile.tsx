@@ -433,12 +433,47 @@ const ratingQuestions = new Set([
   'stress_level',
 ]);
 
+const frequencyQuestions = new Set([
+  'mouth_feel_bad',
+  'stress_frequency',
+  'diet_sugar',
+  'diet_processed_foods',
+  'diet_snacking',
+  'sleep_disturbances',
+  'sleep_naps',
+  'alcohol_frequency',
+]);
+
+const levelQuestions = new Set([
+  'stress_work',
+  'stress_relationships',
+  'stress_coping',
+  'sleep_consistency',
+  'diet_protein',
+]);
+
 const ratingOptions = [
   { value: 'excellent', en: 'Excellent', de: 'Ausgezeichnet', color: 'bg-chart-2' },
   { value: 'very_good', en: 'Very Good', de: 'Sehr Gut', color: 'bg-primary' },
   { value: 'good', en: 'Good', de: 'Gut', color: 'bg-chart-3' },
   { value: 'fair', en: 'Fair', de: 'Mäßig', color: 'bg-chart-1' },
   { value: 'poor', en: 'Poor', de: 'Schlecht', color: 'bg-destructive' },
+];
+
+const frequencyOptions = [
+  { value: 'never', en: 'Never', de: 'Nie', color: 'bg-chart-2' },
+  { value: 'rarely', en: 'Rarely', de: 'Selten', color: 'bg-primary' },
+  { value: 'sometimes', en: 'Sometimes', de: 'Manchmal', color: 'bg-chart-3' },
+  { value: 'often', en: 'Often', de: 'Oft', color: 'bg-chart-1' },
+  { value: 'always', en: 'Always', de: 'Immer', color: 'bg-destructive' },
+];
+
+const levelOptions = [
+  { value: 'very_low', en: 'Very Low', de: 'Sehr Niedrig', color: 'bg-chart-2' },
+  { value: 'low', en: 'Low', de: 'Niedrig', color: 'bg-primary' },
+  { value: 'moderate', en: 'Moderate', de: 'Mäßig', color: 'bg-chart-3' },
+  { value: 'high', en: 'High', de: 'Hoch', color: 'bg-chart-1' },
+  { value: 'very_high', en: 'Very High', de: 'Sehr Hoch', color: 'bg-destructive' },
 ];
 
 interface ProfileData {
@@ -1462,9 +1497,17 @@ export default function Profile() {
                                     onValueChange={(value) => handleAnswerChange(question.id, value)}
                                     className="flex flex-wrap gap-2"
                                   >
-                                    {ratingQuestions.has(question.id) ? (
-                                      <>
-                                        {ratingOptions.map((option) => (
+                                    {(() => {
+                                      const getOptionsForQuestion = () => {
+                                        if (ratingQuestions.has(question.id)) return ratingOptions;
+                                        if (frequencyQuestions.has(question.id)) return frequencyOptions;
+                                        if (levelQuestions.has(question.id)) return levelOptions;
+                                        return null;
+                                      };
+                                      const options = getOptionsForQuestion();
+                                      
+                                      if (options) {
+                                        return options.map((option) => (
                                           <div key={option.value} className="flex items-center">
                                             <RadioGroupItem 
                                               value={option.value} 
@@ -1483,85 +1526,69 @@ export default function Profile() {
                                               {language === 'en' ? option.en : option.de}
                                             </Label>
                                           </div>
-                                        ))}
-                                      </>
-                                    ) : (
-                                      <>
-                                        <div className="flex items-center">
-                                          <RadioGroupItem 
-                                            value="yes" 
-                                            id={`${question.id}-yes`}
-                                            className="peer sr-only"
-                                          />
-                                          <Label
-                                            htmlFor={`${question.id}-yes`}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
-                                              questionnaireAnswers[question.id] === 'yes'
-                                                ? 'bg-chart-2 text-white border-chart-2'
-                                                : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                            }`}
-                                            data-testid={`answer-${question.id}-yes`}
-                                          >
-                                            {language === 'en' ? 'Yes' : 'Ja'}
-                                          </Label>
-                                        </div>
-                                        <div className="flex items-center">
-                                          <RadioGroupItem 
-                                            value="no" 
-                                            id={`${question.id}-no`}
-                                            className="peer sr-only"
-                                          />
-                                          <Label
-                                            htmlFor={`${question.id}-no`}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
-                                              questionnaireAnswers[question.id] === 'no'
-                                                ? 'bg-destructive text-white border-destructive'
-                                                : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                            }`}
-                                            data-testid={`answer-${question.id}-no`}
-                                          >
-                                            {language === 'en' ? 'No' : 'Nein'}
-                                          </Label>
-                                        </div>
-                                        <div className="flex items-center">
-                                          <RadioGroupItem 
-                                            value="sometimes" 
-                                            id={`${question.id}-sometimes`}
-                                            className="peer sr-only"
-                                          />
-                                          <Label
-                                            htmlFor={`${question.id}-sometimes`}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
-                                              questionnaireAnswers[question.id] === 'sometimes'
-                                                ? 'bg-chart-3 text-white border-chart-3'
-                                                : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                            }`}
-                                            data-testid={`answer-${question.id}-sometimes`}
-                                          >
-                                            {language === 'en' ? 'Sometimes' : 'Manchmal'}
-                                          </Label>
-                                        </div>
-                                        <div className="flex items-center">
-                                          <RadioGroupItem 
-                                            value="skipped" 
-                                            id={`${question.id}-skipped`}
-                                            className="peer sr-only"
-                                          />
-                                          <Label
-                                            htmlFor={`${question.id}-skipped`}
-                                            className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border flex items-center gap-1 ${
-                                              questionnaireAnswers[question.id] === 'skipped'
-                                                ? 'bg-muted text-foreground border-muted-foreground/30'
-                                                : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                            }`}
-                                            data-testid={`answer-${question.id}-skip`}
-                                          >
-                                            <Check className="w-3 h-3" />
-                                            {language === 'en' ? 'Skip' : 'Überspringen'}
-                                          </Label>
-                                        </div>
-                                      </>
-                                    )}
+                                        ));
+                                      }
+                                      
+                                      return (
+                                        <>
+                                          <div className="flex items-center">
+                                            <RadioGroupItem 
+                                              value="yes" 
+                                              id={`${question.id}-yes`}
+                                              className="peer sr-only"
+                                            />
+                                            <Label
+                                              htmlFor={`${question.id}-yes`}
+                                              className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
+                                                questionnaireAnswers[question.id] === 'yes'
+                                                  ? 'bg-chart-2 text-white border-chart-2'
+                                                  : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                                              }`}
+                                              data-testid={`answer-${question.id}-yes`}
+                                            >
+                                              {language === 'en' ? 'Yes' : 'Ja'}
+                                            </Label>
+                                          </div>
+                                          <div className="flex items-center">
+                                            <RadioGroupItem 
+                                              value="no" 
+                                              id={`${question.id}-no`}
+                                              className="peer sr-only"
+                                            />
+                                            <Label
+                                              htmlFor={`${question.id}-no`}
+                                              className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
+                                                questionnaireAnswers[question.id] === 'no'
+                                                  ? 'bg-destructive text-white border-destructive'
+                                                  : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                                              }`}
+                                              data-testid={`answer-${question.id}-no`}
+                                            >
+                                              {language === 'en' ? 'No' : 'Nein'}
+                                            </Label>
+                                          </div>
+                                          <div className="flex items-center">
+                                            <RadioGroupItem 
+                                              value="skipped" 
+                                              id={`${question.id}-skipped`}
+                                              className="peer sr-only"
+                                            />
+                                            <Label
+                                              htmlFor={`${question.id}-skipped`}
+                                              className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border flex items-center gap-1 ${
+                                                questionnaireAnswers[question.id] === 'skipped'
+                                                  ? 'bg-muted text-foreground border-muted-foreground/30'
+                                                  : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                                              }`}
+                                              data-testid={`answer-${question.id}-skip`}
+                                            >
+                                              <Check className="w-3 h-3" />
+                                              {language === 'en' ? 'Skip' : 'Überspringen'}
+                                            </Label>
+                                          </div>
+                                        </>
+                                      );
+                                    })()}
                                   </RadioGroup>
                                 </div>
                               </div>
