@@ -601,6 +601,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========================
+  // Achievement Endpoints
+  // ========================
+
+  app.get("/api/achievements/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const achievements = await storage.ensureDefaultAchievementsForUser(userId);
+      res.json(achievements);
+    } catch (error) {
+      console.error("Error fetching achievements:", error);
+      res.status(500).json({ error: "Failed to fetch achievements" });
+    }
+  });
+
+  app.patch("/api/achievements/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { progress, unlocked } = req.body;
+      
+      const updateData: { progress?: number; unlocked?: boolean; unlockedAt?: Date } = {};
+      if (typeof progress === 'number') {
+        updateData.progress = progress;
+      }
+      if (typeof unlocked === 'boolean') {
+        updateData.unlocked = unlocked;
+        if (unlocked) {
+          updateData.unlockedAt = new Date();
+        }
+      }
+      
+      const updated = await storage.updateUserAchievement(id, updateData);
+      
+      if (!updated) {
+        return res.status(404).json({ error: "Achievement not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating achievement:", error);
+      res.status(400).json({ error: "Invalid achievement data" });
+    }
+  });
+
+  app.post("/api/achievements/:userId/unlock/:key", async (req, res) => {
+    try {
+      const { userId, key } = req.params;
+      const unlocked = await storage.unlockAchievement(userId, key);
+      
+      if (!unlocked) {
+        return res.status(404).json({ error: "Achievement not found" });
+      }
+      
+      res.json(unlocked);
+    } catch (error) {
+      console.error("Error unlocking achievement:", error);
+      res.status(500).json({ error: "Failed to unlock achievement" });
+    }
+  });
+
+  // ========================
   // Team Endpoints
   // ========================
 
