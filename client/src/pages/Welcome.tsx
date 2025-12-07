@@ -28,7 +28,7 @@ export default function Welcome() {
       newsletterSubscribed: newsletterOptIn,
     });
     
-    setLocation('/dashboard');
+    setLocation('/my-dashboard');
   };
 
   const handleDecline = () => {

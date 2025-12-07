@@ -45,7 +45,7 @@ export default function StreakDetails() {
     <div className="min-h-screen bg-gradient-to-br from-background via-chart-3/5 to-chart-1/5">
       <div className="bg-gradient-to-r from-chart-3 via-chart-1 to-chart-3 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/dashboard">
+          <Link href="/my-dashboard">
             <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
               <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
               Back

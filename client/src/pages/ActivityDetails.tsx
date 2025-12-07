@@ -160,7 +160,7 @@ export default function ActivityDetails() {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
       <div className={`bg-gradient-to-r ${metric.bgGradient} border-b border-border p-4`}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/dashboard">
+          <Link href="/my-dashboard">
             <Button variant="ghost" className="hover:bg-white/20" data-testid="button-back-dashboard">
               <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
               Back

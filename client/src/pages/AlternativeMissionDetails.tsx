@@ -343,7 +343,7 @@ export default function AlternativeMissionDetails() {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <Card className="p-8 text-center">
           <p className="text-muted-foreground">Mission not found</p>
-          <Link href="/dashboard">
+          <Link href="/my-dashboard">
             <Button className="mt-4">Go Back</Button>
           </Link>
         </Card>
@@ -375,7 +375,7 @@ export default function AlternativeMissionDetails() {
     setIsReplaced(true);
     
     setTimeout(() => {
-      navigate('/dashboard');
+      navigate('/my-dashboard');
     }, 1500);
   };
   

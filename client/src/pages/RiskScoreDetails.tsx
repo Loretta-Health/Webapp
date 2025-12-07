@@ -108,7 +108,7 @@ export default function RiskScoreDetails() {
       <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 pb-32">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <Link href="/dashboard">
+            <Link href="/my-dashboard">
               <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
                 <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
                 Back

@@ -223,7 +223,7 @@ export default function MyDashboard() {
   }
 
   if (!user) {
-    return <Redirect to="/dashboard" />;
+    return <Redirect to="/auth" />;
   }
   
   return (

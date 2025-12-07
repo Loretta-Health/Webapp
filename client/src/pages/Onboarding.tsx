@@ -1645,7 +1645,7 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
-    navigate('/dashboard');
+    navigate('/my-dashboard');
   };
 
   const goToPreviousQuestion = () => {

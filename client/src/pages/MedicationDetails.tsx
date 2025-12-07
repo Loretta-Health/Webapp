@@ -60,7 +60,7 @@ export default function MedicationDetails() {
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <Card className="p-6 text-center">
           <p className="text-muted-foreground">Medication not found</p>
-          <Link href="/dashboard">
+          <Link href="/my-dashboard">
             <Button className="mt-4">Back to Dashboard</Button>
           </Link>
         </Card>
@@ -115,7 +115,7 @@ export default function MedicationDetails() {
       
       <header className="sticky top-0 z-40 bg-gradient-to-r from-card via-card to-primary/5 border-b border-border">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/dashboard">
+          <Link href="/my-dashboard">
             <Button size="icon" variant="ghost" data-testid="button-back">
               <ArrowLeft className="w-5 h-5" />
             </Button>
