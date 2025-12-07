@@ -629,7 +629,7 @@ export default function MissionDetails() {
       
       <header className="sticky top-0 z-40 bg-gradient-to-r from-card via-card to-primary/5 border-b border-border">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/dashboard">
+          <Link href="/my-dashboard">
             <Button size="icon" variant="ghost" data-testid="button-back">
               <ArrowLeft className="w-5 h-5" />
             </Button>
