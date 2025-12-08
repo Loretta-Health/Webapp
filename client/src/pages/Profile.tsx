@@ -425,56 +425,183 @@ const questionCategories = {
   },
 };
 
-const ratingQuestions = new Set([
-  'general_health',
-  'dental_health',
-  'hearing_health',
-  'sleep_quality',
-  'stress_level',
-]);
+const questionTypeMap: Record<string, string> = {
+  general_health: 'rating',
+  dental_health: 'rating',
+  hearing_health: 'rating',
+  sleep_quality: 'rating',
+  stress_level: 'rating',
+  mouth_feel_bad: 'frequency',
+  stress_frequency: 'frequency',
+  diet_sugar: 'frequency',
+  diet_processed_foods: 'frequency',
+  diet_snacking: 'frequency',
+  sleep_disturbances: 'frequency',
+  sleep_naps: 'frequency',
+  alcohol_frequency: 'frequency',
+  stress_work: 'level',
+  stress_relationships: 'level',
+  stress_coping: 'level',
+  sleep_consistency: 'level',
+  diet_protein: 'level',
+  moderate_activity: 'activity_hours',
+  vigorous_activity: 'activity_hours',
+  sedentary_minutes: 'sedentary',
+  weekday_sleep: 'sleep_hours',
+  weekend_sleep: 'sleep_hours',
+  sleep_duration: 'sleep_hours',
+  wake_time_weekday: 'wake_time',
+  wake_time_weekend: 'wake_time',
+  sleep_time_weekday: 'sleep_time',
+  sleep_time_weekend: 'sleep_time',
+  age: 'age',
+  height: 'height',
+  weight_current: 'weight',
+  weight_year_ago: 'weight',
+  diet_fruits_vegetables: 'servings',
+  diet_water: 'glasses',
+  diet_meals_per_day: 'meals',
+  household_rooms: 'rooms',
+  job_type: 'job',
+  education: 'education',
+  income_poverty_ratio: 'income',
+  poverty_index: 'income_coverage',
+};
 
-const frequencyQuestions = new Set([
-  'mouth_feel_bad',
-  'stress_frequency',
-  'diet_sugar',
-  'diet_processed_foods',
-  'diet_snacking',
-  'sleep_disturbances',
-  'sleep_naps',
-  'alcohol_frequency',
-]);
-
-const levelQuestions = new Set([
-  'stress_work',
-  'stress_relationships',
-  'stress_coping',
-  'sleep_consistency',
-  'diet_protein',
-]);
-
-const ratingOptions = [
-  { value: 'excellent', en: 'Excellent', de: 'Ausgezeichnet', color: 'bg-chart-2' },
-  { value: 'very_good', en: 'Very Good', de: 'Sehr Gut', color: 'bg-primary' },
-  { value: 'good', en: 'Good', de: 'Gut', color: 'bg-chart-3' },
-  { value: 'fair', en: 'Fair', de: 'Mäßig', color: 'bg-chart-1' },
-  { value: 'poor', en: 'Poor', de: 'Schlecht', color: 'bg-destructive' },
-];
-
-const frequencyOptions = [
-  { value: 'never', en: 'Never', de: 'Nie', color: 'bg-chart-2' },
-  { value: 'rarely', en: 'Rarely', de: 'Selten', color: 'bg-primary' },
-  { value: 'sometimes', en: 'Sometimes', de: 'Manchmal', color: 'bg-chart-3' },
-  { value: 'often', en: 'Often', de: 'Oft', color: 'bg-chart-1' },
-  { value: 'always', en: 'Always', de: 'Immer', color: 'bg-destructive' },
-];
-
-const levelOptions = [
-  { value: 'very_low', en: 'Very Low', de: 'Sehr Niedrig', color: 'bg-chart-2' },
-  { value: 'low', en: 'Low', de: 'Niedrig', color: 'bg-primary' },
-  { value: 'moderate', en: 'Moderate', de: 'Mäßig', color: 'bg-chart-3' },
-  { value: 'high', en: 'High', de: 'Hoch', color: 'bg-chart-1' },
-  { value: 'very_high', en: 'Very High', de: 'Sehr Hoch', color: 'bg-destructive' },
-];
+const optionSets: Record<string, Array<{ value: string; en: string; de: string; color: string }>> = {
+  rating: [
+    { value: 'excellent', en: 'Excellent', de: 'Ausgezeichnet', color: 'bg-chart-2' },
+    { value: 'very_good', en: 'Very Good', de: 'Sehr Gut', color: 'bg-primary' },
+    { value: 'good', en: 'Good', de: 'Gut', color: 'bg-chart-3' },
+    { value: 'fair', en: 'Fair', de: 'Mäßig', color: 'bg-chart-1' },
+    { value: 'poor', en: 'Poor', de: 'Schlecht', color: 'bg-destructive' },
+  ],
+  frequency: [
+    { value: 'never', en: 'Never', de: 'Nie', color: 'bg-chart-2' },
+    { value: 'rarely', en: 'Rarely', de: 'Selten', color: 'bg-primary' },
+    { value: 'sometimes', en: 'Sometimes', de: 'Manchmal', color: 'bg-chart-3' },
+    { value: 'often', en: 'Often', de: 'Oft', color: 'bg-chart-1' },
+    { value: 'always', en: 'Always', de: 'Immer', color: 'bg-destructive' },
+  ],
+  level: [
+    { value: 'very_low', en: 'Very Low', de: 'Sehr Niedrig', color: 'bg-chart-2' },
+    { value: 'low', en: 'Low', de: 'Niedrig', color: 'bg-primary' },
+    { value: 'moderate', en: 'Moderate', de: 'Mäßig', color: 'bg-chart-3' },
+    { value: 'high', en: 'High', de: 'Hoch', color: 'bg-chart-1' },
+    { value: 'very_high', en: 'Very High', de: 'Sehr Hoch', color: 'bg-destructive' },
+  ],
+  activity_hours: [
+    { value: '0', en: '0 hours', de: '0 Stunden', color: 'bg-destructive' },
+    { value: '1', en: '1-2 hours', de: '1-2 Stunden', color: 'bg-chart-1' },
+    { value: '3', en: '3-4 hours', de: '3-4 Stunden', color: 'bg-chart-3' },
+    { value: '5', en: '5-6 hours', de: '5-6 Stunden', color: 'bg-primary' },
+    { value: '7', en: '7+ hours', de: '7+ Stunden', color: 'bg-chart-2' },
+  ],
+  sedentary: [
+    { value: '60', en: '< 1 hour', de: '< 1 Stunde', color: 'bg-chart-2' },
+    { value: '120', en: '1-2 hours', de: '1-2 Stunden', color: 'bg-primary' },
+    { value: '240', en: '3-4 hours', de: '3-4 Stunden', color: 'bg-chart-3' },
+    { value: '360', en: '5-6 hours', de: '5-6 Stunden', color: 'bg-chart-1' },
+    { value: '480', en: '7+ hours', de: '7+ Stunden', color: 'bg-destructive' },
+  ],
+  sleep_hours: [
+    { value: '4', en: '< 5 hours', de: '< 5 Stunden', color: 'bg-destructive' },
+    { value: '5', en: '5-6 hours', de: '5-6 Stunden', color: 'bg-chart-1' },
+    { value: '7', en: '7-8 hours', de: '7-8 Stunden', color: 'bg-chart-2' },
+    { value: '9', en: '9-10 hours', de: '9-10 Stunden', color: 'bg-primary' },
+    { value: '11', en: '10+ hours', de: '10+ Stunden', color: 'bg-chart-3' },
+  ],
+  wake_time: [
+    { value: '5:00', en: '5:00 - 6:00', de: '5:00 - 6:00', color: 'bg-chart-2' },
+    { value: '6:00', en: '6:00 - 7:00', de: '6:00 - 7:00', color: 'bg-primary' },
+    { value: '7:00', en: '7:00 - 8:00', de: '7:00 - 8:00', color: 'bg-chart-3' },
+    { value: '8:00', en: '8:00 - 9:00', de: '8:00 - 9:00', color: 'bg-chart-1' },
+    { value: '9:00', en: '9:00+', de: '9:00+', color: 'bg-destructive' },
+  ],
+  sleep_time: [
+    { value: '21:00', en: '9:00 - 10:00 PM', de: '21:00 - 22:00', color: 'bg-chart-2' },
+    { value: '22:00', en: '10:00 - 11:00 PM', de: '22:00 - 23:00', color: 'bg-primary' },
+    { value: '23:00', en: '11:00 PM - 12:00', de: '23:00 - 00:00', color: 'bg-chart-3' },
+    { value: '00:00', en: '12:00 - 1:00 AM', de: '00:00 - 01:00', color: 'bg-chart-1' },
+    { value: '01:00', en: '1:00 AM+', de: '01:00+', color: 'bg-destructive' },
+  ],
+  age: [
+    { value: '18', en: '18-29', de: '18-29', color: 'bg-chart-2' },
+    { value: '30', en: '30-39', de: '30-39', color: 'bg-primary' },
+    { value: '40', en: '40-49', de: '40-49', color: 'bg-chart-3' },
+    { value: '50', en: '50-59', de: '50-59', color: 'bg-chart-1' },
+    { value: '60', en: '60-69', de: '60-69', color: 'bg-chart-4' },
+    { value: '70', en: '70+', de: '70+', color: 'bg-destructive' },
+  ],
+  height: [
+    { value: '150', en: '< 150 cm', de: '< 150 cm', color: 'bg-chart-3' },
+    { value: '160', en: '150-165 cm', de: '150-165 cm', color: 'bg-primary' },
+    { value: '170', en: '166-175 cm', de: '166-175 cm', color: 'bg-chart-2' },
+    { value: '180', en: '176-185 cm', de: '176-185 cm', color: 'bg-chart-3' },
+    { value: '190', en: '186+ cm', de: '186+ cm', color: 'bg-chart-1' },
+  ],
+  weight: [
+    { value: '50', en: '< 50 kg', de: '< 50 kg', color: 'bg-chart-1' },
+    { value: '60', en: '50-70 kg', de: '50-70 kg', color: 'bg-chart-2' },
+    { value: '80', en: '71-90 kg', de: '71-90 kg', color: 'bg-primary' },
+    { value: '100', en: '91-110 kg', de: '91-110 kg', color: 'bg-chart-3' },
+    { value: '120', en: '110+ kg', de: '110+ kg', color: 'bg-chart-1' },
+  ],
+  servings: [
+    { value: '0', en: '0 servings', de: '0 Portionen', color: 'bg-destructive' },
+    { value: '1', en: '1-2 servings', de: '1-2 Portionen', color: 'bg-chart-1' },
+    { value: '3', en: '3-4 servings', de: '3-4 Portionen', color: 'bg-chart-3' },
+    { value: '5', en: '5+ servings', de: '5+ Portionen', color: 'bg-chart-2' },
+  ],
+  glasses: [
+    { value: '2', en: '1-2 glasses', de: '1-2 Gläser', color: 'bg-destructive' },
+    { value: '4', en: '3-4 glasses', de: '3-4 Gläser', color: 'bg-chart-1' },
+    { value: '6', en: '5-6 glasses', de: '5-6 Gläser', color: 'bg-chart-3' },
+    { value: '8', en: '7-8 glasses', de: '7-8 Gläser', color: 'bg-primary' },
+    { value: '10', en: '8+ glasses', de: '8+ Gläser', color: 'bg-chart-2' },
+  ],
+  meals: [
+    { value: '1', en: '1 meal', de: '1 Mahlzeit', color: 'bg-chart-1' },
+    { value: '2', en: '2 meals', de: '2 Mahlzeiten', color: 'bg-chart-3' },
+    { value: '3', en: '3 meals', de: '3 Mahlzeiten', color: 'bg-chart-2' },
+    { value: '4', en: '4 meals', de: '4 Mahlzeiten', color: 'bg-primary' },
+    { value: '5', en: '5+ meals', de: '5+ Mahlzeiten', color: 'bg-chart-1' },
+  ],
+  rooms: [
+    { value: '1', en: '1-2 rooms', de: '1-2 Zimmer', color: 'bg-chart-3' },
+    { value: '3', en: '3-4 rooms', de: '3-4 Zimmer', color: 'bg-primary' },
+    { value: '5', en: '5-6 rooms', de: '5-6 Zimmer', color: 'bg-chart-2' },
+    { value: '7', en: '7+ rooms', de: '7+ Zimmer', color: 'bg-chart-1' },
+  ],
+  job: [
+    { value: 'sedentary', en: 'Sedentary/Desk', de: 'Sitzend/Büro', color: 'bg-chart-1' },
+    { value: 'light', en: 'Light Activity', de: 'Leichte Aktivität', color: 'bg-chart-3' },
+    { value: 'moderate', en: 'Moderate Activity', de: 'Mäßige Aktivität', color: 'bg-primary' },
+    { value: 'heavy', en: 'Heavy Labor', de: 'Schwere Arbeit', color: 'bg-chart-2' },
+    { value: 'not_working', en: 'Not Working', de: 'Nicht Arbeitend', color: 'bg-muted-foreground' },
+  ],
+  education: [
+    { value: 'less_than_high_school', en: 'Less than High School', de: 'Weniger als Gymnasium', color: 'bg-chart-1' },
+    { value: 'high_school', en: 'High School', de: 'Gymnasium', color: 'bg-chart-3' },
+    { value: 'some_college', en: 'Some College', de: 'Einige Hochschule', color: 'bg-primary' },
+    { value: 'college', en: 'College Degree', de: 'Hochschulabschluss', color: 'bg-chart-2' },
+    { value: 'graduate', en: 'Graduate Degree', de: 'Aufbaustudium', color: 'bg-chart-2' },
+  ],
+  income: [
+    { value: 'low', en: 'Low Income', de: 'Niedriges Einkommen', color: 'bg-chart-1' },
+    { value: 'lower_middle', en: 'Lower Middle', de: 'Untere Mittelschicht', color: 'bg-chart-3' },
+    { value: 'middle', en: 'Middle Income', de: 'Mittleres Einkommen', color: 'bg-primary' },
+    { value: 'upper_middle', en: 'Upper Middle', de: 'Obere Mittelschicht', color: 'bg-chart-2' },
+    { value: 'high', en: 'High Income', de: 'Hohes Einkommen', color: 'bg-chart-2' },
+  ],
+  income_coverage: [
+    { value: 'never', en: 'Never', de: 'Nie', color: 'bg-destructive' },
+    { value: 'rarely', en: 'Rarely', de: 'Selten', color: 'bg-chart-1' },
+    { value: 'sometimes', en: 'Sometimes', de: 'Manchmal', color: 'bg-chart-3' },
+    { value: 'usually', en: 'Usually', de: 'Meistens', color: 'bg-primary' },
+    { value: 'always', en: 'Always', de: 'Immer', color: 'bg-chart-2' },
+  ],
+};
 
 interface ProfileData {
   firstName: string;
