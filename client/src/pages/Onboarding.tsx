@@ -47,7 +47,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { getUserId } from '@/lib/userId';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -1265,14 +1264,13 @@ export default function Onboarding() {
   } | null>(null);
   const [showModuleSelection, setShowModuleSelection] = useState(false);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
-  const userId = getUserId();
   const { user } = useAuth();
-  const authUserId = user?.id;
+  const userId = user?.id;
   const { markQuestionnaireComplete, isQuestionnaireComplete, isLoading: progressLoading } = useOnboardingProgress();
 
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
-    queryKey: ['/api/questionnaires', authUserId],
-    enabled: !!authUserId,
+    queryKey: ['/api/questionnaires', userId],
+    enabled: !!userId,
   });
 
   const legacyQuestionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;

@@ -22,7 +22,7 @@ import MascotCharacter from '@/components/MascotCharacter';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { getUserId } from '@/lib/userId';
+import { useAuth } from '@/hooks/use-auth';
 
 const colorClasses = {
   primary: {
@@ -38,7 +38,8 @@ export default function MedicationDetails() {
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const medicationId = params.get('id') || 'morning-medication';
-  const userId = getUserId();
+  const { user } = useAuth();
+  const userId = user?.id;
   
   const { getMedication, logDose, getProgress } = useMedicationProgress();
   const medication = getMedication(medicationId);

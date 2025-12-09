@@ -23,7 +23,7 @@ import { motion } from 'framer-motion';
 import { Link, useSearch, useLocation } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { getUserId } from '@/lib/userId';
+import { useAuth } from '@/hooks/use-auth';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 import { useMissions } from '@/hooks/useMissions';
 
@@ -158,7 +158,8 @@ export default function ActivityDetails() {
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const metricType = params.get('type') || 'steps';
-  const userId = getUserId();
+  const { user } = useAuth();
+  const userId = user?.id;
   
   const { missions, addMission } = useMissions();
   
