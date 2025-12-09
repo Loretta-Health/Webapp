@@ -1266,7 +1266,7 @@ export default function Onboarding() {
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const { user } = useAuth();
   const userId = user?.id;
-  const { markQuestionnaireComplete, isQuestionnaireComplete, isLoading: progressLoading } = useOnboardingProgress();
+  const { markQuestionnaireComplete, markConsentComplete, isQuestionnaireComplete, isLoading: progressLoading } = useOnboardingProgress();
 
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
     queryKey: ['/api/questionnaires', userId],
@@ -1719,12 +1719,24 @@ export default function Onboarding() {
   };
 
   const handleSaveAndExit = async () => {
-    if (answers.length > 0) {
-      try {
-        await saveQuestionnaireMutation.mutateAsync(answers);
-      } catch (error) {
-        console.error('Failed to save progress:', error);
+    try {
+      if (step === 'consent' && acknowledged) {
+        await savePreferencesMutation.mutateAsync({
+          consentAccepted: true,
+          newsletterSubscribed: newsletterOptIn,
+        });
+        await markConsentComplete();
       }
+      
+      if (step === 'registration' && registration.firstName && registration.lastName && registration.email) {
+        await saveProfileMutation.mutateAsync(registration);
+      }
+      
+      if ((step === 'questionnaire' || step === 'registration' || step === 'consent') && answers.length > 0) {
+        await saveQuestionnaireMutation.mutateAsync(answers);
+      }
+    } catch (error) {
+      console.error('Failed to save progress:', error);
     }
     navigate('/my-dashboard');
   };
