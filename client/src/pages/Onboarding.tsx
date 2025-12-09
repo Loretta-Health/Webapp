@@ -48,6 +48,7 @@ import { useLocation } from 'wouter';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { getUserId } from '@/lib/userId';
+import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
@@ -1259,6 +1260,13 @@ export default function Onboarding() {
   const [showModuleSelection, setShowModuleSelection] = useState(false);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const userId = getUserId();
+  const { markQuestionnaireComplete, isQuestionnaireComplete, isLoading: progressLoading } = useOnboardingProgress();
+  
+  useEffect(() => {
+    if (!progressLoading && isQuestionnaireComplete) {
+      navigate('/my-dashboard');
+    }
+  }, [progressLoading, isQuestionnaireComplete, navigate]);
   
   const fetchLiveScore = async (currentAnswers: QuestionnaireAnswer[]) => {
     if (currentAnswers.length < 3) return;
@@ -1688,8 +1696,11 @@ export default function Onboarding() {
     }
   };
 
-  const handleComplete = () => {
-    navigate('/my-dashboard');
+  const handleComplete = async () => {
+    const success = await markQuestionnaireComplete();
+    if (success) {
+      navigate('/my-dashboard');
+    }
   };
 
   const goToPreviousQuestion = () => {

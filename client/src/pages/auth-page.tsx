@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,13 @@ export default function AuthPage() {
   });
   const [registerError, setRegisterError] = useState('');
 
+  useEffect(() => {
+    if (user) {
+      setLocation('/welcome');
+    }
+  }, [user, setLocation]);
+
   if (user) {
-    setLocation('/');
     return null;
   }
 
