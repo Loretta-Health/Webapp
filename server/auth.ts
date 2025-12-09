@@ -79,7 +79,7 @@ export function setupAuth(app: Express) {
 
   app.post("/api/register", async (req, res, next) => {
     try {
-      const { username, password } = req.body;
+      const { username, password, firstName, lastName, email } = req.body;
       
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
@@ -97,6 +97,9 @@ export function setupAuth(app: Express) {
       const user = await storage.createUser({
         username,
         password: await hashPassword(password),
+        firstName: firstName || null,
+        lastName: lastName || null,
+        email: email || null,
       });
 
       req.login(user, (err) => {
