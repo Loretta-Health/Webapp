@@ -1718,6 +1718,17 @@ export default function Onboarding() {
     }
   };
 
+  const handleSaveAndExit = async () => {
+    if (answers.length > 0) {
+      try {
+        await saveQuestionnaireMutation.mutateAsync(answers);
+      } catch (error) {
+        console.error('Failed to save progress:', error);
+      }
+    }
+    navigate('/my-dashboard');
+  };
+
   const goToPreviousQuestion = () => {
     if (currentQuestion > 0) {
       setCurrentQuestion(prev => prev - 1);
@@ -2601,6 +2612,16 @@ export default function Onboarding() {
             Previous Question
           </Button>
         )}
+
+        <Button
+          variant="outline"
+          onClick={handleSaveAndExit}
+          disabled={saveQuestionnaireMutation.isPending}
+          className="w-full mt-2 text-muted-foreground"
+          data-testid="button-save-and-exit"
+        >
+          {saveQuestionnaireMutation.isPending ? 'Saving...' : 'Save and Exit'}
+        </Button>
       </motion.div>
     );
   };
