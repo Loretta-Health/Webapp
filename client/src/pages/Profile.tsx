@@ -16,7 +16,7 @@ import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { getUserId } from '@/lib/userId';
+import { useAuth } from '@/hooks/use-auth';
 import { Check } from 'lucide-react';
 import { 
   User, 
@@ -674,8 +674,8 @@ export default function Profile() {
   });
   const [pendingSaves, setPendingSaves] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
-
-  const userId = getUserId();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   const { data: backendProfile, isLoading: isProfileLoading } = useQuery<BackendProfile | null>({
     queryKey: ['/api/profile', userId],
