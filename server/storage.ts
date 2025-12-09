@@ -28,6 +28,8 @@ import {
   type UserActivity,
   type InsertUserActivity,
   type UpdateUserActivity,
+  type OnboardingProgress,
+  type UpdateOnboardingProgress,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -41,6 +43,7 @@ import {
   teamInvites,
   userAchievements,
   userActivities,
+  onboardingProgress,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -126,6 +129,11 @@ export interface IStorage {
   getUserActivities(userId: string, days?: number): Promise<UserActivity[]>;
   saveUserActivity(data: InsertUserActivity): Promise<UserActivity>;
   updateUserActivity(userId: string, date: string, data: UpdateUserActivity): Promise<UserActivity | undefined>;
+
+  // Onboarding progress methods
+  getOnboardingProgress(userId: string): Promise<OnboardingProgress | undefined>;
+  createOnboardingProgress(userId: string): Promise<OnboardingProgress>;
+  updateOnboardingProgress(userId: string, data: UpdateOnboardingProgress): Promise<OnboardingProgress | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -818,6 +826,54 @@ export class DatabaseStorage implements IStorage {
         .values({
           userId,
           date,
+          ...data,
+        })
+        .returning();
+      return created;
+    }
+  }
+
+  // Onboarding progress methods
+  async getOnboardingProgress(userId: string): Promise<OnboardingProgress | undefined> {
+    const [progress] = await db
+      .select()
+      .from(onboardingProgress)
+      .where(eq(onboardingProgress.userId, userId));
+    return progress;
+  }
+
+  async createOnboardingProgress(userId: string): Promise<OnboardingProgress> {
+    const existing = await this.getOnboardingProgress(userId);
+    if (existing) {
+      return existing;
+    }
+    
+    const [created] = await db
+      .insert(onboardingProgress)
+      .values({
+        userId,
+        accountCreated: true,
+        accountCreatedAt: new Date(),
+      })
+      .returning();
+    return created;
+  }
+
+  async updateOnboardingProgress(userId: string, data: UpdateOnboardingProgress): Promise<OnboardingProgress | undefined> {
+    const existing = await this.getOnboardingProgress(userId);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(onboardingProgress)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(onboardingProgress.userId, userId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(onboardingProgress)
+        .values({
+          userId,
           ...data,
         })
         .returning();
