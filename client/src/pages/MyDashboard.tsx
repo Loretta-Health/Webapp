@@ -129,7 +129,7 @@ export default function MyDashboard() {
     enabled: !!userId && !!user,
   });
 
-  const consentComplete = preferencesData?.consentGiven === true || localStorage.getItem('loretta_consent') === 'accepted';
+  const consentComplete = preferencesData?.consentGiven === true;
   const profileComplete = !!(profileData?.firstName && profileData?.lastName);
   const questionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
   const firstCheckInComplete = Array.isArray(allEmotionalCheckins) && allEmotionalCheckins.length > 0;
