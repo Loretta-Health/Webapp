@@ -329,3 +329,40 @@ export const updateUserActivitySchema = z.object({
 export type InsertUserActivity = z.infer<typeof insertUserActivitySchema>;
 export type UpdateUserActivity = z.infer<typeof updateUserActivitySchema>;
 export type UserActivity = typeof userActivities.$inferSelect;
+
+// Onboarding progress table - tracks signup flow completion
+export const onboardingProgress = pgTable("onboarding_progress", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull().unique(),
+  accountCreated: boolean("account_created").default(false),
+  accountCreatedAt: timestamp("account_created_at"),
+  consentCompleted: boolean("consent_completed").default(false),
+  consentCompletedAt: timestamp("consent_completed_at"),
+  questionnaireCompleted: boolean("questionnaire_completed").default(false),
+  questionnaireCompletedAt: timestamp("questionnaire_completed_at"),
+  onboardingComplete: boolean("onboarding_complete").default(false),
+  onboardingCompletedAt: timestamp("onboarding_completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertOnboardingProgressSchema = createInsertSchema(onboardingProgress).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateOnboardingProgressSchema = z.object({
+  accountCreated: z.boolean().optional(),
+  accountCreatedAt: z.date().optional(),
+  consentCompleted: z.boolean().optional(),
+  consentCompletedAt: z.date().optional(),
+  questionnaireCompleted: z.boolean().optional(),
+  questionnaireCompletedAt: z.date().optional(),
+  onboardingComplete: z.boolean().optional(),
+  onboardingCompletedAt: z.date().optional(),
+});
+
+export type InsertOnboardingProgress = z.infer<typeof insertOnboardingProgressSchema>;
+export type UpdateOnboardingProgress = z.infer<typeof updateOnboardingProgressSchema>;
+export type OnboardingProgress = typeof onboardingProgress.$inferSelect;
