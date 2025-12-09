@@ -1,10 +1,19 @@
 import ConsentForm from '@/components/ConsentForm';
 import { useLocation } from 'wouter';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { useEffect } from 'react';
+
+interface UserPreferences {
+  consentGiven?: boolean;
+}
+
+interface QuestionnaireRecord {
+  category: string;
+  answers: Record<string, string>;
+}
 
 export default function Welcome() {
   const [, setLocation] = useLocation();
@@ -12,15 +21,32 @@ export default function Welcome() {
   const userId = user?.id;
   const { progress, isLoading, markConsentComplete, isConsentComplete, isQuestionnaireComplete } = useOnboardingProgress();
 
+  const { data: preferencesData, isLoading: prefsLoading } = useQuery<UserPreferences>({
+    queryKey: ['/api/preferences', userId],
+    enabled: !!userId,
+  });
+
+  const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
+    queryKey: ['/api/questionnaires', userId],
+    enabled: !!userId,
+  });
+
+  const legacyConsentComplete = preferencesData?.consentGiven === true || localStorage.getItem('loretta_consent') === 'accepted';
+  const legacyQuestionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
+  
+  const allLoading = isLoading || prefsLoading || questLoading;
+  const effectiveConsentComplete = isConsentComplete || legacyConsentComplete;
+  const effectiveQuestionnaireComplete = isQuestionnaireComplete || legacyQuestionnaireComplete;
+
   useEffect(() => {
-    if (!isLoading && isConsentComplete) {
-      if (isQuestionnaireComplete) {
+    if (!allLoading && effectiveConsentComplete) {
+      if (effectiveQuestionnaireComplete) {
         setLocation('/my-dashboard');
       } else {
         setLocation('/onboarding');
       }
     }
-  }, [isLoading, isConsentComplete, isQuestionnaireComplete, setLocation]);
+  }, [allLoading, effectiveConsentComplete, effectiveQuestionnaireComplete, setLocation]);
 
   const savePreferencesMutation = useMutation({
     mutationFn: async ({ consentAccepted, newsletterSubscribed }: { consentAccepted: boolean; newsletterSubscribed: boolean }) => {
@@ -60,7 +86,7 @@ export default function Welcome() {
     setLocation('/declined');
   };
 
-  if (isLoading) {
+  if (allLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0a0a1a]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-400"></div>

@@ -45,10 +45,16 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { getUserId } from '@/lib/userId';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
+import { useAuth } from '@/hooks/use-auth';
+
+interface QuestionnaireRecord {
+  category: string;
+  answers: Record<string, string>;
+}
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
@@ -1260,13 +1266,24 @@ export default function Onboarding() {
   const [showModuleSelection, setShowModuleSelection] = useState(false);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const userId = getUserId();
+  const { user } = useAuth();
+  const authUserId = user?.id;
   const { markQuestionnaireComplete, isQuestionnaireComplete, isLoading: progressLoading } = useOnboardingProgress();
+
+  const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
+    queryKey: ['/api/questionnaires', authUserId],
+    enabled: !!authUserId,
+  });
+
+  const legacyQuestionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
+  const allLoading = progressLoading || questLoading;
+  const effectiveQuestionnaireComplete = isQuestionnaireComplete || legacyQuestionnaireComplete;
   
   useEffect(() => {
-    if (!progressLoading && isQuestionnaireComplete) {
+    if (!allLoading && effectiveQuestionnaireComplete) {
       navigate('/my-dashboard');
     }
-  }, [progressLoading, isQuestionnaireComplete, navigate]);
+  }, [allLoading, effectiveQuestionnaireComplete, navigate]);
   
   const fetchLiveScore = async (currentAnswers: QuestionnaireAnswer[]) => {
     if (currentAnswers.length < 3) return;
