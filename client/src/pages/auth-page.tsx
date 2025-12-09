@@ -14,7 +14,14 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
-  const [registerForm, setRegisterForm] = useState({ username: '', password: '', confirmPassword: '' });
+  const [registerForm, setRegisterForm] = useState({ 
+    username: '', 
+    password: '', 
+    confirmPassword: '',
+    firstName: '',
+    lastName: '',
+    email: ''
+  });
   const [registerError, setRegisterError] = useState('');
 
   if (user) {
@@ -44,6 +51,9 @@ export default function AuthPage() {
     registerMutation.mutate({
       username: registerForm.username,
       password: registerForm.password,
+      firstName: registerForm.firstName || undefined,
+      lastName: registerForm.lastName || undefined,
+      email: registerForm.email || undefined,
     });
   };
 
@@ -110,6 +120,38 @@ export default function AuthPage() {
               
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4 mt-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="register-firstname">First Name</Label>
+                      <Input
+                        id="register-firstname"
+                        type="text"
+                        placeholder="First name"
+                        value={registerForm.firstName}
+                        onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="register-lastname">Last Name</Label>
+                      <Input
+                        id="register-lastname"
+                        type="text"
+                        placeholder="Last name"
+                        value={registerForm.lastName}
+                        onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email">Email</Label>
+                    <Input
+                      id="register-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={registerForm.email}
+                      onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="register-username">Username</Label>
                     <Input
