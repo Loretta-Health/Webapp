@@ -11,7 +11,6 @@ import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import { Link, useLocation, Redirect } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { getUserId } from '@/lib/userId';
 import { useAuth } from '@/hooks/use-auth';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
@@ -90,7 +89,7 @@ export default function MyDashboard() {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
-  const userId = getUserId();
+  const userId = user?.id;
   const { missions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
   const medicationProgress = getTotalProgress();
@@ -856,7 +855,7 @@ export default function MyDashboard() {
       <EmotionalCheckInModal
         open={showCheckInModal}
         onClose={() => setShowCheckInModal(false)}
-        userId={userId}
+        userId={userId || ''}
         onCheckInComplete={handleCheckInComplete}
       />
       
