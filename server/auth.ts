@@ -102,6 +102,9 @@ export function setupAuth(app: Express) {
         email: email || null,
       });
 
+      // Create onboarding progress record for the new user
+      await storage.createOnboardingProgress(user.id);
+
       req.login(user, (err) => {
         if (err) return next(err);
         res.status(201).json(sanitizeUser(user));

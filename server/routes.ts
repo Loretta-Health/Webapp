@@ -1067,6 +1067,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================
+  // Onboarding Progress Endpoints
+  // ========================
+
+  app.get("/api/onboarding-progress/:userId", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { userId } = req.params;
+      const authenticatedUserId = (req.user as any).id;
+      
+      if (userId !== authenticatedUserId) {
+        return res.status(403).json({ error: "Cannot access another user's onboarding progress" });
+      }
+      
+      const progress = await storage.getOnboardingProgress(userId);
+      
+      if (!progress) {
+        return res.status(404).json({ error: "Onboarding progress not found" });
+      }
+      
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching onboarding progress:", error);
+      res.status(500).json({ error: "Failed to fetch onboarding progress" });
+    }
+  });
+
+  app.post("/api/onboarding-progress/:userId", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { userId } = req.params;
+      const authenticatedUserId = (req.user as any).id;
+      
+      if (userId !== authenticatedUserId) {
+        return res.status(403).json({ error: "Cannot update another user's onboarding progress" });
+      }
+      
+      const updateData = req.body;
+      
+      let progress = await storage.getOnboardingProgress(userId);
+      
+      if (!progress) {
+        progress = await storage.createOnboardingProgress(userId);
+      }
+      
+      const updated = await storage.updateOnboardingProgress(userId, updateData);
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating onboarding progress:", error);
+      res.status(500).json({ error: "Failed to update onboarding progress" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
