@@ -1848,6 +1848,16 @@ export default function Onboarding() {
         Get Started
         <ChevronRight className="w-5 h-5 ml-2" />
       </Button>
+
+      <Button
+        variant="outline"
+        onClick={handleSaveAndExit}
+        disabled={saveQuestionnaireMutation.isPending}
+        className="w-full mt-2 text-muted-foreground"
+        data-testid="button-save-and-exit-welcome"
+      >
+        {saveQuestionnaireMutation.isPending ? 'Saving...' : 'Save and Exit'}
+      </Button>
     </motion.div>
   );
 
@@ -2191,6 +2201,16 @@ export default function Onboarding() {
           Accept & Continue
         </Button>
       </div>
+
+      <Button
+        variant="outline"
+        onClick={handleSaveAndExit}
+        disabled={saveQuestionnaireMutation.isPending}
+        className="w-full mt-2 text-muted-foreground"
+        data-testid="button-save-and-exit-consent"
+      >
+        {saveQuestionnaireMutation.isPending ? 'Saving...' : 'Save and Exit'}
+      </Button>
     </motion.div>
   );
 
@@ -2288,6 +2308,17 @@ export default function Onboarding() {
         >
           Continue to Health Assessment
           <ChevronRight className="w-4 h-4 ml-2" />
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleSaveAndExit}
+          disabled={saveQuestionnaireMutation.isPending}
+          className="w-full mt-2 text-muted-foreground"
+          data-testid="button-save-and-exit-registration"
+        >
+          {saveQuestionnaireMutation.isPending ? 'Saving...' : 'Save and Exit'}
         </Button>
       </form>
     </motion.div>
