@@ -180,7 +180,7 @@ export default function Dashboard() {
         className={`
           fixed lg:relative inset-y-0 left-0 z-50
           w-72 lg:w-80 
-          bg-gradient-to-b from-sidebar via-sidebar to-primary/10
+          bg-sidebar
           border-r border-sidebar-border 
           flex flex-col overflow-y-auto
           transform transition-transform duration-300 ease-in-out
