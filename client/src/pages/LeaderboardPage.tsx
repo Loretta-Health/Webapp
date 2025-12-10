@@ -178,6 +178,26 @@ export default function LeaderboardPage() {
     }
   }, [user]);
 
+  const alwaysHighlightedIds = ['first-steps', 'week-warrior', 'community-star', 'wellness-warrior', 'streak-legend'];
+
+  const sortAchievements = (achs: Achievement[]): Achievement[] => {
+    return [...achs].sort((a, b) => {
+      const aProgress = a.progress || 0;
+      const bProgress = b.progress || 0;
+      const aHighlighted = alwaysHighlightedIds.includes(a.id);
+      const bHighlighted = alwaysHighlightedIds.includes(b.id);
+      
+      if (aProgress > 0 || bProgress > 0) {
+        return bProgress - aProgress;
+      }
+      
+      if (aHighlighted && !bHighlighted) return -1;
+      if (!aHighlighted && bHighlighted) return 1;
+      
+      return 0;
+    });
+  };
+
   const fetchAchievements = async () => {
     if (!user?.id) return;
     setLoadingAchievements(true);
@@ -187,7 +207,8 @@ export default function LeaderboardPage() {
       });
       if (response.ok) {
         const data: DbAchievement[] = await response.json();
-        setAchievements(data.map(d => mapDbToAchievement(d, t)));
+        const mapped = data.map(d => mapDbToAchievement(d, t));
+        setAchievements(sortAchievements(mapped));
       }
     } catch (err) {
       console.error('Failed to fetch achievements:', err);
@@ -439,8 +460,8 @@ export default function LeaderboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {achievements.map((achievement, index) => {
                   const IconComponent = iconMap[achievement.icon] || Award;
-                  const alwaysHighlighted = ['first-steps', 'week-warrior', 'community-star', 'wellness-warrior', 'streak-legend'];
-                  const shouldHighlight = achievement.unlocked || alwaysHighlighted.includes(achievement.id);
+                  const shouldHighlight = achievement.unlocked || alwaysHighlightedIds.includes(achievement.id);
+                  const hasNoProgress = (achievement.progress || 0) === 0;
                   
                   return (
                     <motion.div
@@ -491,7 +512,7 @@ export default function LeaderboardPage() {
                                 </div>
                                 <Progress 
                                   value={(achievement.progress / achievement.maxProgress) * 100} 
-                                  className="h-1.5" 
+                                  className={`h-1.5 ${hasNoProgress ? '[&>div]:bg-muted-foreground/30 bg-muted/50' : ''}`}
                                 />
                               </div>
                             ) : (
