@@ -660,16 +660,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async ensureMasterAchievements(): Promise<Achievement[]> {
-    const existing = await this.getAllAchievements();
-    if (existing.length > 0) {
-      return existing;
-    }
-
-    const defaultAchievements: InsertAchievement[] = [
+    const healthWellnessAchievements: InsertAchievement[] = [
       {
-        id: 'first-steps',
-        title: 'First Steps',
-        description: 'Complete your first daily check-in',
+        id: 'daily-dedication',
+        title: 'Daily Dedication',
+        description: 'Complete your first daily health check-in to start your wellness journey',
         icon: 'target',
         rarity: 'common',
         maxProgress: 1,
@@ -678,94 +673,218 @@ export class DatabaseStorage implements IStorage {
         sortOrder: 1,
       },
       {
-        id: 'week-warrior',
-        title: 'Week Warrior',
-        description: 'Maintain a 7-day streak',
-        icon: 'flame',
+        id: 'hydration-champion',
+        title: 'Hydration Champion',
+        description: 'Meet your daily water intake goal for 7 consecutive days',
+        icon: 'zap',
         rarity: 'rare',
         maxProgress: 7,
         xpReward: 200,
-        category: 'streak',
+        category: 'health',
         sortOrder: 2,
       },
       {
-        id: 'health-champion',
-        title: 'Health Champion',
-        description: 'Reach level 15',
-        icon: 'crown',
-        rarity: 'epic',
-        maxProgress: 15,
-        xpReward: 500,
-        category: 'level',
+        id: 'sleep-master',
+        title: 'Sleep Master',
+        description: 'Achieve 7-8 hours of quality sleep for 5 nights in a row',
+        icon: 'star',
+        rarity: 'rare',
+        maxProgress: 5,
+        xpReward: 175,
+        category: 'health',
         sortOrder: 3,
       },
       {
-        id: 'medication-master',
-        title: 'Medication Master',
-        description: 'Take all medications on time for 30 days',
-        icon: 'shield',
-        rarity: 'legendary',
-        maxProgress: 30,
-        xpReward: 1000,
+        id: 'step-champion',
+        title: 'Step Champion',
+        description: 'Reach your daily step goal for 10 days total',
+        icon: 'flame',
+        rarity: 'epic',
+        maxProgress: 10,
+        xpReward: 300,
         category: 'health',
         sortOrder: 4,
       },
       {
-        id: 'hydration-hero',
-        title: 'Hydration Hero',
-        description: 'Drink 8 glasses of water for 7 days straight',
-        icon: 'zap',
-        rarity: 'rare',
-        maxProgress: 7,
-        xpReward: 150,
+        id: 'medication-adherence',
+        title: 'Medication Adherence',
+        description: 'Take all medications on schedule for 14 consecutive days',
+        icon: 'shield',
+        rarity: 'epic',
+        maxProgress: 14,
+        xpReward: 400,
         category: 'health',
         sortOrder: 5,
       },
       {
-        id: 'early-bird',
-        title: 'Early Bird',
-        description: 'Complete a check-in before 8 AM',
-        icon: 'star',
-        rarity: 'common',
-        maxProgress: 1,
-        xpReward: 75,
-        category: 'checkin',
+        id: 'streak-legend',
+        title: 'Streak Legend',
+        description: 'Maintain a 30-day check-in streak without missing a day',
+        icon: 'crown',
+        rarity: 'legendary',
+        maxProgress: 30,
+        xpReward: 1000,
+        category: 'streak',
         sortOrder: 6,
       },
       {
-        id: 'heart-healthy',
-        title: 'Heart Healthy',
-        description: 'Complete all heart health missions',
+        id: 'heart-guardian',
+        title: 'Heart Guardian',
+        description: 'Complete all heart health education modules and log 5 cardiovascular activities',
         icon: 'heart',
         rarity: 'epic',
         maxProgress: 5,
-        xpReward: 400,
+        xpReward: 350,
         category: 'health',
         sortOrder: 7,
       },
       {
-        id: 'community-star',
-        title: 'Community Star',
-        description: 'Reach top 3 in the weekly leaderboard',
+        id: 'wellness-warrior',
+        title: 'Wellness Warrior',
+        description: 'Earn 5000 total XP through consistent healthy behaviors',
         icon: 'award',
         rarity: 'legendary',
-        maxProgress: 1,
+        maxProgress: 5000,
         xpReward: 750,
-        category: 'social',
+        category: 'level',
         sortOrder: 8,
       },
     ];
 
-    const createdAchievements: Achievement[] = [];
-    for (const achievement of defaultAchievements) {
-      const [created] = await db
-        .insert(achievements)
-        .values(achievement)
-        .returning();
-      createdAchievements.push(created);
+    const existing = await this.getAllAchievements();
+    const existingIds = new Set(existing.map(a => a.id));
+    
+    const createdAchievements: Achievement[] = [...existing];
+    
+    for (const achievement of healthWellnessAchievements) {
+      if (!existingIds.has(achievement.id)) {
+        const [created] = await db
+          .insert(achievements)
+          .values(achievement)
+          .returning();
+        createdAchievements.push(created);
+      }
     }
 
     return createdAchievements;
+  }
+
+  async syncMasterAchievements(): Promise<Achievement[]> {
+    const healthWellnessAchievements: InsertAchievement[] = [
+      {
+        id: 'daily-dedication',
+        title: 'Daily Dedication',
+        description: 'Complete your first daily health check-in to start your wellness journey',
+        icon: 'target',
+        rarity: 'common',
+        maxProgress: 1,
+        xpReward: 50,
+        category: 'checkin',
+        sortOrder: 1,
+      },
+      {
+        id: 'hydration-champion',
+        title: 'Hydration Champion',
+        description: 'Meet your daily water intake goal for 7 consecutive days',
+        icon: 'zap',
+        rarity: 'rare',
+        maxProgress: 7,
+        xpReward: 200,
+        category: 'health',
+        sortOrder: 2,
+      },
+      {
+        id: 'sleep-master',
+        title: 'Sleep Master',
+        description: 'Achieve 7-8 hours of quality sleep for 5 nights in a row',
+        icon: 'star',
+        rarity: 'rare',
+        maxProgress: 5,
+        xpReward: 175,
+        category: 'health',
+        sortOrder: 3,
+      },
+      {
+        id: 'step-champion',
+        title: 'Step Champion',
+        description: 'Reach your daily step goal for 10 days total',
+        icon: 'flame',
+        rarity: 'epic',
+        maxProgress: 10,
+        xpReward: 300,
+        category: 'health',
+        sortOrder: 4,
+      },
+      {
+        id: 'medication-adherence',
+        title: 'Medication Adherence',
+        description: 'Take all medications on schedule for 14 consecutive days',
+        icon: 'shield',
+        rarity: 'epic',
+        maxProgress: 14,
+        xpReward: 400,
+        category: 'health',
+        sortOrder: 5,
+      },
+      {
+        id: 'streak-legend',
+        title: 'Streak Legend',
+        description: 'Maintain a 30-day check-in streak without missing a day',
+        icon: 'crown',
+        rarity: 'legendary',
+        maxProgress: 30,
+        xpReward: 1000,
+        category: 'streak',
+        sortOrder: 6,
+      },
+      {
+        id: 'heart-guardian',
+        title: 'Heart Guardian',
+        description: 'Complete all heart health education modules and log 5 cardiovascular activities',
+        icon: 'heart',
+        rarity: 'epic',
+        maxProgress: 5,
+        xpReward: 350,
+        category: 'health',
+        sortOrder: 7,
+      },
+      {
+        id: 'wellness-warrior',
+        title: 'Wellness Warrior',
+        description: 'Earn 5000 total XP through consistent healthy behaviors',
+        icon: 'award',
+        rarity: 'legendary',
+        maxProgress: 5000,
+        xpReward: 750,
+        category: 'level',
+        sortOrder: 8,
+      },
+    ];
+
+    for (const achievement of healthWellnessAchievements) {
+      const existing = await this.getAchievement(achievement.id);
+      if (existing) {
+        await db
+          .update(achievements)
+          .set({
+            title: achievement.title,
+            description: achievement.description,
+            icon: achievement.icon,
+            rarity: achievement.rarity,
+            maxProgress: achievement.maxProgress,
+            xpReward: achievement.xpReward,
+            category: achievement.category,
+            sortOrder: achievement.sortOrder,
+          })
+          .where(eq(achievements.id, achievement.id));
+      } else {
+        await db
+          .insert(achievements)
+          .values(achievement);
+      }
+    }
+
+    return await this.getAllAchievements();
   }
 
   // User achievement methods
