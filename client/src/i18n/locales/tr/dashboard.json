@@ -87,5 +87,12 @@
     "calories": "Kalori",
     "water": "Su",
     "sleep": "Uyku"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "friend": "Arkadaş",
+    "atTime": "saat {{time}}",
+    "yesterdayAt": "dün saat {{time}}",
+    "onDateAt": "{{date}} tarihinde saat {{time}}"
   }
 }
