@@ -22,6 +22,8 @@ import {
   type InsertTeamMember,
   type TeamInvite,
   type InsertTeamInvite,
+  type Achievement,
+  type InsertAchievement,
   type UserAchievement,
   type InsertUserAchievement,
   type UpdateUserAchievement,
@@ -41,6 +43,7 @@ import {
   teams,
   teamMembers,
   teamInvites,
+  achievements,
   userAchievements,
   userActivities,
   onboardingProgress,
@@ -118,11 +121,18 @@ export interface IStorage {
   useTeamInvite(code: string, userId: string): Promise<TeamInvite | undefined>;
   deleteTeamInvite(id: string): Promise<void>;
 
+  // Master achievement methods
+  getAllAchievements(): Promise<Achievement[]>;
+  getAchievement(id: string): Promise<Achievement | undefined>;
+  createAchievement(data: InsertAchievement): Promise<Achievement>;
+  ensureMasterAchievements(): Promise<Achievement[]>;
+
   // User achievement methods
   getUserAchievements(userId: string): Promise<UserAchievement[]>;
-  ensureDefaultAchievementsForUser(userId: string): Promise<UserAchievement[]>;
+  getUserAchievementWithDetails(userId: string): Promise<(UserAchievement & { achievement: Achievement })[]>;
+  ensureUserHasAllAchievements(userId: string): Promise<UserAchievement[]>;
   updateUserAchievement(id: string, data: UpdateUserAchievement): Promise<UserAchievement | undefined>;
-  unlockAchievement(userId: string, achievementKey: string): Promise<UserAchievement | undefined>;
+  updateUserAchievementProgress(userId: string, achievementId: string, progress: number): Promise<UserAchievement | undefined>;
 
   // User activity methods
   getUserActivityForDate(userId: string, date: string): Promise<UserActivity | undefined>;
@@ -628,6 +638,136 @@ export class DatabaseStorage implements IStorage {
     await db.delete(teamInvites).where(eq(teamInvites.id, id));
   }
 
+  // Master achievement methods
+  async getAllAchievements(): Promise<Achievement[]> {
+    return await db.select().from(achievements);
+  }
+
+  async getAchievement(id: string): Promise<Achievement | undefined> {
+    const [achievement] = await db
+      .select()
+      .from(achievements)
+      .where(eq(achievements.id, id));
+    return achievement;
+  }
+
+  async createAchievement(data: InsertAchievement): Promise<Achievement> {
+    const [created] = await db
+      .insert(achievements)
+      .values(data)
+      .returning();
+    return created;
+  }
+
+  async ensureMasterAchievements(): Promise<Achievement[]> {
+    const existing = await this.getAllAchievements();
+    if (existing.length > 0) {
+      return existing;
+    }
+
+    const defaultAchievements: InsertAchievement[] = [
+      {
+        id: 'first-steps',
+        title: 'First Steps',
+        description: 'Complete your first daily check-in',
+        icon: 'target',
+        rarity: 'common',
+        maxProgress: 1,
+        xpReward: 50,
+        category: 'checkin',
+        sortOrder: 1,
+      },
+      {
+        id: 'week-warrior',
+        title: 'Week Warrior',
+        description: 'Maintain a 7-day streak',
+        icon: 'flame',
+        rarity: 'rare',
+        maxProgress: 7,
+        xpReward: 200,
+        category: 'streak',
+        sortOrder: 2,
+      },
+      {
+        id: 'health-champion',
+        title: 'Health Champion',
+        description: 'Reach level 15',
+        icon: 'crown',
+        rarity: 'epic',
+        maxProgress: 15,
+        xpReward: 500,
+        category: 'level',
+        sortOrder: 3,
+      },
+      {
+        id: 'medication-master',
+        title: 'Medication Master',
+        description: 'Take all medications on time for 30 days',
+        icon: 'shield',
+        rarity: 'legendary',
+        maxProgress: 30,
+        xpReward: 1000,
+        category: 'health',
+        sortOrder: 4,
+      },
+      {
+        id: 'hydration-hero',
+        title: 'Hydration Hero',
+        description: 'Drink 8 glasses of water for 7 days straight',
+        icon: 'zap',
+        rarity: 'rare',
+        maxProgress: 7,
+        xpReward: 150,
+        category: 'health',
+        sortOrder: 5,
+      },
+      {
+        id: 'early-bird',
+        title: 'Early Bird',
+        description: 'Complete a check-in before 8 AM',
+        icon: 'star',
+        rarity: 'common',
+        maxProgress: 1,
+        xpReward: 75,
+        category: 'checkin',
+        sortOrder: 6,
+      },
+      {
+        id: 'heart-healthy',
+        title: 'Heart Healthy',
+        description: 'Complete all heart health missions',
+        icon: 'heart',
+        rarity: 'epic',
+        maxProgress: 5,
+        xpReward: 400,
+        category: 'health',
+        sortOrder: 7,
+      },
+      {
+        id: 'community-star',
+        title: 'Community Star',
+        description: 'Reach top 3 in the weekly leaderboard',
+        icon: 'award',
+        rarity: 'legendary',
+        maxProgress: 1,
+        xpReward: 750,
+        category: 'social',
+        sortOrder: 8,
+      },
+    ];
+
+    const createdAchievements: Achievement[] = [];
+    for (const achievement of defaultAchievements) {
+      const [created] = await db
+        .insert(achievements)
+        .values(achievement)
+        .returning();
+      createdAchievements.push(created);
+    }
+
+    return createdAchievements;
+  }
+
   // User achievement methods
   async getUserAchievements(userId: string): Promise<UserAchievement[]> {
     return await db
@@ -636,114 +776,43 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userAchievements.userId, userId));
   }
 
-  async ensureDefaultAchievementsForUser(userId: string): Promise<UserAchievement[]> {
-    const existing = await this.getUserAchievements(userId);
+  async getUserAchievementWithDetails(userId: string): Promise<(UserAchievement & { achievement: Achievement })[]> {
+    const userAchs = await this.getUserAchievements(userId);
+    const allAchs = await this.getAllAchievements();
     
-    if (existing.length > 0) {
-      return existing;
-    }
+    const achMap = new Map(allAchs.map(a => [a.id, a]));
+    
+    return userAchs
+      .map(ua => {
+        const achievement = achMap.get(ua.achievementId);
+        if (!achievement) return null;
+        return { ...ua, achievement };
+      })
+      .filter((item): item is (UserAchievement & { achievement: Achievement }) => item !== null);
+  }
 
-    const defaultAchievements: InsertUserAchievement[] = [
-      {
-        userId,
-        achievementKey: 'first-steps',
-        title: 'First Steps',
-        description: 'Complete your first daily check-in',
-        icon: 'target',
-        rarity: 'common',
-        unlocked: false,
-        progress: 0,
-        maxProgress: 1,
-      },
-      {
-        userId,
-        achievementKey: 'week-warrior',
-        title: 'Week Warrior',
-        description: 'Maintain a 7-day streak',
-        icon: 'flame',
-        rarity: 'rare',
-        unlocked: false,
-        progress: 0,
-        maxProgress: 7,
-      },
-      {
-        userId,
-        achievementKey: 'health-champion',
-        title: 'Health Champion',
-        description: 'Reach level 15',
-        icon: 'crown',
-        rarity: 'epic',
-        unlocked: false,
-        progress: 0,
-        maxProgress: 15,
-      },
-      {
-        userId,
-        achievementKey: 'medication-master',
-        title: 'Medication Master',
-        description: 'Take all medications on time for 30 days',
-        icon: 'shield',
-        rarity: 'legendary',
-        unlocked: false,
-        progress: 0,
-        maxProgress: 30,
-      },
-      {
-        userId,
-        achievementKey: 'hydration-hero',
-        title: 'Hydration Hero',
-        description: 'Drink 8 glasses of water for 7 days straight',
-        icon: 'zap',
-        rarity: 'rare',
-        unlocked: false,
-        progress: 0,
-        maxProgress: 7,
-      },
-      {
-        userId,
-        achievementKey: 'early-bird',
-        title: 'Early Bird',
-        description: 'Complete a check-in before 8 AM',
-        icon: 'star',
-        rarity: 'common',
-        unlocked: false,
-        progress: 0,
-        maxProgress: 1,
-      },
-      {
-        userId,
-        achievementKey: 'heart-healthy',
-        title: 'Heart Healthy',
-        description: 'Complete all heart health missions',
-        icon: 'heart',
-        rarity: 'epic',
-        unlocked: false,
-        progress: 0,
-        maxProgress: 5,
-      },
-      {
-        userId,
-        achievementKey: 'community-star',
-        title: 'Community Star',
-        description: 'Reach top 3 in the weekly leaderboard',
-        icon: 'award',
-        rarity: 'legendary',
-        unlocked: false,
-        progress: 0,
-        maxProgress: 1,
-      },
-    ];
-
-    const createdAchievements: UserAchievement[] = [];
-    for (const achievement of defaultAchievements) {
-      const [created] = await db
+  async ensureUserHasAllAchievements(userId: string): Promise<UserAchievement[]> {
+    await this.ensureMasterAchievements();
+    
+    const allAchievements = await this.getAllAchievements();
+    const existingUserAchievements = await this.getUserAchievements(userId);
+    
+    const existingAchievementIds = new Set(existingUserAchievements.map(ua => ua.achievementId));
+    
+    const missingAchievements = allAchievements.filter(a => !existingAchievementIds.has(a.id));
+    
+    for (const achievement of missingAchievements) {
+      await db
         .insert(userAchievements)
-        .values(achievement)
-        .returning();
-      createdAchievements.push(created);
+        .values({
+          userId,
+          achievementId: achievement.id,
+          progress: 0,
+          unlocked: false,
+        });
     }
-
-    return createdAchievements;
+    
+    return await this.getUserAchievements(userId);
   }
 
   async updateUserAchievement(id: string, data: UpdateUserAchievement): Promise<UserAchievement | undefined> {
@@ -755,18 +824,24 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
-  async unlockAchievement(userId: string, achievementKey: string): Promise<UserAchievement | undefined> {
+  async updateUserAchievementProgress(userId: string, achievementId: string, progress: number): Promise<UserAchievement | undefined> {
+    const achievement = await this.getAchievement(achievementId);
+    if (!achievement) return undefined;
+    
+    const isComplete = progress >= (achievement.maxProgress || 1);
+    
     const [updated] = await db
       .update(userAchievements)
       .set({ 
-        unlocked: true, 
-        unlockedAt: new Date(),
+        progress,
+        unlocked: isComplete,
+        unlockedAt: isComplete ? new Date() : undefined,
         updatedAt: new Date() 
       })
       .where(
         and(
           eq(userAchievements.userId, userId),
-          eq(userAchievements.achievementKey, achievementKey)
+          eq(userAchievements.achievementId, achievementId)
         )
       )
       .returning();
