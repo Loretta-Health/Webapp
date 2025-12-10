@@ -439,6 +439,8 @@ export default function LeaderboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {achievements.map((achievement, index) => {
                   const IconComponent = iconMap[achievement.icon] || Award;
+                  const alwaysHighlighted = ['first-steps', 'week-warrior', 'community-star', 'wellness-warrior', 'streak-legend'];
+                  const shouldHighlight = achievement.unlocked || alwaysHighlighted.includes(achievement.id);
                   
                   return (
                     <motion.div
@@ -449,13 +451,13 @@ export default function LeaderboardPage() {
                     >
                       <Card 
                         className={`p-4 ${rarityBgColors[achievement.rarity]} border ${rarityBorderColors[achievement.rarity]} ${
-                          !achievement.unlocked ? 'opacity-70' : ''
+                          !shouldHighlight ? 'opacity-70' : ''
                         }`}
                         data-testid={`achievement-${achievement.id}`}
                       >
                         <div className="flex items-start gap-4">
                           <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${rarityColors[achievement.rarity]} flex items-center justify-center shrink-0 ${
-                            !achievement.unlocked ? 'grayscale' : ''
+                            !shouldHighlight ? 'grayscale' : ''
                           }`}>
                             <IconComponent className="w-7 h-7 text-white" />
                           </div>
