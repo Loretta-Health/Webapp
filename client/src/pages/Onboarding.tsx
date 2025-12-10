@@ -1266,22 +1266,55 @@ export default function Onboarding() {
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const { user } = useAuth();
   const userId = user?.id;
-  const { markQuestionnaireComplete, markConsentComplete, isQuestionnaireComplete, isLoading: progressLoading } = useOnboardingProgress();
+  const { markQuestionnaireComplete, markConsentComplete, isQuestionnaireComplete, isConsentComplete, isLoading: progressLoading } = useOnboardingProgress();
+  const [initialStepSet, setInitialStepSet] = useState(false);
 
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
     queryKey: ['/api/questionnaires', userId],
     enabled: !!userId,
   });
 
+  const { data: profileData, isLoading: profileLoading } = useQuery<{ firstName?: string; lastName?: string; email?: string } | null>({
+    queryKey: ['/api/profile', userId],
+    enabled: !!userId,
+  });
+
+  const { data: preferencesData, isLoading: prefsLoading } = useQuery<{ consentGiven?: boolean } | null>({
+    queryKey: ['/api/preferences', userId],
+    enabled: !!userId,
+  });
+
   const legacyQuestionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
-  const allLoading = progressLoading || questLoading;
+  const legacyConsentComplete = preferencesData?.consentGiven === true || localStorage.getItem('loretta_consent') === 'accepted';
+  const profileComplete = !!(profileData?.firstName && profileData?.lastName && profileData?.email);
+  
+  const allLoading = progressLoading || questLoading || profileLoading || prefsLoading;
   const effectiveQuestionnaireComplete = isQuestionnaireComplete || legacyQuestionnaireComplete;
+  const effectiveConsentComplete = isConsentComplete || legacyConsentComplete;
   
   useEffect(() => {
     if (!allLoading && effectiveQuestionnaireComplete) {
       navigate('/my-dashboard');
     }
   }, [allLoading, effectiveQuestionnaireComplete, navigate]);
+
+  useEffect(() => {
+    if (!allLoading && !initialStepSet) {
+      let targetStep: OnboardingStep = 'welcome';
+      
+      if (effectiveConsentComplete) {
+        targetStep = 'registration';
+      }
+      if (effectiveConsentComplete && profileComplete) {
+        targetStep = 'questionnaire';
+      }
+      
+      if (targetStep !== 'welcome') {
+        setStep(targetStep);
+      }
+      setInitialStepSet(true);
+    }
+  }, [allLoading, effectiveConsentComplete, profileComplete, initialStepSet]);
   
   const fetchLiveScore = async (currentAnswers: QuestionnaireAnswer[]) => {
     if (currentAnswers.length < 3) return;
