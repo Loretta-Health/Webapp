@@ -1284,9 +1284,23 @@ export default function Onboarding() {
     enabled: !!userId,
   });
 
-  const legacyQuestionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
   const legacyConsentComplete = preferencesData?.consentGiven === true || localStorage.getItem('loretta_consent') === 'accepted';
   const profileComplete = !!(profileData?.firstName && profileData?.lastName && profileData?.email) || !!(user?.firstName && user?.lastName && user?.email);
+  
+  // Get core question IDs for completion check (exclude follow-up questions)
+  const coreQuestionIds = baseQuestions.filter(q => q.module === 'core' && !q.followUpFor).map(q => q.id);
+  
+  // Check if all core questions have been answered in saved data
+  const getSavedAnswerIds = (): string[] => {
+    if (!Array.isArray(questionnaireData) || questionnaireData.length === 0) return [];
+    const healthRecord = questionnaireData.find(r => r.category === 'health_risk_assessment');
+    if (!healthRecord?.answers) return [];
+    return Object.keys(healthRecord.answers);
+  };
+  
+  const savedAnswerIds = getSavedAnswerIds();
+  const allCoreQuestionsAnswered = coreQuestionIds.every(id => savedAnswerIds.includes(id));
+  const legacyQuestionnaireComplete = allCoreQuestionsAnswered;
   
   const allLoading = progressLoading || questLoading || profileLoading || prefsLoading;
   const effectiveQuestionnaireComplete = isQuestionnaireComplete || legacyQuestionnaireComplete;
@@ -1313,6 +1327,81 @@ export default function Onboarding() {
       setInitialStepSet(true);
     }
   }, [allLoading, effectiveConsentComplete, profileComplete, effectiveOnboardingComplete, initialStepSet]);
+
+  // Load saved answers from database and resume from first unanswered question
+  const [savedAnswersLoaded, setSavedAnswersLoaded] = useState(false);
+  
+  useEffect(() => {
+    if (questLoading || savedAnswersLoaded) return;
+    
+    if (Array.isArray(questionnaireData) && questionnaireData.length > 0) {
+      const healthRecord = questionnaireData.find(r => r.category === 'health_risk_assessment');
+      if (healthRecord?.answers && typeof healthRecord.answers === 'object') {
+        const savedAnswersRecord = healthRecord.answers as Record<string, string>;
+        const loadedAnswers: QuestionnaireAnswer[] = [];
+        
+        // Convert saved Record<string, string> to QuestionnaireAnswer[]
+        for (const [questionId, answerValue] of Object.entries(savedAnswersRecord)) {
+          const question = baseQuestions.find(q => q.id === questionId);
+          let riskWeight = 0;
+          
+          if (question?.options) {
+            const matchingOption = question.options.find(o => o.value === answerValue);
+            riskWeight = matchingOption?.riskWeight || 0;
+          }
+          
+          loadedAnswers.push({
+            questionId,
+            answer: answerValue,
+            riskWeight,
+          });
+        }
+        
+        if (loadedAnswers.length > 0) {
+          setAnswers(loadedAnswers);
+          console.log('[Onboarding] Loaded', loadedAnswers.length, 'saved answers');
+          
+          // Find first unanswered core question
+          const answeredIds = new Set(loadedAnswers.map(a => a.questionId));
+          const firstUnansweredIndex = coreQuestionIds.findIndex(id => !answeredIds.has(id));
+          
+          if (firstUnansweredIndex !== -1 && firstUnansweredIndex > 0) {
+            setCurrentQuestion(firstUnansweredIndex);
+            console.log('[Onboarding] Resuming from question', firstUnansweredIndex);
+          }
+        }
+      }
+    }
+    setSavedAnswersLoaded(true);
+  }, [questLoading, questionnaireData, savedAnswersLoaded, coreQuestionIds]);
+
+  // Auto-save answers after each change (debounced)
+  const [lastSavedCount, setLastSavedCount] = useState(0);
+  
+  useEffect(() => {
+    if (!savedAnswersLoaded || !userId || answers.length === 0) return;
+    if (answers.length === lastSavedCount) return; // No new answers
+    
+    const saveTimer = setTimeout(() => {
+      const answersRecord: Record<string, string> = {};
+      answers.forEach(a => {
+        answersRecord[a.questionId] = String(a.answer);
+      });
+      
+      apiRequest('POST', '/api/questionnaires', {
+        userId,
+        category: 'health_risk_assessment',
+        answers: answersRecord,
+      }).then(() => {
+        console.log('[Onboarding] Auto-saved', answers.length, 'answers');
+        setLastSavedCount(answers.length);
+      }).catch((error) => {
+        console.error('[Onboarding] Auto-save failed:', error);
+      });
+    }, 1000); // Debounce 1 second
+    
+    return () => clearTimeout(saveTimer);
+  }, [answers, savedAnswersLoaded, userId, lastSavedCount]);
   
   const fetchLiveScore = async (currentAnswers: QuestionnaireAnswer[]) => {
     if (currentAnswers.length < 3) return;

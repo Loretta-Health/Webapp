@@ -121,7 +121,7 @@ export default function MyDashboard() {
     enabled: !!userId && !!user,
   });
 
-  const { data: questionnaireData } = useQuery<any[]>({
+  const { data: questionnaireData } = useQuery<{ category: string; answers: Record<string, string> }[]>({
     queryKey: ['/api/questionnaires', userId],
     enabled: !!userId && !!user,
   });
@@ -131,9 +131,26 @@ export default function MyDashboard() {
     enabled: !!userId && !!user,
   });
 
+  // Core question IDs that must be answered for questionnaire to be complete (must match Onboarding.tsx baseQuestions)
+  const coreQuestionIds = [
+    'blood_test_3_years', 'prescription_medicine', 'high_blood_pressure', 'general_health',
+    'age', 'weight_current', 'height', 'high_cholesterol', 'daily_aspirin', 'prediabetes'
+  ];
+  
+  // Check if all core questions have been answered
+  const getSavedAnswerIds = (): string[] => {
+    if (!Array.isArray(questionnaireData) || questionnaireData.length === 0) return [];
+    const healthRecord = questionnaireData.find(r => r.category === 'health_risk_assessment');
+    if (!healthRecord?.answers) return [];
+    return Object.keys(healthRecord.answers);
+  };
+  
+  const savedAnswerIds = getSavedAnswerIds();
+  const allCoreQuestionsAnswered = coreQuestionIds.every(id => savedAnswerIds.includes(id));
+
   const consentComplete = isConsentComplete || preferencesData?.consentGiven === true;
   const profileComplete = !!(profileData?.firstName && profileData?.lastName) || !!(user?.firstName && user?.lastName && user?.email);
-  const questionnaireComplete = isQuestionnaireComplete || (Array.isArray(questionnaireData) && questionnaireData.length > 0);
+  const questionnaireComplete = isQuestionnaireComplete || allCoreQuestionsAnswered;
   const firstCheckInComplete = Array.isArray(allEmotionalCheckins) && allEmotionalCheckins.length > 0;
   
   const setupSteps = [

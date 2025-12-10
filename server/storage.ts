@@ -187,9 +187,14 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getQuestionnaireAnswers(data.userId, data.category);
 
     if (existing) {
+      // Merge incoming answers with existing answers (new answers override existing)
+      const mergedAnswers = {
+        ...(existing.answers as Record<string, string>),
+        ...(data.answers as Record<string, string>),
+      };
       const [updated] = await db
         .update(questionnaireAnswers)
-        .set({ answers: data.answers, updatedAt: new Date() })
+        .set({ answers: mergedAnswers, updatedAt: new Date() })
         .where(eq(questionnaireAnswers.id, existing.id))
         .returning();
       return updated;
