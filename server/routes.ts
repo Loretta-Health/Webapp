@@ -746,13 +746,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/teams/user/:userId", async (req, res) => {
+  // Get the authenticated user's communities
+  app.get("/api/teams/me", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: "Not authenticated" });
     }
     
     try {
       const userId = (req.user as any).id;
+      const teams = await storage.getUserTeams(userId);
+      res.json(teams);
+    } catch (error) {
+      console.error("Error fetching user teams:", error);
+      res.status(500).json({ error: "Failed to fetch user teams" });
+    }
+  });
+
+  // Legacy endpoint - redirects to /api/teams/me for authenticated user
+  app.get("/api/teams/user/:userId", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      // Only allow users to fetch their own teams for security
+      const authenticatedUserId = (req.user as any).id;
+      const { userId } = req.params;
+      
+      if (authenticatedUserId !== userId) {
+        return res.status(403).json({ error: "Can only view your own communities" });
+      }
+      
       const teams = await storage.getUserTeams(userId);
       res.json(teams);
     } catch (error) {
@@ -905,6 +929,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error removing team member:", error);
       res.status(500).json({ error: "Failed to remove team member" });
+    }
+  });
+
+  // ========================
+  // Community Leaderboard Endpoint
+  // ========================
+
+  app.get("/api/teams/:teamId/leaderboard", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { teamId } = req.params;
+      const currentUserId = (req.user as any).id;
+      const { sortBy = "xp", limit = "50" } = req.query;
+      
+      // Verify the requesting user is a member of this team
+      const currentMember = await storage.getTeamMember(teamId, currentUserId);
+      if (!currentMember) {
+        return res.status(403).json({ error: "Not a member of this community" });
+      }
+      
+      // Get all team members
+      const members = await storage.getTeamMembers(teamId);
+      
+      // Filter to only members who explicitly gave consent
+      const consentingMembers = members.filter(member => member.consentGiven === true);
+      
+      // Build leaderboard with gamification data (only for members who gave consent)
+      const leaderboardEntries = await Promise.all(
+        consentingMembers.map(async (member) => {
+          
+          const user = await storage.getUser(member.userId);
+          const gamification = await storage.getUserGamification(member.userId);
+          
+          return {
+            userId: member.userId,
+            username: user?.username || "Unknown",
+            firstName: user?.firstName || null,
+            xp: gamification?.xp || 0,
+            level: gamification?.level || 1,
+            currentStreak: gamification?.currentStreak || 0,
+            longestStreak: gamification?.longestStreak || 0,
+            role: member.role,
+            joinedAt: member.joinedAt,
+          };
+        })
+      );
+      
+      // All entries are valid since we pre-filtered by consent
+      const validEntries = leaderboardEntries;
+      
+      // Sort by the specified field
+      const sortField = sortBy as string;
+      validEntries.sort((a, b) => {
+        if (sortField === "level") {
+          // Sort by level first, then XP
+          if (b.level !== a.level) return b.level - a.level;
+          return b.xp - a.xp;
+        } else if (sortField === "streak") {
+          return b.currentStreak - a.currentStreak;
+        } else {
+          // Default: sort by XP
+          return b.xp - a.xp;
+        }
+      });
+      
+      // Add rank to each entry
+      const rankedEntries = validEntries.slice(0, parseInt(limit as string)).map((entry, index) => ({
+        ...entry,
+        rank: index + 1,
+      }));
+      
+      // Get team info
+      const team = await storage.getTeam(teamId);
+      
+      res.json({
+        teamId,
+        teamName: team?.name || "Unknown",
+        totalMembers: members.length,
+        participatingMembers: validEntries.length,
+        leaderboard: rankedEntries,
+      });
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboard" });
     }
   });
 
