@@ -1,0 +1,122 @@
+{
+  "declined": {
+    "title": "We understand",
+    "message": "Your privacy is important. If you change your mind, we'd love to help you on your health journey.",
+    "goBack": "Go Back to Consent"
+  },
+  "notFound": {
+    "title": "404 Page Not Found",
+    "message": "The page you're looking for doesn't exist.",
+    "goHome": "Go to Home"
+  },
+  "leaderboard": {
+    "title": "Leaderboard & Achievements",
+    "achievementsUnlocked": "{{count}}/{{total}} achievements unlocked",
+    "rank": "Rank",
+    "user": "User",
+    "xp": "XP",
+    "level": "Level",
+    "lvl": "Lvl {{level}}",
+    "streak": "Streak",
+    "dayStreak": "{{count}} day streak",
+    "you": "You",
+    "noData": "No leaderboard data available",
+    "teamRankings": "Team Rankings",
+    "noTeams": {
+      "title": "No Teams Yet",
+      "message": "Create a team and invite friends or family to compare progress!",
+      "createTeam": "Create a Team"
+    },
+    "waitingMembers": {
+      "title": "Waiting for Members",
+      "message": "Team members will appear here once they accept the invite and agree to share their stats."
+    },
+    "tabs": {
+      "leaderboard": "Leaderboard",
+      "achievements": "Achievements"
+    },
+    "achievements": {
+      "title": "Achievement Progress",
+      "unlocked": "Unlocked {{date}}",
+      "notUnlocked": "Not yet unlocked",
+      "progress": "Progress",
+      "ofTotal": "{{count}} of {{total}}"
+    },
+    "relativeDates": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "daysAgo": "{{count}} days ago",
+      "weekAgo": "1 week ago",
+      "weeksAgo": "{{count}} weeks ago",
+      "monthAgo": "1 month ago",
+      "monthsAgo": "{{count}} months ago"
+    }
+  },
+  "chat": {
+    "title": "Health Literacy Navigator",
+    "subtitle": "Ask me anything about your health",
+    "placeholder": "Ask about your health...",
+    "send": "Send",
+    "thinking": "Thinking...",
+    "welcome": "Hello! I'm the Health Literacy Navigator. I can help you understand your medical documents, explain health terms, and answer questions about your health journey. How can I help you today?",
+    "error": "Sorry, I couldn't process your request. Please try again.",
+    "back": "Back",
+    "suggestionsTitle": "Ask about your medical documents:",
+    "uploadHint": "Upload medical documents (PDF, images) or ask questions about your health",
+    "disclaimer": "Disclaimer: Loretta is not a diagnostic tool and does not provide medical advice.",
+    "suggestions": {
+      "labResults": "Explain my lab results",
+      "sideEffects": "What are my medication side effects?",
+      "heartHealth": "How can I improve my heart health?",
+      "riskScore": "What does my risk score mean?"
+    }
+  },
+  "calendar": {
+    "title": "Health Calendar",
+    "today": "Today",
+    "noEvents": "No health events for this day"
+  },
+  "medications": {
+    "title": "Medications",
+    "addNew": "Add Medication",
+    "noMedications": "No medications added yet",
+    "name": "Name",
+    "dosage": "Dosage",
+    "frequency": "Frequency",
+    "time": "Time",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "asNeeded": "As Needed"
+  },
+  "riskScore": {
+    "title": "Risk Score Details",
+    "current": "Current Score",
+    "trend": "Trend",
+    "improving": "Improving",
+    "stable": "Stable",
+    "declining": "Declining",
+    "factors": "Risk Factors",
+    "recommendations": "Recommendations"
+  },
+  "streak": {
+    "title": "Streak Details",
+    "currentStreak": "Current Streak",
+    "longestStreak": "Longest Streak",
+    "days": "days",
+    "keepItUp": "Keep it up!"
+  },
+  "activity": {
+    "title": "Activity Details",
+    "steps": "Steps",
+    "calories": "Calories",
+    "distance": "Distance",
+    "activeMinutes": "Active Minutes"
+  },
+  "mission": {
+    "title": "Mission Details",
+    "reward": "Reward",
+    "xp": "XP",
+    "complete": "Complete Mission",
+    "completed": "Completed!"
+  }
+}

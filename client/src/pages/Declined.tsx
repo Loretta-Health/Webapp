@@ -2,10 +2,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Heart, ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 
 export default function Declined() {
   const [, setLocation] = useLocation();
+  const { t } = useTranslation('pages');
 
   const handleGoBack = () => {
     localStorage.removeItem('loretta_consent');
@@ -23,9 +25,9 @@ export default function Declined() {
           <Heart className="w-8 h-8 text-muted-foreground" />
         </div>
         
-        <h1 className="text-2xl font-black text-foreground mb-3">We understand</h1>
+        <h1 className="text-2xl font-black text-foreground mb-3">{t('declined.title')}</h1>
         <p className="text-muted-foreground mb-6">
-          Your privacy is important. If you change your mind, we'd love to help you on your health journey.
+          {t('declined.message')}
         </p>
         
         <Button
@@ -35,7 +37,7 @@ export default function Declined() {
           data-testid="button-go-back"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Go Back to Consent
+          {t('declined.goBack')}
         </Button>
       </Card>
     </div>

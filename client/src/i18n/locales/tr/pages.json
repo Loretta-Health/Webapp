@@ -1,0 +1,122 @@
+{
+  "declined": {
+    "title": "Anlıyoruz",
+    "message": "Gizliliğiniz önemli. Fikrinizi değiştirirseniz, sağlık yolculuğunuzda size yardımcı olmaktan memnuniyet duyarız.",
+    "goBack": "Onay Sayfasına Dön"
+  },
+  "notFound": {
+    "title": "404 Sayfa Bulunamadı",
+    "message": "Aradığınız sayfa mevcut değil.",
+    "goHome": "Ana Sayfaya Git"
+  },
+  "leaderboard": {
+    "title": "Skor Tablosu ve Başarılar",
+    "achievementsUnlocked": "{{count}}/{{total}} başarı kilidi açıldı",
+    "rank": "Sıra",
+    "user": "Kullanıcı",
+    "xp": "XP",
+    "level": "Seviye",
+    "lvl": "Svye {{level}}",
+    "streak": "Seri",
+    "dayStreak": "{{count}} gün seri",
+    "you": "Sen",
+    "noData": "Skor tablosu verisi yok",
+    "teamRankings": "Takım Sıralamaları",
+    "noTeams": {
+      "title": "Henüz Takım Yok",
+      "message": "Takım oluştur ve ilerlemeyi karşılaştırmak için arkadaşlarını veya aileni davet et!",
+      "createTeam": "Takım Oluştur"
+    },
+    "waitingMembers": {
+      "title": "Üyeler Bekleniyor",
+      "message": "Takım üyeleri, daveti kabul edip istatistiklerini paylaşmayı kabul ettiklerinde burada görünecek."
+    },
+    "tabs": {
+      "leaderboard": "Skor Tablosu",
+      "achievements": "Başarılar"
+    },
+    "achievements": {
+      "title": "Başarı İlerlemesi",
+      "unlocked": "Kilidi açıldı: {{date}}",
+      "notUnlocked": "Henüz kilidi açılmadı",
+      "progress": "İlerleme",
+      "ofTotal": "{{count}} / {{total}}"
+    },
+    "relativeDates": {
+      "today": "Bugün",
+      "yesterday": "Dün",
+      "daysAgo": "{{count}} gün önce",
+      "weekAgo": "1 hafta önce",
+      "weeksAgo": "{{count}} hafta önce",
+      "monthAgo": "1 ay önce",
+      "monthsAgo": "{{count}} ay önce"
+    }
+  },
+  "chat": {
+    "title": "Sağlık Navigatörü",
+    "subtitle": "Sağlığınız hakkında her şeyi sorun",
+    "placeholder": "Sağlığınız hakkında sorun...",
+    "send": "Gönder",
+    "thinking": "Düşünüyor...",
+    "welcome": "Merhaba! Ben Sağlık Navigatörünüzüm. Tıbbi belgelerinizi anlamanıza, sağlık terimlerini açıklamanıza ve sağlık yolculuğunuzla ilgili sorularınızı yanıtlamanıza yardımcı olabilirim. Bugün size nasıl yardımcı olabilirim?",
+    "error": "Üzgünüm, isteğinizi işleyemedim. Lütfen tekrar deneyin.",
+    "back": "Geri",
+    "suggestionsTitle": "Tıbbi belgeleriniz hakkında sorun:",
+    "uploadHint": "Tıbbi belgeleri (PDF, resimler) yükleyin veya sağlığınızla ilgili sorular sorun",
+    "disclaimer": "Uyarı: Loretta bir tanı aracı değildir ve tıbbi tavsiye vermez.",
+    "suggestions": {
+      "labResults": "Laboratuvar sonuçlarımı açıkla",
+      "sideEffects": "İlaçlarımın yan etkileri nelerdir?",
+      "heartHealth": "Kalp sağlığımı nasıl iyileştirebilirim?",
+      "riskScore": "Risk skorum ne anlama geliyor?"
+    }
+  },
+  "calendar": {
+    "title": "Sağlık Takvimi",
+    "today": "Bugün",
+    "noEvents": "Bu gün için sağlık etkinliği yok"
+  },
+  "medications": {
+    "title": "İlaçlar",
+    "addNew": "İlaç Ekle",
+    "noMedications": "Henüz ilaç eklenmedi",
+    "name": "İsim",
+    "dosage": "Dozaj",
+    "frequency": "Sıklık",
+    "time": "Zaman",
+    "daily": "Günlük",
+    "weekly": "Haftalık",
+    "asNeeded": "Gerektiğinde"
+  },
+  "riskScore": {
+    "title": "Risk Skoru Detayları",
+    "current": "Mevcut Skor",
+    "trend": "Trend",
+    "improving": "İyileşiyor",
+    "stable": "Sabit",
+    "declining": "Düşüyor",
+    "factors": "Risk Faktörleri",
+    "recommendations": "Öneriler"
+  },
+  "streak": {
+    "title": "Seri Detayları",
+    "currentStreak": "Mevcut Seri",
+    "longestStreak": "En Uzun Seri",
+    "days": "gün",
+    "keepItUp": "Böyle devam et!"
+  },
+  "activity": {
+    "title": "Aktivite Detayları",
+    "steps": "Adımlar",
+    "calories": "Kalori",
+    "distance": "Mesafe",
+    "activeMinutes": "Aktif Dakikalar"
+  },
+  "mission": {
+    "title": "Görev Detayları",
+    "reward": "Ödül",
+    "xp": "XP",
+    "complete": "Görevi Tamamla",
+    "completed": "Tamamlandı!"
+  }
+}

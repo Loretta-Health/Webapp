@@ -1,0 +1,122 @@
+{
+  "declined": {
+    "title": "Wir verstehen",
+    "message": "Ihre Privatsphäre ist wichtig. Wenn Sie Ihre Meinung ändern, würden wir Ihnen gerne auf Ihrer Gesundheitsreise helfen.",
+    "goBack": "Zurück zur Einwilligung"
+  },
+  "notFound": {
+    "title": "404 Seite nicht gefunden",
+    "message": "Die gesuchte Seite existiert nicht.",
+    "goHome": "Zur Startseite"
+  },
+  "leaderboard": {
+    "title": "Bestenliste & Erfolge",
+    "achievementsUnlocked": "{{count}}/{{total}} Erfolge freigeschaltet",
+    "rank": "Rang",
+    "user": "Benutzer",
+    "xp": "XP",
+    "level": "Stufe",
+    "lvl": "Stufe {{level}}",
+    "streak": "Serie",
+    "dayStreak": "{{count}} Tage Serie",
+    "you": "Du",
+    "noData": "Keine Bestenlisten-Daten verfügbar",
+    "teamRankings": "Team-Rangliste",
+    "noTeams": {
+      "title": "Noch keine Teams",
+      "message": "Erstelle ein Team und lade Freunde oder Familie ein, um Fortschritte zu vergleichen!",
+      "createTeam": "Team erstellen"
+    },
+    "waitingMembers": {
+      "title": "Warten auf Mitglieder",
+      "message": "Teammitglieder erscheinen hier, sobald sie die Einladung annehmen und zustimmen, ihre Statistiken zu teilen."
+    },
+    "tabs": {
+      "leaderboard": "Bestenliste",
+      "achievements": "Erfolge"
+    },
+    "achievements": {
+      "title": "Erfolgs-Fortschritt",
+      "unlocked": "Freigeschaltet {{date}}",
+      "notUnlocked": "Noch nicht freigeschaltet",
+      "progress": "Fortschritt",
+      "ofTotal": "{{count}} von {{total}}"
+    },
+    "relativeDates": {
+      "today": "Heute",
+      "yesterday": "Gestern",
+      "daysAgo": "vor {{count}} Tagen",
+      "weekAgo": "vor 1 Woche",
+      "weeksAgo": "vor {{count}} Wochen",
+      "monthAgo": "vor 1 Monat",
+      "monthsAgo": "vor {{count}} Monaten"
+    }
+  },
+  "chat": {
+    "title": "Gesundheits-Navigator",
+    "subtitle": "Frage mich alles über deine Gesundheit",
+    "placeholder": "Frage über deine Gesundheit...",
+    "send": "Senden",
+    "thinking": "Denke nach...",
+    "welcome": "Hallo! Ich bin der Gesundheits-Navigator. Ich kann dir helfen, deine medizinischen Dokumente zu verstehen, Gesundheitsbegriffe zu erklären und Fragen zu deiner Gesundheitsreise zu beantworten. Wie kann ich dir heute helfen?",
+    "error": "Entschuldigung, ich konnte deine Anfrage nicht verarbeiten. Bitte versuche es erneut.",
+    "back": "Zurück",
+    "suggestionsTitle": "Frage zu deinen medizinischen Dokumenten:",
+    "uploadHint": "Lade medizinische Dokumente (PDF, Bilder) hoch oder stelle Fragen zu deiner Gesundheit",
+    "disclaimer": "Hinweis: Loretta ist kein Diagnosewerkzeug und bietet keine medizinische Beratung.",
+    "suggestions": {
+      "labResults": "Erkläre meine Laborergebnisse",
+      "sideEffects": "Was sind die Nebenwirkungen meiner Medikamente?",
+      "heartHealth": "Wie kann ich meine Herzgesundheit verbessern?",
+      "riskScore": "Was bedeutet mein Risikoscore?"
+    }
+  },
+  "calendar": {
+    "title": "Gesundheitskalender",
+    "today": "Heute",
+    "noEvents": "Keine Gesundheitsereignisse für diesen Tag"
+  },
+  "medications": {
+    "title": "Medikamente",
+    "addNew": "Medikament hinzufügen",
+    "noMedications": "Noch keine Medikamente hinzugefügt",
+    "name": "Name",
+    "dosage": "Dosierung",
+    "frequency": "Häufigkeit",
+    "time": "Zeit",
+    "daily": "Täglich",
+    "weekly": "Wöchentlich",
+    "asNeeded": "Bei Bedarf"
+  },
+  "riskScore": {
+    "title": "Risikobewertung Details",
+    "current": "Aktuelle Bewertung",
+    "trend": "Trend",
+    "improving": "Verbessernd",
+    "stable": "Stabil",
+    "declining": "Abnehmend",
+    "factors": "Risikofaktoren",
+    "recommendations": "Empfehlungen"
+  },
+  "streak": {
+    "title": "Serien-Details",
+    "currentStreak": "Aktuelle Serie",
+    "longestStreak": "Längste Serie",
+    "days": "Tage",
+    "keepItUp": "Weiter so!"
+  },
+  "activity": {
+    "title": "Aktivitäts-Details",
+    "steps": "Schritte",
+    "calories": "Kalorien",
+    "distance": "Distanz",
+    "activeMinutes": "Aktive Minuten"
+  },
+  "mission": {
+    "title": "Missions-Details",
+    "reward": "Belohnung",
+    "xp": "XP",
+    "complete": "Mission abschließen",
+    "completed": "Abgeschlossen!"
+  }
+}
