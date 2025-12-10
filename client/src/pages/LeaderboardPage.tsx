@@ -431,7 +431,7 @@ export default function LeaderboardPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {achievements.map((achievement, index) => {
-                  const IconComponent = iconMap[achievement.icon];
+                  const IconComponent = iconMap[achievement.icon] || Award;
                   
                   return (
                     <motion.div
