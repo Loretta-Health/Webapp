@@ -1110,7 +1110,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Cannot update another user's onboarding progress" });
       }
       
-      const updateData = req.body;
+      const rawData = req.body;
+      
+      const updateData: Record<string, any> = {};
+      if (rawData.consentCompleted !== undefined) updateData.consentCompleted = rawData.consentCompleted;
+      if (rawData.consentCompletedAt) updateData.consentCompletedAt = new Date(rawData.consentCompletedAt);
+      if (rawData.questionnaireCompleted !== undefined) updateData.questionnaireCompleted = rawData.questionnaireCompleted;
+      if (rawData.questionnaireCompletedAt) updateData.questionnaireCompletedAt = new Date(rawData.questionnaireCompletedAt);
+      if (rawData.onboardingComplete !== undefined) updateData.onboardingComplete = rawData.onboardingComplete;
+      if (rawData.onboardingCompletedAt) updateData.onboardingCompletedAt = new Date(rawData.onboardingCompletedAt);
+      if (rawData.accountCreated !== undefined) updateData.accountCreated = rawData.accountCreated;
+      if (rawData.accountCreatedAt) updateData.accountCreatedAt = new Date(rawData.accountCreatedAt);
       
       let progress = await storage.getOnboardingProgress(userId);
       
