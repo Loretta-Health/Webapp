@@ -6,6 +6,7 @@ import { Pill, Check, Clock, Flame, ChevronRight } from 'lucide-react';
 import { Link } from 'wouter';
 import MedicalTerm from './MedicalTerm';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
+import { useTranslation } from 'react-i18next';
 
 interface MedicationTrackerProps {
   medicationId: string;
@@ -28,6 +29,7 @@ export default function MedicationTracker({
   simpleExplanation = 'Medicine that helps keep you healthy.',
   className = ''
 }: MedicationTrackerProps) {
+  const { t } = useTranslation('dashboard');
   const { getProgress, getMedication } = useMedicationProgress();
   const progress = getProgress(medicationId);
   const medication = getMedication(medicationId);
@@ -42,7 +44,7 @@ export default function MedicationTracker({
           <div className="absolute top-2 right-2">
             <Badge variant="secondary" className="font-black text-xs">
               <Flame className="w-3 h-3 mr-1 fill-chart-3 text-chart-3" />
-              {streak} days
+              {t('medications.daysStreak', { count: streak })}
             </Badge>
           </div>
         )}
@@ -78,7 +80,7 @@ export default function MedicationTracker({
           
           <div className="space-y-2">
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Today's progress</span>
+              <span className="text-muted-foreground">{t('medications.todaysProgress')}</span>
               <span className="font-bold text-foreground">{progress.taken}/{progress.total}</span>
             </div>
             <Progress value={progressPercent} className="h-2" />
@@ -87,7 +89,7 @@ export default function MedicationTracker({
           {progress.isComplete && (
             <div className="mt-3 flex items-center justify-center gap-2 text-sm text-primary font-bold">
               <Check className="w-4 h-4" />
-              All doses taken today!
+              {t('medications.allDosesTaken')}
             </div>
           )}
         </div>

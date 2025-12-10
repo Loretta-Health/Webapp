@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, 
   Zap, 
@@ -34,6 +35,7 @@ const colorClasses = {
 };
 
 export default function MedicationDetails() {
+  const { t } = useTranslation('dashboard');
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
@@ -280,7 +282,7 @@ export default function MedicationDetails() {
             <div className="flex items-start gap-3">
               <MascotCharacter pose="celebrate" size="sm" />
               <div>
-                <p className="font-bold text-foreground mb-1">Community Tip</p>
+                <p className="font-bold text-foreground mb-1">{t('community.communityTip')}</p>
                 <p className="text-sm text-muted-foreground">
                   Set a daily alarm or use a pill organizer to help you remember to take your medications at the same time each day. Consistency is key!
                 </p>

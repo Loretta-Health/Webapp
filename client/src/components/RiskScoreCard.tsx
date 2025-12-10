@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'wouter';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 import { TrendingUp, TrendingDown, ChevronDown, ChevronUp, Beaker, Lightbulb, Brain, GraduationCap, BookOpen, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from './MascotCharacter';
@@ -15,6 +16,7 @@ interface RiskScoreCardProps {
 }
 
 export default function RiskScoreCard({ score, trend = 'stable', message, className = '' }: RiskScoreCardProps) {
+  const { t } = useTranslation('dashboard');
   const [showScience, setShowScience] = useState(false);
   
   const getScoreColor = () => {
@@ -125,7 +127,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
             <div className="flex items-start gap-2">
               <Brain className="w-4 h-4 text-chart-2 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-xs font-bold text-chart-2 uppercase mb-1">Community Tip</p>
+                <p className="text-xs font-bold text-chart-2 uppercase mb-1">{t('community.communityTip')}</p>
                 <p className="text-xs lg:text-sm text-foreground leading-relaxed italic">
                   "Focus on small, consistent improvements. Even adding a 10-minute walk can improve your score over time."
                 </p>

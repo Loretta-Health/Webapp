@@ -135,7 +135,69 @@
   "medications": {
     "title": "Medications",
     "defaultExplanation": "Medication tracking helps ensure consistent dosing",
-    "defaultSimpleExplanation": "Take as prescribed"
+    "defaultSimpleExplanation": "Take as prescribed",
+    "todaysProgress": "Today's progress",
+    "allDosesTaken": "All doses taken today!",
+    "daysStreak": "{{count}} days"
+  },
+  "community": {
+    "lorettaCommunity": "Loretta Community",
+    "lorettaDescription": "Compare with all Loretta members",
+    "lorettaMembers": "{{count}} members",
+    "myFamily": "My Family",
+    "familyDescription": "Just you and your family members",
+    "familyMembers": "{{count}} members",
+    "communityTip": "Community Tip",
+    "family": "Family"
+  },
+  "missionData": {
+    "drinkWater": {
+      "title": "Drink a cup of water",
+      "description": "Stay hydrated by drinking at least one cup of water to start your day right.",
+      "details": "This mission helps you maintain proper hydration levels throughout the day. Drinking water is essential for maintaining bodily functions and overall health.",
+      "communityTip": "Try keeping a water bottle at your desk as a visual reminder to stay hydrated throughout the day.",
+      "stepLabel": "Glass"
+    },
+    "jumpingJacks": {
+      "title": "Complete 10 jumping jacks",
+      "description": "Get your blood flowing and heart rate up by doing 10 jumping jacks.",
+      "details": "Jumping jacks are a full-body cardiovascular exercise that increases your heart rate, improves circulation, and helps wake up your muscles.",
+      "communityTip": "Start with a smaller number if you're just beginning and gradually increase over time.",
+      "stepLabel": "Set"
+    },
+    "walkSteps": {
+      "title": "Walk 5,000 steps",
+      "description": "Get moving and reach your daily step goal.",
+      "details": "Walking is a simple yet effective exercise that improves cardiovascular health and overall wellbeing.",
+      "communityTip": "Try taking short walks during breaks to accumulate steps throughout the day.",
+      "stepLabel": "Steps"
+    },
+    "deepBreathing": {
+      "title": "Practice deep breathing",
+      "description": "Take a moment to relax with deep breathing exercises.",
+      "details": "Deep breathing helps reduce stress and promotes relaxation.",
+      "communityTip": "Try the 4-7-8 technique: inhale for 4 seconds, hold for 7, exhale for 8.",
+      "stepLabel": "Session"
+    },
+    "benefits": {
+      "improvesEnergy": "Improves energy levels",
+      "supportsBrain": "Supports brain function",
+      "maintainsKidney": "Maintains kidney function",
+      "maintainsSkin": "Maintains skin health",
+      "burnsCalories": "Burns calories quickly",
+      "strengthensHeart": "Strengthens heart health",
+      "improvesCoordination": "Improves coordination",
+      "boostsEnergy": "Boosts energy levels",
+      "improvesCirculation": "Improves circulation",
+      "reducesStress": "Reduces stress",
+      "improvesSleep": "Improves sleep quality"
+    },
+    "alternatives": {
+      "herbalTea": "Drink herbal tea",
+      "waterRichFruits": "Eat water-rich fruits",
+      "walkInPlace": "Walk in place",
+      "stretchBreak": "Take a stretch break"
+    }
   },
   "dialogs": {
     "privacyPolicy": "Privacy Policy",

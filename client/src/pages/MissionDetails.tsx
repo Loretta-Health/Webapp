@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   ArrowLeft, 
@@ -545,6 +546,7 @@ const missionsDatabase: Record<string, MissionData> = {
 };
 
 export default function MissionDetails() {
+  const { t } = useTranslation('dashboard');
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
@@ -860,7 +862,7 @@ export default function MissionDetails() {
                     <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-black text-foreground mb-1">Community Tip</h4>
+                    <h4 className="font-black text-foreground mb-1">{t('community.communityTip')}</h4>
                     <p className="text-sm text-muted-foreground" data-testid="community-tip">
                       {missionData.communityTip}
                     </p>

@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from 'react-i18next';
 import { 
   ChevronRight, 
   Footprints,
@@ -154,6 +155,7 @@ interface ActivityData {
 }
 
 export default function ActivityDetails() {
+  const { t } = useTranslation('dashboard');
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
@@ -527,7 +529,7 @@ export default function ActivityDetails() {
             <div className="flex items-center gap-3">
               <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
               <div>
-                <p className="font-bold text-foreground">Community Tip</p>
+                <p className="font-bold text-foreground">{t('community.communityTip')}</p>
                 <p className="text-sm text-muted-foreground">
                   Small consistent efforts add up! Even a short 5-minute walk can make a big difference in your daily activity goals.
                 </p>
