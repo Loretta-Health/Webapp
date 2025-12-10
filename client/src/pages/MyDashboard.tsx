@@ -648,29 +648,29 @@ export default function MyDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 <Leaderboard communityType={communityType} />
                 <div className="space-y-4 lg:space-y-6">
-                  <h2 className="text-xl lg:text-2xl font-black text-foreground">Your Achievements</h2>
+                  <h2 className="text-xl lg:text-2xl font-black text-foreground">{t('achievements.title')}</h2>
                   <div className="grid grid-cols-1 gap-3 lg:gap-4">
                     <AchievementBadge
-                      title="First Steps"
-                      description="Complete your first daily check-in"
+                      title={t('achievements.firstSteps.title')}
+                      description={t('achievements.firstSteps.description')}
                       icon="target"
                       unlocked={streak >= 1}
                       rarity="common"
-                      unlockedDate={streak >= 1 ? "Recently" : undefined}
+                      unlockedDate={streak >= 1 ? t('achievements.recently') : undefined}
                     />
                     <AchievementBadge
-                      title="Week Warrior"
-                      description="Maintain a 7-day streak"
+                      title={t('achievements.weekWarrior.title')}
+                      description={t('achievements.weekWarrior.description')}
                       icon="flame"
                       unlocked={streak >= 7}
                       rarity="rare"
-                      unlockedDate={streak >= 7 ? "Recently" : undefined}
+                      unlockedDate={streak >= 7 ? t('achievements.recently') : undefined}
                       progress={streak >= 7 ? undefined : streak}
                       maxProgress={streak >= 7 ? undefined : 7}
                     />
                     <AchievementBadge
-                      title="Health Champion"
-                      description="Reach level 15"
+                      title={t('achievements.healthChampion.title')}
+                      description={t('achievements.healthChampion.description')}
                       icon="crown"
                       unlocked={level >= 15}
                       progress={level >= 15 ? undefined : level}
@@ -687,7 +687,7 @@ export default function MyDashboard() {
                     <RiskScoreCard
                       score={riskScoreData?.overallScore ?? 50}
                       trend="stable"
-                      message={riskScoreData ? "Based on your health profile" : "Complete your health questionnaire to get your personalized score"}
+                      message={riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
                     />
                   </div>
                   <div className="space-y-3 lg:space-y-4">
@@ -704,9 +704,9 @@ export default function MyDashboard() {
                           <div className="flex items-center justify-between mb-2">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                               <Heart className="w-3 h-3" />
-                              Mood Journal
+                              {t('checkin.subtitle')}
                             </p>
-                            <span className="text-xs text-muted-foreground">{allEmotionalCheckins.length} entries</span>
+                            <span className="text-xs text-muted-foreground">{allEmotionalCheckins.length}</span>
                           </div>
                           <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
                             {allEmotionalCheckins.slice(0, 3).map((checkin) => {
@@ -732,7 +732,7 @@ export default function MyDashboard() {
                   <div className="space-y-3 lg:space-y-4">
                     <h2 className="text-lg lg:text-xl font-black text-foreground flex items-center gap-2">
                       <Flame className="w-5 h-5 text-primary" />
-                      Your Quests
+                      {t('missions.title')}
                     </h2>
                     {missions.slice(0, 3).map((mission: any) => (
                       <QuestCard
@@ -751,69 +751,69 @@ export default function MyDashboard() {
                     ))}
                     <Link href="/mission-details">
                       <Button variant="outline" className="w-full" data-testid="button-view-all-quests">
-                        View All Quests
+                        {t('missions.viewAll')}
                       </Button>
                     </Link>
                   </div>
                   
                   <div className="space-y-3 lg:space-y-4">
                     <h2 className="text-lg lg:text-xl font-black text-foreground flex items-center gap-2">
-                      Activity & Health
+                      {t('activity.title')}
                     </h2>
                     <div className="grid grid-cols-2 gap-2 lg:gap-3">
                       <ActivityMetric
-                        title="Steps"
+                        title={t('activityMetrics.steps.title')}
                         value={activityData?.steps ?? 0}
                         goal={(activityData?.stepsGoal ?? 10000).toLocaleString()}
-                        unit="steps"
+                        unit={t('activity.steps').toLowerCase()}
                         icon={Footprints}
                         progress={Math.min(100, Math.round(((activityData?.steps ?? 0) / (activityData?.stepsGoal ?? 10000)) * 100))}
                         color="text-chart-1"
-                        explanation="Total steps taken today"
-                        simpleExplanation="Walking is great exercise!"
+                        explanation={t('activityMetrics.steps.explanation')}
+                        simpleExplanation={t('activityMetrics.steps.explanation')}
                         href="/activity?type=steps"
                       />
                       <ActivityMetric
-                        title="Sleep"
+                        title={t('activityMetrics.sleep.title')}
                         value={activityData?.sleepHours ?? 0}
                         goal={`${activityData?.sleepGoal ?? 8}h`}
-                        unit="hours"
+                        unit={t('activity.sleep').toLowerCase()}
                         icon={MoonIcon}
                         progress={Math.min(100, Math.round(((activityData?.sleepHours ?? 0) / (activityData?.sleepGoal ?? 8)) * 100))}
                         color="text-chart-2"
-                        explanation="Hours of sleep last night"
-                        simpleExplanation="Good sleep helps your body recover"
+                        explanation={t('activityMetrics.sleep.explanation')}
+                        simpleExplanation={t('activityMetrics.sleep.simpleExplanation')}
                         href="/activity?type=sleep"
                       />
                       <ActivityMetric
-                        title="Heart Rate"
+                        title={t('activityMetrics.heartRate.title')}
                         value={activityData?.heartRate ?? 0}
                         goal="60-100"
                         unit="bpm"
                         icon={Heart}
                         progress={activityData?.heartRate ? (activityData.heartRate >= 60 && activityData.heartRate <= 100 ? 100 : 50) : 0}
                         color="text-destructive"
-                        explanation="Your resting heart rate"
-                        simpleExplanation="Lower is usually healthier when resting"
+                        explanation={t('activityMetrics.heartRate.explanation')}
+                        simpleExplanation={t('activityMetrics.heartRate.simpleExplanation')}
                         href="/activity?type=heartRate"
                       />
                       <ActivityMetric
-                        title="Calories"
+                        title={t('activityMetrics.calories.title')}
                         value={activityData?.calories ?? 0}
                         goal={(activityData?.caloriesGoal ?? 2000).toLocaleString()}
                         unit="cal"
                         icon={Flame}
                         progress={Math.min(100, Math.round(((activityData?.calories ?? 0) / (activityData?.caloriesGoal ?? 2000)) * 100))}
                         color="text-chart-3"
-                        explanation="Calories burned today"
-                        simpleExplanation="Energy you've used"
+                        explanation={t('activityMetrics.calories.explanation')}
+                        simpleExplanation={t('activityMetrics.calories.explanation')}
                         href="/activity?type=calories"
                       />
                     </div>
                     
                     {medications.length > 0 && (
                       <div className="space-y-2">
-                        <h3 className="text-sm font-bold text-foreground">Medications</h3>
+                        <h3 className="text-sm font-bold text-foreground">{t('medications.title')}</h3>
                         {medications.slice(0, 2).map((med: any) => (
                           <MedicationTracker
                             key={med.id}
@@ -822,8 +822,8 @@ export default function MyDashboard() {
                             dosage={med.dosage}
                             timing={med.timing}
                             frequency={med.frequency}
-                            explanation={med.explanation || "Medication tracking helps ensure consistent dosing"}
-                            simpleExplanation={med.simpleExplanation || "Take as prescribed"}
+                            explanation={med.explanation || t('medications.defaultExplanation')}
+                            simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}
                           />
                         ))}
                       </div>
@@ -848,7 +848,7 @@ export default function MyDashboard() {
                 data-testid="button-show-leaderboard"
               >
                 <Users className="w-4 h-4" />
-                Leaderboard
+                {t('sidebar.leaderboard')}
               </Button>
               <Button
                 variant={!showLeaderboard ? "default" : "outline"}
@@ -857,12 +857,12 @@ export default function MyDashboard() {
                 data-testid="button-show-dashboard"
               >
                 <Heart className="w-4 h-4" />
-                Dashboard
+                {t('sidebar.navigation')}
               </Button>
             </div>
             
             <p className="text-xs text-muted-foreground text-center pb-4 italic">
-              Loretta is not a diagnostic tool. Always consult healthcare professionals for medical advice.
+              {t('disclaimer')}
             </p>
           </div>
         </div>
@@ -887,15 +887,15 @@ export default function MyDashboard() {
       <Dialog open={showPrivacyPolicy} onOpenChange={setShowPrivacyPolicy}>
         <DialogContent className="max-w-4xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Privacy Policy</DialogTitle>
+            <DialogTitle className="text-2xl font-black">{t('dialogs.privacyPolicy')}</DialogTitle>
             <DialogDescription>
-              Your privacy matters to us. Review how we handle your data.
+              {t('dialogs.privacyDescription')}
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
             <div className="space-y-4 text-sm text-muted-foreground">
-              <p>We collect health data to provide personalized insights and improve your wellness journey.</p>
-              <p>Your data is encrypted and never shared with third parties without your explicit consent.</p>
+              <p>{t('dialogs.privacyContent1')}</p>
+              <p>{t('dialogs.privacyContent2')}</p>
             </div>
           </ScrollArea>
         </DialogContent>
