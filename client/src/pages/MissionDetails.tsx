@@ -546,7 +546,8 @@ const missionsDatabase: Record<string, MissionData> = {
 };
 
 export default function MissionDetails() {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('pages');
+  const { t: tDashboard } = useTranslation('dashboard');
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
@@ -650,7 +651,7 @@ export default function MissionDetails() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="text-xl font-black text-foreground">Mission Details</h1>
+          <h1 className="text-xl font-black text-foreground">{t('missionDetails.title')}</h1>
         </div>
       </header>
       
@@ -688,7 +689,7 @@ export default function MissionDetails() {
             
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-muted-foreground uppercase">Progress</span>
+                <span className="text-sm font-bold text-muted-foreground uppercase">{t('missionDetails.progress')}</span>
                 <span className="text-sm font-bold text-foreground" data-testid="mission-progress-text">
                   {completedCount} of {missionData.totalSteps} steps
                 </span>
@@ -744,12 +745,12 @@ export default function MissionDetails() {
                 {isComplete ? (
                   <>
                     <Check className="w-5 h-5 mr-2" />
-                    Completed!
+                    {t('missionDetails.completed')}
                   </>
                 ) : (
                   <>
                     <MissionIcon className="w-5 h-5 mr-2" />
-                    Log Completion
+                    {t('missionDetails.logCompletion')}
                   </>
                 )}
               </Button>
@@ -760,10 +761,10 @@ export default function MissionDetails() {
         <Tabs defaultValue="main" className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-muted/50">
             <TabsTrigger value="main" className="font-bold" data-testid="tab-main-mission">
-              Main Mission
+              {t('missionDetails.tabs.mainMission')}
             </TabsTrigger>
             <TabsTrigger value="alternatives" className="font-bold" data-testid="tab-alternatives">
-              Alternative Missions
+              {t('missionDetails.tabs.alternatives')}
             </TabsTrigger>
           </TabsList>
           
@@ -773,7 +774,7 @@ export default function MissionDetails() {
               animate={{ opacity: 1, y: 0 }}
             >
               <Card className="p-5">
-                <h3 className="text-lg font-black text-foreground mb-3">Mission Details</h3>
+                <h3 className="text-lg font-black text-foreground mb-3">{t('missionDetails.missionDetails')}</h3>
                 <p className="text-muted-foreground leading-relaxed" data-testid="mission-details-text">
                   {missionData.details}
                 </p>
@@ -786,7 +787,7 @@ export default function MissionDetails() {
               transition={{ delay: 0.1 }}
             >
               <Card className="p-5">
-                <h3 className="text-lg font-black text-foreground mb-4">Benefits</h3>
+                <h3 className="text-lg font-black text-foreground mb-4">{t('missionDetails.benefits')}</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {missionData.benefits.map((benefit, index) => (
                     <motion.div
@@ -813,7 +814,7 @@ export default function MissionDetails() {
               transition={{ delay: 0.2 }}
             >
               <Card className="p-5">
-                <h3 className="text-lg font-black text-foreground mb-4">Today's Log</h3>
+                <h3 className="text-lg font-black text-foreground mb-4">{t('missionDetails.todaysLog')}</h3>
                 <div className="space-y-2">
                   {steps.filter(s => s.completed).map((step, index) => (
                     <motion.div
@@ -843,7 +844,7 @@ export default function MissionDetails() {
                         <Target className="w-4 h-4 text-muted-foreground" />
                       </div>
                       <span className="text-muted-foreground">
-                        {steps.filter(s => !s.completed).length} more to go...
+                        {t('missionDetails.stepsRemaining', { count: steps.filter(s => !s.completed).length })}
                       </span>
                     </div>
                   )}
@@ -862,7 +863,7 @@ export default function MissionDetails() {
                     <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-black text-foreground mb-1">{t('community.communityTip')}</h4>
+                    <h4 className="font-black text-foreground mb-1">{tDashboard('community.communityTip')}</h4>
                     <p className="text-sm text-muted-foreground" data-testid="community-tip">
                       {missionData.communityTip}
                     </p>
@@ -906,7 +907,7 @@ export default function MissionDetails() {
             <Card className="p-4 border-dashed border-2 border-muted-foreground/20">
               <div className="text-center py-4">
                 <p className="text-muted-foreground text-sm">
-                  Alternative missions earn XP too! Choose what works best for you.
+                  {t('missionDetails.alternativesHint')}
                 </p>
               </div>
             </Card>

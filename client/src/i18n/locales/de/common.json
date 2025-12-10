@@ -23,7 +23,12 @@
     "yes": "Ja",
     "no": "Nein",
     "saving": "Speichern...",
-    "saveAndExit": "Speichern und beenden"
+    "saveAndExit": "Speichern und beenden",
+    "dailyBonusEarned": "Du hast deinen täglichen Medikamentenbonus verdient!",
+    "dailyBonusPrompt": "Nimm alle Medikamente ein, um 50 XP Bonus zu erhalten!",
+    "allMedicationsTaken": "Alle Medikamente eingenommen!",
+    "earnedXPToday": "Du hast heute {{xp}} XP verdient. Gut gemacht!",
+    "medicationsTaken": "{{taken}}/{{total}} Medikamente eingenommen"
   },
   "auth": {
     "signIn": "Anmelden",

@@ -155,7 +155,9 @@ interface ActivityData {
 }
 
 export default function ActivityDetails() {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('pages');
+  const { t: tDashboard } = useTranslation('dashboard');
+  const { t: tCommon } = useTranslation('common');
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
@@ -357,19 +359,19 @@ export default function ActivityDetails() {
           <Link href="/my-dashboard">
             <Button variant="ghost" className="hover:bg-white/20" data-testid="button-back-dashboard">
               <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-              Back
+              {tCommon('common.back')}
             </Button>
           </Link>
           <div className="flex items-center gap-2">
             <Icon className={`w-5 h-5 ${metric.color}`} />
-            <h1 className="text-lg font-black text-foreground">Health Literacy Navigator</h1>
+            <h1 className="text-lg font-black text-foreground">{t('activityDetails.title')}</h1>
           </div>
           <div className="w-16" />
         </div>
       </div>
       
       <div className="max-w-4xl mx-auto p-4 space-y-4">
-        <p className="text-center text-sm text-muted-foreground">Personalized health guidance</p>
+        <p className="text-center text-sm text-muted-foreground">{t('activityDetails.subtitle')}</p>
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -529,9 +531,9 @@ export default function ActivityDetails() {
             <div className="flex items-center gap-3">
               <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
               <div>
-                <p className="font-bold text-foreground">{t('community.communityTip')}</p>
+                <p className="font-bold text-foreground">{tDashboard('community.communityTip')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Small consistent efforts add up! Even a short 5-minute walk can make a big difference in your daily activity goals.
+                  {t('activityDetails.communityTipContent')}
                 </p>
               </div>
             </div>

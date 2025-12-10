@@ -262,5 +262,129 @@
       "assessment": "Bewertung",
       "complete": "Fertig"
     }
+  },
+  "medicationDetails": {
+    "title": "Medikamenten-Tracker",
+    "notFound": "Medikament nicht gefunden",
+    "backToDashboard": "Zurück zum Dashboard",
+    "xpPerDose": "+{{xp}} XP pro Dosis",
+    "dayStreak": "{{count}}-Tage-Serie",
+    "todaysProgress": "Heutiger Fortschritt",
+    "doses": "{{taken}}/{{total}} Dosen",
+    "allDosesTaken": "Alle Dosen heute eingenommen!",
+    "logDose": "Dosis {{current}} von {{total}} eintragen",
+    "doseLog": "Dosis-Protokoll",
+    "dose": "Dosis {{id}}",
+    "takenAt": "Eingenommen um {{time}}",
+    "aboutMedication": "Über dieses Medikament",
+    "benefitsOfAdherence": "Vorteile der Einnahmetreue",
+    "benefits": {
+      "maintainsHealth": "Erhält den Gesundheitszustand",
+      "supportsBody": "Unterstützt Körperfunktionen",
+      "preventsComplications": "Verhindert Komplikationen",
+      "keepsWell": "Hält dich wohlauf"
+    },
+    "communityTipContent": "Stelle einen täglichen Alarm oder benutze einen Pillenorganizer, um dich zu erinnern, deine Medikamente jeden Tag zur gleichen Zeit einzunehmen. Beständigkeit ist der Schlüssel!",
+    "medicalDisclaimer": "Medizinischer Haftungsausschluss",
+    "disclaimerText": "Loretta ist kein Diagnosewerkzeug und gibt keine medizinischen Ratschläge. Konsultiere immer deinen Arzt bezüglich deiner Medikamente. Ändere niemals deine Medikation ohne professionelle Anleitung."
+  },
+  "medications": {
+    "title": "Medikamenten-Tracker",
+    "todaysMedications": "Heutige Medikamente",
+    "trackRoutine": "Verfolge deine tägliche Medikamentenroutine",
+    "completed": "Erledigt",
+    "dailyBonus": "Tagesbonus",
+    "communityTipContent": "Die Einnahme von Medikamenten zur gleichen Zeit jeden Tag hilft, eine gesunde Routine aufzubauen und verbessert die Wirksamkeit."
+  },
+  "missionDetails": {
+    "title": "Missionsdetails",
+    "notFound": "Mission nicht gefunden",
+    "goBack": "Zurück",
+    "progress": "Fortschritt",
+    "missionDetails": "Missionsdetails",
+    "benefits": "Vorteile",
+    "todaysLog": "Heutiges Protokoll",
+    "completed": "Erledigt!",
+    "logCompletion": "Abschluss protokollieren",
+    "tabs": {
+      "mainMission": "Hauptmission",
+      "alternatives": "Alternative Missionen"
+    },
+    "stepsRemaining": "Noch {{count}} übrig...",
+    "alternativesHint": "Alternative Missionen bringen auch XP! Wähle, was am besten zu dir passt."
+  },
+  "alternativeMission": {
+    "title": "Alternative Mission",
+    "notFound": "Mission nicht gefunden",
+    "goBack": "Zurück",
+    "aboutMission": "Über diese Mission",
+    "benefits": "Vorteile",
+    "howItWorks": "So funktioniert es",
+    "proTip": "Profi-Tipp",
+    "medicalDisclaimer": "Medizinischer Haftungsausschluss"
+  },
+  "activityDetails": {
+    "title": "Gesundheitskompetenz-Navigator",
+    "subtitle": "Personalisierte Gesundheitsberatung",
+    "communityTipContent": "Kleine beständige Anstrengungen summieren sich! Selbst ein kurzer 5-Minuten-Spaziergang kann einen großen Unterschied bei deinen täglichen Aktivitätszielen machen."
+  },
+  "calendar": {
+    "title": "Kalender",
+    "add": "Hinzufügen",
+    "addEvent": "Termin hinzufügen",
+    "eventTitle": "Titel des Termins",
+    "eventTitlePlaceholder": "z.B. Arzttermin",
+    "eventType": "Art des Termins",
+    "types": {
+      "appointment": "Termin",
+      "medication": "Medikament",
+      "exercise": "Sport",
+      "other": "Sonstiges"
+    },
+    "startTime": "Startzeit",
+    "endTime": "Endzeit",
+    "notes": "Notizen (optional)",
+    "notesPlaceholder": "Weitere Notizen...",
+    "save": "Termin speichern",
+    "noEvents": "Keine Termine für diesen Tag geplant",
+    "addFirstEvent": "Ersten Termin hinzufügen",
+    "thisWeek": "Woche"
+  },
+  "streakDetails": {
+    "title": "Serien-Herausforderung",
+    "progressTo30": "Fortschritt zur 30-Tage-Serie",
+    "longestStreak": "Längste Serie",
+    "thisWeek": "Diese Woche",
+    "today": "Heute",
+    "days": "TAGE",
+    "amazingStreak": "Tolle Serie!",
+    "daysUntilGoal": "Nur noch {{count}} Tage bis zu deinem 30-Tage-Ziel!",
+    "milestones": "Meilensteine",
+    "achieved": "Erreicht",
+    "nextGoal": "Nächstes Ziel",
+    "unlockedCount": "{{count}}/{{total}} freigeschaltet",
+    "daysToGo": "Noch {{count}} Tage",
+    "maintainStreak": "Halte eine {{days}}-Tage-Serie",
+    "xpReward": "XP-Belohnung",
+    "keepGoing": "Weiter so!",
+    "communityTipContent": "Beständigkeit ist der Schlüssel zum Aufbau gesunder Gewohnheiten. Du machst das toll - brich deine Serie nicht ab!",
+    "weekDays": {
+      "mon": "Mo",
+      "tue": "Di",
+      "wed": "Mi",
+      "thu": "Do",
+      "fri": "Fr",
+      "sat": "Sa",
+      "sun": "So"
+    },
+    "milestoneNames": {
+      "weekWarrior": "Wochen-Krieger",
+      "fortnightFighter": "Zwei-Wochen-Kämpfer",
+      "threeWeekChampion": "Drei-Wochen-Champion",
+      "monthlyMaster": "Monats-Meister"
+    }
+  },
+  "invite": {
+    "communityTipContent": "Lade Freunde und Familie ein, deinem Team beizutreten. Vergleicht Fortschritte in der Bestenliste und motiviert euch gegenseitig!"
   }
 }

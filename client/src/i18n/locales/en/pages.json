@@ -262,5 +262,129 @@
       "assessment": "Assessment",
       "complete": "Complete"
     }
+  },
+  "medicationDetails": {
+    "title": "Medication Tracker",
+    "notFound": "Medication not found",
+    "backToDashboard": "Back to Dashboard",
+    "xpPerDose": "+{{xp}} XP per dose",
+    "dayStreak": "{{count}} day streak",
+    "todaysProgress": "Today's Progress",
+    "doses": "{{taken}}/{{total}} doses",
+    "allDosesTaken": "All Doses Taken Today!",
+    "logDose": "Log Dose {{current}} of {{total}}",
+    "doseLog": "Dose Log",
+    "dose": "Dose {{id}}",
+    "takenAt": "Taken at {{time}}",
+    "aboutMedication": "About This Medication",
+    "benefitsOfAdherence": "Benefits of Adherence",
+    "benefits": {
+      "maintainsHealth": "Maintains health condition",
+      "supportsBody": "Supports body function",
+      "preventsComplications": "Prevents complications",
+      "keepsWell": "Keeps you feeling well"
+    },
+    "communityTipContent": "Set a daily alarm or use a pill organizer to help you remember to take your medications at the same time each day. Consistency is key!",
+    "medicalDisclaimer": "Medical Disclaimer",
+    "disclaimerText": "Loretta is not a diagnostic tool and does not provide medical advice. Always consult your healthcare provider about your medications. Never change your medication regimen without professional guidance."
+  },
+  "medications": {
+    "title": "Medication Tracker",
+    "todaysMedications": "Today's Medications",
+    "trackRoutine": "Track your daily medication routine",
+    "completed": "Completed",
+    "dailyBonus": "Daily Bonus",
+    "communityTipContent": "Taking medications at the same time each day helps build a healthy routine and improves effectiveness."
+  },
+  "missionDetails": {
+    "title": "Mission Details",
+    "notFound": "Mission not found",
+    "goBack": "Go Back",
+    "progress": "Progress",
+    "missionDetails": "Mission Details",
+    "benefits": "Benefits",
+    "todaysLog": "Today's Log",
+    "completed": "Completed!",
+    "logCompletion": "Log Completion",
+    "tabs": {
+      "mainMission": "Main Mission",
+      "alternatives": "Alternative Missions"
+    },
+    "stepsRemaining": "{{count}} more to go...",
+    "alternativesHint": "Alternative missions earn XP too! Choose what works best for you."
+  },
+  "alternativeMission": {
+    "title": "Alternative Mission",
+    "notFound": "Mission not found",
+    "goBack": "Go Back",
+    "aboutMission": "About This Mission",
+    "benefits": "Benefits",
+    "howItWorks": "How It Works",
+    "proTip": "Pro Tip",
+    "medicalDisclaimer": "Medical Disclaimer"
+  },
+  "activityDetails": {
+    "title": "Health Literacy Navigator",
+    "subtitle": "Personalized health guidance",
+    "communityTipContent": "Small consistent efforts add up! Even a short 5-minute walk can make a big difference in your daily activity goals."
+  },
+  "calendar": {
+    "title": "Calendar",
+    "add": "Add",
+    "addEvent": "Add Event",
+    "eventTitle": "Event Title",
+    "eventTitlePlaceholder": "e.g., Doctor's appointment",
+    "eventType": "Event Type",
+    "types": {
+      "appointment": "Appointment",
+      "medication": "Medication",
+      "exercise": "Exercise",
+      "other": "Other"
+    },
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "notes": "Notes (optional)",
+    "notesPlaceholder": "Any additional notes...",
+    "save": "Save Event",
+    "noEvents": "No events scheduled for this day",
+    "addFirstEvent": "Add your first event",
+    "thisWeek": "Week"
+  },
+  "streakDetails": {
+    "title": "Streak Challenge",
+    "progressTo30": "Progress to 30-day streak",
+    "longestStreak": "Longest Streak",
+    "thisWeek": "This Week",
+    "today": "Today",
+    "days": "DAYS",
+    "amazingStreak": "Amazing Streak!",
+    "daysUntilGoal": "Only {{count}} days until you reach your 30-day goal!",
+    "milestones": "Milestones",
+    "achieved": "Achieved",
+    "nextGoal": "Next Goal",
+    "unlockedCount": "{{count}}/{{total}} Unlocked",
+    "daysToGo": "{{count}} days to go",
+    "maintainStreak": "Maintain a {{days}}-day streak",
+    "xpReward": "XP Reward",
+    "keepGoing": "Keep Going!",
+    "communityTipContent": "Consistency is key to building healthy habits. You're doing amazing - don't break your streak!",
+    "weekDays": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "milestoneNames": {
+      "weekWarrior": "Week Warrior",
+      "fortnightFighter": "Fortnight Fighter",
+      "threeWeekChampion": "Three Week Champion",
+      "monthlyMaster": "Monthly Master"
+    }
+  },
+  "invite": {
+    "communityTipContent": "Invite friends and family to join your team. Compare progress on the leaderboard and motivate each other!"
   }
 }
