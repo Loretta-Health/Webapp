@@ -320,7 +320,7 @@ export default function MyDashboard() {
             </div>
             <h2 className="text-lg lg:text-xl font-black text-sidebar-foreground">{user.username}</h2>
             <p className="text-xs lg:text-sm text-muted-foreground">
-              {isNewUser ? 'New Member' : `Level ${level} Health Explorer`}
+              {isNewUser ? t('sidebar.newMember') : t('sidebar.healthExplorer', { level })}
             </p>
           </div>
           
@@ -338,19 +338,19 @@ export default function MyDashboard() {
           <Separator />
           
           <div className="space-y-2">
-            <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase">Today's Progress</h3>
+            <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase">{t('sidebar.todaysProgress')}</h3>
             <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">XP Earned</span>
+                <span className="text-muted-foreground">{t('sidebar.xpEarned')}</span>
                 <span className="font-bold text-sidebar-foreground">+{xp}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Quests</span>
-                <span className="font-bold text-sidebar-foreground">{completedCount}/{totalCount} Done</span>
+                <span className="text-muted-foreground">{t('sidebar.quests')}</span>
+                <span className="font-bold text-sidebar-foreground">{completedCount}/{totalCount} {t('sidebar.done')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Achievements</span>
-                <span className="font-bold text-sidebar-foreground">{gamificationData?.achievements?.length || 0} Total</span>
+                <span className="text-muted-foreground">{t('sidebar.achievements')}</span>
+                <span className="font-bold text-sidebar-foreground">{gamificationData?.achievements?.length || 0} {t('sidebar.total')}</span>
               </div>
             </div>
           </div>
@@ -358,14 +358,14 @@ export default function MyDashboard() {
           <Separator />
           
           <div className="space-y-2">
-            <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase mb-2 lg:mb-3">My Community</h3>
+            <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase mb-2 lg:mb-3">{t('sidebar.myCommunity')}</h3>
             <CommunitySelector value={communityType} onChange={setCommunityType} />
           </div>
           
           <Separator />
           
           <div className="flex flex-col gap-3">
-            <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase">Navigation</h3>
+            <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase">{t('sidebar.navigation')}</h3>
             <Link href="/profile">
               <Button 
                 variant="outline" 
@@ -375,7 +375,7 @@ export default function MyDashboard() {
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center mr-2">
                   <User className="w-3 h-3 text-white" />
                 </div>
-                <span className="font-bold">My Profile</span>
+                <span className="font-bold">{t('sidebar.myProfile')}</span>
               </Button>
             </Link>
             <Link href="/chat">
@@ -387,7 +387,7 @@ export default function MyDashboard() {
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center mr-2">
                   <MessageCircle className="w-3 h-3 text-white" />
                 </div>
-                <span className="font-bold">Health Navigator</span>
+                <span className="font-bold">{t('sidebar.healthNavigator')}</span>
               </Button>
             </Link>
             <Link href="/leaderboard">
@@ -399,7 +399,7 @@ export default function MyDashboard() {
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-chart-3 to-yellow-500 flex items-center justify-center mr-2">
                   <Users className="w-3 h-3 text-white" />
                 </div>
-                <span className="font-bold">Leaderboard</span>
+                <span className="font-bold">{t('sidebar.leaderboard')}</span>
               </Button>
             </Link>
             
@@ -417,7 +417,7 @@ export default function MyDashboard() {
                   <LogOut className="w-3 h-3 text-muted-foreground" />
                 </div>
               )}
-              <span className="font-bold text-muted-foreground">Sign Out</span>
+              <span className="font-bold text-muted-foreground">{t('sidebar.signOut')}</span>
             </Button>
           </div>
           
@@ -432,7 +432,7 @@ export default function MyDashboard() {
               data-testid="button-privacy-policy"
             >
               <Shield className="w-3 h-3 mr-1" />
-              Privacy Policy
+              {t('sidebar.privacyPolicy')}
             </Button>
             <Button 
               variant="ghost" 
@@ -442,7 +442,7 @@ export default function MyDashboard() {
               data-testid="button-accessibility"
             >
               <Accessibility className="w-3 h-3 mr-1" />
-              Inclusion & Accessibility
+              {t('sidebar.accessibility')}
             </Button>
           </div>
         </div>
@@ -518,7 +518,7 @@ export default function MyDashboard() {
                       <div className="mb-4">
                         <Progress value={setupProgress} className="h-2" />
                         <p className="text-xs text-muted-foreground mt-1">
-                          {setupProgress === 100 ? 'All done! Your dashboard is ready.' : 'Complete these steps to unlock your full dashboard experience'}
+                          {setupProgress === 100 ? t('setup.allDone') : t('setup.stepsToUnlock')}
                         </p>
                       </div>
                       
@@ -536,14 +536,14 @@ export default function MyDashboard() {
                             </div>
                             <div className="flex-1">
                               <p className={`font-bold text-sm ${consentComplete ? 'line-through text-muted-foreground' : ''}`}>
-                                Accept Privacy & Consent
+                                {t('setup.consent')}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {consentComplete ? 'Completed' : 'Review and accept our privacy practices'}
+                                {consentComplete ? t('setup.consentComplete') : t('setup.consentPending')}
                               </p>
                             </div>
                             {consentComplete ? (
-                              <Badge className="bg-chart-2 text-white border-0">Done</Badge>
+                              <Badge className="bg-chart-2 text-white border-0">{t('setup.done')}</Badge>
                             ) : (
                               <Badge variant="outline" className="text-chart-2 border-chart-2">+10 XP</Badge>
                             )}
@@ -563,14 +563,14 @@ export default function MyDashboard() {
                             </div>
                             <div className="flex-1">
                               <p className={`font-bold text-sm ${profileComplete ? 'line-through text-muted-foreground' : ''}`}>
-                                Set Up Your Profile
+                                {t('setup.profile')}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {profileComplete ? 'Completed' : 'Add your details to personalize your experience'}
+                                {profileComplete ? t('setup.profileComplete') : t('setup.profilePending')}
                               </p>
                             </div>
                             {profileComplete ? (
-                              <Badge className="bg-chart-3 text-white border-0">Done</Badge>
+                              <Badge className="bg-chart-3 text-white border-0">{t('setup.done')}</Badge>
                             ) : (
                               <Badge variant="outline" className="text-chart-3 border-chart-3">+25 XP</Badge>
                             )}
@@ -590,14 +590,14 @@ export default function MyDashboard() {
                             </div>
                             <div className="flex-1">
                               <p className={`font-bold text-sm ${questionnaireComplete ? 'line-through text-muted-foreground' : ''}`}>
-                                Complete Health Questionnaire
+                                {t('setup.questionnaire')}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {questionnaireComplete ? 'Completed' : 'Answer questions to get your personalized risk score'}
+                                {questionnaireComplete ? t('setup.questionnaireComplete') : t('setup.questionnairePending')}
                               </p>
                             </div>
                             {questionnaireComplete ? (
-                              <Badge className="bg-primary text-white border-0">Done</Badge>
+                              <Badge className="bg-primary text-white border-0">{t('setup.done')}</Badge>
                             ) : (
                               <Badge variant="outline" className="text-primary border-primary">+50 XP</Badge>
                             )}
@@ -619,14 +619,14 @@ export default function MyDashboard() {
                           </div>
                           <div className="flex-1">
                             <p className={`font-bold text-sm ${firstCheckInComplete ? 'line-through text-muted-foreground' : ''}`}>
-                              Do Your First Check-In
+                              {t('setup.checkin')}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {firstCheckInComplete ? 'Completed' : 'Start tracking how you feel each day'}
+                              {firstCheckInComplete ? t('setup.checkinComplete') : t('setup.checkinPending')}
                             </p>
                           </div>
                           {firstCheckInComplete ? (
-                            <Badge className="bg-destructive text-white border-0">Done</Badge>
+                            <Badge className="bg-destructive text-white border-0">{t('setup.done')}</Badge>
                           ) : (
                             <Badge variant="outline" className="text-destructive border-destructive">+15 XP</Badge>
                           )}
@@ -635,8 +635,8 @@ export default function MyDashboard() {
                       
                       <p className="text-xs text-muted-foreground mt-4 italic">
                         {allSetupComplete 
-                          ? 'Great job! You\'ve completed all setup steps.' 
-                          : 'Complete all steps to unlock the leaderboard and start competing with your community!'}
+                          ? t('setup.completedAll') 
+                          : t('setup.unlockLeaderboard')}
                       </p>
                     </div>
                   </div>
