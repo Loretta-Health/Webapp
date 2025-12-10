@@ -34,6 +34,7 @@ import CommunitySelector, { type CommunityType } from '@/components/CommunitySel
 import EmotionalCheckInModal from '@/components/EmotionalCheckInModal';
 import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
+import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface GamificationData {
@@ -93,6 +94,7 @@ export default function MyDashboard() {
   const { missions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
   const medicationProgress = getTotalProgress();
+  const { progress: onboardingProgress, isConsentComplete, isQuestionnaireComplete } = useOnboardingProgress();
   
   const { data: gamificationData } = useQuery<GamificationData>({
     queryKey: ['/api/gamification', userId],
@@ -129,9 +131,9 @@ export default function MyDashboard() {
     enabled: !!userId && !!user,
   });
 
-  const consentComplete = preferencesData?.consentGiven === true;
+  const consentComplete = isConsentComplete || preferencesData?.consentGiven === true;
   const profileComplete = !!(profileData?.firstName && profileData?.lastName);
-  const questionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
+  const questionnaireComplete = isQuestionnaireComplete || (Array.isArray(questionnaireData) && questionnaireData.length > 0);
   const firstCheckInComplete = Array.isArray(allEmotionalCheckins) && allEmotionalCheckins.length > 0;
   
   const setupSteps = [

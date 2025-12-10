@@ -1465,13 +1465,14 @@ export default function Onboarding() {
     riskScore: 100,
   };
 
-  const handleConsentAccept = () => {
+  const handleConsentAccept = async () => {
     localStorage.setItem('loretta_consent', 'accepted');
     localStorage.setItem('loretta_newsletter', newsletterOptIn ? 'subscribed' : 'not_subscribed');
     savePreferencesMutation.mutate({
       consentAccepted: true,
       newsletterSubscribed: newsletterOptIn,
     });
+    await markConsentComplete();
     setStep('registration');
   };
 
