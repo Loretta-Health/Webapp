@@ -23,7 +23,12 @@
     "yes": "Yes",
     "no": "No",
     "saving": "Saving...",
-    "saveAndExit": "Save and Exit"
+    "saveAndExit": "Save and Exit",
+    "dailyBonusEarned": "You've earned your daily medication bonus!",
+    "dailyBonusPrompt": "Take all medications to earn a 50 XP bonus!",
+    "allMedicationsTaken": "All Medications Taken!",
+    "earnedXPToday": "You earned {{xp}} XP today. Great job staying healthy!",
+    "medicationsTaken": "{{taken}}/{{total}} medications taken"
   },
   "auth": {
     "signIn": "Sign In",

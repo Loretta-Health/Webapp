@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useTranslation } from 'react-i18next';
 import { 
   ChevronRight, 
   Flame, 
@@ -18,16 +19,18 @@ import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
-const milestones = [
-  { days: 7, xp: 100, title: 'Week Warrior', icon: Star, achieved: true },
-  { days: 14, xp: 250, title: 'Fortnight Fighter', icon: Target, achieved: true },
-  { days: 21, xp: 400, title: 'Three Week Champion', icon: Trophy, achieved: false },
-  { days: 30, xp: 500, title: 'Monthly Master', icon: Crown, achieved: false },
+const milestoneConfigs = [
+  { days: 7, xp: 100, titleKey: 'weekWarrior', icon: Star, achieved: true },
+  { days: 14, xp: 250, titleKey: 'fortnightFighter', icon: Target, achieved: true },
+  { days: 21, xp: 400, titleKey: 'threeWeekChampion', icon: Trophy, achieved: false },
+  { days: 30, xp: 500, titleKey: 'monthlyMaster', icon: Crown, achieved: false },
 ];
 
-const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const weekDayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
 export default function StreakDetails() {
+  const { t } = useTranslation('pages');
+  const { t: tCommon } = useTranslation('common');
   const [currentStreak] = useState(14);
   const [longestStreak] = useState(21);
   const maxStreak = 30;
@@ -36,7 +39,7 @@ export default function StreakDetails() {
   const daysRemaining = maxStreak - currentStreak;
   
   const last7Days = Array.from({ length: 7 }, (_, i) => ({
-    day: weekDays[(new Date().getDay() - 6 + i + 7) % 7],
+    dayKey: weekDayKeys[(new Date().getDay() - 6 + i + 7) % 7],
     completed: i < 6,
     isToday: i === 6,
   }));
@@ -48,12 +51,12 @@ export default function StreakDetails() {
           <Link href="/my-dashboard">
             <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
               <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-              Back
+              {tCommon('common.back')}
             </Button>
           </Link>
           <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-white fill-white" />
-            <h1 className="text-lg font-black text-white">Streak Challenge</h1>
+            <h1 className="text-lg font-black text-white">{t('streakDetails.title')}</h1>
           </div>
           <div className="w-16" />
         </div>
@@ -77,21 +80,21 @@ export default function StreakDetails() {
                 </div>
               </div>
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-                <Badge className="bg-white text-chart-3 font-black shadow-md">DAYS</Badge>
+                <Badge className="bg-white text-chart-3 font-black shadow-md">{t('streakDetails.days')}</Badge>
               </div>
             </motion.div>
             
             <div className="flex-1 text-center md:text-left">
               <h2 className="text-3xl font-black text-foreground mb-2">
-                Amazing Streak!
+                {t('streakDetails.amazingStreak')}
               </h2>
               <p className="text-lg text-muted-foreground mb-4">
-                Only <span className="font-black text-chart-3">{daysRemaining} days</span> until you reach your 30-day goal!
+                {t('streakDetails.daysUntilGoal', { count: daysRemaining })}
               </p>
               
               <div className="mb-4">
                 <div className="flex items-center justify-between text-sm mb-2">
-                  <span className="font-bold text-muted-foreground">Progress to 30-day streak</span>
+                  <span className="font-bold text-muted-foreground">{t('streakDetails.progressTo30')}</span>
                   <span className="font-black text-chart-3">{Math.round(progressPercent)}%</span>
                 </div>
                 <Progress value={progressPercent} className="h-4" />
@@ -100,12 +103,12 @@ export default function StreakDetails() {
               <div className="flex items-center justify-center md:justify-start gap-4">
                 <div className="text-center">
                   <p className="text-2xl font-black text-foreground">{longestStreak}</p>
-                  <p className="text-xs text-muted-foreground">Longest Streak</p>
+                  <p className="text-xs text-muted-foreground">{t('streakDetails.longestStreak')}</p>
                 </div>
                 <div className="w-px h-10 bg-border" />
                 <div className="text-center">
                   <p className="text-2xl font-black text-primary">500</p>
-                  <p className="text-xs text-muted-foreground">XP Reward</p>
+                  <p className="text-xs text-muted-foreground">{t('streakDetails.xpReward')}</p>
                 </div>
               </div>
             </div>
@@ -113,7 +116,7 @@ export default function StreakDetails() {
         </Card>
         
         <Card className="p-6 border-0 shadow-xl">
-          <h3 className="text-xl font-black text-foreground mb-4">This Week</h3>
+          <h3 className="text-xl font-black text-foreground mb-4">{t('streakDetails.thisWeek')}</h3>
           <div className="grid grid-cols-7 gap-2">
             {last7Days.map((day, index) => (
               <motion.div
@@ -123,7 +126,7 @@ export default function StreakDetails() {
                 transition={{ delay: index * 0.05 }}
                 className="text-center"
               >
-                <p className="text-xs font-bold text-muted-foreground mb-2">{day.day}</p>
+                <p className="text-xs font-bold text-muted-foreground mb-2">{t(`streakDetails.weekDays.${day.dayKey}`)}</p>
                 <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center ${
                   day.completed 
                     ? 'bg-gradient-to-br from-chart-3 to-chart-1' 
@@ -134,7 +137,7 @@ export default function StreakDetails() {
                   {day.completed ? (
                     <Flame className="w-5 h-5 text-white fill-white" />
                   ) : day.isToday ? (
-                    <span className="text-xs font-black text-primary">Today</span>
+                    <span className="text-xs font-black text-primary">{t('streakDetails.today')}</span>
                   ) : null}
                 </div>
               </motion.div>
@@ -144,17 +147,17 @@ export default function StreakDetails() {
         
         <Card className="p-6 border-0 shadow-xl">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-black text-foreground">Milestones</h3>
+            <h3 className="text-xl font-black text-foreground">{t('streakDetails.milestones')}</h3>
             <Badge variant="secondary" className="font-bold">
               <Gift className="w-3 h-3 mr-1" />
-              2/4 Unlocked
+              {t('streakDetails.unlockedCount', { count: 2, total: 4 })}
             </Badge>
           </div>
           
           <div className="space-y-4">
-            {milestones.map((milestone, index) => {
+            {milestoneConfigs.map((milestone, index) => {
               const Icon = milestone.icon;
-              const isNext = !milestone.achieved && milestones[index - 1]?.achieved;
+              const isNext = !milestone.achieved && milestoneConfigs[index - 1]?.achieved;
               
               return (
                 <motion.div
@@ -184,17 +187,17 @@ export default function StreakDetails() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className={`font-black text-lg ${milestone.achieved ? 'text-foreground' : 'text-muted-foreground'}`}>
-                            {milestone.title}
+                            {t(`streakDetails.milestoneNames.${milestone.titleKey}`)}
                           </h4>
                           {milestone.achieved && (
-                            <Badge className="bg-chart-3 text-white font-bold text-xs">Achieved</Badge>
+                            <Badge className="bg-chart-3 text-white font-bold text-xs">{t('streakDetails.achieved')}</Badge>
                           )}
                           {isNext && (
-                            <Badge variant="outline" className="text-primary border-primary font-bold text-xs">Next Goal</Badge>
+                            <Badge variant="outline" className="text-primary border-primary font-bold text-xs">{t('streakDetails.nextGoal')}</Badge>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Maintain a {milestone.days}-day streak
+                          {t('streakDetails.maintainStreak', { days: milestone.days })}
                         </p>
                       </div>
                       
@@ -205,7 +208,7 @@ export default function StreakDetails() {
                         </Badge>
                         {!milestone.achieved && currentStreak < milestone.days && (
                           <p className="text-xs text-muted-foreground mt-1">
-                            {milestone.days - currentStreak} days to go
+                            {t('streakDetails.daysToGo', { count: milestone.days - currentStreak })}
                           </p>
                         )}
                       </div>
@@ -221,9 +224,9 @@ export default function StreakDetails() {
           <div className="flex items-center gap-3">
             <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
             <div>
-              <p className="font-bold text-foreground">Keep Going!</p>
+              <p className="font-bold text-foreground">{t('streakDetails.keepGoing')}</p>
               <p className="text-sm text-muted-foreground">
-                Consistency is key to building healthy habits. You're doing amazing - don't break your streak!
+                {t('streakDetails.communityTipContent')}
               </p>
             </div>
           </div>

@@ -35,7 +35,8 @@ const colorClasses = {
 };
 
 export default function MedicationDetails() {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('pages');
+  const { t: tDashboard } = useTranslation('dashboard');
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
@@ -62,9 +63,9 @@ export default function MedicationDetails() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <Card className="p-6 text-center">
-          <p className="text-muted-foreground">Medication not found</p>
+          <p className="text-muted-foreground">{t('medicationDetails.notFound')}</p>
           <Link href="/my-dashboard">
-            <Button className="mt-4">Back to Dashboard</Button>
+            <Button className="mt-4">{t('medicationDetails.backToDashboard')}</Button>
           </Link>
         </Card>
       </div>
@@ -88,10 +89,10 @@ export default function MedicationDetails() {
   };
   
   const benefits = [
-    { icon: Heart, text: 'Maintains health condition' },
-    { icon: Brain, text: 'Supports body function' },
-    { icon: Shield, text: 'Prevents complications' },
-    { icon: Zap, text: 'Keeps you feeling well' },
+    { icon: Heart, text: t('medicationDetails.benefits.maintainsHealth') },
+    { icon: Brain, text: t('medicationDetails.benefits.supportsBody') },
+    { icon: Shield, text: t('medicationDetails.benefits.preventsComplications') },
+    { icon: Zap, text: t('medicationDetails.benefits.keepsWell') },
   ];
   
   return (
@@ -123,7 +124,7 @@ export default function MedicationDetails() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="text-xl font-black text-foreground">Medication Tracker</h1>
+          <h1 className="text-xl font-black text-foreground">{t('medicationDetails.title')}</h1>
         </div>
       </header>
       
@@ -149,12 +150,12 @@ export default function MedicationDetails() {
                 </Badge>
                 <Badge variant="secondary">
                   <Zap className="w-3 h-3 mr-1" />
-                  +{medication.xpPerDose} XP per dose
+                  {t('medicationDetails.xpPerDose', { xp: medication.xpPerDose })}
                 </Badge>
                 {medication.streak > 0 && (
                   <Badge variant="secondary">
                     <Flame className="w-3 h-3 mr-1 text-chart-3" />
-                    {medication.streak} day streak
+                    {t('medicationDetails.dayStreak', { count: medication.streak })}
                   </Badge>
                 )}
               </div>
@@ -163,8 +164,8 @@ export default function MedicationDetails() {
           
           <div className="space-y-2 mb-4">
             <div className="flex justify-between text-sm">
-              <span className="font-bold text-foreground">Today's Progress</span>
-              <span className="text-muted-foreground">{progress.taken}/{progress.total} doses</span>
+              <span className="font-bold text-foreground">{t('medicationDetails.todaysProgress')}</span>
+              <span className="text-muted-foreground">{t('medicationDetails.doses', { taken: progress.taken, total: progress.total })}</span>
             </div>
             <Progress value={progressPercent} className="h-3" />
           </div>
@@ -178,12 +179,12 @@ export default function MedicationDetails() {
             {progress.isComplete ? (
               <>
                 <Check className="w-5 h-5 mr-2" />
-                All Doses Taken Today!
+                {t('medicationDetails.allDosesTaken')}
               </>
             ) : (
               <>
                 <Pill className="w-5 h-5 mr-2" />
-                Log Dose {progress.taken + 1} of {progress.total}
+                {t('medicationDetails.logDose', { current: progress.taken + 1, total: progress.total })}
               </>
             )}
           </Button>
@@ -195,7 +196,7 @@ export default function MedicationDetails() {
           transition={{ delay: 0.1 }}
         >
           <Card className="p-5">
-            <h3 className="text-lg font-black text-foreground mb-3">Dose Log</h3>
+            <h3 className="text-lg font-black text-foreground mb-3">{t('medicationDetails.doseLog')}</h3>
             <div className="space-y-3">
               {medication.takenToday.map((dose, index) => (
                 <motion.div
@@ -223,11 +224,11 @@ export default function MedicationDetails() {
                   </div>
                   <div className="flex-1">
                     <span className={`font-bold ${dose.taken ? 'text-white' : 'text-foreground'}`}>
-                      Dose {dose.id}
+                      {t('medicationDetails.dose', { id: dose.id })}
                     </span>
                     {dose.time && (
                       <span className={`text-sm ml-2 ${dose.taken ? 'text-white/80' : 'text-muted-foreground'}`}>
-                        Taken at {dose.time}
+                        {t('medicationDetails.takenAt', { time: dose.time })}
                       </span>
                     )}
                   </div>
@@ -248,12 +249,12 @@ export default function MedicationDetails() {
           transition={{ delay: 0.2 }}
         >
           <Card className="p-5">
-            <h3 className="text-lg font-black text-foreground mb-3">About This Medication</h3>
+            <h3 className="text-lg font-black text-foreground mb-3">{t('medicationDetails.aboutMedication')}</h3>
             <p className="text-muted-foreground leading-relaxed mb-4">
               {medication.explanation || medication.simpleExplanation}
             </p>
             
-            <h4 className="font-bold text-foreground mb-3">Benefits of Adherence</h4>
+            <h4 className="font-bold text-foreground mb-3">{t('medicationDetails.benefitsOfAdherence')}</h4>
             <div className="grid grid-cols-2 gap-3">
               {benefits.map((benefit, index) => (
                 <motion.div
@@ -282,9 +283,9 @@ export default function MedicationDetails() {
             <div className="flex items-start gap-3">
               <MascotCharacter pose="celebrate" size="sm" />
               <div>
-                <p className="font-bold text-foreground mb-1">{t('community.communityTip')}</p>
+                <p className="font-bold text-foreground mb-1">{tDashboard('community.communityTip')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Set a daily alarm or use a pill organizer to help you remember to take your medications at the same time each day. Consistency is key!
+                  {t('medicationDetails.communityTipContent')}
                 </p>
               </div>
             </div>
@@ -302,9 +303,9 @@ export default function MedicationDetails() {
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="font-bold text-foreground mb-1">Medical Disclaimer</p>
+                <p className="font-bold text-foreground mb-1">{t('medicationDetails.medicalDisclaimer')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Loretta is not a diagnostic tool and does not provide medical advice. Always consult your healthcare provider about your medications. Never change your medication regimen without professional guidance.
+                  {t('medicationDetails.disclaimerText')}
                 </p>
               </div>
             </div>

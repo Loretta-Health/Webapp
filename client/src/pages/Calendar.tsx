@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslation } from 'react-i18next';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -18,6 +19,7 @@ import {
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { format, addDays, startOfWeek, isSameDay, isToday, addWeeks, subWeeks } from 'date-fns';
+import { de, enUS } from 'date-fns/locale';
 
 interface CalendarEvent {
   id: string;
@@ -37,6 +39,9 @@ const eventTypeColors = {
 };
 
 export default function Calendar() {
+  const { t, i18n } = useTranslation('pages');
+  const { t: tCommon } = useTranslation('common');
+  const dateLocale = i18n.language === 'de' ? de : enUS;
   const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([
@@ -139,11 +144,11 @@ export default function Calendar() {
             <Link href="/profile">
               <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-profile">
                 <ChevronLeft className="w-4 h-4 mr-1" />
-                Back
+                {tCommon('common.back')}
               </Button>
             </Link>
             <div className="text-center">
-              <h1 className="text-xl font-black text-white">Calendar</h1>
+              <h1 className="text-xl font-black text-white">{t('calendar.title')}</h1>
               <p className="text-white/70 text-sm">{weekStartFormatted} – {weekEndFormatted}</p>
             </div>
             <Button 
@@ -155,7 +160,7 @@ export default function Calendar() {
               }}
               data-testid="button-today"
             >
-              Week
+              {t('calendar.thisWeek')}
             </Button>
           </div>
         </div>
@@ -235,7 +240,7 @@ export default function Calendar() {
             <div className="flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-black text-foreground">
-                {format(selectedDate, 'EEEE d MMMM')}
+                {format(selectedDate, 'EEEE d MMMM', { locale: dateLocale })}
               </h2>
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -245,19 +250,19 @@ export default function Calendar() {
                   data-testid="button-add-event"
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  Add
+                  {t('calendar.add')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-black">Add Event</DialogTitle>
+                  <DialogTitle className="text-xl font-black">{t('calendar.addEvent')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Event Title</Label>
+                    <Label htmlFor="title">{t('calendar.eventTitle')}</Label>
                     <Input
                       id="title"
-                      placeholder="e.g., Doctor's appointment"
+                      placeholder={t('calendar.eventTitlePlaceholder')}
                       value={newEvent.title}
                       onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                       data-testid="input-event-title"
@@ -265,7 +270,7 @@ export default function Calendar() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="type">Event Type</Label>
+                    <Label htmlFor="type">{t('calendar.eventType')}</Label>
                     <Select
                       value={newEvent.type}
                       onValueChange={(value: CalendarEvent['type']) => setNewEvent({ ...newEvent, type: value })}
@@ -274,17 +279,17 @@ export default function Calendar() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="appointment">Appointment</SelectItem>
-                        <SelectItem value="medication">Medication</SelectItem>
-                        <SelectItem value="exercise">Exercise</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="appointment">{t('calendar.types.appointment')}</SelectItem>
+                        <SelectItem value="medication">{t('calendar.types.medication')}</SelectItem>
+                        <SelectItem value="exercise">{t('calendar.types.exercise')}</SelectItem>
+                        <SelectItem value="other">{t('calendar.types.other')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="startTime">Start Time</Label>
+                      <Label htmlFor="startTime">{t('calendar.startTime')}</Label>
                       <Input
                         id="startTime"
                         type="time"
@@ -294,7 +299,7 @@ export default function Calendar() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="endTime">End Time</Label>
+                      <Label htmlFor="endTime">{t('calendar.endTime')}</Label>
                       <Input
                         id="endTime"
                         type="time"
@@ -306,10 +311,10 @@ export default function Calendar() {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="notes">Notes (optional)</Label>
+                    <Label htmlFor="notes">{t('calendar.notes')}</Label>
                     <Textarea
                       id="notes"
-                      placeholder="Any additional notes..."
+                      placeholder={t('calendar.notesPlaceholder')}
                       value={newEvent.notes}
                       onChange={(e) => setNewEvent({ ...newEvent, notes: e.target.value })}
                       data-testid="input-event-notes"
@@ -322,7 +327,7 @@ export default function Calendar() {
                     disabled={!newEvent.title}
                     data-testid="button-save-event"
                   >
-                    Save Event
+                    {t('calendar.save')}
                   </Button>
                 </div>
               </DialogContent>
@@ -335,13 +340,13 @@ export default function Calendar() {
           {selectedDateEvents.length === 0 ? (
             <Card className="p-8 text-center border-0 shadow-lg">
               <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">No events scheduled for this day</p>
+              <p className="text-muted-foreground">{t('calendar.noEvents')}</p>
               <Button 
                 variant="ghost" 
                 className="mt-2 text-primary"
                 onClick={() => setIsAddDialogOpen(true)}
               >
-                Add your first event
+                {t('calendar.addFirstEvent')}
               </Button>
             </Card>
           ) : (
@@ -371,7 +376,7 @@ export default function Calendar() {
                       className="shrink-0"
                       data-testid={`button-delete-event-${event.id}`}
                     >
-                      Delete
+                      {tCommon('common.delete')}
                     </Button>
                   </div>
                 </Card>

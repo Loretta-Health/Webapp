@@ -33,7 +33,9 @@ interface Medication {
 }
 
 export default function Medications() {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('pages');
+  const { t: tDashboard } = useTranslation('dashboard');
+  const { t: tCommon } = useTranslation('common');
   const [medications, setMedications] = useState<Medication[]>([
     { id: '1', name: 'Morning Medication', dosage: 'Omeprazole 20mg', time: 'Before breakfast', timeIcon: Sun, taken: false, xpReward: 25 },
     { id: '2', name: 'Afternoon Medication', dosage: 'Vitamin D 1000IU', time: 'With lunch', timeIcon: Sunset, taken: false, xpReward: 15 },
@@ -71,12 +73,12 @@ export default function Medications() {
           <Link href="/my-dashboard">
             <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
               <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-              Back
+              {tCommon('common.back')}
             </Button>
           </Link>
           <div className="flex items-center gap-2">
             <Pill className="w-5 h-5 text-white" />
-            <h1 className="text-lg font-black text-white">Medication Tracker</h1>
+            <h1 className="text-lg font-black text-white">{t('medications.title')}</h1>
           </div>
           <div className="w-16" />
         </div>
@@ -86,20 +88,20 @@ export default function Medications() {
         <Card className="p-6 bg-gradient-to-br from-card to-primary/5 border-0 shadow-xl">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-2xl font-black text-foreground">Today's Medications</h2>
-              <p className="text-muted-foreground">Track your daily medication routine</p>
+              <h2 className="text-2xl font-black text-foreground">{t('medications.todaysMedications')}</h2>
+              <p className="text-muted-foreground">{t('medications.trackRoutine')}</p>
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="font-black">
                 <Flame className="w-3 h-3 mr-1 fill-chart-3 text-chart-3" />
-                {streak} day streak
+                {t('medicationDetails.dayStreak', { count: streak })}
               </Badge>
             </div>
           </div>
           
           <div className="mb-6">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="font-bold text-muted-foreground">{takenCount}/{medications.length} medications taken</span>
+              <span className="font-bold text-muted-foreground">{tCommon('common.medicationsTaken', { taken: takenCount, total: medications.length })}</span>
               <span className="font-black text-primary">{Math.round(progressPercent)}%</span>
             </div>
             <Progress value={progressPercent} className="h-3" />
@@ -180,7 +182,7 @@ export default function Medications() {
                           +{medication.xpReward} XP
                         </Badge>
                         {medication.taken && (
-                          <p className="text-xs text-primary font-bold mt-1">Completed</p>
+                          <p className="text-xs text-primary font-bold mt-1">{t('medications.completed')}</p>
                         )}
                       </div>
                     </div>
@@ -197,11 +199,11 @@ export default function Medications() {
               <Sparkles className="w-8 h-8 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-black text-foreground">Daily Bonus</h3>
+              <h3 className="text-xl font-black text-foreground">{t('medications.dailyBonus')}</h3>
               <p className="text-muted-foreground">
                 {allTaken 
-                  ? "You've earned your daily medication bonus!" 
-                  : "Take all medications to earn a 50 XP bonus!"}
+                  ? tCommon('common.dailyBonusEarned')
+                  : tCommon('common.dailyBonusPrompt')}
               </p>
             </div>
             <Badge className={`font-black text-lg px-4 py-2 ${allTaken ? 'bg-chart-3 text-white' : 'bg-muted text-muted-foreground'}`}>
@@ -215,9 +217,9 @@ export default function Medications() {
           <div className="flex items-center gap-3">
             <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
             <div>
-              <p className="font-bold text-foreground">{t('community.communityTip')}</p>
+              <p className="font-bold text-foreground">{tDashboard('community.communityTip')}</p>
               <p className="text-sm text-muted-foreground">
-                Taking medications at the same time each day helps build a healthy routine and improves effectiveness.
+                {t('medications.communityTipContent')}
               </p>
             </div>
           </div>

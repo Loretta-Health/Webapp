@@ -66,7 +66,9 @@ interface TeamInvite {
 }
 
 export default function Invite() {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('pages');
+  const { t: tDashboard } = useTranslation('dashboard');
+  const { t: tCommon } = useTranslation('common');
   const { user } = useAuth();
   const { toast } = useToast();
   const [teams, setTeams] = useState<Team[]>([]);
@@ -522,9 +524,9 @@ export default function Invite() {
             <div className="flex items-center gap-3">
               <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
               <div>
-                <p className="font-bold text-foreground">{t('community.communityTip')}</p>
+                <p className="font-bold text-foreground">{tDashboard('community.communityTip')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Invite friends and family to join your team. Compare progress on the leaderboard and motivate each other!
+                  {t('invite.communityTipContent')}
                 </p>
               </div>
             </div>
