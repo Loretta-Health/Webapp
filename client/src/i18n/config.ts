@@ -18,6 +18,10 @@ import pagesEn from './locales/en/pages.json';
 import pagesDe from './locales/de/pages.json';
 import pagesTr from './locales/tr/pages.json';
 
+import profileEn from './locales/en/profile.json';
+import profileDe from './locales/de/profile.json';
+import profileTr from './locales/tr/profile.json';
+
 export const defaultNS = 'common';
 export const resources = {
   en: {
@@ -25,18 +29,21 @@ export const resources = {
     dashboard: dashboardEn,
     auth: authEn,
     pages: pagesEn,
+    profile: profileEn,
   },
   de: {
     common: commonDe,
     dashboard: dashboardDe,
     auth: authDe,
     pages: pagesDe,
+    profile: profileDe,
   },
   tr: {
     common: commonTr,
     dashboard: dashboardTr,
     auth: authTr,
     pages: pagesTr,
+    profile: profileTr,
   },
 } as const;
 

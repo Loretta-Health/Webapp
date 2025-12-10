@@ -53,8 +53,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-
-type Language = 'en' | 'de';
+import { useTranslation } from 'react-i18next';
 
 const translations = {
   en: {
@@ -659,12 +658,16 @@ interface BackendProfile {
   profilePhoto: string | null;
 }
 
+type Language = 'en' | 'de';
+
 export default function Profile() {
-  const [activeTab, setActiveTab] = useState('basic');
+  const { i18n } = useTranslation('profile');
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('loretta_language');
     return (saved === 'de' ? 'de' : 'en') as Language;
   });
+  const t = translations[language];
+  const [activeTab, setActiveTab] = useState('basic');
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>(emptyProfile);
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -796,8 +799,6 @@ export default function Profile() {
     }
     return 'onboarding';
   };
-
-  const t = translations[language];
 
   const handleAnswerChange = useCallback((questionId: string, value: string) => {
     const newAnswers = { ...questionnaireAnswers, [questionId]: value };
