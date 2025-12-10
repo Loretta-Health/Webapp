@@ -567,14 +567,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Achievement Endpoints
   // ========================
 
-  app.get("/api/achievements/:userId", async (req, res) => {
+  // Get all master achievements
+  app.get("/api/achievements", async (req, res) => {
     try {
-      const { userId } = req.params;
-      const achievements = await storage.ensureDefaultAchievementsForUser(userId);
-      res.json(achievements);
+      const allAchievements = await storage.ensureMasterAchievements();
+      res.json(allAchievements);
     } catch (error) {
       console.error("Error fetching achievements:", error);
       res.status(500).json({ error: "Failed to fetch achievements" });
+    }
+  });
+
+  // Get user's achievements with progress (ensures all achievements exist for user)
+  app.get("/api/achievements/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      await storage.ensureUserHasAllAchievements(userId);
+      const achievements = await storage.getUserAchievementWithDetails(userId);
+      res.json(achievements);
+    } catch (error) {
+      console.error("Error fetching user achievements:", error);
+      res.status(500).json({ error: "Failed to fetch user achievements" });
     }
   });
 
@@ -607,19 +620,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/achievements/:userId/unlock/:key", async (req, res) => {
+  // Update user achievement progress by achievementId
+  app.post("/api/achievements/:userId/progress/:achievementId", async (req, res) => {
     try {
-      const { userId, key } = req.params;
-      const unlocked = await storage.unlockAchievement(userId, key);
+      const { userId, achievementId } = req.params;
+      const { progress } = req.body;
       
-      if (!unlocked) {
+      if (typeof progress !== 'number') {
+        return res.status(400).json({ error: "Progress must be a number" });
+      }
+      
+      const updated = await storage.updateUserAchievementProgress(userId, achievementId, progress);
+      
+      if (!updated) {
         return res.status(404).json({ error: "Achievement not found" });
       }
       
-      res.json(unlocked);
+      res.json(updated);
     } catch (error) {
-      console.error("Error unlocking achievement:", error);
-      res.status(500).json({ error: "Failed to unlock achievement" });
+      console.error("Error updating achievement progress:", error);
+      res.status(500).json({ error: "Failed to update achievement progress" });
     }
   });
 

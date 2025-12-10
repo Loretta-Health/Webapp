@@ -257,19 +257,36 @@ export const insertTeamInviteSchema = createInsertSchema(teamInvites).omit({
 export type InsertTeamInvite = z.infer<typeof insertTeamInviteSchema>;
 export type TeamInvite = typeof teamInvites.$inferSelect;
 
-// User achievements table - stores per-user achievement progress
-export const userAchievements = pgTable("user_achievements", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: text("user_id").notNull(),
-  achievementKey: text("achievement_key").notNull(), // unique identifier for achievement type
+// Master achievements table - defines all available achievements
+export const achievements = pgTable("achievements", {
+  id: varchar("id").primaryKey(), // e.g., 'first_checkin', 'streak_7', 'level_10'
   title: text("title").notNull(),
   description: text("description").notNull(),
   icon: text("icon").notNull(), // 'target', 'flame', 'crown', 'star', 'zap', 'heart', 'shield', 'award'
   rarity: text("rarity").notNull(), // 'common', 'rare', 'epic', 'legendary'
+  maxProgress: integer("max_progress").default(1), // how many steps to complete
+  xpReward: integer("xp_reward").default(50), // XP awarded on completion
+  category: text("category").default('general'), // 'streak', 'checkin', 'level', 'health', 'social'
+  sortOrder: integer("sort_order").default(0), // for display ordering
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAchievementSchema = createInsertSchema(achievements).omit({
+  createdAt: true,
+});
+
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+export type Achievement = typeof achievements.$inferSelect;
+
+// User achievements table - stores per-user achievement progress
+// Every user has an entry for EVERY achievement with their progress
+export const userAchievements = pgTable("user_achievements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  achievementId: text("achievement_id").notNull(), // references achievements.id
+  progress: integer("progress").default(0), // current progress (0 to maxProgress)
   unlocked: boolean("unlocked").default(false),
   unlockedAt: timestamp("unlocked_at"),
-  progress: integer("progress").default(0),
-  maxProgress: integer("max_progress").default(1),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
