@@ -1,238 +1,40 @@
 # Loretta - Gamified Health Dashboard
 
 ## Overview
-
-Loretta is a gamified health tracking dashboard that transforms health management into an engaging, Duolingo-inspired experience. The application uses game mechanics (XP, levels, streaks, achievements) to motivate users to maintain healthy habits through daily check-ins, medication tracking, and activity monitoring. Built with a privacy-first approach, it emphasizes user consent and optional data sharing while providing personalized health insights and community comparison features.
+Loretta is a gamified health tracking dashboard inspired by Duolingo, designed to motivate users in managing their health through engaging game mechanics like XP, levels, streaks, and achievements. It supports daily check-ins, medication tracking, and activity monitoring. The application prioritizes user privacy, offering optional data sharing, personalized health insights, and community comparison features. Loretta aims to transform health management into an interactive and motivating experience.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture
+### Frontend
+- **Frameworks**: React 18 with TypeScript, Vite, Tailwind CSS, shadcn/ui (New York style), Wouter for routing.
+- **Design**: Duolingo-inspired gamification with a vibrant color palette, custom typography (Nunito, DM Mono), gradient backgrounds, frosted glass effects, animations, and mobile-first responsive design.
+- **State Management**: TanStack Query for server state, React hooks for UI state, LocalStorage for consent and preferences.
+- **Key UI Elements**: XP progress, level indicators, streak counters, lives system, medication trackers, activity metrics, risk score cards, educational tooltips, leaderboards, achievement badges, and an interactive mascot.
 
-**Framework & Styling:**
-- React 18 with TypeScript for type-safe component development
-- Vite as the build tool and development server
-- Tailwind CSS for utility-first styling with custom design system
-- shadcn/ui component library (New York style) for consistent, accessible UI components
-- Wouter for lightweight client-side routing
+### Backend
+- **Server**: Express.js with TypeScript, differentiated entry points for development and production.
+- **Database**: PostgreSQL via Neon serverless driver, Drizzle ORM, with a schema-first approach validated by Zod.
+- **API Endpoints**: Comprehensive RESTful API for managing user data (questionnaires, profiles, preferences, gamification, risk scores), and AI chat.
+- **Authentication**: Session-based using Passport.js (local strategy), PostgreSQL session store, secure password hashing, and protected routes.
 
-**Design System:**
-- Duolingo-inspired gamification with vibrant color palette (lime green, electric purple, sky blue, sunset orange)
-- Custom typography using Nunito (sans-serif) and DM Mono (monospace) from Google Fonts
-- Gradient-based backgrounds with frosted glass card effects
-- Extensive use of animations and visual feedback for user interactions
-- Mobile-first responsive design with sidebar navigation
+### Health Questionnaire & Risk Prediction
+- **Questionnaire**: 46 questions across various health categories, mapped to NHANES-style API parameters.
+- **ML Integration**: Designed to integrate with an external ML prediction API (currently bypassed due to issues, using a fallback evidence-based risk model).
+- **Risk Calculation**: Uses an evidence-based model considering BMI, age, weight changes, medical history, lifestyle, and other factors, capped at 0-100.
 
-**State Management:**
-- TanStack Query (React Query) for server state management and caching
-- Local state with React hooks for UI interactions
-- LocalStorage for consent management and user preferences
+### Internationalization (i18n)
+- Implemented with `react-i18next` and `i18next-browser-languagedetector`.
+- Supports English (en), German (de), and Turkish (tr).
+- Translations are organized by namespace and stored in `client/src/i18n/locales/`.
 
-**Key UI Components:**
-- Gamification elements: XP progress bars, level indicators, streak counters, lives system
-- Health tracking: medication trackers, activity metrics, risk score cards
-- Educational features: medical term tooltips, science explainers with citations
-- Social features: leaderboards with community/family switching, achievement badges
-- Interactive elements: mascot character with different poses, treasure chests, quest cards
+## External Dependencies
 
-### Backend Architecture
-
-**Server Framework:**
-- Express.js with TypeScript for API server
-- Separate development (`index-dev.ts`) and production (`index-prod.ts`) entry points
-- Custom middleware for request logging and JSON parsing with raw body access
-
-**Development Setup:**
-- Vite middleware integration for HMR in development
-- Runtime error overlay and dev banner plugins for Replit environment
-- Template-based SSR with dynamic cache busting in development mode
-
-**Storage Layer:**
-- Database storage implementation (`DatabaseStorage`) with PostgreSQL
-- Interface-based design (`IStorage`) for clean separation of concerns
-- Drizzle ORM configured for PostgreSQL (via Neon serverless driver)
-- Schema-first approach with Zod validation using `drizzle-zod`
-
-**Database Schema:**
-- Users table with UUID primary keys, username, and password fields
-- Questionnaire answers table with userId, category, and JSON answers storage
-- User profiles table with demographic and health information fields
-- PostgreSQL-specific features (e.g., `gen_random_uuid()`, JSONB)
-- Migration system via `drizzle-kit`
-
-**API Endpoints:**
-- `GET /api/questionnaires/:userId` - Get all questionnaire answers for a user
-- `GET /api/questionnaires/:userId/:category` - Get answers for specific category
-- `POST /api/questionnaires` - Save/update questionnaire answers (expects Record<string, string> format)
-- `GET /api/profile/:userId` - Get user profile
-- `POST /api/profile` - Save/update user profile
-- `GET /api/preferences/:userId` - Get user preferences (consent, newsletter, theme, language)
-- `POST /api/preferences` - Save/update user preferences (accepts ISO string dates)
-- `GET /api/gamification/:userId` - Get gamification data (XP, level, streak, lives, achievements)
-- `POST /api/gamification` - Initialize/update gamification data
-- `POST /api/gamification/:userId/checkin` - Record daily check-in
-- `POST /api/gamification/:userId/xp` - Add XP to user
-- `GET /api/risk-scores/:userId/latest` - Get latest risk score
-- `POST /api/risk-scores` - Save calculated risk score
-- `POST /api/chat` - Health Navigator AI chat endpoint
-
-**Frontend-Backend Integration:**
-- Welcome page syncs consent/newsletter preferences to backend on accept/decline
-- Onboarding page syncs profile data, questionnaire answers, risk scores, and initializes gamification
-- Dashboard fetches gamification data and risk scores from backend with localStorage fallback
-- Profile page loads/saves questionnaire answers and profile data from/to backend
-- All mutations properly invalidate React Query cache for data consistency
-
-### Health Questionnaire & Risk Prediction API
-
-**Questionnaire Structure:**
-- 46 questions mapped to NHANES-style API parameter IDs
-- Categories: Demographics, Body Measurements, Medical History, Recent Health, Medications, Health Ratings, Oral Health, Physical Activity, Work, Sleep, Lifestyle, Healthcare Access, Financial, Living Situation
-- Each question has: id, apiId, text, type (choice/number/time), and options with apiValue mappings
-
-**API Parameter Mapping (in Onboarding.tsx):**
-- Demographics: RIDAGEYR (age), RIDRETH3 (ethnicity), DMDEDUC2 (education), DMDMARTZ (marital status), DMDHHSIZ (household size)
-- Body: WHD010 (height in inches), WHD020 (weight in lbs), WHD050 (weight 1yr ago in lbs)
-- Medical History: BPQ020, BPQ080, DIQ160, DIQ180, MCQ160A/B/C/E, KIQ022, MCQ560
-- Balance/Falls: BAQ321C (unsteadiness), BAQ530 (falls), DPQ030 (sleep trouble)
-- Medications: RXQ033 (prescription), RXQ510 (aspirin)
-- Health Ratings: HUQ010 (general), AUQ054 (hearing), OHQ845 (dental)
-- Oral Health: OHQ620/630/660/670 (mouth problems)
-- Activity: PAD790 (moderate activity hours/week), PAD680 (sedentary hours/day)
-- Work: OCD150 (job type)
-- Sleep: SLD012/013 (sleep hours), SLQ300/310/320/330 (sleep/wake times)
-- Lifestyle: ALQ121 (alcohol frequency)
-- Healthcare: HUQ030 (routine healthcare), HUQ055 (video consult)
-- Financial: INDFMPIR, INDFMMPI (income ratios), INQ300 (savings)
-- Housing: HOD051 (rooms)
-
-**buildFeatureJson Function:**
-- Exported from Onboarding.tsx for API integration
-- Converts answers to API format with unit conversions:
-  - Height: cm → inches (÷ 2.54)
-  - Weight: kg → pounds (× 2.20462)
-  - Time: HH:MM → decimal hours
-  - Rooms: 1-12 → API codes 0-11
-- Returns array format `[{ ID: "RIDAGEYR", Value: "57" }, ...]` for prediction API POST body
-
-**ML Prediction API Integration:**
-- Backend proxy endpoint at `/api/predict` forwards requests to external ML service
-- External service URL: `https://loretta-ml-prediction-dev-5oc2gjs2kq-el.a.run.app/predict` (configurable via PREDICTION_API_URL env var)
-- Request format: `{ features: [{ ID: string, Value: string }] }`
-- Response format: `{ diabetes_probability: number, risk_level: string }`
-- **CURRENTLY DISABLED**: ML backend producing incorrect predictions, using fallback route
-
-**Risk Calculation (Current Implementation):**
-1. Primary: Server-side calculation (`/api/risk-scores/:userId/calculate`)
-2. Fallback: Client-side `calculateRiskScore` function
-- ML prediction API bypassed until backend issues are resolved
-- Live score during questionnaire uses client-side calculation
-
-**Evidence-Based Risk Model:**
-The fallback risk calculation uses an improved evidence-based model that factors in:
-- **BMI**: Calculated from height (cm) and weight (kg) using metric formula, stratified per CDC/WHO guidelines (underweight, normal, overweight, obese classes I-III)
-- **Age**: Risk points increase progressively from 35+ to 75+ years
-- **Weight Change**: Significant gain (≥10kg) or moderate gain (≥5kg) in past year
-- **Medical History**: Diabetes/prediabetes, hypertension, high cholesterol, cardiovascular history (heart attack, heart failure, coronary disease, stroke), kidney disease
-- **Lifestyle**: Physical activity (moderate hours/week vs sedentary hours/day), sleep patterns (hours and quality), alcohol consumption
-- **Other Factors**: Balance/falls, oral health (linked to systemic inflammation), general health self-assessment
-- **Normalization**: Scores capped at 0-100, minimum baselines for older users, overall score weighted 60% toward highest domain risk + 40% average
-
-### External Dependencies
-
-**Database & ORM:**
-- `@neondatabase/serverless` - PostgreSQL database connection for serverless environments
-- `drizzle-orm` - Type-safe ORM with schema-first design
-- `drizzle-zod` - Zod schema generation from Drizzle schemas
-- `connect-pg-simple` - PostgreSQL session store (prepared for session management)
-
-**UI Component Libraries:**
-- Extensive Radix UI primitives for accessible components (accordion, dialog, dropdown, popover, tabs, toast, tooltip, etc.)
-- `embla-carousel-react` - Touch-friendly carousel component
-- `cmdk` - Command menu component
-- `lucide-react` - Icon library
-- `framer-motion` - Animation library (used in consent form and modals)
-
-**Form & Validation:**
-- `react-hook-form` - Form state management
-- `@hookform/resolvers` - Form validation resolvers
-- `zod` - Schema validation library
-
-**Utilities:**
-- `date-fns` - Date manipulation and formatting
-- `class-variance-authority` - Type-safe variant styling
-- `clsx` & `tailwind-merge` - Conditional class name utilities
-- `nanoid` - Unique ID generation
-
-**Development Tools:**
-- `@replit/vite-plugin-*` - Replit-specific development plugins
-- `tsx` - TypeScript execution for development
-- `esbuild` - Production build bundler
-
-**Routing:**
-- `wouter` - Lightweight routing library (replacing React Router)
-
-### Authentication & Authorization
-
-**Current Implementation:**
-- Full session-based authentication with Passport.js (local strategy)
-- PostgreSQL session store using connect-pg-simple for persistent sessions
-- Secure password hashing using Node.js crypto scrypt with random salt
-- Protected routes redirect unauthenticated users to /auth page
-- Auth page with login and sign-up forms (tabbed interface)
-
-**Security Measures:**
-- sanitizeUser helper strips password hash from all API responses
-- 401 Unauthorized response when not authenticated
-- Session cookie configuration with secure settings for production
-- Password never exposed to client-side code
-
-**Auth API Endpoints:**
-- `POST /api/register` - Create new user account (username, password)
-- `POST /api/login` - Authenticate and create session
-- `POST /api/logout` - Destroy session and log out
-- `GET /api/user` - Get current authenticated user (sanitized)
-
-**Key Files:**
-- `server/auth.ts` - Auth configuration, routes, and password utilities
-- `client/src/hooks/use-auth.tsx` - AuthProvider context and useAuth hook
-- `client/src/lib/protected-route.tsx` - ProtectedRoute component
-- `client/src/pages/auth-page.tsx` - Login/signup UI
-
-### Design Philosophy & Accessibility
-
-**Gamification Strategy:**
-- Duolingo-inspired progression system with levels, XP, and streaks
-- Visual reward mechanisms (treasure chests, achievement badges, level-up modals)
-- Lives system and energy bars for engagement pacing
-- Quest/mission cards with daily, weekly, and bonus categories
-
-**Health Education:**
-- Medical term tooltips with simple and technical explanations
-- Expandable science sections with peer-reviewed citations
-- Community tips and practical health advice
-- Risk scoring with trend indicators and actionable feedback
-
-**Privacy & Consent:**
-- Comprehensive consent form with detailed privacy points
-- Explicit opt-in/opt-out flow with decline acknowledgment page
-- Educational messaging about data usage and optional features
-- Transparency about medical document handling and wearable integration
-
-**Accessibility:**
-- Semantic HTML with ARIA attributes via Radix UI
-- Keyboard navigation support
-- Screen reader-friendly tooltips and dialogs
-- Responsive design with mobile considerations
-- Test IDs on interactive elements for testing
-
-### Known Issues & TODOs
-
-**SECURITY - Authentication on API Endpoints (CRITICAL):**
-- All user data endpoints accept any userId without verifying authentication
-- Endpoints affected: questionnaires, profile, preferences, gamification, risk-scores, emotional-checkins, missions
-- Fix required: Add `req.isAuthenticated()` check and verify `req.user.id` matches the requested userId
-- See TODO comment in `server/routes.ts` for full details
+- **Database**: `@neondatabase/serverless`, `drizzle-orm`, `drizzle-zod`, `connect-pg-simple`.
+- **UI Components**: Radix UI primitives, `embla-carousel-react`, `cmdk`, `lucide-react`, `framer-motion`.
+- **Form & Validation**: `react-hook-form`, `@hookform/resolvers`, `zod`.
+- **Utilities**: `date-fns`, `class-variance-authority`, `clsx`, `tailwind-merge`, `nanoid`.
+- **Development Tools**: `@replit/vite-plugin-*`, `tsx`, `esbuild`.
+- **Routing**: `wouter`.
