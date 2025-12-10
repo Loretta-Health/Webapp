@@ -2786,7 +2786,7 @@ export default function Onboarding() {
           className="w-full mt-2 text-muted-foreground"
           data-testid="button-save-and-exit"
         >
-          {saveQuestionnaireMutation.isPending ? t('common:saving') : t('common:saveAndExit')}
+          {saveQuestionnaireMutation.isPending ? t('common:common.saving') : t('common:common.saveAndExit')}
         </Button>
       </motion.div>
     );
