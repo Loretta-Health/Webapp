@@ -65,7 +65,8 @@
     "bonus": "Bonus",
     "complete": "Complete",
     "completed": "Completed",
-    "xpReward": "+{{xp}} XP"
+    "xpReward": "+{{xp}} XP",
+    "viewAll": "View All Quests"
   },
   "checkin": {
     "title": "How are you feeling?",
@@ -94,5 +95,53 @@
     "atTime": "at {{time}}",
     "yesterdayAt": "yesterday at {{time}}",
     "onDateAt": "on {{date}} at {{time}}"
-  }
+  },
+  "achievements": {
+    "title": "Your Achievements",
+    "firstSteps": {
+      "title": "First Steps",
+      "description": "Complete your first day"
+    },
+    "weekWarrior": {
+      "title": "Week Warrior",
+      "description": "Maintain a 7-day streak"
+    },
+    "healthChampion": {
+      "title": "Health Champion",
+      "description": "Reach the top of the leaderboard"
+    },
+    "recently": "Recently"
+  },
+  "activityMetrics": {
+    "steps": {
+      "title": "Steps",
+      "explanation": "Total steps taken today"
+    },
+    "sleep": {
+      "title": "Sleep",
+      "explanation": "Hours of sleep last night",
+      "simpleExplanation": "Good sleep helps your body recover"
+    },
+    "heartRate": {
+      "title": "Heart Rate",
+      "explanation": "Your resting heart rate",
+      "simpleExplanation": "Lower is usually healthier when resting"
+    },
+    "calories": {
+      "title": "Calories",
+      "explanation": "Calories burned today"
+    }
+  },
+  "medications": {
+    "title": "Medications",
+    "defaultExplanation": "Medication tracking helps ensure consistent dosing",
+    "defaultSimpleExplanation": "Take as prescribed"
+  },
+  "dialogs": {
+    "privacyPolicy": "Privacy Policy",
+    "privacyDescription": "Your privacy matters to us. Review how we handle your data.",
+    "privacyContent1": "We collect health data to provide personalized insights and improve your wellness journey.",
+    "privacyContent2": "Your data is encrypted and never shared with third parties without your explicit consent."
+  },
+  "disclaimer": "Loretta is not a diagnostic tool. Always consult healthcare professionals for medical advice."
 }

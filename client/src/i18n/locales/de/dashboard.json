@@ -65,7 +65,8 @@
     "bonus": "Bonus",
     "complete": "Abschließen",
     "completed": "Abgeschlossen",
-    "xpReward": "+{{xp}} XP"
+    "xpReward": "+{{xp}} XP",
+    "viewAll": "Alle Aufgaben anzeigen"
   },
   "checkin": {
     "title": "Wie fühlst du dich?",
@@ -94,5 +95,53 @@
     "atTime": "um {{time}}",
     "yesterdayAt": "gestern um {{time}}",
     "onDateAt": "am {{date}} um {{time}}"
-  }
+  },
+  "achievements": {
+    "title": "Deine Erfolge",
+    "firstSteps": {
+      "title": "Erste Schritte",
+      "description": "Schließe deinen ersten Tag ab"
+    },
+    "weekWarrior": {
+      "title": "Wochen-Krieger",
+      "description": "Halte eine 7-Tage-Serie aufrecht"
+    },
+    "healthChampion": {
+      "title": "Gesundheits-Champion",
+      "description": "Erreiche die Spitze der Bestenliste"
+    },
+    "recently": "Kürzlich"
+  },
+  "activityMetrics": {
+    "steps": {
+      "title": "Schritte",
+      "explanation": "Heute zurückgelegte Schritte"
+    },
+    "sleep": {
+      "title": "Schlaf",
+      "explanation": "Schlafstunden letzte Nacht",
+      "simpleExplanation": "Guter Schlaf hilft deinem Körper sich zu erholen"
+    },
+    "heartRate": {
+      "title": "Herzfrequenz",
+      "explanation": "Deine Ruheherzfrequenz",
+      "simpleExplanation": "Niedriger ist beim Ruhen normalerweise gesünder"
+    },
+    "calories": {
+      "title": "Kalorien",
+      "explanation": "Heute verbrannte Kalorien"
+    }
+  },
+  "medications": {
+    "title": "Medikamente",
+    "defaultExplanation": "Medikamenten-Tracking hilft bei der konsequenten Dosierung",
+    "defaultSimpleExplanation": "Wie verschrieben einnehmen"
+  },
+  "dialogs": {
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "privacyDescription": "Deine Privatsphäre ist uns wichtig. Erfahre, wie wir deine Daten behandeln.",
+    "privacyContent1": "Wir erfassen Gesundheitsdaten, um personalisierte Einblicke zu bieten und deine Wellness-Reise zu verbessern.",
+    "privacyContent2": "Deine Daten sind verschlüsselt und werden niemals ohne deine ausdrückliche Zustimmung an Dritte weitergegeben."
+  },
+  "disclaimer": "Loretta ist kein Diagnosewerkzeug. Konsultiere immer medizinische Fachleute für medizinische Beratung."
 }
