@@ -685,8 +685,8 @@ export default function Profile() {
   useEffect(() => {
     if (backendProfile && !profileLoaded) {
       const loadedProfile: ProfileData = {
-        firstName: backendProfile.firstName || '',
-        lastName: backendProfile.lastName || '',
+        firstName: backendProfile.firstName || user?.firstName || '',
+        lastName: backendProfile.lastName || user?.lastName || '',
         age: backendProfile.age ? parseInt(backendProfile.age) : 0,
         height: backendProfile.height ? parseInt(backendProfile.height) : 0,
         weight: backendProfile.weight ? parseInt(backendProfile.weight) : 0,
@@ -702,10 +702,27 @@ export default function Profile() {
       setProfileData(loadedProfile);
       setEditForm(loadedProfile);
       setProfileLoaded(true);
-    } else if (backendProfile === null && !profileLoaded) {
+    } else if (backendProfile === null && !profileLoaded && user) {
+      const loadedProfile: ProfileData = {
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        age: 0,
+        height: 0,
+        weight: 0,
+        bloodType: '',
+        allergies: '',
+        ethnicity: '',
+        socioeconomicStatus: '',
+        educationLevel: '',
+        employmentStatus: '',
+        housingStatus: '',
+        profilePhoto: '',
+      };
+      setProfileData(loadedProfile);
+      setEditForm(loadedProfile);
       setProfileLoaded(true);
     }
-  }, [backendProfile, profileLoaded]);
+  }, [backendProfile, profileLoaded, user]);
 
   const { data: backendAnswers } = useQuery<Array<{ category: string; answers: Record<string, string> }>>({
     queryKey: ['/api/questionnaires', userId],
