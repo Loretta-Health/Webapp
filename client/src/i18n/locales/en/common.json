@@ -1,0 +1,38 @@
+{
+  "app": {
+    "name": "Loretta",
+    "tagline": "Your personal health companion"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Log Out"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "username": "Username",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?"
+  },
+  "language": {
+    "en": "English",
+    "de": "German",
+    "tr": "Turkish"
+  }
+}

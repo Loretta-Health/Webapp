@@ -1,0 +1,68 @@
+{
+  "welcome": {
+    "newUser": "Welcome, {{name}}!",
+    "returningUser": "Welcome back, {{name}}!",
+    "newUserSubtitle": "Let's get you started on your health journey!",
+    "returningUserSubtitle": "You've made great progress today! Keep it up!"
+  },
+  "setup": {
+    "title": "Getting Started",
+    "progress": "{{completed}}/{{total}} Steps Complete",
+    "consent": "Privacy & Consent",
+    "consentDescription": "Review and accept privacy settings",
+    "consentComplete": "Completed",
+    "profile": "Complete Profile",
+    "profileDescription": "Add your details to personalize your experience",
+    "profileComplete": "Completed",
+    "questionnaire": "Health Assessment",
+    "questionnaireDescription": "Answer questions to get personalized insights",
+    "questionnaireComplete": "Completed",
+    "checkin": "First Check-in",
+    "checkinDescription": "Record your first emotional check-in",
+    "checkinComplete": "Completed"
+  },
+  "stats": {
+    "level": "Level {{level}}",
+    "xp": "{{current}}/{{next}} XP",
+    "streak": "{{count}} Day Streak",
+    "lives": "{{count}} Lives"
+  },
+  "riskScore": {
+    "title": "Health Risk Score",
+    "subtitle": "Based on your health profile",
+    "notAvailable": "Complete your health questionnaire to get your personalized score",
+    "low": "Low Risk",
+    "moderate": "Moderate Risk",
+    "high": "High Risk"
+  },
+  "missions": {
+    "title": "Daily Missions",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "bonus": "Bonus",
+    "complete": "Complete",
+    "completed": "Completed",
+    "xpReward": "+{{xp}} XP"
+  },
+  "checkin": {
+    "title": "How are you feeling?",
+    "subtitle": "Daily emotional check-in",
+    "happy": "Happy",
+    "sad": "Sad",
+    "anxious": "Anxious",
+    "stressed": "Stressed",
+    "calm": "Calm",
+    "tired": "Tired",
+    "energetic": "Energetic",
+    "frustrated": "Frustrated",
+    "grateful": "Grateful",
+    "hopeful": "Hopeful"
+  },
+  "activity": {
+    "title": "Today's Activity",
+    "steps": "Steps",
+    "calories": "Calories",
+    "water": "Water",
+    "sleep": "Sleep"
+  }
+}

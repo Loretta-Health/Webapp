@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +17,7 @@ import lorettaLogo from '@assets/logos/loretta_logo.png';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
 import MascotCharacter from '@/components/MascotCharacter';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import XPProgress from '@/components/XPProgress';
 import StreakCounter from '@/components/StreakCounter';
 import LivesIndicator from '@/components/LivesIndicator';
@@ -80,6 +82,7 @@ interface ActivityData {
 }
 
 export default function MyDashboard() {
+  const { t } = useTranslation('dashboard');
   const [, navigate] = useLocation();
   const [darkMode, setDarkMode] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
@@ -465,9 +468,10 @@ export default function MyDashboard() {
           <div className="flex items-center gap-2 lg:gap-3">
             {!isNewUser && (
               <Badge variant="secondary" className="font-bold text-xs lg:text-sm" data-testid="user-rank">
-                Level {level}
+                {t('stats.level', { level })}
               </Badge>
             )}
+            <LanguageSwitcher />
             <Button 
               size="icon" 
               variant="ghost"
@@ -485,10 +489,12 @@ export default function MyDashboard() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
                 <div>
                   <h1 className="text-2xl lg:text-4xl font-black text-foreground mb-1">
-                    {isNewUser ? `Welcome, ${displayName}!` : `Welcome back, ${displayName}!`}
+                    {isNewUser 
+                      ? t('welcome.newUser', { name: displayName }) 
+                      : t('welcome.returningUser', { name: displayName })}
                   </h1>
                   <p className="text-sm lg:text-lg text-muted-foreground">
-                    {isNewUser ? "Let's get you started on your health journey!" : "You've made great progress today! Keep it up!"}
+                    {isNewUser ? t('welcome.newUserSubtitle') : t('welcome.returningUserSubtitle')}
                   </p>
                 </div>
                 <MascotCharacter size="sm" pose={isNewUser ? "encourage" : "celebrate"} className="hidden sm:block" />
@@ -504,9 +510,9 @@ export default function MyDashboard() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-xl font-black text-foreground">Setup Checklist</h2>
+                        <h2 className="text-xl font-black text-foreground">{t('setup.title')}</h2>
                         <Badge variant="secondary" className="font-bold">
-                          {completedStepsCount}/{setupSteps.length} Complete
+                          {t('setup.progress', { completed: completedStepsCount, total: setupSteps.length })}
                         </Badge>
                       </div>
                       <div className="mb-4">

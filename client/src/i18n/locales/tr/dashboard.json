@@ -1,0 +1,68 @@
+{
+  "welcome": {
+    "newUser": "Hoş geldin, {{name}}!",
+    "returningUser": "Tekrar hoş geldin, {{name}}!",
+    "newUserSubtitle": "Sağlık yolculuğuna başlayalım!",
+    "returningUserSubtitle": "Bugün harika ilerleme kaydettin! Devam et!"
+  },
+  "setup": {
+    "title": "Başlarken",
+    "progress": "{{completed}}/{{total}} Adım Tamamlandı",
+    "consent": "Gizlilik ve Onay",
+    "consentDescription": "Gizlilik ayarlarını gözden geçir ve kabul et",
+    "consentComplete": "Tamamlandı",
+    "profile": "Profili Tamamla",
+    "profileDescription": "Deneyimini kişiselleştirmek için bilgilerini ekle",
+    "profileComplete": "Tamamlandı",
+    "questionnaire": "Sağlık Değerlendirmesi",
+    "questionnaireDescription": "Kişiselleştirilmiş öneriler için soruları yanıtla",
+    "questionnaireComplete": "Tamamlandı",
+    "checkin": "İlk Check-in",
+    "checkinDescription": "İlk duygusal check-in'ini kaydet",
+    "checkinComplete": "Tamamlandı"
+  },
+  "stats": {
+    "level": "Seviye {{level}}",
+    "xp": "{{current}}/{{next}} XP",
+    "streak": "{{count}} Günlük Seri",
+    "lives": "{{count}} Can"
+  },
+  "riskScore": {
+    "title": "Sağlık Risk Skoru",
+    "subtitle": "Sağlık profiline göre",
+    "notAvailable": "Kişiselleştirilmiş skorunu almak için sağlık anketini tamamla",
+    "low": "Düşük Risk",
+    "moderate": "Orta Risk",
+    "high": "Yüksek Risk"
+  },
+  "missions": {
+    "title": "Günlük Görevler",
+    "daily": "Günlük",
+    "weekly": "Haftalık",
+    "bonus": "Bonus",
+    "complete": "Tamamla",
+    "completed": "Tamamlandı",
+    "xpReward": "+{{xp}} XP"
+  },
+  "checkin": {
+    "title": "Nasıl hissediyorsun?",
+    "subtitle": "Günlük duygusal check-in",
+    "happy": "Mutlu",
+    "sad": "Üzgün",
+    "anxious": "Endişeli",
+    "stressed": "Stresli",
+    "calm": "Sakin",
+    "tired": "Yorgun",
+    "energetic": "Enerjik",
+    "frustrated": "Sinirli",
+    "grateful": "Minnettar",
+    "hopeful": "Umutlu"
+  },
+  "activity": {
+    "title": "Bugünkü Aktivite",
+    "steps": "Adım",
+    "calories": "Kalori",
+    "water": "Su",
+    "sleep": "Uyku"
+  }
+}
