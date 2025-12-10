@@ -1,4 +1,72 @@
 {
+  "consent": {
+    "welcomeTitle": "Loretta'ya Hoş Geldiniz",
+    "subtitle": "Sağlık arkadaşınız",
+    "privacyTitle": "Gizlilik ve Onay",
+    "privacySubtitle": "Başlamadan önce lütfen gizlilik uygulamalarımızı inceleyin.",
+    "trustMessage": "Güveniniz ve gizliliğiniz en önemli önceliklerimizdir.",
+    "readPolicy": "Tam Gizlilik Politikasını Oku",
+    "accessibilityOptions": "Erişilebilirlik Seçenekleri",
+    "accessibilityDescription": "Bu formu okuma veya anlama konusunda yardıma ihtiyacınız varsa lütfen privacy@loretta.care adresinden bize ulaşın",
+    "acknowledge": "Bu gizlilik uygulamalarını anladığımı ve kabul ettiğimi onaylıyorum",
+    "newsletterOptIn": "Sağlık ipuçları ve haberlerle beni güncel tut (isteğe bağlı)",
+    "acceptContinue": "Kabul Et ve Devam Et",
+    "decline": "Kabul Etmiyorum",
+    "privacyPoints": {
+      "control": {
+        "title": "Neyi paylaştığınızı siz kontrol edin",
+        "description": "Tüm kimlik alanları isteğe bağlıdır."
+      },
+      "insights": {
+        "title": "Kişiselleştirilmiş içgörüler",
+        "description": "Verilerinizi kişiselleştirilmiş içgörüler sağlamak ve sağlık eşitliğini desteklemek için kullanıyoruz."
+      },
+      "documents": {
+        "title": "Belge gizliliği",
+        "description": "Tıbbi belgeler işlendikten hemen sonra silinir."
+      },
+      "integrations": {
+        "title": "İsteğe bağlı entegrasyonlar",
+        "description": "Giyilebilir cihaz ve konum verileri yalnızca etkinleştirmeyi seçerseniz kullanılır."
+      },
+      "security": {
+        "title": "Veri güvenliği",
+        "description": "Verilerinizi korumak için uygun önlemler alıyoruz."
+      },
+      "choice": {
+        "title": "Sizin seçiminiz",
+        "description": "Araştırmadan istediğiniz zaman çıkabilir ve onayınızı geri çekebilirsiniz."
+      },
+      "noSelling": {
+        "title": "Veri satışı yok",
+        "description": "Verilerinizi asla satmıyoruz."
+      }
+    },
+    "disclaimer": {
+      "title": "Önemli Uyarı",
+      "message": "Loretta bir tanı aracı değildir. Sağlanan bilgiler yalnızca eğitim amaçlıdır ve profesyonel tıbbi tavsiye, tanı veya tedavinin yerini almamalıdır. Her zaman sağlık hizmeti sağlayıcınıza danışın."
+    },
+    "policyLanguages": {
+      "en": "English",
+      "de": "Deutsch"
+    },
+    "accessibilityButton": "Kapsayıcılık ve Erişilebilirlik Beyanını Oku",
+    "accessibility": {
+      "title": "Loretta'da Kapsayıcılık ve Erişilebilirlik",
+      "intro": "Loretta'da herkesin sağlık ve iyilik desteğine kolay, saygılı ve güvenilir erişimi hak ettiğine inanıyoruz. Uygulamamız farklı geçmişlere, yeteneklere ve sağlık okuryazarlığı seviyelerine sahip insanlara hizmet etmek için tasarlandı.",
+      "designIntro": "Bunu mümkün kılmak için deneyimimizi kapsayıcılık ve erişilebilirlik merkezinde tasarlıyoruz:",
+      "points": {
+        "language": "Bilgilerin kolay anlaşılması için uygulama genelinde açık, basit dil kullanılmaktadır.",
+        "navigation": "Esnek navigasyon farklı dijital deneyim seviyelerini destekler.",
+        "colors": "Erişilebilir renk kontrastı ve sezgisel düzenler uygulama genelinde kullanılmaktadır.",
+        "screenReader": "Ekran okuyucu uyumluluğu şu anda geliştirme aşamasındadır ve tam erişilebilirlik desteği için çalışıyoruz.",
+        "identity": "Kimliğinize saygı işimizin temelidir. Kendinizi her zaman nasıl tanımlayacağınızı seçebilirsiniz.",
+        "support": "Bir şey belirsiz veya kullanımı zorsa destek mevcuttur."
+      },
+      "contact": "Bir engelle karşılaşırsanız veya ek desteğe ihtiyacınız varsa lütfen şu adresten bize ulaşın",
+      "feedbackNote": "Geri bildiriminiz doğrudan herkes için erişilebilirliği geliştirmemize yardımcı olur."
+    }
+  },
   "declined": {
     "title": "Anlıyoruz",
     "message": "Gizliliğiniz önemli. Fikrinizi değiştirirseniz, sağlık yolculuğunuzda size yardımcı olmaktan memnuniyet duyarız.",

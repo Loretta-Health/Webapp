@@ -1,4 +1,72 @@
 {
+  "consent": {
+    "welcomeTitle": "Welcome to Loretta",
+    "subtitle": "Your health companion",
+    "privacyTitle": "Privacy & Consent",
+    "privacySubtitle": "Before you begin, please review our privacy practices.",
+    "trustMessage": "Your trust and privacy are our top priorities.",
+    "readPolicy": "Read Full Privacy Policy",
+    "accessibilityOptions": "Accessibility Options",
+    "accessibilityDescription": "If you need assistance reading or understanding this form, please contact us at privacy@loretta.care",
+    "acknowledge": "I understand and acknowledge these privacy practices",
+    "newsletterOptIn": "Keep me updated with health tips and news (optional)",
+    "acceptContinue": "Accept & Continue",
+    "decline": "I Don't Agree",
+    "privacyPoints": {
+      "control": {
+        "title": "You control what you share",
+        "description": "All identity fields are optional."
+      },
+      "insights": {
+        "title": "Personalised insights",
+        "description": "We use your data to provide personalised insights and support health equity."
+      },
+      "documents": {
+        "title": "Document privacy",
+        "description": "Medical documents are deleted immediately after processing."
+      },
+      "integrations": {
+        "title": "Optional integrations",
+        "description": "Wearable and location data are only used if you choose to enable them."
+      },
+      "security": {
+        "title": "Data security",
+        "description": "We take appropriate measures to protect your data."
+      },
+      "choice": {
+        "title": "Your choice",
+        "description": "You may opt out of research and withdraw consent at any time."
+      },
+      "noSelling": {
+        "title": "No data selling",
+        "description": "We never sell your data."
+      }
+    },
+    "disclaimer": {
+      "title": "Important Disclaimer",
+      "message": "Loretta is not a diagnostic tool. The information provided is for educational purposes only and should not replace professional medical advice, diagnosis, or treatment. Always consult your healthcare provider."
+    },
+    "policyLanguages": {
+      "en": "English",
+      "de": "Deutsch"
+    },
+    "accessibilityButton": "Read Inclusion & Accessibility Statement",
+    "accessibility": {
+      "title": "Inclusion & Accessibility at Loretta",
+      "intro": "At Loretta, we believe everyone deserves easy, respectful, and reliable access to health and wellbeing support. Our app is built to serve people with different backgrounds, abilities, and levels of health literacy.",
+      "designIntro": "To make this possible, we design our experience with inclusion and accessibility at the center:",
+      "points": {
+        "language": "Clear, simple language is used throughout the app so information is easy to understand.",
+        "navigation": "Flexible navigation supports different levels of digital experience.",
+        "colors": "Accessible color contrast and intuitive layouts are used throughout the app.",
+        "screenReader": "Screen-reader compatibility is currently in development, and we are working toward full accessibility support.",
+        "identity": "Respect for your identity is core to our work. You can always choose how you describe yourself.",
+        "support": "Support is available if something is unclear or difficult to use."
+      },
+      "contact": "If you encounter a barrier or need additional support, please contact us at",
+      "feedbackNote": "Your feedback directly helps us improve accessibility for everyone."
+    }
+  },
   "declined": {
     "title": "We understand",
     "message": "Your privacy is important. If you change your mind, we'd love to help you on your health journey.",
