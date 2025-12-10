@@ -603,6 +603,14 @@ const optionSets: Record<string, Array<{ value: string; en: string; de: string; 
   ],
 };
 
+const ratingOptions = optionSets.rating;
+const frequencyOptions = optionSets.frequency;
+const levelOptions = optionSets.level;
+
+const ratingQuestions = new Set(['general_health', 'hearing_health', 'dental_health']);
+const frequencyQuestions = new Set(['sleep_trouble', 'alcohol_frequency', 'video_consult']);
+const levelQuestions = new Set(['stress_level', 'energy_level']);
+
 interface ProfileData {
   firstName: string;
   lastName: string;
