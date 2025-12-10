@@ -578,6 +578,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sync/update master achievements (admin endpoint)
+  app.post("/api/achievements/sync", async (req, res) => {
+    try {
+      const allAchievements = await storage.syncMasterAchievements();
+      res.json({ 
+        success: true, 
+        message: `Synced ${allAchievements.length} achievements`,
+        achievements: allAchievements 
+      });
+    } catch (error) {
+      console.error("Error syncing achievements:", error);
+      res.status(500).json({ error: "Failed to sync achievements" });
+    }
+  });
+
   // Get user's achievements with progress (ensures all achievements exist for user)
   app.get("/api/achievements/:userId", async (req, res) => {
     try {
