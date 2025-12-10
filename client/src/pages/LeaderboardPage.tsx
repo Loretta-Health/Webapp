@@ -157,6 +157,13 @@ const rarityBorderColors = {
   legendary: 'border-chart-3/30',
 };
 
+const rarityProgressBgColors = {
+  common: 'bg-muted-foreground/20',
+  rare: 'bg-primary/20',
+  epic: 'bg-chart-4/20',
+  legendary: 'bg-chart-3/20',
+};
+
 export default function LeaderboardPage() {
   const { t } = useTranslation('pages');
   const { user } = useAuth();
@@ -512,7 +519,7 @@ export default function LeaderboardPage() {
                                 </div>
                                 <Progress 
                                   value={(achievement.progress / achievement.maxProgress) * 100} 
-                                  className={`h-1.5 ${hasNoProgress ? '[&>div]:bg-muted-foreground/30 bg-muted/50' : ''}`}
+                                  className={`h-1.5 ${rarityProgressBgColors[achievement.rarity]} ${hasNoProgress ? '[&>div]:bg-muted-foreground/40' : ''}`}
                                 />
                               </div>
                             ) : (
