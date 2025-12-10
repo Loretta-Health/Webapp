@@ -137,28 +137,28 @@ const iconMap = {
 };
 
 const rarityColors = {
-  common: 'from-muted-foreground/50 to-muted-foreground/30',
+  common: 'from-emerald-500 to-green-400',
   rare: 'from-primary to-chart-2',
   epic: 'from-chart-4 to-purple-500',
   legendary: 'from-chart-3 to-yellow-500',
 };
 
 const rarityBgColors = {
-  common: 'bg-muted/50',
+  common: 'bg-emerald-500/10',
   rare: 'bg-primary/10',
   epic: 'bg-chart-4/10',
   legendary: 'bg-chart-3/10',
 };
 
 const rarityBorderColors = {
-  common: 'border-muted-foreground/20',
+  common: 'border-emerald-500/30',
   rare: 'border-primary/30',
   epic: 'border-chart-4/30',
   legendary: 'border-chart-3/30',
 };
 
 const rarityProgressBgColors = {
-  common: 'bg-muted-foreground/20',
+  common: 'bg-emerald-500/20',
   rare: 'bg-primary/20',
   epic: 'bg-chart-4/20',
   legendary: 'bg-chart-3/20',
@@ -498,7 +498,7 @@ export default function LeaderboardPage() {
                                   achievement.rarity === 'legendary' ? 'border-chart-3 text-chart-3' :
                                   achievement.rarity === 'epic' ? 'border-chart-4 text-chart-4' :
                                   achievement.rarity === 'rare' ? 'border-primary text-primary' :
-                                  'border-muted-foreground text-muted-foreground'
+                                  'border-emerald-500 text-emerald-500'
                                 }`}
                               >
                                 {achievement.rarity}
