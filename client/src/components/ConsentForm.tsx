@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,52 +29,18 @@ interface ConsentFormProps {
   onDecline: () => void;
 }
 
-const privacyPoints = [
-  {
-    icon: Eye,
-    title: "You control what you share",
-    description: "All identity fields are optional.",
-    color: "text-primary"
-  },
-  {
-    icon: Heart,
-    title: "Personalised insights",
-    description: "We use your data to provide personalised insights and support health equity.",
-    color: "text-destructive"
-  },
-  {
-    icon: FileText,
-    title: "Document privacy",
-    description: "Medical documents are deleted immediately after processing.",
-    color: "text-chart-2"
-  },
-  {
-    icon: Watch,
-    title: "Optional integrations",
-    description: "Wearable and location data are only used if you choose to enable them.",
-    color: "text-chart-3"
-  },
-  {
-    icon: Lock,
-    title: "Data security",
-    description: "We take appropriate measures to protect your data.",
-    color: "text-primary"
-  },
-  {
-    icon: UserX,
-    title: "Your choice",
-    description: "You may opt out of research and withdraw consent at any time.",
-    color: "text-chart-1"
-  },
-  {
-    icon: Ban,
-    title: "No data selling",
-    description: "We never sell your data.",
-    color: "text-destructive"
-  }
+const privacyPointsConfig = [
+  { icon: Eye, key: 'control', color: 'text-primary' },
+  { icon: Heart, key: 'insights', color: 'text-destructive' },
+  { icon: FileText, key: 'documents', color: 'text-chart-2' },
+  { icon: Watch, key: 'integrations', color: 'text-chart-3' },
+  { icon: Lock, key: 'security', color: 'text-primary' },
+  { icon: UserX, key: 'choice', color: 'text-chart-1' },
+  { icon: Ban, key: 'noSelling', color: 'text-destructive' },
 ];
 
 export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
+  const { t } = useTranslation('pages');
   const [showFullPolicy, setShowFullPolicy] = useState(false);
   const [showAccessibility, setShowAccessibility] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
@@ -102,8 +69,8 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                 transition={{ duration: 2, repeat: Infinity }}
               />
             </div>
-            <h1 className="text-2xl font-black text-white mb-1">Welcome to Loretta</h1>
-            <p className="text-primary-foreground/80 text-sm">Your health companion</p>
+            <h1 className="text-2xl font-black text-white mb-1">{t('consent.welcomeTitle')}</h1>
+            <p className="text-primary-foreground/80 text-sm">{t('consent.subtitle')}</p>
           </div>
 
           {/* Content */}
@@ -114,18 +81,18 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-black text-foreground">Privacy & Consent</h2>
-                <p className="text-xs text-muted-foreground">Before you begin, please review our privacy practices.</p>
+                <h2 className="text-lg font-black text-foreground">{t('consent.privacyTitle')}</h2>
+                <p className="text-xs text-muted-foreground">{t('consent.privacySubtitle')}</p>
               </div>
             </div>
 
             <p className="text-sm text-muted-foreground bg-gradient-to-r from-primary/5 to-secondary/5 p-3 rounded-lg border border-primary/10">
-              Your trust and privacy are our top priorities.
+              {t('consent.trustMessage')}
             </p>
 
             {/* Privacy Points */}
             <div className="space-y-3">
-              {privacyPoints.map((point, index) => (
+              {privacyPointsConfig.map((point, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
@@ -137,8 +104,8 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                     <point.icon className={`w-4 h-4 ${point.color}`} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-foreground">{point.title}</p>
-                    <p className="text-xs text-muted-foreground">{point.description}</p>
+                    <p className="text-sm font-bold text-foreground">{t(`consent.privacyPoints.${point.key}.title`)}</p>
+                    <p className="text-xs text-muted-foreground">{t(`consent.privacyPoints.${point.key}.description`)}</p>
                   </div>
                 </motion.div>
               ))}
@@ -156,11 +123,9 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                 <AlertTriangle className="w-4 h-4 text-chart-3" />
               </div>
               <div>
-                <p className="text-sm font-bold text-foreground">Important Disclaimer</p>
+                <p className="text-sm font-bold text-foreground">{t('consent.disclaimer.title')}</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Loretta is not a diagnostic tool. The information provided is for educational purposes only 
-                  and should not replace professional medical advice, diagnosis, or treatment. 
-                  Always consult your healthcare provider.
+                  {t('consent.disclaimer.message')}
                 </p>
               </div>
             </motion.div>
@@ -174,7 +139,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
             >
               <span className="flex items-center gap-2">
                 <ExternalLink className="w-4 h-4" />
-                Read Full Privacy Policy
+                {t('consent.readPolicy')}
               </span>
               {showFullPolicy ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
@@ -422,7 +387,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
             >
               <span className="flex items-center gap-2">
                 <ExternalLink className="w-4 h-4" />
-                Read Inclusion & Accessibility Statement
+                {t('consent.accessibilityButton')}
               </span>
               {showAccessibility ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </Button>
@@ -437,25 +402,25 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                 >
                   <div className="bg-muted/50 rounded-lg p-4 text-xs text-muted-foreground space-y-4" data-testid="accessibility-content">
                     <div className="text-center border-b border-border pb-3">
-                      <h3 className="font-black text-foreground text-sm">Inclusion & Accessibility at Loretta</h3>
+                      <h3 className="font-black text-foreground text-sm">{t('consent.accessibility.title')}</h3>
                     </div>
                     
-                    <p>At Loretta, we believe everyone deserves easy, respectful, and reliable access to health and wellbeing support. Our app is built to serve people with different backgrounds, abilities, and levels of health literacy.</p>
+                    <p>{t('consent.accessibility.intro')}</p>
                     
-                    <p>To make this possible, we design our experience with inclusion and accessibility at the center:</p>
+                    <p>{t('consent.accessibility.designIntro')}</p>
                     
                     <ul className="list-disc list-inside space-y-2">
-                      <li>Clear, simple language is used throughout the app so information is easy to understand.</li>
-                      <li>Flexible navigation supports different levels of digital experience.</li>
-                      <li>Accessible color contrast and intuitive layouts are used throughout the app.</li>
-                      <li>Screen-reader compatibility is currently in development, and we are working toward full accessibility support.</li>
-                      <li>Respect for your identity is core to our work. You can always choose how you describe yourself.</li>
-                      <li>Support is available if something is unclear or difficult to use.</li>
+                      <li>{t('consent.accessibility.points.language')}</li>
+                      <li>{t('consent.accessibility.points.navigation')}</li>
+                      <li>{t('consent.accessibility.points.colors')}</li>
+                      <li>{t('consent.accessibility.points.screenReader')}</li>
+                      <li>{t('consent.accessibility.points.identity')}</li>
+                      <li>{t('consent.accessibility.points.support')}</li>
                     </ul>
                     
-                    <p>If you encounter a barrier or need additional support, please contact us at <a href="mailto:info@loretta.care" className="text-primary font-semibold hover:underline">info@loretta.care</a>.</p>
+                    <p>{t('consent.accessibility.contact')} <a href="mailto:info@loretta.care" className="text-primary font-semibold hover:underline">info@loretta.care</a>.</p>
                     
-                    <p className="font-semibold text-foreground">Your feedback directly helps us improve accessibility for everyone.</p>
+                    <p className="font-semibold text-foreground">{t('consent.accessibility.feedbackNote')}</p>
                   </div>
                 </motion.div>
               )}
@@ -470,7 +435,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                 data-testid="checkbox-acknowledge"
               />
               <label htmlFor="acknowledge" className="text-xs text-muted-foreground cursor-pointer leading-relaxed">
-                By accepting, you acknowledge that you have read and understood our privacy practices.
+                {t('consent.acknowledge')}
               </label>
             </div>
 
@@ -484,7 +449,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
               />
               <label htmlFor="newsletter" className="text-xs text-muted-foreground cursor-pointer leading-relaxed flex items-start gap-2">
                 <Mail className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <span>I would like to receive the Loretta newsletter with health tips, product updates, and special offers. You can unsubscribe at any time.</span>
+                <span>{t('consent.newsletterOptIn')}</span>
               </label>
             </div>
 
@@ -497,7 +462,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                 data-testid="button-accept-consent"
               >
                 <Shield className="w-4 h-4 mr-2" />
-                Accept & Continue
+                {t('consent.acceptContinue')}
               </Button>
               <Button
                 variant="ghost"
@@ -505,7 +470,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
                 onClick={onDecline}
                 data-testid="button-decline-consent"
               >
-                Decline
+                {t('consent.decline')}
               </Button>
             </div>
           </div>

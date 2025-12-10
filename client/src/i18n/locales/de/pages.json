@@ -1,4 +1,72 @@
 {
+  "consent": {
+    "welcomeTitle": "Willkommen bei Loretta",
+    "subtitle": "Dein Gesundheitsbegleiter",
+    "privacyTitle": "Datenschutz & Einwilligung",
+    "privacySubtitle": "Bevor du beginnst, überprüfe bitte unsere Datenschutzpraktiken.",
+    "trustMessage": "Dein Vertrauen und deine Privatsphäre haben für uns höchste Priorität.",
+    "readPolicy": "Vollständige Datenschutzerklärung lesen",
+    "accessibilityOptions": "Barrierefreiheits-Optionen",
+    "accessibilityDescription": "Wenn du Hilfe beim Lesen oder Verstehen dieses Formulars benötigst, kontaktiere uns bitte unter privacy@loretta.care",
+    "acknowledge": "Ich verstehe und bestätige diese Datenschutzpraktiken",
+    "newsletterOptIn": "Halte mich mit Gesundheitstipps und Neuigkeiten auf dem Laufenden (optional)",
+    "acceptContinue": "Akzeptieren & Fortfahren",
+    "decline": "Ich stimme nicht zu",
+    "privacyPoints": {
+      "control": {
+        "title": "Du kontrollierst, was du teilst",
+        "description": "Alle Identitätsfelder sind optional."
+      },
+      "insights": {
+        "title": "Personalisierte Einblicke",
+        "description": "Wir verwenden deine Daten, um personalisierte Einblicke zu bieten und Gesundheitsgerechtigkeit zu unterstützen."
+      },
+      "documents": {
+        "title": "Dokument-Datenschutz",
+        "description": "Medizinische Dokumente werden sofort nach der Verarbeitung gelöscht."
+      },
+      "integrations": {
+        "title": "Optionale Integrationen",
+        "description": "Wearable- und Standortdaten werden nur verwendet, wenn du sie aktivierst."
+      },
+      "security": {
+        "title": "Datensicherheit",
+        "description": "Wir ergreifen geeignete Maßnahmen zum Schutz deiner Daten."
+      },
+      "choice": {
+        "title": "Deine Wahl",
+        "description": "Du kannst jederzeit aus der Forschung aussteigen und deine Einwilligung widerrufen."
+      },
+      "noSelling": {
+        "title": "Kein Datenverkauf",
+        "description": "Wir verkaufen niemals deine Daten."
+      }
+    },
+    "disclaimer": {
+      "title": "Wichtiger Hinweis",
+      "message": "Loretta ist kein Diagnosewerkzeug. Die bereitgestellten Informationen dienen nur zu Bildungszwecken und sollten keine professionelle medizinische Beratung, Diagnose oder Behandlung ersetzen. Konsultiere immer deinen Arzt."
+    },
+    "policyLanguages": {
+      "en": "English",
+      "de": "Deutsch"
+    },
+    "accessibilityButton": "Inklusions- & Barrierefreiheitserklärung lesen",
+    "accessibility": {
+      "title": "Inklusion & Barrierefreiheit bei Loretta",
+      "intro": "Bei Loretta glauben wir, dass jeder einen einfachen, respektvollen und zuverlässigen Zugang zu Gesundheits- und Wohlbefindensunterstützung verdient. Unsere App ist für Menschen mit unterschiedlichen Hintergründen, Fähigkeiten und Gesundheitskenntnissen konzipiert.",
+      "designIntro": "Um dies zu ermöglichen, gestalten wir unser Erlebnis mit Inklusion und Barrierefreiheit im Mittelpunkt:",
+      "points": {
+        "language": "Klare, einfache Sprache wird in der gesamten App verwendet, damit Informationen leicht verständlich sind.",
+        "navigation": "Flexible Navigation unterstützt unterschiedliche digitale Erfahrungsstufen.",
+        "colors": "Barrierefreie Farbkontraste und intuitive Layouts werden in der gesamten App verwendet.",
+        "screenReader": "Bildschirmleser-Kompatibilität befindet sich derzeit in der Entwicklung, und wir arbeiten an vollständiger Barrierefreiheitsunterstützung.",
+        "identity": "Respekt für deine Identität ist der Kern unserer Arbeit. Du kannst immer wählen, wie du dich beschreibst.",
+        "support": "Unterstützung ist verfügbar, wenn etwas unklar oder schwer zu bedienen ist."
+      },
+      "contact": "Wenn du auf ein Hindernis stößt oder zusätzliche Unterstützung benötigst, kontaktiere uns bitte unter",
+      "feedbackNote": "Dein Feedback hilft uns direkt, die Barrierefreiheit für alle zu verbessern."
+    }
+  },
   "declined": {
     "title": "Wir verstehen",
     "message": "Ihre Privatsphäre ist wichtig. Wenn Sie Ihre Meinung ändern, würden wir Ihnen gerne auf Ihrer Gesundheitsreise helfen.",
