@@ -186,5 +186,81 @@
     "xp": "XP",
     "complete": "Complete Mission",
     "completed": "Completed!"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to Loretta!",
+      "subtitle": "Your personal health companion",
+      "description": "Let's set up your health profile and get you started on your wellness journey.",
+      "getStarted": "Get Started",
+      "signIn": "Already have an account? Sign in"
+    },
+    "registration": {
+      "title": "Create Your Profile",
+      "subtitle": "Tell us a bit about yourself",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastNamePlaceholder": "Enter your last name",
+      "emailPlaceholder": "Enter your email",
+      "continue": "Continue",
+      "back": "Back"
+    },
+    "questionnaire": {
+      "title": "Health Assessment",
+      "subtitle": "Answer a few questions to personalize your experience",
+      "progress": "{{current}} of {{total}}",
+      "continue": "Continue",
+      "skip": "Skip This Question",
+      "skipLabel": "I do not want to answer this question",
+      "previous": "Previous",
+      "liveRisk": "Live Risk",
+      "answers": "{{count}} answers",
+      "followUp": "Follow-up",
+      "core": "Core",
+      "categories": {
+        "quickHealthCheck": "Quick Health Check",
+        "lifestyle": "Lifestyle",
+        "medicalHistory": "Medical History",
+        "oralHealth": "Oral Health",
+        "financialHealth": "Financial Health"
+      },
+      "validation": {
+        "required": "This field is required",
+        "invalidAge": "Please enter a valid age (18-120)",
+        "invalidHeight": "Please enter a valid height",
+        "invalidWeight": "Please enter a valid weight",
+        "invalidTime": "Please enter a valid time"
+      },
+      "units": {
+        "years": "years",
+        "cm": "cm",
+        "kg": "kg"
+      }
+    },
+    "riskScore": {
+      "title": "Your Health Score",
+      "subtitle": "Based on your answers",
+      "calculating": "Calculating your score...",
+      "score": "Health Score",
+      "diabetesRisk": "Diabetes Risk",
+      "skippedQuestions": "You did not answer {{count}} question",
+      "skippedQuestionsPlural": "You did not answer {{count}} questions",
+      "goodStart": "Great start! Let's keep improving together.",
+      "needsImprovement": "We've identified areas where we can help you improve.",
+      "trackProgress": "Complete daily quests and track your progress to boost your score!",
+      "earnXP": "Earn XP",
+      "buildStreaks": "Build Streaks",
+      "getHealthier": "Get Healthier",
+      "startJourney": "Start Your Health Journey"
+    },
+    "progressSteps": {
+      "welcome": "Welcome",
+      "consent": "Consent",
+      "profile": "Profile",
+      "assessment": "Assessment",
+      "complete": "Complete"
+    }
   }
 }

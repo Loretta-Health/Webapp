@@ -21,7 +21,9 @@
     "error": "Error",
     "success": "Success",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "saving": "Saving...",
+    "saveAndExit": "Save and Exit"
   },
   "auth": {
     "signIn": "Sign In",
@@ -32,7 +34,6 @@
   },
   "language": {
     "en": "English",
-    "de": "German",
-    "tr": "Turkish"
+    "de": "German"
   }
 }

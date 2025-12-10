@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -1229,6 +1230,7 @@ function getQuestionsWithFollowUps(answers: QuestionnaireAnswer[]): Question[] {
 }
 
 export default function Onboarding() {
+  const { t } = useTranslation('pages');
   const [, navigate] = useLocation();
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [inviteData, setInviteData] = useState<{ inviterName?: string; organization?: string; code?: string } | null>(null);
@@ -2603,14 +2605,14 @@ export default function Onboarding() {
               <div className="flex items-center gap-2">
                 <Activity className={`w-4 h-4 ${liveScore.isLoading ? 'animate-pulse' : ''}`} />
                 <div className="text-right">
-                  <div className="text-xs opacity-90">Live Risk</div>
+                  <div className="text-xs opacity-90">{t('onboarding.questionnaire.liveRisk')}</div>
                   <div className="text-lg font-black">
                     {liveScore.isLoading ? '...' : `${Math.round(liveScore.probability * 100)}%`}
                   </div>
                 </div>
               </div>
               <div className="text-[10px] opacity-75 text-right mt-0.5">
-                {liveScore.answeredCount} answers
+                {t('onboarding.questionnaire.answers', { count: liveScore.answeredCount })}
               </div>
             </Card>
           </motion.div>
@@ -2619,16 +2621,16 @@ export default function Onboarding() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant={isFollowUp ? "default" : "secondary"} className="font-bold">
-              {isFollowUp ? "Follow-up" : question.category}
+              {isFollowUp ? t('onboarding.questionnaire.followUp') : question.category}
             </Badge>
             {isInCoreSection && (
               <Badge variant="outline" className="text-xs border-primary/50 text-primary">
-                Core
+                {t('onboarding.questionnaire.core')}
               </Badge>
             )}
           </div>
           <span className="text-sm text-muted-foreground" data-testid="text-question-progress">
-            {currentQuestion + 1} of {questions.length}
+            {t('onboarding.questionnaire.progress', { current: currentQuestion + 1, total: questions.length })}
           </span>
         </div>
 
@@ -2695,7 +2697,7 @@ export default function Onboarding() {
               className="w-full bg-gradient-to-r from-primary to-chart-2"
               data-testid="button-submit-number"
             >
-              Continue
+              {t('onboarding.questionnaire.continue')}
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
@@ -2726,7 +2728,7 @@ export default function Onboarding() {
               className="w-full bg-gradient-to-r from-primary to-chart-2"
               data-testid="button-submit-time"
             >
-              Continue
+              {t('onboarding.questionnaire.continue')}
               <ChevronRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
@@ -2741,7 +2743,7 @@ export default function Onboarding() {
               data-testid="checkbox-skip-question"
             />
             <Label htmlFor="skip-question" className="text-sm cursor-pointer text-muted-foreground">
-              I do not want to answer this question
+              {t('onboarding.questionnaire.skipLabel')}
             </Label>
           </div>
           
@@ -2758,7 +2760,7 @@ export default function Onboarding() {
                 className="w-full"
                 data-testid="button-skip-question"
               >
-                Skip This Question
+                {t('onboarding.questionnaire.skip')}
                 <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             </motion.div>
@@ -2773,7 +2775,7 @@ export default function Onboarding() {
             data-testid="button-previous-question"
           >
             <ChevronLeft className="w-4 h-4 mr-2" />
-            Previous Question
+            {t('onboarding.questionnaire.previous')}
           </Button>
         )}
 
@@ -2784,7 +2786,7 @@ export default function Onboarding() {
           className="w-full mt-2 text-muted-foreground"
           data-testid="button-save-and-exit"
         >
-          {saveQuestionnaireMutation.isPending ? 'Saving...' : 'Save and Exit'}
+          {saveQuestionnaireMutation.isPending ? t('common:saving') : t('common:saveAndExit')}
         </Button>
       </motion.div>
     );
