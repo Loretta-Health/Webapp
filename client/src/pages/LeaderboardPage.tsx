@@ -28,6 +28,7 @@ import {
 import { Link } from 'wouter';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from 'react-i18next';
 
 interface Team {
   id: string;
@@ -86,7 +87,7 @@ interface DbAchievement {
   updatedAt: string;
 }
 
-function formatRelativeDate(dateString: string | null): string | undefined {
+function formatRelativeDate(dateString: string | null, t: (key: string, options?: Record<string, unknown>) => string): string | undefined {
   if (!dateString) return undefined;
   
   const date = new Date(dateString);
@@ -94,16 +95,16 @@ function formatRelativeDate(dateString: string | null): string | undefined {
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 14) return '1 week ago';
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  if (diffDays < 60) return '1 month ago';
-  return `${Math.floor(diffDays / 30)} months ago`;
+  if (diffDays === 0) return t('leaderboard.relativeDates.today');
+  if (diffDays === 1) return t('leaderboard.relativeDates.yesterday');
+  if (diffDays < 7) return t('leaderboard.relativeDates.daysAgo', { count: diffDays });
+  if (diffDays < 14) return t('leaderboard.relativeDates.weekAgo');
+  if (diffDays < 30) return t('leaderboard.relativeDates.weeksAgo', { count: Math.floor(diffDays / 7) });
+  if (diffDays < 60) return t('leaderboard.relativeDates.monthAgo');
+  return t('leaderboard.relativeDates.monthsAgo', { count: Math.floor(diffDays / 30) });
 }
 
-function mapDbToAchievement(dbAchievement: DbAchievement): Achievement {
+function mapDbToAchievement(dbAchievement: DbAchievement, t: (key: string, options?: Record<string, unknown>) => string): Achievement {
   return {
     id: dbAchievement.achievementKey,
     title: dbAchievement.title,
@@ -111,7 +112,7 @@ function mapDbToAchievement(dbAchievement: DbAchievement): Achievement {
     icon: dbAchievement.icon as Achievement['icon'],
     unlocked: dbAchievement.unlocked,
     rarity: dbAchievement.rarity as Achievement['rarity'],
-    unlockedDate: formatRelativeDate(dbAchievement.unlockedAt),
+    unlockedDate: formatRelativeDate(dbAchievement.unlockedAt, t),
     progress: dbAchievement.progress,
     maxProgress: dbAchievement.maxProgress,
   };
@@ -150,6 +151,7 @@ const rarityBorderColors = {
 };
 
 export default function LeaderboardPage() {
+  const { t } = useTranslation('pages');
   const { user } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -178,7 +180,7 @@ export default function LeaderboardPage() {
       });
       if (response.ok) {
         const data: DbAchievement[] = await response.json();
-        setAchievements(data.map(mapDbToAchievement));
+        setAchievements(data.map(d => mapDbToAchievement(d, t)));
       }
     } catch (err) {
       console.error('Failed to fetch achievements:', err);
@@ -271,8 +273,8 @@ export default function LeaderboardPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-black text-foreground">Leaderboard & Achievements</h1>
-              <p className="text-sm text-muted-foreground">{unlockedCount}/{totalCount} achievements unlocked</p>
+              <h1 className="text-xl font-black text-foreground">{t('leaderboard.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('leaderboard.achievementsUnlocked', { count: unlockedCount, total: totalCount })}</p>
             </div>
           </div>
           <Button 
@@ -291,11 +293,11 @@ export default function LeaderboardPage() {
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="leaderboard" className="font-bold" data-testid="tab-leaderboard">
               <Trophy className="w-4 h-4 mr-2" />
-              Leaderboard
+              {t('leaderboard.tabs.leaderboard')}
             </TabsTrigger>
             <TabsTrigger value="achievements" className="font-bold" data-testid="tab-achievements">
               <Award className="w-4 h-4 mr-2" />
-              Achievements
+              {t('leaderboard.tabs.achievements')}
             </TabsTrigger>
           </TabsList>
 
@@ -304,7 +306,7 @@ export default function LeaderboardPage() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                   <Trophy className="w-6 h-6 text-chart-3" />
-                  <h3 className="text-2xl font-black text-foreground">Team Rankings</h3>
+                  <h3 className="text-2xl font-black text-foreground">{t('leaderboard.teamRankings')}</h3>
                 </div>
                 {teams.length > 0 && (
                   <div className="flex gap-2 flex-wrap">
@@ -330,14 +332,14 @@ export default function LeaderboardPage() {
               ) : teams.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h4 className="text-lg font-bold mb-2">No Teams Yet</h4>
+                  <h4 className="text-lg font-bold mb-2">{t('leaderboard.noTeams.title')}</h4>
                   <p className="text-muted-foreground mb-4">
-                    Create a team and invite friends or family to compare progress!
+                    {t('leaderboard.noTeams.message')}
                   </p>
                   <Link href="/invite">
                     <Button>
                       <Plus className="w-4 h-4 mr-2" />
-                      Create a Team
+                      {t('leaderboard.noTeams.createTeam')}
                     </Button>
                   </Link>
                 </div>
@@ -348,9 +350,9 @@ export default function LeaderboardPage() {
               ) : displayEntries.length === 0 ? (
                 <div className="text-center py-12">
                   <Shield className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h4 className="text-lg font-bold mb-2">Waiting for Members</h4>
+                  <h4 className="text-lg font-bold mb-2">{t('leaderboard.waitingMembers.title')}</h4>
                   <p className="text-muted-foreground">
-                    Team members will appear here once they accept the invite and agree to share their stats.
+                    {t('leaderboard.waitingMembers.message')}
                   </p>
                 </div>
               ) : (
@@ -385,20 +387,20 @@ export default function LeaderboardPage() {
                             <Crown className="w-4 h-4 text-chart-3" />
                           )}
                           {entry.isCurrentUser && (
-                            <Badge variant="secondary" className="text-xs">You</Badge>
+                            <Badge variant="secondary" className="text-xs">{t('leaderboard.you')}</Badge>
                           )}
                         </p>
                         <p className="text-sm text-muted-foreground flex items-center gap-3">
                           <span>{entry.xp.toLocaleString()} XP</span>
                           <span className="flex items-center gap-1">
                             <Flame className="w-3 h-3 text-chart-3" />
-                            {entry.streak} day streak
+                            {t('leaderboard.dayStreak', { count: entry.streak })}
                           </span>
                         </p>
                       </div>
                       
                       <Badge className="bg-primary/20 text-primary">
-                        Lvl {entry.level}
+                        {t('leaderboard.lvl', { level: entry.level })}
                       </Badge>
                     </motion.div>
                   ))}
@@ -417,8 +419,8 @@ export default function LeaderboardPage() {
               <Card className="p-4 bg-gradient-to-r from-chart-3/10 to-chart-3/5 border-chart-3/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Achievement Progress</p>
-                    <p className="text-2xl font-black text-foreground">{unlockedCount} of {totalCount}</p>
+                    <p className="text-sm text-muted-foreground">{t('leaderboard.achievements.progress')}</p>
+                    <p className="text-2xl font-black text-foreground">{t('leaderboard.achievements.ofTotal', { count: unlockedCount, total: totalCount })}</p>
                   </div>
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-chart-3 to-yellow-500 flex items-center justify-center">
                     <Trophy className="w-8 h-8 text-white" />
@@ -470,12 +472,12 @@ export default function LeaderboardPage() {
                             {achievement.unlocked ? (
                               <p className="text-xs text-chart-2 font-medium mt-2 flex items-center gap-1">
                                 <Award className="w-3 h-3" />
-                                Unlocked {achievement.unlockedDate}
+                                {t('leaderboard.achievements.unlocked', { date: achievement.unlockedDate })}
                               </p>
                             ) : achievement.progress !== undefined && achievement.maxProgress !== undefined ? (
                               <div className="mt-2">
                                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                                  <span>Progress</span>
+                                  <span>{t('leaderboard.achievements.progress')}</span>
                                   <span>{achievement.progress}/{achievement.maxProgress}</span>
                                 </div>
                                 <Progress 
@@ -484,7 +486,7 @@ export default function LeaderboardPage() {
                                 />
                               </div>
                             ) : (
-                              <p className="text-xs text-muted-foreground mt-2">Not yet unlocked</p>
+                              <p className="text-xs text-muted-foreground mt-2">{t('leaderboard.achievements.notUnlocked')}</p>
                             )}
                           </div>
                         </div>
