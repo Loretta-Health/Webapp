@@ -1,0 +1,68 @@
+{
+  "welcome": {
+    "newUser": "Willkommen, {{name}}!",
+    "returningUser": "Willkommen zurück, {{name}}!",
+    "newUserSubtitle": "Lass uns deine Gesundheitsreise beginnen!",
+    "returningUserSubtitle": "Du hast heute große Fortschritte gemacht! Weiter so!"
+  },
+  "setup": {
+    "title": "Erste Schritte",
+    "progress": "{{completed}}/{{total}} Schritte abgeschlossen",
+    "consent": "Datenschutz & Einwilligung",
+    "consentDescription": "Datenschutzeinstellungen überprüfen und akzeptieren",
+    "consentComplete": "Abgeschlossen",
+    "profile": "Profil vervollständigen",
+    "profileDescription": "Füge deine Details hinzu, um dein Erlebnis zu personalisieren",
+    "profileComplete": "Abgeschlossen",
+    "questionnaire": "Gesundheitsbewertung",
+    "questionnaireDescription": "Beantworte Fragen für personalisierte Einblicke",
+    "questionnaireComplete": "Abgeschlossen",
+    "checkin": "Erster Check-in",
+    "checkinDescription": "Zeichne deinen ersten emotionalen Check-in auf",
+    "checkinComplete": "Abgeschlossen"
+  },
+  "stats": {
+    "level": "Stufe {{level}}",
+    "xp": "{{current}}/{{next}} XP",
+    "streak": "{{count}} Tage Serie",
+    "lives": "{{count}} Leben"
+  },
+  "riskScore": {
+    "title": "Gesundheitsrisiko-Score",
+    "subtitle": "Basierend auf deinem Gesundheitsprofil",
+    "notAvailable": "Fülle den Gesundheitsfragebogen aus, um deinen persönlichen Score zu erhalten",
+    "low": "Niedriges Risiko",
+    "moderate": "Mittleres Risiko",
+    "high": "Hohes Risiko"
+  },
+  "missions": {
+    "title": "Tägliche Missionen",
+    "daily": "Täglich",
+    "weekly": "Wöchentlich",
+    "bonus": "Bonus",
+    "complete": "Abschließen",
+    "completed": "Abgeschlossen",
+    "xpReward": "+{{xp}} XP"
+  },
+  "checkin": {
+    "title": "Wie fühlst du dich?",
+    "subtitle": "Täglicher emotionaler Check-in",
+    "happy": "Glücklich",
+    "sad": "Traurig",
+    "anxious": "Ängstlich",
+    "stressed": "Gestresst",
+    "calm": "Ruhig",
+    "tired": "Müde",
+    "energetic": "Energiegeladen",
+    "frustrated": "Frustriert",
+    "grateful": "Dankbar",
+    "hopeful": "Hoffnungsvoll"
+  },
+  "activity": {
+    "title": "Heutige Aktivität",
+    "steps": "Schritte",
+    "calories": "Kalorien",
+    "water": "Wasser",
+    "sleep": "Schlaf"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "app": {
+    "name": "Loretta",
+    "tagline": "Ihr persönlicher Gesundheitsbegleiter"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "profile": "Profil",
+    "settings": "Einstellungen",
+    "logout": "Abmelden"
+  },
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirm": "Bestätigen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "loading": "Wird geladen...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "yes": "Ja",
+    "no": "Nein"
+  },
+  "auth": {
+    "signIn": "Anmelden",
+    "signUp": "Registrieren",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "forgotPassword": "Passwort vergessen?"
+  },
+  "language": {
+    "en": "Englisch",
+    "de": "Deutsch",
+    "tr": "Türkisch"
+  }
+}
