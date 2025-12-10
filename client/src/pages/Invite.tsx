@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
@@ -65,6 +66,7 @@ interface TeamInvite {
 }
 
 export default function Invite() {
+  const { t } = useTranslation('dashboard');
   const { user } = useAuth();
   const { toast } = useToast();
   const [teams, setTeams] = useState<Team[]>([]);
@@ -520,7 +522,7 @@ export default function Invite() {
             <div className="flex items-center gap-3">
               <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
               <div>
-                <p className="font-bold text-foreground">Community Tip</p>
+                <p className="font-bold text-foreground">{t('community.communityTip')}</p>
                 <p className="text-sm text-muted-foreground">
                   Invite friends and family to join your team. Compare progress on the leaderboard and motivate each other!
                 </p>

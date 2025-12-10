@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
 import { 
   ChevronDown, 
   ChevronUp, 
@@ -106,6 +107,7 @@ const scienceData = {
 };
 
 export default function HealthScienceSection({ category, className = '' }: HealthScienceSectionProps) {
+  const { t } = useTranslation('dashboard');
   const [showScience, setShowScience] = useState(false);
   const data = scienceData[category];
   
@@ -125,7 +127,7 @@ export default function HealthScienceSection({ category, className = '' }: Healt
         <div className="flex items-start gap-2">
           <Brain className="w-4 h-4 text-chart-2 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-xs font-bold text-chart-2 uppercase mb-1">Community Tip</p>
+            <p className="text-xs font-bold text-chart-2 uppercase mb-1">{t('community.communityTip')}</p>
             <p className="text-xs lg:text-sm text-foreground leading-relaxed italic">"{data.tip}"</p>
           </div>
         </div>

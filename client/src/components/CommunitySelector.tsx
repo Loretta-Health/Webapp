@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useTranslation } from 'react-i18next';
 
 export type CommunityType = 'loretta' | 'family';
 
@@ -18,20 +19,22 @@ interface CommunitySelectorProps {
 }
 
 export default function CommunitySelector({ value, onChange, className = '' }: CommunitySelectorProps) {
+  const { t } = useTranslation('dashboard');
+  
   const communities = [
     {
       id: 'loretta' as CommunityType,
-      name: 'Loretta Community',
-      description: 'Compare with all Loretta members',
+      name: t('community.lorettaCommunity'),
+      description: t('community.lorettaDescription'),
       icon: Users,
-      memberCount: '2,847 members'
+      memberCount: t('community.lorettaMembers', { count: 2847 })
     },
     {
       id: 'family' as CommunityType,
-      name: 'My Family',
-      description: 'Just you and your family members',
+      name: t('community.myFamily'),
+      description: t('community.familyDescription'),
       icon: Home,
-      memberCount: '5 members'
+      memberCount: t('community.familyMembers', { count: 5 })
     }
   ];
 

@@ -135,7 +135,69 @@
   "medications": {
     "title": "Medikamente",
     "defaultExplanation": "Medikamenten-Tracking hilft bei der konsequenten Dosierung",
-    "defaultSimpleExplanation": "Wie verschrieben einnehmen"
+    "defaultSimpleExplanation": "Wie verschrieben einnehmen",
+    "todaysProgress": "Heutiger Fortschritt",
+    "allDosesTaken": "Alle Dosen heute eingenommen!",
+    "daysStreak": "{{count}} Tage"
+  },
+  "community": {
+    "lorettaCommunity": "Loretta Community",
+    "lorettaDescription": "Vergleiche dich mit allen Loretta-Mitgliedern",
+    "lorettaMembers": "{{count}} Mitglieder",
+    "myFamily": "Meine Familie",
+    "familyDescription": "Nur du und deine Familienmitglieder",
+    "familyMembers": "{{count}} Mitglieder",
+    "communityTip": "Community-Tipp",
+    "family": "Familie"
+  },
+  "missionData": {
+    "drinkWater": {
+      "title": "Ein Glas Wasser trinken",
+      "description": "Bleib hydriert, indem du mindestens ein Glas Wasser trinkst.",
+      "details": "Diese Mission hilft dir, den Flüssigkeitshaushalt den ganzen Tag über aufrechtzuerhalten. Wasser trinken ist essentiell für Körperfunktionen und Gesundheit.",
+      "communityTip": "Versuche, eine Wasserflasche auf deinem Schreibtisch als visuelle Erinnerung zu haben.",
+      "stepLabel": "Glas"
+    },
+    "jumpingJacks": {
+      "title": "10 Hampelmänner machen",
+      "description": "Bringe dein Blut in Schwung und erhöhe deinen Puls mit 10 Hampelmännern.",
+      "details": "Hampelmänner sind eine Ganzkörper-Herz-Kreislauf-Übung, die deine Herzfrequenz erhöht und die Durchblutung verbessert.",
+      "communityTip": "Beginne mit weniger Wiederholungen und steigere dich allmählich.",
+      "stepLabel": "Satz"
+    },
+    "walkSteps": {
+      "title": "5.000 Schritte gehen",
+      "description": "Bewege dich und erreiche dein tägliches Schrittziel.",
+      "details": "Gehen ist eine einfache aber effektive Übung, die die Herz-Kreislauf-Gesundheit verbessert.",
+      "communityTip": "Mache kurze Spaziergänge in den Pausen, um Schritte über den Tag zu sammeln.",
+      "stepLabel": "Schritte"
+    },
+    "deepBreathing": {
+      "title": "Tiefes Atmen üben",
+      "description": "Nimm dir einen Moment zum Entspannen mit Atemübungen.",
+      "details": "Tiefes Atmen hilft, Stress abzubauen und fördert die Entspannung.",
+      "communityTip": "Probiere die 4-7-8-Technik: 4 Sekunden einatmen, 7 halten, 8 ausatmen.",
+      "stepLabel": "Sitzung"
+    },
+    "benefits": {
+      "improvesEnergy": "Verbessert das Energieniveau",
+      "supportsBrain": "Unterstützt die Gehirnfunktion",
+      "maintainsKidney": "Erhält die Nierenfunktion",
+      "maintainsSkin": "Erhält die Hautgesundheit",
+      "burnsCalories": "Verbrennt schnell Kalorien",
+      "strengthensHeart": "Stärkt die Herzgesundheit",
+      "improvesCoordination": "Verbessert die Koordination",
+      "boostsEnergy": "Steigert das Energieniveau",
+      "improvesCirculation": "Verbessert die Durchblutung",
+      "reducesStress": "Reduziert Stress",
+      "improvesSleep": "Verbessert die Schlafqualität"
+    },
+    "alternatives": {
+      "herbalTea": "Kräutertee trinken",
+      "waterRichFruits": "Wasserreiche Früchte essen",
+      "walkInPlace": "Auf der Stelle gehen",
+      "stretchBreak": "Dehnpause machen"
+    }
   },
   "dialogs": {
     "privacyPolicy": "Datenschutzrichtlinie",

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTranslation } from 'react-i18next';
 import { 
   ChevronRight, 
   Pill, 
@@ -32,6 +33,7 @@ interface Medication {
 }
 
 export default function Medications() {
+  const { t } = useTranslation('dashboard');
   const [medications, setMedications] = useState<Medication[]>([
     { id: '1', name: 'Morning Medication', dosage: 'Omeprazole 20mg', time: 'Before breakfast', timeIcon: Sun, taken: false, xpReward: 25 },
     { id: '2', name: 'Afternoon Medication', dosage: 'Vitamin D 1000IU', time: 'With lunch', timeIcon: Sunset, taken: false, xpReward: 15 },
@@ -213,7 +215,7 @@ export default function Medications() {
           <div className="flex items-center gap-3">
             <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
             <div>
-              <p className="font-bold text-foreground">Community Tip</p>
+              <p className="font-bold text-foreground">{t('community.communityTip')}</p>
               <p className="text-sm text-muted-foreground">
                 Taking medications at the same time each day helps build a healthy routine and improves effectiveness.
               </p>

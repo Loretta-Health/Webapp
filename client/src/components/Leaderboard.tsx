@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Trophy, TrendingUp, TrendingDown, Users, Home } from 'lucide-react';
 import type { CommunityType } from './CommunitySelector';
+import { useTranslation } from 'react-i18next';
 
 interface LeaderboardEntry {
   rank: number;
@@ -43,6 +44,7 @@ export default function Leaderboard({
   className = '',
   communityType = 'loretta'
 }: LeaderboardProps) {
+  const { t } = useTranslation('dashboard');
   const displayEntries = entries || (communityType === 'family' ? familyEntries : lorettaEntries);
   const getRankBadge = (rank: number) => {
     return `#${rank}`;
@@ -65,7 +67,7 @@ export default function Leaderboard({
           </div>
           <Badge variant="outline" className="flex items-center gap-1">
             {communityType === 'family' ? <Home className="w-3 h-3" /> : <Users className="w-3 h-3" />}
-            {communityType === 'family' ? 'Family' : 'Community'}
+            {communityType === 'family' ? t('community.family') : t('community.lorettaCommunity')}
           </Badge>
         </div>
         
