@@ -186,5 +186,81 @@
     "xp": "XP",
     "complete": "Mission abschließen",
     "completed": "Abgeschlossen!"
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Willkommen bei Loretta!",
+      "subtitle": "Dein persönlicher Gesundheitsbegleiter",
+      "description": "Lass uns dein Gesundheitsprofil einrichten und dich auf deine Wellness-Reise bringen.",
+      "getStarted": "Los geht's",
+      "signIn": "Schon ein Konto? Anmelden"
+    },
+    "registration": {
+      "title": "Erstelle dein Profil",
+      "subtitle": "Erzähl uns ein wenig über dich",
+      "firstName": "Vorname",
+      "lastName": "Nachname",
+      "email": "E-Mail-Adresse",
+      "firstNamePlaceholder": "Gib deinen Vornamen ein",
+      "lastNamePlaceholder": "Gib deinen Nachnamen ein",
+      "emailPlaceholder": "Gib deine E-Mail-Adresse ein",
+      "continue": "Weiter",
+      "back": "Zurück"
+    },
+    "questionnaire": {
+      "title": "Gesundheitsbewertung",
+      "subtitle": "Beantworte ein paar Fragen, um dein Erlebnis zu personalisieren",
+      "progress": "{{current}} von {{total}}",
+      "continue": "Weiter",
+      "skip": "Diese Frage überspringen",
+      "skipLabel": "Ich möchte diese Frage nicht beantworten",
+      "previous": "Zurück",
+      "liveRisk": "Live-Risiko",
+      "answers": "{{count}} Antworten",
+      "followUp": "Nachfrage",
+      "core": "Kern",
+      "categories": {
+        "quickHealthCheck": "Schneller Gesundheitscheck",
+        "lifestyle": "Lebensstil",
+        "medicalHistory": "Krankengeschichte",
+        "oralHealth": "Mundgesundheit",
+        "financialHealth": "Finanzielle Gesundheit"
+      },
+      "validation": {
+        "required": "Dieses Feld ist erforderlich",
+        "invalidAge": "Bitte gib ein gültiges Alter ein (18-120)",
+        "invalidHeight": "Bitte gib eine gültige Größe ein",
+        "invalidWeight": "Bitte gib ein gültiges Gewicht ein",
+        "invalidTime": "Bitte gib eine gültige Zeit ein"
+      },
+      "units": {
+        "years": "Jahre",
+        "cm": "cm",
+        "kg": "kg"
+      }
+    },
+    "riskScore": {
+      "title": "Dein Gesundheitsscore",
+      "subtitle": "Basierend auf deinen Antworten",
+      "calculating": "Berechne deinen Score...",
+      "score": "Gesundheitsscore",
+      "diabetesRisk": "Diabetes-Risiko",
+      "skippedQuestions": "Du hast {{count}} Frage nicht beantwortet",
+      "skippedQuestionsPlural": "Du hast {{count}} Fragen nicht beantwortet",
+      "goodStart": "Toller Start! Lass uns gemeinsam weiter verbessern.",
+      "needsImprovement": "Wir haben Bereiche identifiziert, in denen wir dir helfen können.",
+      "trackProgress": "Erledige tägliche Aufgaben und verfolge deinen Fortschritt, um deinen Score zu verbessern!",
+      "earnXP": "XP verdienen",
+      "buildStreaks": "Serien aufbauen",
+      "getHealthier": "Gesünder werden",
+      "startJourney": "Starte deine Gesundheitsreise"
+    },
+    "progressSteps": {
+      "welcome": "Willkommen",
+      "consent": "Einwilligung",
+      "profile": "Profil",
+      "assessment": "Bewertung",
+      "complete": "Fertig"
+    }
   }
 }

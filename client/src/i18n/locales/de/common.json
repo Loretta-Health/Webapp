@@ -21,7 +21,9 @@
     "error": "Fehler",
     "success": "Erfolg",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "saving": "Speichern...",
+    "saveAndExit": "Speichern und beenden"
   },
   "auth": {
     "signIn": "Anmelden",
@@ -32,7 +34,6 @@
   },
   "language": {
     "en": "Englisch",
-    "de": "Deutsch",
-    "tr": "Türkisch"
+    "de": "Deutsch"
   }
 }
