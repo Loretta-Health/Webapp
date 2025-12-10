@@ -189,7 +189,7 @@ export default function MyDashboard() {
   
   const isNewUser = !allSetupComplete;
   const showSetupChecklist = !allSetupComplete;
-  const displayName = user?.username || 'Friend';
+  const displayName = profileData?.firstName || user?.firstName || user?.username || 'Friend';
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
