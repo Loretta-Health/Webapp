@@ -87,5 +87,12 @@
     "calories": "Kalorien",
     "water": "Wasser",
     "sleep": "Schlaf"
+  },
+  "common": {
+    "loading": "Wird geladen...",
+    "friend": "Freund",
+    "atTime": "um {{time}}",
+    "yesterdayAt": "gestern um {{time}}",
+    "onDateAt": "am {{date}} um {{time}}"
   }
 }

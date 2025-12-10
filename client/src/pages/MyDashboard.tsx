@@ -192,7 +192,7 @@ export default function MyDashboard() {
   
   const isNewUser = !allSetupComplete;
   const showSetupChecklist = !allSetupComplete;
-  const displayName = profileData?.firstName || user?.firstName || user?.username || 'Friend';
+  const displayName = profileData?.firstName || user?.firstName || user?.username || t('common.friend');
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -237,11 +237,11 @@ export default function MyDashboard() {
     
     let dateStr = '';
     if (isToday(date)) {
-      dateStr = `at ${time}`;
+      dateStr = t('common.atTime', { time });
     } else if (isYesterday(date)) {
-      dateStr = `yesterday at ${time}`;
+      dateStr = t('common.yesterdayAt', { time });
     } else {
-      dateStr = `on ${format(date, 'MMM d')} at ${time}`;
+      dateStr = t('common.onDateAt', { date: format(date, 'MMM d'), time });
     }
     
     return {
@@ -257,7 +257,7 @@ export default function MyDashboard() {
       <div className="flex h-screen items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
