@@ -132,14 +132,14 @@ export default function MyDashboard() {
   });
 
   const consentComplete = isConsentComplete || preferencesData?.consentGiven === true;
-  const profileComplete = !!(profileData?.firstName && profileData?.lastName);
+  const profileComplete = !!(profileData?.firstName && profileData?.lastName) || !!(user?.firstName && user?.lastName && user?.email);
   const questionnaireComplete = isQuestionnaireComplete || (Array.isArray(questionnaireData) && questionnaireData.length > 0);
   const firstCheckInComplete = Array.isArray(allEmotionalCheckins) && allEmotionalCheckins.length > 0;
   
   const setupSteps = [
     { id: 'consent', complete: consentComplete },
-    { id: 'questionnaire', complete: questionnaireComplete },
     { id: 'profile', complete: profileComplete },
+    { id: 'questionnaire', complete: questionnaireComplete },
     { id: 'checkin', complete: firstCheckInComplete },
   ];
   const completedStepsCount = setupSteps.filter(s => s.complete).length;
@@ -527,33 +527,6 @@ export default function MyDashboard() {
                           </div>
                         </Link>
                         
-                        <Link href="/onboarding">
-                          <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                            questionnaireComplete 
-                              ? 'bg-primary/10 border-primary/30' 
-                              : 'bg-card border-border hover:border-primary/50'
-                          }`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              questionnaireComplete ? 'bg-primary text-white' : 'bg-primary/20'
-                            }`}>
-                              {questionnaireComplete ? <Check className="w-4 h-4" /> : <ClipboardList className="w-4 h-4 text-primary" />}
-                            </div>
-                            <div className="flex-1">
-                              <p className={`font-bold text-sm ${questionnaireComplete ? 'line-through text-muted-foreground' : ''}`}>
-                                Complete Health Questionnaire
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {questionnaireComplete ? 'Completed' : 'Answer questions to get your personalized risk score'}
-                              </p>
-                            </div>
-                            {questionnaireComplete ? (
-                              <Badge className="bg-primary text-white border-0">Done</Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-primary border-primary">+50 XP</Badge>
-                            )}
-                          </div>
-                        </Link>
-                        
                         <Link href="/profile">
                           <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
                             profileComplete 
@@ -577,6 +550,33 @@ export default function MyDashboard() {
                               <Badge className="bg-chart-3 text-white border-0">Done</Badge>
                             ) : (
                               <Badge variant="outline" className="text-chart-3 border-chart-3">+25 XP</Badge>
+                            )}
+                          </div>
+                        </Link>
+                        
+                        <Link href="/onboarding">
+                          <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                            questionnaireComplete 
+                              ? 'bg-primary/10 border-primary/30' 
+                              : 'bg-card border-border hover:border-primary/50'
+                          }`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              questionnaireComplete ? 'bg-primary text-white' : 'bg-primary/20'
+                            }`}>
+                              {questionnaireComplete ? <Check className="w-4 h-4" /> : <ClipboardList className="w-4 h-4 text-primary" />}
+                            </div>
+                            <div className="flex-1">
+                              <p className={`font-bold text-sm ${questionnaireComplete ? 'line-through text-muted-foreground' : ''}`}>
+                                Complete Health Questionnaire
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {questionnaireComplete ? 'Completed' : 'Answer questions to get your personalized risk score'}
+                              </p>
+                            </div>
+                            {questionnaireComplete ? (
+                              <Badge className="bg-primary text-white border-0">Done</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-primary border-primary">+50 XP</Badge>
                             )}
                           </div>
                         </Link>
