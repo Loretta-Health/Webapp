@@ -74,17 +74,24 @@ interface Achievement {
 interface DbAchievement {
   id: string;
   userId: string;
-  achievementKey: string;
-  title: string;
-  description: string;
-  icon: string;
-  rarity: string;
+  achievementId: string;
+  progress: number;
   unlocked: boolean;
   unlockedAt: string | null;
-  progress: number;
-  maxProgress: number;
   createdAt: string;
   updatedAt: string;
+  achievement: {
+    id: string;
+    title: string;
+    description: string;
+    icon: string;
+    rarity: string;
+    maxProgress: number;
+    xpReward: number;
+    category: string;
+    sortOrder: number;
+    createdAt: string;
+  };
 }
 
 function formatRelativeDate(dateString: string | null, t: (key: string, options?: Record<string, unknown>) => string): string | undefined {
@@ -106,15 +113,15 @@ function formatRelativeDate(dateString: string | null, t: (key: string, options?
 
 function mapDbToAchievement(dbAchievement: DbAchievement, t: (key: string, options?: Record<string, unknown>) => string): Achievement {
   return {
-    id: dbAchievement.achievementKey,
-    title: dbAchievement.title,
-    description: dbAchievement.description,
-    icon: dbAchievement.icon as Achievement['icon'],
+    id: dbAchievement.achievementId,
+    title: dbAchievement.achievement.title,
+    description: dbAchievement.achievement.description,
+    icon: dbAchievement.achievement.icon as Achievement['icon'],
     unlocked: dbAchievement.unlocked,
-    rarity: dbAchievement.rarity as Achievement['rarity'],
+    rarity: dbAchievement.achievement.rarity as Achievement['rarity'],
     unlockedDate: formatRelativeDate(dbAchievement.unlockedAt, t),
     progress: dbAchievement.progress,
-    maxProgress: dbAchievement.maxProgress,
+    maxProgress: dbAchievement.achievement.maxProgress,
   };
 }
 
