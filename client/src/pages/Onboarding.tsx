@@ -1286,7 +1286,7 @@ export default function Onboarding() {
 
   const legacyQuestionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
   const legacyConsentComplete = preferencesData?.consentGiven === true || localStorage.getItem('loretta_consent') === 'accepted';
-  const profileComplete = !!(profileData?.firstName && profileData?.lastName && profileData?.email);
+  const profileComplete = !!(profileData?.firstName && profileData?.lastName && profileData?.email) || !!(user?.firstName && user?.lastName && user?.email);
   
   const allLoading = progressLoading || questLoading || profileLoading || prefsLoading;
   const effectiveQuestionnaireComplete = isQuestionnaireComplete || legacyQuestionnaireComplete;
