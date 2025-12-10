@@ -661,12 +661,12 @@ interface BackendProfile {
 type Language = 'en' | 'de';
 
 export default function Profile() {
-  const { i18n } = useTranslation('profile');
+  const { t, i18n } = useTranslation('profile');
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('loretta_language');
     return saved === 'de' ? 'de' : 'en';
   });
-  const t = translations[language];
+  const localT = translations[language];
   const [activeTab, setActiveTab] = useState('basic');
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>(emptyProfile);
@@ -878,8 +878,8 @@ export default function Profile() {
     saveProfileMutation.mutate(editForm);
     setIsEditOpen(false);
     toast({
-      title: t.editModal.saved,
-      description: t.editModal.savedDescription,
+      title: localT.editModal.saved,
+      description: localT.editModal.savedDescription,
     });
   };
 
@@ -957,64 +957,64 @@ export default function Profile() {
   };
 
   const getBasicInfo = () => [
-    { icon: User, label: t.basicInfo.age, value: `${profileData.age} ${language === 'en' ? 'years' : 'Jahre'}`, iconColor: 'text-primary', bgColor: 'bg-primary/10' },
-    { icon: Ruler, label: t.basicInfo.height, value: `${profileData.height} cm`, iconColor: 'text-chart-2', bgColor: 'bg-chart-2/10' },
-    { icon: Scale, label: t.basicInfo.weight, value: `${profileData.weight} kg`, iconColor: 'text-chart-3', bgColor: 'bg-chart-3/10' },
-    { icon: Droplets, label: t.basicInfo.bloodType, value: profileData.bloodType, iconColor: 'text-destructive', bgColor: 'bg-destructive/10' },
-    { icon: AlertCircle, label: t.basicInfo.allergies, value: profileData.allergies || t.basicInfo.none, iconColor: 'text-chart-1', bgColor: 'bg-chart-1/10' },
+    { icon: User, label: localT.basicInfo.age, value: `${profileData.age} ${language === 'en' ? 'years' : 'Jahre'}`, iconColor: 'text-primary', bgColor: 'bg-primary/10' },
+    { icon: Ruler, label: localT.basicInfo.height, value: `${profileData.height} cm`, iconColor: 'text-chart-2', bgColor: 'bg-chart-2/10' },
+    { icon: Scale, label: localT.basicInfo.weight, value: `${profileData.weight} kg`, iconColor: 'text-chart-3', bgColor: 'bg-chart-3/10' },
+    { icon: Droplets, label: localT.basicInfo.bloodType, value: profileData.bloodType, iconColor: 'text-destructive', bgColor: 'bg-destructive/10' },
+    { icon: AlertCircle, label: localT.basicInfo.allergies, value: profileData.allergies || localT.basicInfo.none, iconColor: 'text-chart-1', bgColor: 'bg-chart-1/10' },
   ];
 
   const getSocialFactors = () => [
-    { label: t.socialFactors.ethnicity, value: getDisplayValue('ethnicity', profileData.ethnicity) },
-    { label: t.socialFactors.socioeconomicStatus, value: getDisplayValue('socioeconomicStatus', profileData.socioeconomicStatus) },
-    { label: t.socialFactors.educationLevel, value: getDisplayValue('educationLevel', profileData.educationLevel) },
-    { label: t.socialFactors.employmentStatus, value: getDisplayValue('employmentStatus', profileData.employmentStatus) },
-    { label: t.socialFactors.housingStatus, value: getDisplayValue('housingStatus', profileData.housingStatus) },
+    { label: localT.socialFactors.ethnicity, value: getDisplayValue('ethnicity', profileData.ethnicity) },
+    { label: localT.socialFactors.socioeconomicStatus, value: getDisplayValue('socioeconomicStatus', profileData.socioeconomicStatus) },
+    { label: localT.socialFactors.educationLevel, value: getDisplayValue('educationLevel', profileData.educationLevel) },
+    { label: localT.socialFactors.employmentStatus, value: getDisplayValue('employmentStatus', profileData.employmentStatus) },
+    { label: localT.socialFactors.housingStatus, value: getDisplayValue('housingStatus', profileData.housingStatus) },
   ];
 
   const getQuestionnaires = () => [
     { 
       key: 'onboarding',
-      title: t.questionnaires.onboarding, 
+      title: localT.questionnaires.onboarding, 
       icon: questionCategories.onboarding.icon,
       iconColor: 'text-primary',
       bgColor: 'bg-primary/10',
       questions: questionCategories.onboarding.questionIds.map(id => ({
         id,
-        text: t.questionTexts[id as keyof typeof t.questionTexts] || id
+        text: localT.questionTexts[id as keyof typeof localT.questionTexts] || id
       }))
     },
     { 
       key: 'diet',
-      title: t.questionnaires.diet, 
+      title: localT.questionnaires.diet, 
       icon: questionCategories.diet.icon,
       iconColor: 'text-chart-3',
       bgColor: 'bg-chart-3/10',
       questions: questionCategories.diet.questionIds.map(id => ({
         id,
-        text: t.questionTexts[id as keyof typeof t.questionTexts] || id
+        text: localT.questionTexts[id as keyof typeof localT.questionTexts] || id
       }))
     },
     { 
       key: 'sleep',
-      title: t.questionnaires.sleep, 
+      title: localT.questionnaires.sleep, 
       icon: questionCategories.sleep.icon,
       iconColor: 'text-chart-2',
       bgColor: 'bg-chart-2/10',
       questions: questionCategories.sleep.questionIds.map(id => ({
         id,
-        text: t.questionTexts[id as keyof typeof t.questionTexts] || id
+        text: localT.questionTexts[id as keyof typeof localT.questionTexts] || id
       }))
     },
     { 
       key: 'stress',
-      title: t.questionnaires.stress, 
+      title: localT.questionnaires.stress, 
       icon: questionCategories.stress.icon,
       iconColor: 'text-destructive',
       bgColor: 'bg-destructive/10',
       questions: questionCategories.stress.questionIds.map(id => ({
         id,
-        text: t.questionTexts[id as keyof typeof t.questionTexts] || id
+        text: localT.questionTexts[id as keyof typeof localT.questionTexts] || id
       }))
     },
   ];
@@ -1139,9 +1139,9 @@ export default function Profile() {
   };
 
   const getBehaviors = () => [
-    { icon: Utensils, label: t.behaviors.diet, value: getDietSummary(), iconColor: 'text-chart-3', bgColor: 'bg-chart-3/10' },
-    { icon: Moon, label: t.questionnaires.sleep, value: getSleepSummary(), iconColor: 'text-chart-2', bgColor: 'bg-chart-2/10' },
-    { icon: Brain, label: t.questionnaires.stress, value: getStressSummary(), iconColor: 'text-destructive', bgColor: 'bg-destructive/10' },
+    { icon: Utensils, label: localT.behaviors.diet, value: getDietSummary(), iconColor: 'text-chart-3', bgColor: 'bg-chart-3/10' },
+    { icon: Moon, label: localT.questionnaires.sleep, value: getSleepSummary(), iconColor: 'text-chart-2', bgColor: 'bg-chart-2/10' },
+    { icon: Brain, label: localT.questionnaires.stress, value: getStressSummary(), iconColor: 'text-destructive', bgColor: 'bg-destructive/10' },
   ];
 
   const getActivityDisplayData = () => {
@@ -1207,11 +1207,11 @@ export default function Profile() {
               <Link href="/my-dashboard">
                 <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
                   <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-                  {t.back}
+                  {localT.back}
                 </Button>
               </Link>
               <div className="text-center">
-                <h1 className="text-xl font-black text-white">{t.profile}</h1>
+                <h1 className="text-xl font-black text-white">{localT.profile}</h1>
                 <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
               </div>
               <div className="flex items-center gap-1">
@@ -1241,12 +1241,10 @@ export default function Profile() {
                 <User className="w-12 h-12 text-primary" />
               </div>
               <h2 className="text-2xl font-black text-foreground mb-3">
-                {language === 'en' ? 'Complete Your Profile' : 'Vervollständige dein Profil'}
+                {t('emptyProfile.completeProfile')}
               </h2>
               <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                {language === 'en' 
-                  ? "You haven't filled in your profile yet. Add your health information to get personalized insights and track your progress." 
-                  : 'Du hast dein Profil noch nicht ausgefüllt. Füge deine Gesundheitsinformationen hinzu, um personalisierte Einblicke zu erhalten und deinen Fortschritt zu verfolgen.'}
+                {t('emptyProfile.notFilledIn')}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button 
@@ -1255,7 +1253,7 @@ export default function Profile() {
                   data-testid="button-fill-profile"
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  {language === 'en' ? 'Fill In Profile' : 'Profil ausfüllen'}
+                  {t('emptyProfile.fillInProfile')}
                 </Button>
                 <Link href="/onboarding">
                   <Button 
@@ -1264,7 +1262,7 @@ export default function Profile() {
                     data-testid="button-complete-onboarding"
                   >
                     <ClipboardList className="w-4 h-4 mr-2" />
-                    {language === 'en' ? 'Complete Onboarding' : 'Onboarding abschließen'}
+                    {t('emptyProfile.completeOnboarding')}
                   </Button>
                 </Link>
               </div>
@@ -1278,24 +1276,24 @@ export default function Profile() {
               </div>
               <div>
                 <h3 className="font-bold text-foreground mb-2">
-                  {language === 'en' ? 'Why complete your profile?' : 'Warum dein Profil vervollständigen?'}
+                  {t('emptyProfile.whyComplete')}
                 </h3>
                 <ul className="text-sm text-muted-foreground space-y-2">
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-chart-2" />
-                    {language === 'en' ? 'Get personalized health recommendations' : 'Erhalte personalisierte Gesundheitsempfehlungen'}
+                    {t('emptyProfile.benefit1')}
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-chart-2" />
-                    {language === 'en' ? 'Track your health metrics over time' : 'Verfolge deine Gesundheitswerte über Zeit'}
+                    {t('emptyProfile.benefit2')}
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-chart-2" />
-                    {language === 'en' ? 'Calculate your health risk score' : 'Berechne deinen Gesundheitsrisiko-Score'}
+                    {t('emptyProfile.benefit3')}
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-chart-2" />
-                    {language === 'en' ? 'Earn XP and unlock achievements' : 'Verdiene XP und schalte Erfolge frei'}
+                    {t('emptyProfile.benefit4')}
                   </li>
                 </ul>
               </div>
@@ -1308,15 +1306,15 @@ export default function Profile() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Edit className="w-5 h-5 text-primary" />
-                {t.editModal.title}
+                {localT.editModal.title}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-6 py-4">
               <div className="space-y-4">
-                <h4 className="font-bold text-sm text-muted-foreground uppercase">{t.editModal.name}</h4>
+                <h4 className="font-bold text-sm text-muted-foreground uppercase">{localT.editModal.name}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">{t.editModal.firstName}</Label>
+                    <Label htmlFor="firstName">{localT.editModal.firstName}</Label>
                     <Input
                       id="firstName"
                       value={editForm.firstName}
@@ -1325,7 +1323,7 @@ export default function Profile() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">{t.editModal.lastName}</Label>
+                    <Label htmlFor="lastName">{localT.editModal.lastName}</Label>
                     <Input
                       id="lastName"
                       value={editForm.lastName}
@@ -1337,10 +1335,10 @@ export default function Profile() {
               </div>
               <Separator />
               <div className="space-y-4">
-                <h4 className="font-bold text-sm text-muted-foreground uppercase">{t.editModal.basicInfo}</h4>
+                <h4 className="font-bold text-sm text-muted-foreground uppercase">{localT.editModal.basicInfo}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="age">{t.editModal.age}</Label>
+                    <Label htmlFor="age">{localT.editModal.age}</Label>
                     <Input
                       id="age"
                       type="number"
@@ -1350,7 +1348,7 @@ export default function Profile() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="height">{t.editModal.height}</Label>
+                    <Label htmlFor="height">{localT.editModal.height}</Label>
                     <Input
                       id="height"
                       type="number"
@@ -1360,7 +1358,7 @@ export default function Profile() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="weight">{t.editModal.weight}</Label>
+                    <Label htmlFor="weight">{localT.editModal.weight}</Label>
                     <Input
                       id="weight"
                       type="number"
@@ -1370,7 +1368,7 @@ export default function Profile() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="bloodType">{t.editModal.bloodType}</Label>
+                    <Label htmlFor="bloodType">{localT.editModal.bloodType}</Label>
                     <Select
                       value={editForm.bloodType}
                       onValueChange={(value) => setEditForm({ ...editForm, bloodType: value })}
@@ -1392,7 +1390,7 @@ export default function Profile() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="allergies">{t.editModal.allergies}</Label>
+                  <Label htmlFor="allergies">{localT.editModal.allergies}</Label>
                   <Input
                     id="allergies"
                     value={editForm.allergies}
@@ -1405,11 +1403,11 @@ export default function Profile() {
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setIsEditOpen(false)}>
                 <X className="w-4 h-4 mr-2" />
-                {t.editModal.cancel}
+                {localT.editModal.cancel}
               </Button>
               <Button onClick={handleSave} className="bg-gradient-to-r from-primary to-chart-2">
                 <Save className="w-4 h-4 mr-2" />
-                {t.editModal.save}
+                {localT.editModal.save}
               </Button>
             </div>
           </DialogContent>
@@ -1427,11 +1425,11 @@ export default function Profile() {
             <Link href="/my-dashboard">
               <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
                 <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-                {t.back}
+                {localT.back}
               </Button>
             </Link>
             <div className="text-center">
-              <h1 className="text-xl font-black text-white">{t.profile}</h1>
+              <h1 className="text-xl font-black text-white">{localT.profile}</h1>
               <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
             </div>
             <div className="flex items-center gap-1">
@@ -1488,11 +1486,11 @@ export default function Profile() {
                 data-testid="button-edit-profile"
               >
                 <Edit className="w-3 h-3" />
-                {t.editProfile}
+                {localT.editProfile}
               </button>
               <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
-                <Badge className="bg-gradient-to-r from-primary to-chart-2 text-white border-0">{t.level} 14</Badge>
-                <Badge variant="outline">59 {t.dayStreak}</Badge>
+                <Badge className="bg-gradient-to-r from-primary to-chart-2 text-white border-0">{localT.level} 14</Badge>
+                <Badge variant="outline">59 {localT.dayStreak}</Badge>
               </div>
             </div>
             <Link href="/calendar">
@@ -1506,11 +1504,11 @@ export default function Profile() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="grid grid-cols-5 w-full" data-testid="profile-tabs">
-            <TabsTrigger value="basic" data-testid="tab-basic">{t.tabs.basic}</TabsTrigger>
-            <TabsTrigger value="social" data-testid="tab-social">{t.tabs.social}</TabsTrigger>
-            <TabsTrigger value="questionnaires" data-testid="tab-questionnaires">{t.tabs.questionnaires}</TabsTrigger>
-            <TabsTrigger value="behaviors" data-testid="tab-behaviors">{t.tabs.behaviors}</TabsTrigger>
-            <TabsTrigger value="activity" data-testid="tab-activity">{t.tabs.activity}</TabsTrigger>
+            <TabsTrigger value="basic" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
+            <TabsTrigger value="social" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
+            <TabsTrigger value="questionnaires" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
+            <TabsTrigger value="behaviors" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
+            <TabsTrigger value="activity" data-testid="tab-activity">{localT.tabs.activity}</TabsTrigger>
           </TabsList>
 
           {/* Basic Information */}
@@ -1518,7 +1516,7 @@ export default function Profile() {
             <Card className="p-6">
               <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
                 <User className="w-5 h-5 text-primary" />
-                {t.basicInfo.title}
+                {localT.basicInfo.title}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {getBasicInfo().map((info, index) => (
@@ -1548,7 +1546,7 @@ export default function Profile() {
             <Card className="p-6">
               <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />
-                {t.socialFactors.title}
+                {localT.socialFactors.title}
               </h3>
               <div className="divide-y divide-border">
                 {getSocialFactors().map((factor, index) => (
@@ -1573,7 +1571,7 @@ export default function Profile() {
             <Card className="p-6">
               <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
                 <ClipboardList className="w-5 h-5 text-primary" />
-                {t.questionnaires.title}
+                {localT.questionnaires.title}
               </h3>
               <div className="space-y-3">
                 {getQuestionnaires().map((category, index) => {
@@ -1603,7 +1601,7 @@ export default function Profile() {
                               <p className="font-bold text-foreground">{category.title}</p>
                               <div className="flex items-center gap-2">
                                 <p className="text-sm text-muted-foreground">
-                                  {answeredCount}/{totalCount} {t.questionnaires.questions}
+                                  {answeredCount}/{totalCount} {localT.questionnaires.questions}
                                 </p>
                                 {isComplete && (
                                   <Badge variant="secondary" className="text-xs bg-chart-2/20 text-chart-2">
@@ -1791,7 +1789,7 @@ export default function Profile() {
           <TabsContent value="behaviors">
             <Card className="p-6">
               <h3 className="text-lg font-black text-foreground mb-4">
-                {t.behaviors.title}
+                {localT.behaviors.title}
               </h3>
               <div className="space-y-3">
                 {getBehaviors().map((behavior, index) => (
@@ -1821,7 +1819,7 @@ export default function Profile() {
             <Card className="p-6">
               <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
                 <Footprints className="w-5 h-5 text-primary" />
-                {t.activity.title}
+                {localT.activity.title}
               </h3>
               {(() => {
                 const { avgSteps, avgGoal, displayData, hasData } = getWeeklyStats();
@@ -1829,14 +1827,14 @@ export default function Profile() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-primary/10 to-chart-2/10">
                       <div>
-                        <p className="text-sm text-muted-foreground">{t.activity.weeklyAverage}</p>
+                        <p className="text-sm text-muted-foreground">{localT.activity.weeklyAverage}</p>
                         <p className="text-2xl font-black text-foreground">
-                          {hasData ? avgSteps.toLocaleString() : '--'} {t.activity.steps}
+                          {hasData ? avgSteps.toLocaleString() : '--'} {localT.activity.steps}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-muted-foreground">{t.activity.goal}</p>
-                        <p className="text-2xl font-black text-primary">{avgGoal.toLocaleString()} {t.activity.steps}</p>
+                        <p className="text-sm text-muted-foreground">{localT.activity.goal}</p>
+                        <p className="text-2xl font-black text-primary">{avgGoal.toLocaleString()} {localT.activity.steps}</p>
                       </div>
                     </div>
                     
@@ -2006,7 +2004,7 @@ export default function Profile() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black">{t.editModal.title}</DialogTitle>
+            <DialogTitle className="text-xl font-black">{localT.editModal.title}</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6 py-4">
@@ -2068,10 +2066,10 @@ export default function Profile() {
 
             {/* Name Section */}
             <div className="space-y-4">
-              <h4 className="font-bold text-foreground">{t.editModal.name}</h4>
+              <h4 className="font-bold text-foreground">{localT.editModal.name}</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">{t.editModal.firstName}</Label>
+                  <Label htmlFor="firstName">{localT.editModal.firstName}</Label>
                   <Input
                     id="firstName"
                     value={editForm.firstName}
@@ -2080,7 +2078,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">{t.editModal.lastName}</Label>
+                  <Label htmlFor="lastName">{localT.editModal.lastName}</Label>
                   <Input
                     id="lastName"
                     value={editForm.lastName}
@@ -2093,10 +2091,10 @@ export default function Profile() {
 
             {/* Basic Info Section */}
             <div className="space-y-4">
-              <h4 className="font-bold text-foreground">{t.editModal.basicInfo}</h4>
+              <h4 className="font-bold text-foreground">{localT.editModal.basicInfo}</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="age">{t.editModal.age}</Label>
+                  <Label htmlFor="age">{localT.editModal.age}</Label>
                   <Input
                     id="age"
                     type="number"
@@ -2106,7 +2104,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="height">{t.editModal.height}</Label>
+                  <Label htmlFor="height">{localT.editModal.height}</Label>
                   <Input
                     id="height"
                     type="number"
@@ -2116,7 +2114,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="weight">{t.editModal.weight}</Label>
+                  <Label htmlFor="weight">{localT.editModal.weight}</Label>
                   <Input
                     id="weight"
                     type="number"
@@ -2126,7 +2124,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="bloodType">{t.editModal.bloodType}</Label>
+                  <Label htmlFor="bloodType">{localT.editModal.bloodType}</Label>
                   <Select 
                     value={editForm.bloodType} 
                     onValueChange={(value) => setEditForm({ ...editForm, bloodType: value })}
@@ -2148,7 +2146,7 @@ export default function Profile() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="allergies">{t.editModal.allergies}</Label>
+                <Label htmlFor="allergies">{localT.editModal.allergies}</Label>
                 <Input
                   id="allergies"
                   value={editForm.allergies}
@@ -2161,10 +2159,10 @@ export default function Profile() {
 
             {/* Social Info Section */}
             <div className="space-y-4">
-              <h4 className="font-bold text-foreground">{t.editModal.socialInfo}</h4>
+              <h4 className="font-bold text-foreground">{localT.editModal.socialInfo}</h4>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="ethnicity">{t.editModal.ethnicity}</Label>
+                  <Label htmlFor="ethnicity">{localT.editModal.ethnicity}</Label>
                   <Select 
                     value={editForm.ethnicity} 
                     onValueChange={(value) => setEditForm({ ...editForm, ethnicity: value })}
@@ -2183,7 +2181,7 @@ export default function Profile() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="socioeconomicStatus">{t.editModal.socioeconomicStatus}</Label>
+                  <Label htmlFor="socioeconomicStatus">{localT.editModal.socioeconomicStatus}</Label>
                   <Select 
                     value={editForm.socioeconomicStatus} 
                     onValueChange={(value) => setEditForm({ ...editForm, socioeconomicStatus: value })}
@@ -2201,7 +2199,7 @@ export default function Profile() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="educationLevel">{t.editModal.educationLevel}</Label>
+                  <Label htmlFor="educationLevel">{localT.editModal.educationLevel}</Label>
                   <Select 
                     value={editForm.educationLevel} 
                     onValueChange={(value) => setEditForm({ ...editForm, educationLevel: value })}
@@ -2220,7 +2218,7 @@ export default function Profile() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="employmentStatus">{t.editModal.employmentStatus}</Label>
+                  <Label htmlFor="employmentStatus">{localT.editModal.employmentStatus}</Label>
                   <Select 
                     value={editForm.employmentStatus} 
                     onValueChange={(value) => setEditForm({ ...editForm, employmentStatus: value })}
@@ -2239,7 +2237,7 @@ export default function Profile() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="housingStatus">{t.editModal.housingStatus}</Label>
+                  <Label htmlFor="housingStatus">{localT.editModal.housingStatus}</Label>
                   <Select 
                     value={editForm.housingStatus} 
                     onValueChange={(value) => setEditForm({ ...editForm, housingStatus: value })}
@@ -2261,11 +2259,11 @@ export default function Profile() {
 
           <div className="flex gap-3 justify-end">
             <Button variant="outline" onClick={() => setIsEditOpen(false)} data-testid="button-cancel-edit">
-              {t.editModal.cancel}
+              {localT.editModal.cancel}
             </Button>
             <Button onClick={handleSave} className="bg-gradient-to-r from-primary to-chart-2" data-testid="button-save-profile">
               <Save className="w-4 h-4 mr-2" />
-              {t.editModal.save}
+              {localT.editModal.save}
             </Button>
           </div>
         </DialogContent>

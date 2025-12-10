@@ -160,5 +160,17 @@
       "often": "Oft",
       "always": "Immer"
     }
+  },
+  "emptyProfile": {
+    "healthProfile": "Gesundheitsprofil",
+    "completeProfile": "Vervollständige dein Profil",
+    "notFilledIn": "Du hast dein Profil noch nicht ausgefüllt. Füge deine Gesundheitsinformationen hinzu, um personalisierte Einblicke zu erhalten und deinen Fortschritt zu verfolgen.",
+    "fillInProfile": "Profil ausfüllen",
+    "completeOnboarding": "Onboarding abschließen",
+    "whyComplete": "Warum dein Profil vervollständigen?",
+    "benefit1": "Erhalte personalisierte Gesundheitsempfehlungen",
+    "benefit2": "Verfolge deine Gesundheitswerte über Zeit",
+    "benefit3": "Berechne deinen Gesundheitsrisiko-Score",
+    "benefit4": "Verdiene XP und schalte Erfolge frei"
   }
 }

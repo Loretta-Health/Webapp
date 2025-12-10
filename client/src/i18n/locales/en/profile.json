@@ -160,5 +160,17 @@
       "often": "Often",
       "always": "Always"
     }
+  },
+  "emptyProfile": {
+    "healthProfile": "Health Profile",
+    "completeProfile": "Complete Your Profile",
+    "notFilledIn": "You haven't filled in your profile yet. Add your health information to get personalized insights and track your progress.",
+    "fillInProfile": "Fill In Profile",
+    "completeOnboarding": "Complete Onboarding",
+    "whyComplete": "Why complete your profile?",
+    "benefit1": "Get personalized health recommendations",
+    "benefit2": "Track your health metrics over time",
+    "benefit3": "Calculate your health risk score",
+    "benefit4": "Earn XP and unlock achievements"
   }
 }
