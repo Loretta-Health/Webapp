@@ -18,28 +18,31 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useSearch } from 'wouter';
+import { useTranslation } from 'react-i18next';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 import { MissionCardView, CheckInConfirmationBanner, MetricCard } from '@/components/chat';
 import type { MetricData } from '@/components/chat';
 import { useChatLogic, type ChatMessage } from '@/hooks/useChatLogic';
 
-const suggestedQuestions = [
-  { icon: FileText, text: "Explain my lab results" },
-  { icon: Pill, text: "What are my medication side effects?" },
-  { icon: Heart, text: "How can I improve my heart health?" },
-  { icon: Activity, text: "What does my risk score mean?" },
-];
-
-const initialMessages: ChatMessage[] = [
-  {
-    id: '1',
-    role: 'assistant',
-    content: "Hello! I'm the Health Literacy Navigator. I can help you understand your medical documents, explain health terms, and answer questions about your health journey. How can I help you today?",
-    timestamp: new Date(),
-  }
-];
-
 export default function Chat() {
+  const { t } = useTranslation('pages');
+  
+  const suggestedQuestions = [
+    { icon: FileText, text: t('chat.suggestions.labResults') },
+    { icon: Pill, text: t('chat.suggestions.sideEffects') },
+    { icon: Heart, text: t('chat.suggestions.heartHealth') },
+    { icon: Activity, text: t('chat.suggestions.riskScore') },
+  ];
+
+  const initialMessages: ChatMessage[] = [
+    {
+      id: '1',
+      role: 'assistant',
+      content: t('chat.welcome'),
+      timestamp: new Date(),
+    }
+  ];
+
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -149,12 +152,12 @@ export default function Chat() {
           <Link href="/my-dashboard">
             <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
               <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-              Back
+              {t('chat.back')}
             </Button>
           </Link>
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-white" />
-            <h1 className="text-lg font-black text-white">Health Literacy Navigator</h1>
+            <h1 className="text-lg font-black text-white">{t('chat.title')}</h1>
           </div>
           <div className="w-16" />
         </div>
@@ -259,7 +262,7 @@ export default function Chat() {
 
           {messages.length === 1 && (
             <div className="p-4 border-t border-border">
-              <p className="text-xs text-muted-foreground mb-3">Ask about your medical documents:</p>
+              <p className="text-xs text-muted-foreground mb-3">{t('chat.suggestionsTitle')}</p>
               <div className="grid grid-cols-2 gap-2">
                 {suggestedQuestions.map((q, index) => (
                   <Button
@@ -336,7 +339,7 @@ export default function Chat() {
               <Input
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Ask about your health..."
+                placeholder={t('chat.placeholder')}
                 className="flex-1"
                 disabled={loading}
                 data-testid="input-chat-message"
@@ -351,10 +354,10 @@ export default function Chat() {
               </Button>
             </form>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Upload medical documents (PDF, images) or ask questions about your health
+              {t('chat.uploadHint')}
             </p>
             <p className="text-xs text-muted-foreground/70 mt-3 text-center border-t border-border pt-3">
-              <span className="font-semibold">Disclaimer:</span> Loretta is not a diagnostic tool and does not provide medical advice.
+              {t('chat.disclaimer')}
             </p>
           </div>
         </Card>

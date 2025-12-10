@@ -7,11 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
+  const { t } = useTranslation('auth');
   
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [registerForm, setRegisterForm] = useState({ 
@@ -44,12 +46,12 @@ export default function AuthPage() {
     setRegisterError('');
     
     if (registerForm.password !== registerForm.confirmPassword) {
-      setRegisterError('Passwords do not match');
+      setRegisterError(t('errors.passwordMismatch'));
       return;
     }
     
     if (registerForm.password.length < 6) {
-      setRegisterError('Password must be at least 6 characters');
+      setRegisterError(t('errors.passwordTooShort'));
       return;
     }
     
@@ -70,37 +72,37 @@ export default function AuthPage() {
             <div className="flex justify-center mb-4">
               <img src={lorettaLogo} alt="Loretta" className="h-12 brightness-0 invert" />
             </div>
-            <h1 className="text-2xl font-black text-white mb-1">Welcome to Loretta</h1>
-            <p className="text-primary-foreground/80 text-sm">Your personal health companion</p>
+            <h1 className="text-2xl font-black text-white mb-1">{t('welcome')}</h1>
+            <p className="text-primary-foreground/80 text-sm">{t('tagline')}</p>
           </div>
           <CardHeader className="text-center pt-6 pb-2">
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Sign In</TabsTrigger>
-                <TabsTrigger value="register">Sign Up</TabsTrigger>
+                <TabsTrigger value="login">{t('signIn')}</TabsTrigger>
+                <TabsTrigger value="register">{t('signUp')}</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-username">Username</Label>
+                    <Label htmlFor="login-username">{t('username')}</Label>
                     <Input
                       id="login-username"
                       type="text"
-                      placeholder="Enter your username"
+                      placeholder={t('placeholders.username')}
                       value={loginForm.username}
                       onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
+                    <Label htmlFor="login-password">{t('password')}</Label>
                     <Input
                       id="login-password"
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder={t('placeholders.password')}
                       value={loginForm.password}
                       onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
                       required
@@ -114,10 +116,10 @@ export default function AuthPage() {
                     {loginMutation.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing in...
+                        {t('signingIn')}
                       </>
                     ) : (
-                      'Sign In'
+                      t('signIn')
                     )}
                   </Button>
                 </form>
@@ -127,64 +129,64 @@ export default function AuthPage() {
                 <form onSubmit={handleRegister} className="space-y-4 mt-4">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label htmlFor="register-firstname">First Name</Label>
+                      <Label htmlFor="register-firstname">{t('firstName')}</Label>
                       <Input
                         id="register-firstname"
                         type="text"
-                        placeholder="First name"
+                        placeholder={t('placeholders.firstName')}
                         value={registerForm.firstName}
                         onChange={(e) => setRegisterForm({ ...registerForm, firstName: e.target.value })}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="register-lastname">Last Name</Label>
+                      <Label htmlFor="register-lastname">{t('lastName')}</Label>
                       <Input
                         id="register-lastname"
                         type="text"
-                        placeholder="Last name"
+                        placeholder={t('placeholders.lastName')}
                         value={registerForm.lastName}
                         onChange={(e) => setRegisterForm({ ...registerForm, lastName: e.target.value })}
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-email">Email</Label>
+                    <Label htmlFor="register-email">{t('email')}</Label>
                     <Input
                       id="register-email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder={t('placeholders.email')}
                       value={registerForm.email}
                       onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-username">Username</Label>
+                    <Label htmlFor="register-username">{t('username')}</Label>
                     <Input
                       id="register-username"
                       type="text"
-                      placeholder="Choose a username"
+                      placeholder={t('placeholders.chooseUsername')}
                       value={registerForm.username}
                       onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-password">Password</Label>
+                    <Label htmlFor="register-password">{t('password')}</Label>
                     <Input
                       id="register-password"
                       type="password"
-                      placeholder="Create a password (min 6 characters)"
+                      placeholder={t('placeholders.createPassword')}
                       value={registerForm.password}
                       onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="register-confirm">Confirm Password</Label>
+                    <Label htmlFor="register-confirm">{t('confirmPassword')}</Label>
                     <Input
                       id="register-confirm"
                       type="password"
-                      placeholder="Confirm your password"
+                      placeholder={t('placeholders.confirmPassword')}
                       value={registerForm.confirmPassword}
                       onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
                       required
@@ -201,10 +203,10 @@ export default function AuthPage() {
                     {registerMutation.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating account...
+                        {t('creatingAccount')}
                       </>
                     ) : (
-                      'Create Account'
+                      t('createAccount')
                     )}
                   </Button>
                 </form>

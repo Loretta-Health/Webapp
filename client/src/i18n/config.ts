@@ -10,19 +10,33 @@ import dashboardEn from './locales/en/dashboard.json';
 import dashboardDe from './locales/de/dashboard.json';
 import dashboardTr from './locales/tr/dashboard.json';
 
+import authEn from './locales/en/auth.json';
+import authDe from './locales/de/auth.json';
+import authTr from './locales/tr/auth.json';
+
+import pagesEn from './locales/en/pages.json';
+import pagesDe from './locales/de/pages.json';
+import pagesTr from './locales/tr/pages.json';
+
 export const defaultNS = 'common';
 export const resources = {
   en: {
     common: commonEn,
     dashboard: dashboardEn,
+    auth: authEn,
+    pages: pagesEn,
   },
   de: {
     common: commonDe,
     dashboard: dashboardDe,
+    auth: authDe,
+    pages: pagesDe,
   },
   tr: {
     common: commonTr,
     dashboard: dashboardTr,
+    auth: authTr,
+    pages: pagesTr,
   },
 } as const;
 
@@ -32,20 +46,7 @@ i18n
   .init({
     fallbackLng: 'en',
     defaultNS,
-    resources: {
-      en: {
-        common: commonEn,
-        dashboard: dashboardEn,
-      },
-      de: {
-        common: commonDe,
-        dashboard: dashboardDe,
-      },
-      tr: {
-        common: commonTr,
-        dashboard: dashboardTr,
-      },
-    },
+    resources,
     interpolation: {
       escapeValue: false,
     },
