@@ -1266,7 +1266,7 @@ export default function Onboarding() {
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const { user } = useAuth();
   const userId = user?.id;
-  const { markQuestionnaireComplete, markConsentComplete, isQuestionnaireComplete, isConsentComplete, isLoading: progressLoading } = useOnboardingProgress();
+  const { markQuestionnaireComplete, markConsentComplete, isQuestionnaireComplete, isConsentComplete, isOnboardingComplete, isLoading: progressLoading } = useOnboardingProgress();
   const [initialStepSet, setInitialStepSet] = useState(false);
 
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
@@ -1291,30 +1291,28 @@ export default function Onboarding() {
   const allLoading = progressLoading || questLoading || profileLoading || prefsLoading;
   const effectiveQuestionnaireComplete = isQuestionnaireComplete || legacyQuestionnaireComplete;
   const effectiveConsentComplete = isConsentComplete || legacyConsentComplete;
+  const effectiveOnboardingComplete = isOnboardingComplete || effectiveQuestionnaireComplete;
   
   useEffect(() => {
-    if (!allLoading && effectiveQuestionnaireComplete) {
+    if (!allLoading && effectiveOnboardingComplete) {
       navigate('/my-dashboard');
     }
-  }, [allLoading, effectiveQuestionnaireComplete, navigate]);
+  }, [allLoading, effectiveOnboardingComplete, navigate]);
 
   useEffect(() => {
-    if (!allLoading && !initialStepSet) {
-      let targetStep: OnboardingStep = 'welcome';
+    if (!allLoading && !initialStepSet && !effectiveOnboardingComplete) {
+      let targetStep: OnboardingStep = 'consent';
       
-      if (effectiveConsentComplete) {
+      if (effectiveConsentComplete && !profileComplete) {
         targetStep = 'registration';
-      }
-      if (effectiveConsentComplete && profileComplete) {
+      } else if (effectiveConsentComplete && profileComplete) {
         targetStep = 'questionnaire';
       }
       
-      if (targetStep !== 'welcome') {
-        setStep(targetStep);
-      }
+      setStep(targetStep);
       setInitialStepSet(true);
     }
-  }, [allLoading, effectiveConsentComplete, profileComplete, initialStepSet]);
+  }, [allLoading, effectiveConsentComplete, profileComplete, effectiveOnboardingComplete, initialStepSet]);
   
   const fetchLiveScore = async (currentAnswers: QuestionnaireAnswer[]) => {
     if (currentAnswers.length < 3) return;
@@ -2795,6 +2793,14 @@ export default function Onboarding() {
       )}
     </motion.div>
   );
+
+  if (allLoading || !initialStepSet) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
