@@ -313,14 +313,7 @@ export const insertUserAchievementSchema = createInsertSchema(userAchievements).
   updatedAt: true,
 });
 
-export const updateUserAchievementSchema = z.object({
-  progress: z.number().optional(),
-  unlocked: z.boolean().optional(),
-  unlockedAt: z.date().optional(),
-});
-
 export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
-export type UpdateUserAchievement = z.infer<typeof updateUserAchievementSchema>;
 export type UserAchievement = typeof userAchievements.$inferSelect;
 
 // User activities table - stores daily activity metrics (steps, sleep, heart rate, calories)

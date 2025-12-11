@@ -645,43 +645,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/achievements/:id", async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { progress, unlocked, userId, xpReward, rarity } = req.body;
-      
-      const updateData: { progress?: number; unlocked?: boolean; unlockedAt?: Date } = {};
-      if (typeof progress === 'number') {
-        updateData.progress = progress;
-      }
-      if (typeof unlocked === 'boolean') {
-        updateData.unlocked = unlocked;
-        if (unlocked) {
-          updateData.unlockedAt = new Date();
-        }
-      }
-      
-      const updated = await storage.updateUserAchievement(id, updateData);
-      
-      if (!updated) {
-        return res.status(404).json({ error: "Achievement not found" });
-      }
-      
-      let xpAwarded = 0;
-      if (unlocked && userId) {
-        const reward = getXPRewardAmount('achievement_unlocked', { xpReward, rarity });
-        await storage.addXP(userId, reward);
-        xpAwarded = reward;
-      }
-      
-      res.json({ ...updated, xpAwarded });
-    } catch (error) {
-      console.error("Error updating achievement:", error);
-      res.status(400).json({ error: "Invalid achievement data" });
-    }
-  });
-
-  // Update user achievement progress by achievementId
+  // Update user achievement progress by achievementId (single source of truth for achievement updates)
   app.post("/api/achievements/:userId/progress/:achievementId", async (req, res) => {
     try {
       const { userId, achievementId } = req.params;
