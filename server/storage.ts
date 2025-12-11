@@ -32,6 +32,8 @@ import {
   type UpdateUserActivity,
   type OnboardingProgress,
   type UpdateOnboardingProgress,
+  type UserXp,
+  type InsertUserXp,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -47,6 +49,7 @@ import {
   userAchievements,
   userActivities,
   onboardingProgress,
+  userXp,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -80,8 +83,13 @@ export interface IStorage {
   // Gamification methods
   getUserGamification(userId: string): Promise<UserGamification | undefined>;
   saveUserGamification(data: InsertUserGamification): Promise<UserGamification>;
-  addXP(userId: string, amount: number): Promise<UserGamification>;
+  addXP(userId: string, amount: number): Promise<UserXp>;
   updateStreak(userId: string): Promise<UserGamification>;
+
+  // User XP methods (dedicated XP table)
+  getUserXp(userId: string): Promise<UserXp | undefined>;
+  setUserXp(userId: string, totalXp: number): Promise<UserXp>;
+  initUserXp(userId: string): Promise<UserXp>;
 
   // Risk score methods
   getLatestRiskScore(userId: string): Promise<RiskScore | undefined>;
@@ -313,22 +321,72 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async addXP(userId: string, amount: number): Promise<UserGamification> {
-    let gamification = await this.getUserGamification(userId);
+  async addXP(userId: string, amount: number): Promise<UserXp> {
+    let xpRecord = await this.getUserXp(userId);
     
-    if (!gamification) {
-      gamification = await this.saveUserGamification({ userId, xp: 0, level: 1 });
+    if (!xpRecord) {
+      xpRecord = await this.initUserXp(userId);
     }
 
-    const newXP = (gamification.xp || 0) + amount;
+    const newXP = (xpRecord.totalXp || 0) + amount;
     const newLevel = Math.floor(newXP / 100) + 1;
 
     const [updated] = await db
-      .update(userGamification)
-      .set({ xp: newXP, level: newLevel, updatedAt: new Date() })
-      .where(eq(userGamification.id, gamification.id))
+      .update(userXp)
+      .set({ totalXp: newXP, updatedAt: new Date() })
+      .where(eq(userXp.id, xpRecord.id))
+      .returning();
+
+    // Also sync to gamification table for backward compatibility
+    const gamification = await this.getUserGamification(userId);
+    if (gamification) {
+      await db
+        .update(userGamification)
+        .set({ xp: newXP, level: newLevel, updatedAt: new Date() })
+        .where(eq(userGamification.id, gamification.id));
+    } else {
+      await this.saveUserGamification({ userId, xp: newXP, level: newLevel });
+    }
+
+    return updated;
+  }
+
+  async getUserXp(userId: string): Promise<UserXp | undefined> {
+    const [record] = await db
+      .select()
+      .from(userXp)
+      .where(eq(userXp.userId, userId));
+    return record;
+  }
+
+  async setUserXp(userId: string, totalXpValue: number): Promise<UserXp> {
+    let xpRecord = await this.getUserXp(userId);
+    
+    if (!xpRecord) {
+      const [created] = await db
+        .insert(userXp)
+        .values({ userId, totalXp: totalXpValue })
+        .returning();
+      return created;
+    }
+
+    const [updated] = await db
+      .update(userXp)
+      .set({ totalXp: totalXpValue, updatedAt: new Date() })
+      .where(eq(userXp.id, xpRecord.id))
       .returning();
     return updated;
+  }
+
+  async initUserXp(userId: string): Promise<UserXp> {
+    const existing = await this.getUserXp(userId);
+    if (existing) return existing;
+
+    const [created] = await db
+      .insert(userXp)
+      .values({ userId, totalXp: 0 })
+      .returning();
+    return created;
   }
 
   async updateStreak(userId: string): Promise<UserGamification> {

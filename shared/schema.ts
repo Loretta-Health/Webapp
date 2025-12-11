@@ -125,6 +125,22 @@ export const insertUserGamificationSchema = createInsertSchema(userGamification)
 export type InsertUserGamification = z.infer<typeof insertUserGamificationSchema>;
 export type UserGamification = typeof userGamification.$inferSelect;
 
+// User XP table - dedicated table for tracking user XP totals
+export const userXp = pgTable("user_xp", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull().unique(),
+  totalXp: integer("total_xp").default(0).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserXpSchema = createInsertSchema(userXp).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type InsertUserXp = z.infer<typeof insertUserXpSchema>;
+export type UserXp = typeof userXp.$inferSelect;
+
 // Risk scores table - stores calculated health risk scores
 export const riskScores = pgTable("risk_scores", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
