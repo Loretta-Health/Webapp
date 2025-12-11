@@ -108,6 +108,8 @@ export interface IStorage {
   resetUserMissions(userId: string): Promise<UserMission[]>;
 
   // Team methods
+  ensureLorettaCommunity(): Promise<Team>;
+  addUserToLorettaCommunity(userId: string): Promise<TeamMember | null>;
   createTeam(data: InsertTeam): Promise<Team>;
   getTeam(id: string): Promise<Team | undefined>;
   getUserTeams(userId: string): Promise<Team[]>;
@@ -568,6 +570,38 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Team methods
+  async ensureLorettaCommunity(): Promise<Team> {
+    const LORETTA_TEAM_ID = 'loretta-community';
+    
+    const existing = await this.getTeam(LORETTA_TEAM_ID);
+    if (existing) return existing;
+    
+    const [team] = await db.insert(teams).values({
+      id: LORETTA_TEAM_ID,
+      name: 'Loretta Community',
+      description: 'The official Loretta health community. Connect with other users on their wellness journey!',
+      createdBy: 'system',
+    }).returning();
+    
+    return team;
+  }
+  
+  async addUserToLorettaCommunity(userId: string): Promise<TeamMember | null> {
+    const team = await this.ensureLorettaCommunity();
+    
+    const existingMember = await this.getTeamMember(team.id, userId);
+    if (existingMember) return existingMember;
+    
+    const member = await this.addTeamMember({
+      teamId: team.id,
+      userId,
+      role: 'member',
+      consentGiven: false,
+    });
+    
+    return member;
+  }
+  
   async createTeam(data: InsertTeam): Promise<Team> {
     const [team] = await db.insert(teams).values(data).returning();
     return team;
