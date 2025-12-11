@@ -1358,7 +1358,7 @@ export default function Profile() {
             <div className="space-y-6 py-4">
               <div className="space-y-4">
                 <h4 className="font-bold text-sm text-muted-foreground uppercase">{localT.editModal.name}</h4>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">{localT.editModal.firstName}</Label>
                     <Input
@@ -1382,7 +1382,7 @@ export default function Profile() {
               <Separator />
               <div className="space-y-4">
                 <h4 className="font-bold text-sm text-muted-foreground uppercase">{localT.editModal.basicInfo}</h4>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="age">{localT.editModal.age}</Label>
                     <Input
@@ -1549,13 +1549,15 @@ export default function Profile() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid grid-cols-5 w-full" data-testid="profile-tabs">
-            <TabsTrigger value="basic" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
-            <TabsTrigger value="social" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
-            <TabsTrigger value="questionnaires" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
-            <TabsTrigger value="behaviors" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
-            <TabsTrigger value="activity" data-testid="tab-activity">{localT.tabs.activity}</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-5 sm:w-full" data-testid="profile-tabs">
+              <TabsTrigger value="basic" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
+              <TabsTrigger value="social" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
+              <TabsTrigger value="questionnaires" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
+              <TabsTrigger value="behaviors" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
+              <TabsTrigger value="activity" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-activity">{localT.tabs.activity}</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Basic Information */}
           <TabsContent value="basic">
@@ -2140,7 +2142,7 @@ export default function Profile() {
             {/* Name Section */}
             <div className="space-y-4">
               <h4 className="font-bold text-foreground">{localT.editModal.name}</h4>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">{localT.editModal.firstName}</Label>
                   <Input
@@ -2165,7 +2167,7 @@ export default function Profile() {
             {/* Basic Info Section */}
             <div className="space-y-4">
               <h4 className="font-bold text-foreground">{localT.editModal.basicInfo}</h4>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="age">{localT.editModal.age}</Label>
                   <Input
