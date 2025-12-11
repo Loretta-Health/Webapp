@@ -69,6 +69,126 @@ const colorClasses: Record<string, { card: string; iconBg: string; badge: string
 };
 
 const missionsDatabase: Record<string, MissionData> = {
+  'jumping-jacks': {
+    id: 1,
+    title: 'Complete 10 jumping jacks',
+    frequency: 'daily',
+    description: 'Get your heart pumping with quick cardio exercise',
+    xpReward: 50,
+    totalSteps: 10,
+    icon: Dumbbell,
+    color: 'chart-2',
+    details: 'Jumping jacks are a full-body cardiovascular exercise that increases your heart rate, improves circulation, and helps wake up your muscles. This simple yet effective exercise is perfect for quick energy boosts throughout the day.',
+    benefits: [
+      { icon: Flame, text: 'Burns calories quickly' },
+      { icon: Heart, text: 'Strengthens heart health' },
+      { icon: Activity, text: 'Improves coordination' },
+      { icon: Zap, text: 'Boosts energy levels' },
+    ],
+    initialSteps: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, completed: false })),
+    alternativeMissions: [
+      { id: 201, title: 'Do 20 squats', xp: 45, icon: '🦵' },
+      { id: 202, title: 'Take a 5-min walk', xp: 35, icon: '🚶' },
+    ],
+    communityTip: 'Try doing your jumping jacks in sets of 10 with short breaks. This helps maintain form and prevents fatigue!',
+    stepLabel: 'Rep'
+  },
+  'water-glasses': {
+    id: 2,
+    title: 'Drink 8 glasses of water',
+    frequency: 'daily',
+    description: 'Stay hydrated throughout the day',
+    xpReward: 30,
+    totalSteps: 8,
+    icon: Droplets,
+    color: 'chart-1',
+    details: 'This mission helps you maintain proper hydration levels throughout the day. Drinking water is essential for maintaining bodily functions and overall health.',
+    benefits: [
+      { icon: Zap, text: 'Improves energy levels' },
+      { icon: Brain, text: 'Supports brain function' },
+      { icon: Heart, text: 'Maintains kidney function' },
+      { icon: Leaf, text: 'Maintains skin health' },
+    ],
+    initialSteps: Array.from({ length: 8 }, (_, i) => ({ id: i + 1, completed: false })),
+    alternativeMissions: [
+      { id: 101, title: 'Drink herbal tea', xp: 25, icon: '🍵' },
+      { id: 102, title: 'Eat water-rich fruits', xp: 20, icon: '🍉' },
+    ],
+    communityTip: 'Try keeping a water bottle at your desk as a visual reminder to stay hydrated throughout the day.',
+    stepLabel: 'Glass'
+  },
+  'meditation': {
+    id: 3,
+    title: 'Meditate for 5 minutes',
+    frequency: 'daily',
+    description: 'Calm your mind and reduce stress',
+    xpReward: 40,
+    totalSteps: 5,
+    icon: Brain,
+    color: 'chart-2',
+    details: 'Meditation helps reduce stress, improve focus, and promote overall mental well-being. Just 5 minutes a day can make a significant difference in your mental clarity and emotional balance.',
+    benefits: [
+      { icon: Brain, text: 'Reduces stress and anxiety' },
+      { icon: Heart, text: 'Lowers blood pressure' },
+      { icon: Zap, text: 'Improves focus and concentration' },
+      { icon: Leaf, text: 'Promotes emotional well-being' },
+    ],
+    initialSteps: Array.from({ length: 5 }, (_, i) => ({ id: i + 1, completed: false })),
+    alternativeMissions: [
+      { id: 301, title: 'Practice deep breathing', xp: 30, icon: '🧘' },
+      { id: 302, title: 'Do a body scan', xp: 35, icon: '💆' },
+    ],
+    communityTip: 'Find a quiet spot, close your eyes, and focus on your breath. Even 5 minutes can transform your day!',
+    stepLabel: 'Minute'
+  },
+  'walking': {
+    id: 4,
+    title: 'Take a 10-minute walk',
+    frequency: 'daily',
+    description: 'Get moving and enjoy some fresh air',
+    xpReward: 45,
+    totalSteps: 10,
+    icon: Footprints,
+    color: 'chart-1',
+    details: 'Walking is one of the best forms of exercise for overall health. A 10-minute brisk walk can boost your mood, improve circulation, and help you reach your daily activity goals.',
+    benefits: [
+      { icon: Heart, text: 'Improves cardiovascular health' },
+      { icon: Brain, text: 'Boosts mood and mental clarity' },
+      { icon: Zap, text: 'Increases energy levels' },
+      { icon: Wind, text: 'Fresh air and vitamin D' },
+    ],
+    initialSteps: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, completed: false })),
+    alternativeMissions: [
+      { id: 401, title: 'March in place for 5 mins', xp: 25, icon: '🚶' },
+      { id: 402, title: 'Climb stairs for 3 mins', xp: 30, icon: '🪜' },
+    ],
+    communityTip: 'Try walking during phone calls or after meals. Every step counts toward your daily goal!',
+    stepLabel: 'Minute'
+  },
+  'healthy-meal': {
+    id: 5,
+    title: 'Eat a healthy meal',
+    frequency: 'daily',
+    description: 'Nourish your body with nutritious food',
+    xpReward: 35,
+    totalSteps: 1,
+    icon: Leaf,
+    color: 'chart-2',
+    details: 'Eating a balanced, nutritious meal provides your body with essential vitamins, minerals, and energy. Focus on whole foods, vegetables, lean proteins, and healthy fats.',
+    benefits: [
+      { icon: Zap, text: 'Sustained energy throughout the day' },
+      { icon: Brain, text: 'Better mental clarity' },
+      { icon: Heart, text: 'Supports heart health' },
+      { icon: Leaf, text: 'Strengthens immune system' },
+    ],
+    initialSteps: [{ id: 1, completed: false }],
+    alternativeMissions: [
+      { id: 501, title: 'Eat a serving of vegetables', xp: 25, icon: '🥗' },
+      { id: 502, title: 'Prepare a home-cooked meal', xp: 40, icon: '👨‍🍳' },
+    ],
+    communityTip: 'Try to fill half your plate with vegetables and fruits for a balanced meal!',
+    stepLabel: 'Meal'
+  },
   '1': {
     id: 1,
     title: 'Drink a cup of water',
@@ -551,16 +671,129 @@ export default function MissionDetails() {
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
-  const urlMissionId = params.get('id') || '1';
+  const urlMissionId = params.get('id');
   
-  const { missions, updateMissionProgress } = useMissions();
+  const { missions, activeMissions, inactiveMissions, updateMissionProgress, activateMission, deactivateMission } = useMissions();
+
+  // If no specific mission ID, show all missions overview
+  if (!urlMissionId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        <header className="sticky top-0 z-40 bg-gradient-to-r from-card via-card to-primary/5 border-b border-border">
+          <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+            <Link href="/my-dashboard">
+              <Button size="icon" variant="ghost" data-testid="button-back">
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            </Link>
+            <h1 className="text-xl font-black text-foreground">{tDashboard('missions.allMissions')}</h1>
+          </div>
+        </header>
+        
+        <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+          {/* Active Missions */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Flame className="w-5 h-5 text-primary" />
+              {tDashboard('missions.activeMissions')} ({activeMissions.length})
+            </h2>
+            {activeMissions.length === 0 ? (
+              <Card className="p-6 text-center border-dashed">
+                <p className="text-muted-foreground">{tDashboard('missions.noActive')}</p>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {activeMissions.map((mission) => (
+                  <Card key={mission.id} className="p-4 hover:shadow-md transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold text-foreground">{mission.title}</h3>
+                          <Badge variant="default" className="bg-primary/20 text-primary text-xs">
+                            {tDashboard('missions.active')}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{mission.description}</p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Progress value={(mission.progress / mission.maxProgress) * 100} className="h-2 flex-1" />
+                          <span className="text-xs text-muted-foreground">{mission.progress}/{mission.maxProgress}</span>
+                          <span className="text-xs font-bold text-primary">+{mission.xpReward} XP</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <Link href={`/mission-details?id=${mission.missionKey}`}>
+                          <Button variant="ghost" size="sm">
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => deactivateMission(mission.id)}
+                          className="text-muted-foreground"
+                        >
+                          {tDashboard('missions.deactivateMission')}
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Available Missions */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Target className="w-5 h-5 text-muted-foreground" />
+              {tDashboard('missions.availableMissions')} ({inactiveMissions.length})
+            </h2>
+            {inactiveMissions.length > 0 && (
+              <div className="space-y-3">
+                {inactiveMissions.map((mission) => (
+                  <Card key={mission.id} className="p-4 opacity-60 hover:opacity-100 transition-all">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold text-foreground">{mission.title}</h3>
+                          <Badge variant="secondary" className="text-xs">
+                            {tDashboard('missions.inactive')}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{mission.description}</p>
+                        <span className="text-xs font-bold text-primary mt-2 block">+{mission.xpReward} XP</span>
+                      </div>
+                      <div className="flex items-center gap-2 ml-4">
+                        <Link href={`/mission-details?id=${mission.missionKey}`}>
+                          <Button variant="ghost" size="sm">
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => activateMission(mission.id)}
+                        >
+                          {tDashboard('missions.activateMission')}
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+    );
+  }
   
   const missionData = missionsDatabase[urlMissionId] || missionsDatabase['1'];
   const MissionIcon = missionData.icon;
   const colors = colorClasses[missionData.color] || colorClasses['chart-1'];
   
   const existingMission = missions.find(m => 
-    m.href?.includes(`?id=${urlMissionId}`) || m.id === urlMissionId
+    m.missionKey === urlMissionId || m.href?.includes(`?id=${urlMissionId}`)
   );
   const dbMissionId = existingMission?.id;
   const initialProgress = existingMission?.progress || 0;
@@ -727,33 +960,59 @@ export default function MissionDetails() {
               </div>
             </div>
             
-            <div className="mt-6 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-primary fill-primary" />
-                <span className="font-black text-primary" data-testid="mission-xp">
-                  +{missionData.xpReward} XP per step
-                </span>
+            <div className="mt-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-primary fill-primary" />
+                  <span className="font-black text-primary" data-testid="mission-xp">
+                    +{missionData.xpReward} XP per step
+                  </span>
+                </div>
+                
+                <Button
+                  size="lg"
+                  className={`font-black ${isComplete ? '' : 'animate-pulse-glow'}`}
+                  disabled={isComplete || !existingMission?.isActive}
+                  onClick={handleLogCompletion}
+                  data-testid="button-log-completion"
+                >
+                  {isComplete ? (
+                    <>
+                      <Check className="w-5 h-5 mr-2" />
+                      {t('missionDetails.completed')}
+                    </>
+                  ) : (
+                    <>
+                      <MissionIcon className="w-5 h-5 mr-2" />
+                      {t('missionDetails.logCompletion')}
+                    </>
+                  )}
+                </Button>
               </div>
               
-              <Button
-                size="lg"
-                className={`font-black ${isComplete ? '' : 'animate-pulse-glow'}`}
-                disabled={isComplete}
-                onClick={handleLogCompletion}
-                data-testid="button-log-completion"
-              >
-                {isComplete ? (
-                  <>
-                    <Check className="w-5 h-5 mr-2" />
-                    {t('missionDetails.completed')}
-                  </>
-                ) : (
-                  <>
-                    <MissionIcon className="w-5 h-5 mr-2" />
-                    {t('missionDetails.logCompletion')}
-                  </>
-                )}
-              </Button>
+              {existingMission && (
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {existingMission.isActive ? tDashboard('missions.active') : tDashboard('missions.inactive')}
+                    </span>
+                  </div>
+                  <Button
+                    variant={existingMission.isActive ? "outline" : "default"}
+                    size="sm"
+                    onClick={() => existingMission.isActive 
+                      ? deactivateMission(existingMission.id) 
+                      : activateMission(existingMission.id)
+                    }
+                  >
+                    {existingMission.isActive 
+                      ? tDashboard('missions.deactivateMission') 
+                      : tDashboard('missions.activateMission')
+                    }
+                  </Button>
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>

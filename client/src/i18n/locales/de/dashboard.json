@@ -66,7 +66,16 @@
     "complete": "Abschließen",
     "completed": "Abgeschlossen",
     "xpReward": "+{{xp}} XP",
-    "viewAll": "Alle Aufgaben anzeigen"
+    "viewAll": "Alle Aufgaben anzeigen",
+    "noActive": "Keine aktiven Missionen. Aktiviere einige Missionen, um loszulegen!",
+    "activate": "Missionen aktivieren",
+    "activateMission": "Aktivieren",
+    "deactivateMission": "Deaktivieren",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "allMissions": "Alle Missionen",
+    "activeMissions": "Aktive Missionen",
+    "availableMissions": "Verfügbare Missionen"
   },
   "checkin": {
     "title": "Wie fühlst du dich?",
