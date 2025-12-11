@@ -690,7 +690,7 @@ export default function MyDashboard() {
                       message={riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
                     />
                   </div>
-                  <div className="space-y-3 lg:space-y-4">
+                  <div className="space-y-3 lg:space-y-4 w-full">
                     <DailyCheckIn
                       streak={streak}
                       dayNumber={streak}
@@ -728,9 +728,9 @@ export default function MyDashboard() {
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                  <div className="space-y-3 lg:space-y-4">
-                    <h2 className="text-lg lg:text-xl font-black text-foreground flex items-center gap-2 mb-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mt-4">
+                  <div className="space-y-3 lg:space-y-4 w-full">
+                    <h2 className="text-lg lg:text-xl font-black text-foreground flex items-center gap-2">
                       <Flame className="w-5 h-5 text-primary" />
                       {t('missions.title')}
                     </h2>
