@@ -187,18 +187,18 @@ export default function RiskScoreDetails() {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-4 w-full max-w-md">
-              <div className="text-center p-3 rounded-xl bg-destructive/10">
-                <p className="text-2xl font-black text-destructive">{negativeFactors.length}</p>
-                <p className="text-xs text-muted-foreground">Risk Factors</p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-md">
+              <div className="text-center p-2 sm:p-3 rounded-xl bg-destructive/10">
+                <p className="text-xl sm:text-2xl font-black text-destructive">{negativeFactors.length}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Risk Factors</p>
               </div>
-              <div className="text-center p-3 rounded-xl bg-chart-3/10">
-                <p className="text-2xl font-black text-chart-3">{warningFactors.length}</p>
-                <p className="text-xs text-muted-foreground">Warnings</p>
+              <div className="text-center p-2 sm:p-3 rounded-xl bg-chart-3/10">
+                <p className="text-xl sm:text-2xl font-black text-chart-3">{warningFactors.length}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Warnings</p>
               </div>
-              <div className="text-center p-3 rounded-xl bg-primary/10">
-                <p className="text-2xl font-black text-primary">{positiveFactors.length}</p>
-                <p className="text-xs text-muted-foreground">Positive</p>
+              <div className="text-center p-2 sm:p-3 rounded-xl bg-primary/10">
+                <p className="text-xl sm:text-2xl font-black text-primary">{positiveFactors.length}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Positive</p>
               </div>
             </div>
           </div>

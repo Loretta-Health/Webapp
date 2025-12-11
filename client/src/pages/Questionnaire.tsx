@@ -201,10 +201,10 @@ export default function Questionnaire() {
                 </h2>
 
                 {question.type === 'yesno' && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     <Button
                       variant="outline"
-                      className={`py-8 text-lg font-bold hover-elevate ${
+                      className={`py-6 sm:py-8 text-base sm:text-lg font-bold hover-elevate ${
                         answers[question.id] === 'Yes' 
                           ? 'bg-primary text-white border-primary' 
                           : ''
@@ -216,7 +216,7 @@ export default function Questionnaire() {
                     </Button>
                     <Button
                       variant="outline"
-                      className={`py-8 text-lg font-bold hover-elevate ${
+                      className={`py-6 sm:py-8 text-base sm:text-lg font-bold hover-elevate ${
                         answers[question.id] === 'No' 
                           ? 'bg-primary text-white border-primary' 
                           : ''

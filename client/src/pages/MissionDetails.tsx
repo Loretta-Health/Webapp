@@ -788,7 +788,7 @@ export default function MissionDetails() {
             >
               <Card className="p-5">
                 <h3 className="text-lg font-black text-foreground mb-4">{t('missionDetails.benefits')}</h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {missionData.benefits.map((benefit, index) => (
                     <motion.div
                       key={index}
