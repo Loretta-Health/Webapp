@@ -189,6 +189,7 @@ export const userMissions = pgTable("user_missions", {
   maxProgress: integer("max_progress").default(1),
   completed: boolean("completed").default(false),
   legendary: boolean("legendary").default(false),
+  isActive: boolean("is_active").default(false), // whether mission is activated by user
   href: text("href"),
   source: text("source").default("default"), // 'default', 'activity', 'chat'
   createdAt: timestamp("created_at").defaultNow(),
@@ -204,6 +205,7 @@ export const insertUserMissionSchema = createInsertSchema(userMissions).omit({
 export const updateUserMissionSchema = z.object({
   progress: z.number().optional(),
   completed: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });
 
 export type InsertUserMission = z.infer<typeof insertUserMissionSchema>;
