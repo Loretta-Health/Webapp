@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { HEALTH_NAVIGATOR_SYSTEM_PROMPT } from "./prompts";
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
-import { processCheckin, processActivityLogged, processXpEarned } from "./lib/achievementManager";
+import { processCheckin, processActivityLogged, processXpEarned, processMedicationTaken } from "./lib/achievementManager";
 import { 
   insertQuestionnaireSchema, 
   insertUserProfileSchema,
@@ -562,15 +562,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allAchievementsUnlocked = [...xpResult.achievementsUnlocked];
       let totalBonusXp = xpResult.bonusXp;
 
-      // If first emotional check-in, also trigger the daily-dedication achievement
-      if (isFirstEmotionalCheckin) {
-        const checkinResult = await processCheckin(userId, 1);
-        allAchievementsUnlocked.push(...checkinResult.achievementsUnlocked);
-        totalBonusXp += checkinResult.totalXpAwarded;
-      }
+      // Update streak on every emotional check-in (handles daily tracking)
+      const updatedGamification = await storage.updateStreak(userId);
+      const currentStreak = updatedGamification.currentStreak || 1;
+      
+      // Process checkin achievements (daily-dedication for first, streak-legend for streak progress)
+      const checkinResult = await processCheckin(userId, currentStreak);
+      allAchievementsUnlocked.push(...checkinResult.achievementsUnlocked);
+      totalBonusXp += checkinResult.totalXpAwarded;
 
       res.json({ 
         ...saved, 
+        streak: currentStreak,
         achievementsUnlocked: Array.from(new Set(allAchievementsUnlocked)),
         totalXpAwarded: xpAwarded + totalBonusXp 
       });
@@ -642,6 +645,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error resetting missions:", error);
       res.status(500).json({ error: "Failed to reset missions" });
+    }
+  });
+
+  // ========================
+  // Medication Tracking Endpoint
+  // ========================
+
+  app.post("/api/medications/:userId/log", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { userId } = req.params;
+      const { consecutiveDays } = req.body;
+      
+      if ((req.user as any).id !== userId) {
+        return res.status(403).json({ error: "Can only log medications for yourself" });
+      }
+      
+      if (typeof consecutiveDays !== 'number' || consecutiveDays < 0) {
+        return res.status(400).json({ error: "consecutiveDays must be a non-negative number" });
+      }
+      
+      // Process medication achievement
+      const achievementResult = await processMedicationTaken(userId, consecutiveDays);
+      
+      res.json({
+        success: true,
+        consecutiveDays,
+        achievementsUnlocked: achievementResult.achievementsUnlocked,
+        xpAwarded: achievementResult.totalXpAwarded,
+      });
+    } catch (error) {
+      console.error("Error logging medication:", error);
+      res.status(500).json({ error: "Failed to log medication" });
     }
   });
 

@@ -5,7 +5,6 @@ export type AchievementEvent =
   | { type: 'activity_logged'; date: string; steps?: number; stepsGoal?: number; sleepHours?: number; water?: number; waterGoal?: number }
   | { type: 'xp_earned'; totalXp: number }
   | { type: 'medication_taken'; consecutiveDays: number }
-  | { type: 'cardio_activity'; totalActivities: number }
   | { type: 'onboarding_complete' }
   | { type: 'profile_complete' }
   | { type: 'questionnaire_complete' };
@@ -32,30 +31,9 @@ function markIncrementedToday(userId: string, achievementId: string, date: strin
 
 const ACHIEVEMENT_RULES: AchievementRule[] = [
   {
-    id: 'first-steps',
-    getProgress: (event) => {
-      if (event.type === 'checkin') return 1;
-      return null;
-    }
-  },
-  {
     id: 'daily-dedication', 
     getProgress: (event) => {
       if (event.type === 'checkin') return 1;
-      return null;
-    }
-  },
-  {
-    id: 'week-warrior',
-    getProgress: (event) => {
-      if (event.type === 'checkin') return event.streak;
-      return null;
-    }
-  },
-  {
-    id: 'health-champion',
-    getProgress: (event) => {
-      if (event.type === 'checkin') return event.streak;
       return null;
     }
   },
@@ -103,13 +81,6 @@ const ACHIEVEMENT_RULES: AchievementRule[] = [
     id: 'medication-adherence',
     getProgress: (event) => {
       if (event.type === 'medication_taken') return event.consecutiveDays;
-      return null;
-    }
-  },
-  {
-    id: 'heart-guardian',
-    getProgress: (event) => {
-      if (event.type === 'cardio_activity') return event.totalActivities;
       return null;
     }
   },
@@ -197,8 +168,4 @@ export async function processXpEarned(userId: string, totalXp: number) {
 
 export async function processMedicationTaken(userId: string, consecutiveDays: number) {
   return processAchievementEvent(userId, { type: 'medication_taken', consecutiveDays });
-}
-
-export async function processCardioActivity(userId: string, totalActivities: number) {
-  return processAchievementEvent(userId, { type: 'cardio_activity', totalActivities });
 }
