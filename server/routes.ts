@@ -546,6 +546,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "userId and emotion are required" });
       }
 
+      // Check if this is the user's first emotional check-in
+      const existingCheckins = await storage.getAllEmotionalCheckins(userId);
+      const isFirstEmotionalCheckin = existingCheckins.length === 0;
+
       const saved = await storage.saveEmotionalCheckin({
         userId,
         emotion,
@@ -555,11 +559,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const xpResult = await addXPAndCheckAchievements(userId, xpAwarded);
+      const allAchievementsUnlocked = [...xpResult.achievementsUnlocked];
+      let totalBonusXp = xpResult.bonusXp;
+
+      // If first emotional check-in, also trigger the daily-dedication achievement
+      if (isFirstEmotionalCheckin) {
+        const checkinResult = await processCheckin(userId, 1);
+        allAchievementsUnlocked.push(...checkinResult.achievementsUnlocked);
+        totalBonusXp += checkinResult.totalXpAwarded;
+      }
 
       res.json({ 
         ...saved, 
-        achievementsUnlocked: xpResult.achievementsUnlocked,
-        totalXpAwarded: xpAwarded + xpResult.bonusXp 
+        achievementsUnlocked: Array.from(new Set(allAchievementsUnlocked)),
+        totalXpAwarded: xpAwarded + totalBonusXp 
       });
     } catch (error) {
       console.error("Error saving emotional check-in:", error);
