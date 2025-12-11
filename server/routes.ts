@@ -1157,6 +1157,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get team info
       const team = await storage.getTeam(teamId);
       
+      // Check for community-star achievement (top 3 with 5+ participating members)
+      // Only check for Loretta community
+      if (teamId === 'loretta-community' && validEntries.length >= 5) {
+        const userRank = rankedEntries.find(e => e.userId === currentUserId)?.rank;
+        if (userRank && userRank <= 3) {
+          // User is in top 3 with 5+ members - trigger achievement
+          await storage.ensureUserHasAllAchievements(currentUserId);
+          const result = await storage.updateUserAchievementProgress(currentUserId, 'community-star', 1);
+          if (result.justUnlocked) {
+            // Award the XP for unlocking
+            await storage.addXP(currentUserId, result.xpReward);
+          }
+        }
+      }
+      
       res.json({
         teamId,
         teamName: team?.name || "Unknown",
