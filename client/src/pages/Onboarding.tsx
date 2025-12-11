@@ -2367,7 +2367,7 @@ export default function Onboarding() {
       </div>
 
       <form onSubmit={handleRegistrationSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">First Name <span className="text-destructive">*</span></Label>
             <div className="relative">
@@ -2857,18 +2857,18 @@ export default function Onboarding() {
             </div>
           </Card>
 
-          <div className="grid grid-cols-3 gap-3">
-            <Card className="p-3 text-center bg-primary/10 border-0">
-              <Sparkles className="w-6 h-6 text-primary mx-auto mb-1" />
-              <p className="text-xs text-muted-foreground">Earn XP</p>
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <Card className="p-2 sm:p-3 text-center bg-primary/10 border-0">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary mx-auto mb-1" />
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Earn XP</p>
             </Card>
-            <Card className="p-3 text-center bg-chart-3/10 border-0">
-              <Flame className="w-6 h-6 text-chart-3 mx-auto mb-1" />
-              <p className="text-xs text-muted-foreground">Build Streaks</p>
+            <Card className="p-2 sm:p-3 text-center bg-chart-3/10 border-0">
+              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-chart-3 mx-auto mb-1" />
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Build Streaks</p>
             </Card>
-            <Card className="p-3 text-center bg-chart-2/10 border-0">
-              <Heart className="w-6 h-6 text-chart-2 mx-auto mb-1" />
-              <p className="text-xs text-muted-foreground">Get Healthier</p>
+            <Card className="p-2 sm:p-3 text-center bg-chart-2/10 border-0">
+              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-chart-2 mx-auto mb-1" />
+              <p className="text-[10px] sm:text-xs text-muted-foreground">Get Healthier</p>
             </Card>
           </div>
 

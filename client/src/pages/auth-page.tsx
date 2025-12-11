@@ -66,7 +66,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-background via-primary/5 to-secondary/10">
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
         <Card className="w-full max-w-md overflow-hidden border-0 shadow-2xl">
           <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 text-center">
             <div className="flex justify-center mb-4">
@@ -127,7 +127,7 @@ export default function AuthPage() {
               
               <TabsContent value="register">
                 <form onSubmit={handleRegister} className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor="register-firstname">{t('firstName')}</Label>
                       <Input
