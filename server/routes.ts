@@ -37,6 +37,16 @@ interface ScalewayResponse {
   }>;
 }
 
+async function addXPAndCheckAchievements(userId: string, amount: number): Promise<{ xpRecord: any; achievementsUnlocked: string[]; bonusXp: number }> {
+  const xpRecord = await storage.addXP(userId, amount);
+  const achievementResult = await processXpEarned(userId, xpRecord.totalXp);
+  return { 
+    xpRecord, 
+    achievementsUnlocked: achievementResult.achievementsUnlocked,
+    bonusXp: achievementResult.totalXpAwarded 
+  };
+}
+
 async function chatWithScaleway(messages: ChatMessage[]): Promise<string> {
   if (!SCALEWAY_API_KEY) {
     throw new Error('Missing SCALEWAY_API_KEY');
@@ -272,13 +282,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("[API] Profile saved successfully:", saved.id);
       
       let xpAwarded = 0;
+      let achievementsUnlocked: string[] = [];
       if (!existingProfile) {
         const reward = getXPRewardAmount('profile_completed');
-        await storage.addXP(validatedData.userId, reward);
-        xpAwarded = reward;
+        const xpResult = await addXPAndCheckAchievements(validatedData.userId, reward);
+        xpAwarded = reward + xpResult.bonusXp;
+        achievementsUnlocked = xpResult.achievementsUnlocked;
       }
       
-      res.json({ ...saved, xpAwarded });
+      res.json({ ...saved, xpAwarded, achievementsUnlocked });
     } catch (error) {
       console.error("[API] Error saving profile:", error);
       res.status(400).json({ error: "Invalid profile data" });
@@ -371,8 +383,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid XP amount" });
       }
       
-      const updated = await storage.addXP(userId, amount);
-      res.json(updated);
+      const result = await addXPAndCheckAchievements(userId, amount);
+      res.json({ 
+        ...result.xpRecord, 
+        achievementsUnlocked: result.achievementsUnlocked,
+        bonusXp: result.bonusXp 
+      });
     } catch (error) {
       console.error("Error adding XP:", error);
       res.status(500).json({ error: "Failed to add XP" });
@@ -389,33 +405,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updated = await storage.updateStreak(userId);
       
       let xpAwarded = 0;
+      const allAchievementsUnlocked: string[] = [];
       
-      if (isFirstCheckin) {
-        const firstCheckinReward = getXPRewardAmount('first_checkin');
-        await storage.addXP(userId, firstCheckinReward);
-        xpAwarded += firstCheckinReward;
-      } else {
-        const streakReward = getXPRewardAmount('streak_update');
-        await storage.addXP(userId, streakReward);
-        xpAwarded += streakReward;
-      }
+      // Award checkin XP and check XP achievements
+      const checkinReward = isFirstCheckin 
+        ? getXPRewardAmount('first_checkin')
+        : getXPRewardAmount('streak_update');
+      
+      const xpResult = await addXPAndCheckAchievements(userId, checkinReward);
+      xpAwarded += checkinReward + xpResult.bonusXp;
+      allAchievementsUnlocked.push(...xpResult.achievementsUnlocked);
       
       // Process all checkin-related achievements via achievement manager
       const achievementResult = await processCheckin(userId, updated.currentStreak || 0);
       xpAwarded += achievementResult.totalXpAwarded;
+      allAchievementsUnlocked.push(...achievementResult.achievementsUnlocked);
       
-      // Check for XP-based achievements after earning XP
-      const xpRecord = await storage.getUserXp(userId);
-      if (xpRecord) {
-        const xpAchResult = await processXpEarned(userId, xpRecord.totalXp);
-        xpAwarded += xpAchResult.totalXpAwarded;
-        achievementResult.achievementsUnlocked.push(...xpAchResult.achievementsUnlocked);
+      // Final check for XP-based achievements after all XP awarded
+      const finalXpRecord = await storage.getUserXp(userId);
+      if (finalXpRecord) {
+        const finalXpAchResult = await processXpEarned(userId, finalXpRecord.totalXp);
+        xpAwarded += finalXpAchResult.totalXpAwarded;
+        allAchievementsUnlocked.push(...finalXpAchResult.achievementsUnlocked);
       }
       
       res.json({ 
         ...updated, 
         xpAwarded,
-        achievementsUnlocked: achievementResult.achievementsUnlocked 
+        achievementsUnlocked: Array.from(new Set(allAchievementsUnlocked))
       });
     } catch (error) {
       console.error("Error updating streak:", error);
@@ -537,9 +554,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         xpAwarded,
       });
 
-      await storage.addXP(userId, xpAwarded);
+      const xpResult = await addXPAndCheckAchievements(userId, xpAwarded);
 
-      res.json(saved);
+      res.json({ 
+        ...saved, 
+        achievementsUnlocked: xpResult.achievementsUnlocked,
+        totalXpAwarded: xpAwarded + xpResult.bonusXp 
+      });
     } catch (error) {
       console.error("Error saving emotional check-in:", error);
       res.status(500).json({ error: "Failed to save emotional check-in" });
@@ -1336,21 +1357,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       let xpAwarded = 0;
+      let achievementsUnlocked: string[] = [];
       
       if (rawData.consentCompleted && !progress.consentCompleted) {
         const reward = getXPRewardAmount('consent_completed');
-        await storage.addXP(userId, reward);
-        xpAwarded += reward;
+        const xpResult = await addXPAndCheckAchievements(userId, reward);
+        xpAwarded += reward + xpResult.bonusXp;
+        achievementsUnlocked.push(...xpResult.achievementsUnlocked);
       }
       
       if (rawData.questionnaireCompleted && !progress.questionnaireCompleted) {
         const reward = getXPRewardAmount('questionnaire_completed');
-        await storage.addXP(userId, reward);
-        xpAwarded += reward;
+        const xpResult = await addXPAndCheckAchievements(userId, reward);
+        xpAwarded += reward + xpResult.bonusXp;
+        achievementsUnlocked.push(...xpResult.achievementsUnlocked);
       }
       
       const updated = await storage.updateOnboardingProgress(userId, updateData);
-      res.json({ ...updated, xpAwarded });
+      res.json({ ...updated, xpAwarded, achievementsUnlocked });
     } catch (error) {
       console.error("Error updating onboarding progress:", error);
       res.status(500).json({ error: "Failed to update onboarding progress" });
