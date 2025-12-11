@@ -104,6 +104,9 @@ export function setupAuth(app: Express) {
 
       // Create onboarding progress record for the new user
       await storage.createOnboardingProgress(user.id);
+      
+      // Add user to the Loretta community
+      await storage.addUserToLorettaCommunity(user.id);
 
       req.login(user, (err) => {
         if (err) return next(err);
