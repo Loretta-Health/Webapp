@@ -13,6 +13,7 @@ export interface Mission {
   maxProgress: number;
   completed: boolean;
   legendary?: boolean | null;
+  isActive?: boolean | null;
   href?: string | null;
   source?: 'default' | 'activity' | 'chat' | string | null;
   missionKey?: string;
@@ -144,17 +145,48 @@ export function useMissions() {
     resetMissionsMutation.mutate();
   }, [resetMissionsMutation]);
 
+  const activateMission = useCallback((missionId: string) => {
+    updateMissionMutation.mutate({
+      id: missionId,
+      data: { isActive: true },
+    });
+  }, [updateMissionMutation]);
+
+  const deactivateMission = useCallback((missionId: string) => {
+    updateMissionMutation.mutate({
+      id: missionId,
+      data: { isActive: false },
+    });
+  }, [updateMissionMutation]);
+
+  const toggleMissionActive = useCallback((missionId: string) => {
+    const mission = missions.find(m => m.id === missionId);
+    if (mission) {
+      updateMissionMutation.mutate({
+        id: missionId,
+        data: { isActive: !mission.isActive },
+      });
+    }
+  }, [missions, updateMissionMutation]);
+
+  const activeMissions = missions.filter(m => m.isActive);
+  const inactiveMissions = missions.filter(m => !m.isActive);
   const completedCount = missions.filter(m => m.completed).length;
   const totalCount = missions.length;
 
   return {
     missions,
+    activeMissions,
+    inactiveMissions,
     addMission,
     updateMissionProgress,
     completeMission,
     logMissionStep,
     removeMission,
     resetMissions,
+    activateMission,
+    deactivateMission,
+    toggleMissionActive,
     completedCount,
     totalCount,
     isLoading,
