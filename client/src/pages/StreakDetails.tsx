@@ -117,17 +117,17 @@ export default function StreakDetails() {
         
         <Card className="p-6 border-0 shadow-xl">
           <h3 className="text-xl font-black text-foreground mb-4">{t('streakDetails.thisWeek')}</h3>
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {last7Days.map((day, index) => (
               <motion.div
-                key={day.day}
+                key={day.dayKey}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 className="text-center"
               >
-                <p className="text-xs font-bold text-muted-foreground mb-2">{t(`streakDetails.weekDays.${day.dayKey}`)}</p>
-                <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center ${
+                <p className="text-[10px] sm:text-xs font-bold text-muted-foreground mb-1 sm:mb-2">{t(`streakDetails.weekDays.${day.dayKey}`)}</p>
+                <div className={`w-8 h-8 sm:w-10 sm:h-10 mx-auto rounded-full flex items-center justify-center ${
                   day.completed 
                     ? 'bg-gradient-to-br from-chart-3 to-chart-1' 
                     : day.isToday 
@@ -135,9 +135,9 @@ export default function StreakDetails() {
                       : 'bg-muted'
                 }`}>
                   {day.completed ? (
-                    <Flame className="w-5 h-5 text-white fill-white" />
+                    <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-white" />
                   ) : day.isToday ? (
-                    <span className="text-xs font-black text-primary">{t('streakDetails.today')}</span>
+                    <span className="text-[10px] sm:text-xs font-black text-primary">{t('streakDetails.today')}</span>
                   ) : null}
                 </div>
               </motion.div>
