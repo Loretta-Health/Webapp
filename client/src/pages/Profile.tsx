@@ -684,9 +684,55 @@ export default function Profile() {
     return saved ? JSON.parse(saved) : {};
   });
   const [pendingSaves, setPendingSaves] = useState<Record<string, boolean>>({});
+  const [lorettaConsent, setLorettaConsent] = useState<boolean>(true);
   const { toast } = useToast();
   const { user } = useAuth();
   const userId = user?.id;
+
+  interface LorettaMembership {
+    id: string;
+    teamId: string;
+    userId: string;
+    role: string;
+    consentGiven: boolean;
+  }
+
+  const { data: lorettaMembership } = useQuery<LorettaMembership | null>({
+    queryKey: ['/api/teams/loretta-community/membership', userId],
+    queryFn: async () => {
+      const res = await fetch('/api/teams/loretta-community/membership', { credentials: 'include' });
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!userId,
+  });
+
+  useEffect(() => {
+    if (lorettaMembership) {
+      setLorettaConsent(lorettaMembership.consentGiven);
+    }
+  }, [lorettaMembership]);
+
+  const updateLorettaConsentMutation = useMutation({
+    mutationFn: async (consent: boolean) => {
+      const res = await fetch(`/api/teams/loretta-community/members/${userId}/consent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ consent }),
+      });
+      if (!res.ok) throw new Error('Failed to update consent');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/teams/loretta-community/membership', userId] });
+    },
+  });
+
+  const handleLorettaConsentChange = (checked: boolean) => {
+    setLorettaConsent(checked);
+    updateLorettaConsentMutation.mutate(checked);
+  };
 
   const { data: backendProfile, isLoading: isProfileLoading } = useQuery<BackendProfile | null>({
     queryKey: ['/api/profile', userId],
@@ -1562,6 +1608,33 @@ export default function Profile() {
                     <p className="font-medium text-foreground text-right">{factor.value}</p>
                   </motion.div>
                 ))}
+              </div>
+            </Card>
+            
+            <Card className="p-6 mt-4">
+              <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-chart-2" />
+                {language === 'en' ? 'Community Settings' : 'Community-Einstellungen'}
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                  <div className="space-y-1 flex-1 pr-4">
+                    <p className="font-bold text-foreground">
+                      {language === 'en' ? 'Loretta Community Leaderboard' : 'Loretta Community Rangliste'}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {language === 'en' 
+                        ? 'Show your XP, level, and streak on the community leaderboard so others can see your progress'
+                        : 'Zeige dein XP, Level und deine Serie auf der Community-Rangliste, damit andere deinen Fortschritt sehen können'}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={lorettaConsent}
+                    onCheckedChange={handleLorettaConsentChange}
+                    disabled={updateLorettaConsentMutation.isPending}
+                    data-testid="switch-loretta-leaderboard"
+                  />
+                </div>
               </div>
             </Card>
           </TabsContent>
