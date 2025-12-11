@@ -91,6 +91,7 @@ export default function AuthPage() {
                     <Input
                       id="login-username"
                       type="text"
+                      autoComplete="username"
                       placeholder={t('placeholders.username')}
                       value={loginForm.username}
                       onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
@@ -102,6 +103,7 @@ export default function AuthPage() {
                     <Input
                       id="login-password"
                       type="password"
+                      autoComplete="current-password"
                       placeholder={t('placeholders.password')}
                       value={loginForm.password}
                       onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
@@ -164,6 +166,7 @@ export default function AuthPage() {
                     <Input
                       id="register-username"
                       type="text"
+                      autoComplete="username"
                       placeholder={t('placeholders.chooseUsername')}
                       value={registerForm.username}
                       onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
@@ -175,6 +178,7 @@ export default function AuthPage() {
                     <Input
                       id="register-password"
                       type="password"
+                      autoComplete="new-password"
                       placeholder={t('placeholders.createPassword')}
                       value={registerForm.password}
                       onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
@@ -186,6 +190,7 @@ export default function AuthPage() {
                     <Input
                       id="register-confirm"
                       type="password"
+                      autoComplete="new-password"
                       placeholder={t('placeholders.confirmPassword')}
                       value={registerForm.confirmPassword}
                       onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}

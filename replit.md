@@ -27,8 +27,17 @@ Preferred communication style: Simple, everyday language.
 
 ### Internationalization (i18n)
 - Implemented with `react-i18next` and `i18next-browser-languagedetector`.
-- Supports English (en), German (de), and Turkish (tr).
+- Supports English (en) and German (de).
 - Translations are organized by namespace and stored in `client/src/i18n/locales/`.
+
+### Mobile Optimization
+- Fully optimized for mobile viewing with responsive Tailwind breakpoints (sm:, md:, lg:).
+- Key responsive patterns:
+  - Grids: `grid-cols-1 sm:grid-cols-2` for form fields, `grid-cols-1 lg:grid-cols-2` for dashboard sections.
+  - Tabs: Scrollable on mobile using `overflow-x-auto` wrapper with `inline-flex` on TabsList.
+  - Touch targets: Minimum 44px (py-6 on buttons).
+  - Text sizing: `text-[10px] sm:text-xs` for small labels, responsive padding.
+- Pages optimized: auth-page, Onboarding, Profile, Dashboard, Questionnaire, MissionDetails, RiskScoreDetails, StreakDetails, Calendar, LeaderboardPage.
 
 ## External Dependencies
 
