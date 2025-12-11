@@ -596,7 +596,8 @@ export class DatabaseStorage implements IStorage {
       teamId: team.id,
       userId,
       role: 'member',
-      consentGiven: false,
+      consentGiven: true,
+      consentDate: new Date(),
     });
     
     return member;

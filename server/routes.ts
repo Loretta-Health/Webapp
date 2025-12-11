@@ -945,6 +945,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get current user's membership in Loretta community
+  app.get("/api/teams/loretta-community/membership", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const member = await storage.getTeamMember('loretta-community', userId);
+      
+      if (!member) {
+        return res.status(404).json({ error: "Not a member of Loretta community" });
+      }
+      
+      res.json(member);
+    } catch (error) {
+      console.error("Error fetching Loretta membership:", error);
+      res.status(500).json({ error: "Failed to fetch membership" });
+    }
+  });
+
   // ========================
   // Team Members Endpoints
   // ========================
