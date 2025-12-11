@@ -26,7 +26,6 @@ import {
   type InsertAchievement,
   type UserAchievement,
   type InsertUserAchievement,
-  type UpdateUserAchievement,
   type UserActivity,
   type InsertUserActivity,
   type UpdateUserActivity,
@@ -139,7 +138,6 @@ export interface IStorage {
   getUserAchievements(userId: string): Promise<UserAchievement[]>;
   getUserAchievementWithDetails(userId: string): Promise<(UserAchievement & { achievement: Achievement })[]>;
   ensureUserHasAllAchievements(userId: string): Promise<UserAchievement[]>;
-  updateUserAchievement(id: string, data: UpdateUserAchievement): Promise<UserAchievement | undefined>;
   updateUserAchievementProgress(userId: string, achievementId: string, progress: number): Promise<{ updated: UserAchievement | undefined; justUnlocked: boolean; xpReward: number }>;
   updateStreakAchievements(userId: string, currentStreak: number): Promise<{ achievementsUnlocked: string[]; totalXpAwarded: number }>;
 
@@ -982,15 +980,6 @@ export class DatabaseStorage implements IStorage {
     }
     
     return await this.getUserAchievements(userId);
-  }
-
-  async updateUserAchievement(id: string, data: UpdateUserAchievement): Promise<UserAchievement | undefined> {
-    const [updated] = await db
-      .update(userAchievements)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(userAchievements.id, id))
-      .returning();
-    return updated;
   }
 
   async updateUserAchievementProgress(userId: string, achievementId: string, progress: number): Promise<{ updated: UserAchievement | undefined; justUnlocked: boolean; xpReward: number }> {
