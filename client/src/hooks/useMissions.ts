@@ -57,7 +57,7 @@ export function useMissions() {
   });
 
   const updateMissionMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { progress?: number; completed?: boolean } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: { progress?: number; completed?: boolean; isActive?: boolean } }) => {
       const response = await apiRequest('PATCH', `/api/missions/${id}`, data);
       return response.json();
     },
