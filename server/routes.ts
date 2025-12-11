@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { HEALTH_NAVIGATOR_SYSTEM_PROMPT } from "./prompts";
-import { XP_REWARDS, getXPRewardAmount } from "./lib/xpManager";
+import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
 import { 
   insertQuestionnaireSchema, 
   insertUserProfileSchema,
@@ -327,16 +327,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!gamification) {
         gamification = await storage.saveUserGamification({
           userId,
-          xp: 0,
-          level: 1,
           currentStreak: 0,
           longestStreak: 0,
           lives: 5,
-          achievements: [],
         });
       }
       
-      res.json(gamification);
+      // Get XP from user_xp table and compute level
+      const xpRecord = await storage.getUserXp(userId);
+      const xp = xpRecord?.totalXp || 0;
+      const level = calculateLevelFromXP(xp);
+      
+      // Return combined data for backwards compatibility
+      res.json({
+        ...gamification,
+        xp,
+        level,
+      });
     } catch (error) {
       console.error("Error fetching gamification:", error);
       res.status(500).json({ error: "Failed to fetch gamification data" });
@@ -924,11 +931,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         members.map(async (member) => {
           const user = await storage.getUser(member.userId);
           const gamification = await storage.getUserGamification(member.userId);
+          const xpRecord = await storage.getUserXp(member.userId);
+          const xp = xpRecord?.totalXp || 0;
+          const level = calculateLevelFromXP(xp);
           return {
             ...member,
             username: user?.username || "Unknown",
-            xp: gamification?.xp || 0,
-            level: gamification?.level || 1,
+            xp,
+            level,
             currentStreak: gamification?.currentStreak || 0,
           };
         })
@@ -1030,13 +1040,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           const user = await storage.getUser(member.userId);
           const gamification = await storage.getUserGamification(member.userId);
+          const xpRecord = await storage.getUserXp(member.userId);
+          const xp = xpRecord?.totalXp || 0;
+          const level = calculateLevelFromXP(xp);
           
           return {
             userId: member.userId,
             username: user?.username || "Unknown",
             firstName: user?.firstName || null,
-            xp: gamification?.xp || 0,
-            level: gamification?.level || 1,
+            xp,
+            level,
             currentStreak: gamification?.currentStreak || 0,
             longestStreak: gamification?.longestStreak || 0,
             role: member.role,

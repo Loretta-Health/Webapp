@@ -295,13 +295,10 @@ export class DatabaseStorage implements IStorage {
 
     const updateData = {
       userId: data.userId,
-      xp: data.xp,
-      level: data.level,
       currentStreak: data.currentStreak,
       longestStreak: data.longestStreak,
       lastCheckIn: data.lastCheckIn,
       lives: data.lives,
-      achievements: data.achievements as string[] | undefined,
       updatedAt: new Date(),
     };
 
@@ -329,7 +326,6 @@ export class DatabaseStorage implements IStorage {
     }
 
     const newXP = (xpRecord.totalXp || 0) + amount;
-    const newLevel = Math.floor(newXP / 100) + 1;
 
     const [updated] = await db
       .update(userXp)
@@ -337,15 +333,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userXp.id, xpRecord.id))
       .returning();
 
-    // Also sync to gamification table for backward compatibility
+    // Ensure gamification record exists for streak tracking
     const gamification = await this.getUserGamification(userId);
-    if (gamification) {
-      await db
-        .update(userGamification)
-        .set({ xp: newXP, level: newLevel, updatedAt: new Date() })
-        .where(eq(userGamification.id, gamification.id));
-    } else {
-      await this.saveUserGamification({ userId, xp: newXP, level: newLevel });
+    if (!gamification) {
+      await this.saveUserGamification({ userId });
     }
 
     return updated;

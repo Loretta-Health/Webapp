@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, jsonb, timestamp, integer, boolean, real } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, jsonb, timestamp, integer, boolean, real, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -103,17 +103,14 @@ export const insertUserPreferencesSchema = createInsertSchema(userPreferences, {
 export type InsertUserPreferences = z.infer<typeof insertUserPreferencesSchema>;
 export type UserPreferences = typeof userPreferences.$inferSelect;
 
-// User gamification data - stores XP, level, streak, achievements
+// User gamification data - stores streak, lives (XP is in user_xp, achievements in user_achievements)
 export const userGamification = pgTable("user_gamification", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id").notNull().unique(),
-  xp: integer("xp").default(0),
-  level: integer("level").default(1),
   currentStreak: integer("current_streak").default(0),
   longestStreak: integer("longest_streak").default(0),
   lastCheckIn: timestamp("last_check_in"),
   lives: integer("lives").default(5),
-  achievements: jsonb("achievements").$type<string[]>().default([]),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
@@ -296,6 +293,7 @@ export type Achievement = typeof achievements.$inferSelect;
 
 // User achievements table - stores per-user achievement progress
 // Every user has an entry for EVERY achievement with their progress
+// Unique constraint on (userId, achievementId) prevents duplicate entries
 export const userAchievements = pgTable("user_achievements", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id").notNull(),
@@ -305,7 +303,9 @@ export const userAchievements = pgTable("user_achievements", {
   unlockedAt: timestamp("unlocked_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  userAchievementUnique: unique().on(table.userId, table.achievementId),
+}));
 
 export const insertUserAchievementSchema = createInsertSchema(userAchievements).omit({
   id: true,
