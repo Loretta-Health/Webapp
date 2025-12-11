@@ -139,7 +139,6 @@ export interface IStorage {
   getUserAchievementWithDetails(userId: string): Promise<(UserAchievement & { achievement: Achievement })[]>;
   ensureUserHasAllAchievements(userId: string): Promise<UserAchievement[]>;
   updateUserAchievementProgress(userId: string, achievementId: string, progress: number): Promise<{ updated: UserAchievement | undefined; justUnlocked: boolean; xpReward: number }>;
-  updateStreakAchievements(userId: string, currentStreak: number): Promise<{ achievementsUnlocked: string[]; totalXpAwarded: number }>;
 
   // User activity methods
   getUserActivityForDate(userId: string, date: string): Promise<UserActivity | undefined>;
@@ -1026,33 +1025,6 @@ export class DatabaseStorage implements IStorage {
     }
     
     return { updated, justUnlocked, xpReward: justUnlocked ? (achievement.xpReward || 50) : 0 };
-  }
-
-  // Update streak-related achievements based on current streak
-  async updateStreakAchievements(userId: string, currentStreak: number): Promise<{ achievementsUnlocked: string[]; totalXpAwarded: number }> {
-    await this.ensureUserHasAllAchievements(userId);
-    
-    const achievementsUnlocked: string[] = [];
-    let totalXpAwarded = 0;
-    
-    // Map of streak achievements to their progress values
-    const streakAchievements: { id: string; progressValue: number }[] = [
-      { id: 'first-steps', progressValue: currentStreak >= 1 ? 1 : 0 },
-      { id: 'daily-dedication', progressValue: currentStreak >= 1 ? 1 : 0 },
-      { id: 'week-warrior', progressValue: Math.min(currentStreak, 7) },
-      { id: 'health-champion', progressValue: Math.min(currentStreak, 15) },
-      { id: 'streak-legend', progressValue: Math.min(currentStreak, 30) },
-    ];
-    
-    for (const { id, progressValue } of streakAchievements) {
-      const result = await this.updateUserAchievementProgress(userId, id, progressValue);
-      if (result.justUnlocked) {
-        achievementsUnlocked.push(id);
-        totalXpAwarded += result.xpReward;
-      }
-    }
-    
-    return { achievementsUnlocked, totalXpAwarded };
   }
 
   // User activity methods

@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { HEALTH_NAVIGATOR_SYSTEM_PROMPT } from "./prompts";
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
+import { processCheckin, processActivityLogged, processXpEarned } from "./lib/achievementManager";
 import { 
   insertQuestionnaireSchema, 
   insertUserProfileSchema,
@@ -399,9 +400,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         xpAwarded += streakReward;
       }
       
-      // Update streak-related achievements and award XP for any unlocked
-      const achievementResult = await storage.updateStreakAchievements(userId, updated.currentStreak || 0);
+      // Process all checkin-related achievements via achievement manager
+      const achievementResult = await processCheckin(userId, updated.currentStreak || 0);
       xpAwarded += achievementResult.totalXpAwarded;
+      
+      // Check for XP-based achievements after earning XP
+      const xpRecord = await storage.getUserXp(userId);
+      if (xpRecord) {
+        const xpAchResult = await processXpEarned(userId, xpRecord.totalXp);
+        xpAwarded += xpAchResult.totalXpAwarded;
+        achievementResult.achievementsUnlocked.push(...xpAchResult.achievementsUnlocked);
+      }
       
       res.json({ 
         ...updated, 
@@ -717,7 +726,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { userId, date, ...data } = req.body;
       const activityDate = date || new Date().toISOString().split('T')[0];
       const saved = await storage.saveUserActivity({ userId, date: activityDate, ...data });
-      res.json(saved);
+      
+      // Process activity-related achievements
+      const achievementResult = await processActivityLogged(userId, activityDate, {
+        steps: saved.steps || undefined,
+        stepsGoal: saved.stepsGoal || undefined,
+        sleepHours: saved.sleepHours || undefined,
+        water: saved.water || undefined,
+        waterGoal: saved.waterGoal || undefined,
+      });
+      
+      res.json({ 
+        ...saved, 
+        achievementsUnlocked: achievementResult.achievementsUnlocked,
+        xpAwarded: achievementResult.totalXpAwarded 
+      });
     } catch (error) {
       console.error("Error saving activity:", error);
       res.status(400).json({ error: "Failed to save activity" });
@@ -730,7 +753,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { date, ...data } = req.body;
       const activityDate = date || new Date().toISOString().split('T')[0];
       const updated = await storage.updateUserActivity(userId, activityDate, data);
-      res.json(updated);
+      
+      if (updated) {
+        // Process activity-related achievements
+        const achievementResult = await processActivityLogged(userId, activityDate, {
+          steps: updated.steps || undefined,
+          stepsGoal: updated.stepsGoal || undefined,
+          sleepHours: updated.sleepHours || undefined,
+          water: updated.water || undefined,
+          waterGoal: updated.waterGoal || undefined,
+        });
+        
+        res.json({ 
+          ...updated, 
+          achievementsUnlocked: achievementResult.achievementsUnlocked,
+          xpAwarded: achievementResult.totalXpAwarded 
+        });
+      } else {
+        res.json(updated);
+      }
     } catch (error) {
       console.error("Error updating activity:", error);
       res.status(400).json({ error: "Failed to update activity" });
