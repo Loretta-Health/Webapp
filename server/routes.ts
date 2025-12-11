@@ -399,7 +399,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         xpAwarded += streakReward;
       }
       
-      res.json({ ...updated, xpAwarded });
+      // Update streak-related achievements and award XP for any unlocked
+      const achievementResult = await storage.updateStreakAchievements(userId, updated.currentStreak || 0);
+      xpAwarded += achievementResult.totalXpAwarded;
+      
+      res.json({ 
+        ...updated, 
+        xpAwarded,
+        achievementsUnlocked: achievementResult.achievementsUnlocked 
+      });
     } catch (error) {
       console.error("Error updating streak:", error);
       res.status(500).json({ error: "Failed to update streak" });
@@ -683,13 +691,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Progress must be a number" });
       }
       
-      const updated = await storage.updateUserAchievementProgress(userId, achievementId, progress);
+      const result = await storage.updateUserAchievementProgress(userId, achievementId, progress);
       
-      if (!updated) {
+      if (!result.updated) {
         return res.status(404).json({ error: "Achievement not found" });
       }
       
-      res.json(updated);
+      res.json({ 
+        ...result.updated, 
+        justUnlocked: result.justUnlocked,
+        xpAwarded: result.xpReward 
+      });
     } catch (error) {
       console.error("Error updating achievement progress:", error);
       res.status(500).json({ error: "Failed to update achievement progress" });
