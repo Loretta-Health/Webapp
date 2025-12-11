@@ -730,30 +730,32 @@ export default function MyDashboard() {
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                   <div className="space-y-3 lg:space-y-4">
-                    <h2 className="text-lg lg:text-xl font-black text-foreground flex items-center gap-2">
+                    <h2 className="text-lg lg:text-xl font-black text-foreground flex items-center gap-2 mb-2">
                       <Flame className="w-5 h-5 text-primary" />
                       {t('missions.title')}
                     </h2>
-                    {missions.slice(0, 3).map((mission: any) => (
-                      <QuestCard
-                        key={mission.id}
-                        title={mission.title}
-                        description={mission.description}
-                        category={mission.category}
-                        xpReward={mission.xpReward}
-                        progress={mission.progress}
-                        maxProgress={mission.maxProgress}
-                        completed={mission.completed}
-                        legendary={mission.legendary}
-                        href={mission.href}
-                        onComplete={() => handleCompleteQuest(mission.id, mission.xpReward)}
-                      />
-                    ))}
-                    <Link href="/mission-details">
-                      <Button variant="outline" className="w-full" data-testid="button-view-all-quests">
-                        {t('missions.viewAll')}
-                      </Button>
-                    </Link>
+                    <div className="space-y-3">
+                      {missions.slice(0, 3).map((mission: any) => (
+                        <QuestCard
+                          key={mission.id}
+                          title={mission.title}
+                          description={mission.description}
+                          category={mission.category}
+                          xpReward={mission.xpReward}
+                          progress={mission.progress}
+                          maxProgress={mission.maxProgress}
+                          completed={mission.completed}
+                          legendary={mission.legendary}
+                          href={mission.href}
+                          onComplete={() => handleCompleteQuest(mission.id, mission.xpReward)}
+                        />
+                      ))}
+                      <Link href="/mission-details">
+                        <Button variant="outline" className="w-full" data-testid="button-view-all-quests">
+                          {t('missions.viewAll')}
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                   
                   <div className="space-y-3 lg:space-y-4">
