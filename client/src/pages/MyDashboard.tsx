@@ -94,7 +94,7 @@ export default function MyDashboard() {
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
   const userId = user?.id;
-  const { missions, completedCount, totalCount, completeMission } = useMissions();
+  const { activeMissions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
   const medicationProgress = getTotalProgress();
   const { progress: onboardingProgress, isConsentComplete, isQuestionnaireComplete } = useOnboardingProgress();
@@ -735,21 +735,34 @@ export default function MyDashboard() {
                       {t('missions.title')}
                     </h2>
                     <div className="space-y-3">
-                      {missions.slice(0, 3).map((mission: any) => (
-                        <QuestCard
-                          key={mission.id}
-                          title={mission.title}
-                          description={mission.description}
-                          category={mission.category}
-                          xpReward={mission.xpReward}
-                          progress={mission.progress}
-                          maxProgress={mission.maxProgress}
-                          completed={mission.completed}
-                          legendary={mission.legendary}
-                          href={mission.href}
-                          onComplete={() => handleCompleteQuest(mission.id, mission.xpReward)}
-                        />
-                      ))}
+                      {activeMissions.length === 0 ? (
+                        <Card className="p-6 text-center border-dashed">
+                          <p className="text-muted-foreground mb-3">{t('missions.noActive')}</p>
+                          <Link href="/mission-details">
+                            <Button variant="outline" size="sm">
+                              {t('missions.activate')}
+                            </Button>
+                          </Link>
+                        </Card>
+                      ) : (
+                        <>
+                          {activeMissions.slice(0, 3).map((mission: any) => (
+                            <QuestCard
+                              key={mission.id}
+                              title={mission.title}
+                              description={mission.description}
+                              category={mission.category}
+                              xpReward={mission.xpReward}
+                              progress={mission.progress}
+                              maxProgress={mission.maxProgress}
+                              completed={mission.completed}
+                              legendary={mission.legendary}
+                              href={mission.href}
+                              onComplete={() => handleCompleteQuest(mission.id, mission.xpReward)}
+                            />
+                          ))}
+                        </>
+                      )}
                       <Link href="/mission-details">
                         <Button variant="outline" className="w-full" data-testid="button-view-all-quests">
                           {t('missions.viewAll')}
