@@ -831,6 +831,17 @@ export class DatabaseStorage implements IStorage {
         category: 'level',
         sortOrder: 8,
       },
+      {
+        id: 'community-star',
+        title: 'Community Star',
+        description: 'Reach the top 3 on the Loretta community leaderboard (requires 5+ members)',
+        icon: 'star',
+        rarity: 'epic',
+        maxProgress: 1,
+        xpReward: 300,
+        category: 'community',
+        sortOrder: 9,
+      },
     ];
 
     const existing = await this.getAllAchievements();
@@ -940,6 +951,17 @@ export class DatabaseStorage implements IStorage {
         xpReward: 750,
         category: 'level',
         sortOrder: 8,
+      },
+      {
+        id: 'community-star',
+        title: 'Community Star',
+        description: 'Reach the top 3 on the Loretta community leaderboard (requires 5+ members)',
+        icon: 'star',
+        rarity: 'epic',
+        maxProgress: 1,
+        xpReward: 300,
+        category: 'community',
+        sortOrder: 9,
       },
     ];
 
