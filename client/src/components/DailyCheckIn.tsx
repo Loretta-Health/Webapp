@@ -31,7 +31,7 @@ export default function DailyCheckIn({
   className = ''
 }: DailyCheckInProps) {
   return (
-    <Card className={`relative overflow-hidden h-full ${className}`} data-testid="daily-checkin">
+    <Card className={`relative overflow-hidden ${className}`} data-testid="daily-checkin">
       <div className="absolute top-0 right-0">
         <Badge 
           className="rounded-tl-none rounded-br-none bg-gradient-to-r from-chart-3 to-destructive text-white font-black px-4 py-2"
