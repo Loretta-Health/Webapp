@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Activity, Trophy, BookOpen } from 'lucide-react';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Activity, Trophy, BookOpen, Pill, Smile } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import CollapsibleSection from '@/components/CollapsibleSection';
 import { Link, useLocation, Redirect } from 'wouter';
@@ -692,19 +692,31 @@ export default function MyDashboard() {
               </div>
             ) : (
               <>
-                <CollapsibleSection
-                  title={t('riskScore.title')}
-                  icon={<Heart className="w-5 h-5 text-destructive" />}
-                  defaultOpen={true}
-                >
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                    <div className="lg:col-span-2">
-                      <RiskScoreCard
-                        score={riskScoreData?.overallScore ?? 50}
-                        trend="stable"
-                        message={riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
-                      />
-                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                  <CollapsibleSection
+                    title={t('riskScore.title')}
+                    icon={<Heart className="w-5 h-5 text-destructive" />}
+                    defaultOpen={true}
+                  >
+                    <RiskScoreCard
+                      score={riskScoreData?.overallScore ?? 50}
+                      trend="stable"
+                      message={riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
+                    />
+                  </CollapsibleSection>
+                  
+                  <CollapsibleSection
+                    title={t('checkin.title', 'Daily Check-In')}
+                    icon={<Smile className="w-5 h-5 text-chart-2" />}
+                    defaultOpen={true}
+                    badge={
+                      allEmotionalCheckins && allEmotionalCheckins.length > 0 ? (
+                        <Badge variant="secondary" className="ml-2 font-bold text-xs">
+                          {allEmotionalCheckins.length}
+                        </Badge>
+                      ) : null
+                    }
+                  >
                     <div className="space-y-3 lg:space-y-4">
                       <DailyCheckIn
                         streak={streak}
@@ -741,8 +753,8 @@ export default function MyDashboard() {
                         </Card>
                       )}
                     </div>
-                  </div>
-                </CollapsibleSection>
+                  </CollapsibleSection>
+                </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mt-6">
                   <CollapsibleSection
@@ -799,78 +811,87 @@ export default function MyDashboard() {
                     icon={<Activity className="w-5 h-5 text-chart-2" />}
                     defaultOpen={true}
                   >
-                    <div className="space-y-3 lg:space-y-4">
-                      <div className="grid grid-cols-2 gap-2 lg:gap-3">
-                        <ActivityMetric
-                          title={t('activityMetrics.steps.title')}
-                          value={activityData?.steps ?? 0}
-                          goal={(activityData?.stepsGoal ?? 10000).toLocaleString()}
-                          unit={t('activity.steps').toLowerCase()}
-                          icon={Footprints}
-                          progress={Math.min(100, Math.round(((activityData?.steps ?? 0) / (activityData?.stepsGoal ?? 10000)) * 100))}
-                          color="text-chart-1"
-                          explanation={t('activityMetrics.steps.explanation')}
-                          simpleExplanation={t('activityMetrics.steps.explanation')}
-                          href="/activity?type=steps"
-                        />
-                        <ActivityMetric
-                          title={t('activityMetrics.sleep.title')}
-                          value={activityData?.sleepHours ?? 0}
-                          goal={`${activityData?.sleepGoal ?? 8}h`}
-                          unit={t('activity.sleep').toLowerCase()}
-                          icon={MoonIcon}
-                          progress={Math.min(100, Math.round(((activityData?.sleepHours ?? 0) / (activityData?.sleepGoal ?? 8)) * 100))}
-                          color="text-chart-2"
-                          explanation={t('activityMetrics.sleep.explanation')}
-                          simpleExplanation={t('activityMetrics.sleep.simpleExplanation')}
-                          href="/activity?type=sleep"
-                        />
-                        <ActivityMetric
-                          title={t('activityMetrics.heartRate.title')}
-                          value={activityData?.heartRate ?? 0}
-                          goal="60-100"
-                          unit="bpm"
-                          icon={Heart}
-                          progress={activityData?.heartRate ? (activityData.heartRate >= 60 && activityData.heartRate <= 100 ? 100 : 50) : 0}
-                          color="text-destructive"
-                          explanation={t('activityMetrics.heartRate.explanation')}
-                          simpleExplanation={t('activityMetrics.heartRate.simpleExplanation')}
-                          href="/activity?type=heartRate"
-                        />
-                        <ActivityMetric
-                          title={t('activityMetrics.calories.title')}
-                          value={activityData?.calories ?? 0}
-                          goal={(activityData?.caloriesGoal ?? 2000).toLocaleString()}
-                          unit="cal"
-                          icon={Flame}
-                          progress={Math.min(100, Math.round(((activityData?.calories ?? 0) / (activityData?.caloriesGoal ?? 2000)) * 100))}
-                          color="text-chart-3"
-                          explanation={t('activityMetrics.calories.explanation')}
-                          simpleExplanation={t('activityMetrics.calories.explanation')}
-                          href="/activity?type=calories"
-                        />
-                      </div>
-                      
-                      {medications.length > 0 && (
-                        <div className="space-y-2">
-                          <h3 className="text-sm font-bold text-foreground">{t('medications.title')}</h3>
-                          {medications.slice(0, 2).map((med: any) => (
-                            <MedicationTracker
-                              key={med.id}
-                              medicationId={med.id}
-                              name={med.name}
-                              dosage={med.dosage}
-                              timing={med.timing}
-                              frequency={med.frequency}
-                              explanation={med.explanation || t('medications.defaultExplanation')}
-                              simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}
-                            />
-                          ))}
-                        </div>
-                      )}
+                    <div className="grid grid-cols-2 gap-2 lg:gap-3">
+                      <ActivityMetric
+                        title={t('activityMetrics.steps.title')}
+                        value={activityData?.steps ?? 0}
+                        goal={(activityData?.stepsGoal ?? 10000).toLocaleString()}
+                        unit={t('activity.steps').toLowerCase()}
+                        icon={Footprints}
+                        progress={Math.min(100, Math.round(((activityData?.steps ?? 0) / (activityData?.stepsGoal ?? 10000)) * 100))}
+                        color="text-chart-1"
+                        explanation={t('activityMetrics.steps.explanation')}
+                        simpleExplanation={t('activityMetrics.steps.explanation')}
+                        href="/activity?type=steps"
+                      />
+                      <ActivityMetric
+                        title={t('activityMetrics.sleep.title')}
+                        value={activityData?.sleepHours ?? 0}
+                        goal={`${activityData?.sleepGoal ?? 8}h`}
+                        unit={t('activity.sleep').toLowerCase()}
+                        icon={MoonIcon}
+                        progress={Math.min(100, Math.round(((activityData?.sleepHours ?? 0) / (activityData?.sleepGoal ?? 8)) * 100))}
+                        color="text-chart-2"
+                        explanation={t('activityMetrics.sleep.explanation')}
+                        simpleExplanation={t('activityMetrics.sleep.simpleExplanation')}
+                        href="/activity?type=sleep"
+                      />
+                      <ActivityMetric
+                        title={t('activityMetrics.heartRate.title')}
+                        value={activityData?.heartRate ?? 0}
+                        goal="60-100"
+                        unit="bpm"
+                        icon={Heart}
+                        progress={activityData?.heartRate ? (activityData.heartRate >= 60 && activityData.heartRate <= 100 ? 100 : 50) : 0}
+                        color="text-destructive"
+                        explanation={t('activityMetrics.heartRate.explanation')}
+                        simpleExplanation={t('activityMetrics.heartRate.simpleExplanation')}
+                        href="/activity?type=heartRate"
+                      />
+                      <ActivityMetric
+                        title={t('activityMetrics.calories.title')}
+                        value={activityData?.calories ?? 0}
+                        goal={(activityData?.caloriesGoal ?? 2000).toLocaleString()}
+                        unit="cal"
+                        icon={Flame}
+                        progress={Math.min(100, Math.round(((activityData?.calories ?? 0) / (activityData?.caloriesGoal ?? 2000)) * 100))}
+                        color="text-chart-3"
+                        explanation={t('activityMetrics.calories.explanation')}
+                        simpleExplanation={t('activityMetrics.calories.explanation')}
+                        href="/activity?type=calories"
+                      />
                     </div>
                   </CollapsibleSection>
                 </div>
+                
+                {medications.length > 0 && (
+                  <CollapsibleSection
+                    title={t('medications.title')}
+                    icon={<Pill className="w-5 h-5 text-primary" />}
+                    defaultOpen={true}
+                    className="mt-6"
+                    badge={
+                      <Badge variant="secondary" className="ml-2 font-bold text-xs">
+                        {medications.length}
+                      </Badge>
+                    }
+                  >
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                      {medications.slice(0, 4).map((med: any) => (
+                        <MedicationTracker
+                          key={med.id}
+                          medicationId={med.id}
+                          name={med.name}
+                          dosage={med.dosage}
+                          timing={med.timing}
+                          frequency={med.frequency}
+                          explanation={med.explanation || t('medications.defaultExplanation')}
+                          simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}
+                        />
+                      ))}
+                    </div>
+                  </CollapsibleSection>
+                )}
                 
                 {!isNewUser && (
                   <CollapsibleSection
