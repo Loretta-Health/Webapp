@@ -89,7 +89,10 @@ export function useMissions() {
 
   const getCurrentLanguage = (): 'en' | 'de' => {
     if (typeof window !== 'undefined') {
-      const lang = localStorage.getItem('i18nextLng') || 'en';
+      const htmlLang = document.documentElement.lang;
+      const i18nLang = localStorage.getItem('i18nextLng');
+      const navigatorLang = navigator.language;
+      const lang = i18nLang || htmlLang || navigatorLang || 'en';
       return lang.startsWith('de') ? 'de' : 'en';
     }
     return 'en';
