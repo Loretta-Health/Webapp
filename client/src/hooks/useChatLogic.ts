@@ -402,7 +402,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ isActive: true, activatedAt: new Date().toISOString() }),
+        body: JSON.stringify({ isActive: true }),
       });
 
       if (!response.ok) {

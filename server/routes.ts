@@ -751,6 +751,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const validatedData = updateUserMissionSchema.parse(req.body);
+      
+      // Auto-set activatedAt when activating a mission
+      if (validatedData.isActive === true && !validatedData.activatedAt) {
+        validatedData.activatedAt = new Date();
+      }
+      
       const updated = await storage.updateUserMission(id, validatedData);
       
       if (!updated) {
