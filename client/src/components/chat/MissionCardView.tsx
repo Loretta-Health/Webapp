@@ -109,7 +109,7 @@ export default function MissionCardView({
                       className="bg-gradient-to-r from-primary to-chart-2 text-white text-xs"
                     >
                       <Target className="w-3 h-3 mr-1" />
-                      Start Mission
+                      Activate Mission
                     </Button>
                   </>
                 )}
