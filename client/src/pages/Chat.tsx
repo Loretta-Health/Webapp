@@ -61,6 +61,7 @@ export default function Chat() {
     activityContext,
     handleSend: chatHandleSend,
     handleActivateMission,
+    handleViewMission,
     handleConfirmEmotion,
     handleDenyEmotion,
     setActivityContext,
@@ -222,7 +223,7 @@ export default function Chat() {
                             showMissionCard={showMissionCard}
                             missionActivated={missionActivated}
                             onActivate={handleActivateMission}
-                            onView={() => window.location.href = `/mission-details?id=${suggestedMission.id}`}
+                            onView={handleViewMission}
                           />
                         )}
 

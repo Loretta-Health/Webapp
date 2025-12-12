@@ -597,6 +597,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/missions/suggest", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    try {
+      const userId = (req.user as any).id;
+      const { context, language = 'en' } = req.body;
+
+      const catalog = await storage.getAllMissions();
+      const userMissions = await storage.getUserMissions(userId);
+      const questionnaire = await storage.getQuestionnaireAnswers(userId, 'lifestyle');
+      const emotionalCheckins = await storage.getAllEmotionalCheckins(userId);
+      const profile = await storage.getUserProfile(userId);
+
+      const inactiveMissionsWithUserData = catalog
+        .map(cm => {
+          const userMission = userMissions.find(um => um.missionKey === cm.missionKey);
+          return { catalog: cm, userMission };
+        })
+        .filter(({ userMission }) => userMission && !userMission.isActive);
+
+      if (inactiveMissionsWithUserData.length === 0) {
+        return res.json({ 
+          mission: null, 
+          reason: language === 'de' 
+            ? 'Alle verfügbaren Missionen sind bereits aktiviert!' 
+            : 'All available missions are already activated!' 
+        });
+      }
+
+      let bestResult = inactiveMissionsWithUserData[0];
+      let bestScore = 0;
+      let reason = '';
+
+      const recentEmotion = emotionalCheckins.length > 0 
+        ? emotionalCheckins[emotionalCheckins.length - 1]?.emotion 
+        : null;
+      const contextLower = (context || '').toLowerCase();
+
+      for (const { catalog: mission, userMission } of inactiveMissionsWithUserData) {
+        let score = 0;
+
+        if (mission.missionKey === 'deep-breathing' || mission.missionKey === 'meditation') {
+          if (recentEmotion === 'stressed' || recentEmotion === 'anxious') {
+            score += 50;
+            reason = language === 'de' 
+              ? 'Diese Mission kann helfen, Stress abzubauen.' 
+              : 'This mission can help reduce stress.';
+          }
+          if (contextLower.includes('stress') || contextLower.includes('anxious') || contextLower.includes('worried')) {
+            score += 40;
+            reason = language === 'de' 
+              ? 'Basierend auf deinem Gespräch könnte dir das helfen, dich zu entspannen.' 
+              : 'Based on your conversation, this could help you relax.';
+          }
+        }
+
+        if (mission.missionKey === 'jumping-jacks' || mission.missionKey === 'walking') {
+          if (recentEmotion === 'tired' || recentEmotion === 'sad') {
+            score += 40;
+            reason = language === 'de' 
+              ? 'Bewegung kann deine Energie und Stimmung verbessern.' 
+              : 'Exercise can boost your energy and mood.';
+          }
+          if (contextLower.includes('energy') || contextLower.includes('tired') || contextLower.includes('exercise')) {
+            score += 35;
+            reason = language === 'de' 
+              ? 'Eine kurze Aktivität könnte dir Energie geben.' 
+              : 'A quick activity could give you energy.';
+          }
+          const physicalActivity = questionnaire?.answers?.physicalActivity;
+          if (physicalActivity === 'sedentary' || physicalActivity === 'light') {
+            score += 30;
+            reason = language === 'de' 
+              ? 'Basierend auf deinem Aktivitätslevel ist dies ein guter Start.' 
+              : 'Based on your activity level, this is a good starting point.';
+          }
+        }
+
+        if (mission.missionKey === 'water-glasses') {
+          if (contextLower.includes('water') || contextLower.includes('hydrat') || contextLower.includes('thirst')) {
+            score += 45;
+            reason = language === 'de' 
+              ? 'Hydriert zu bleiben ist wichtig für deine Gesundheit.' 
+              : 'Staying hydrated is important for your health.';
+          }
+          score += 15;
+        }
+
+        score += (mission.xpReward || 0) / 10;
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestResult = { catalog: mission, userMission };
+        }
+      }
+
+      if (!reason) {
+        reason = language === 'de' 
+          ? `Diese Mission passt gut zu deinen aktuellen Gesundheitszielen.` 
+          : `This mission fits well with your current health goals.`;
+      }
+
+      const { catalog: bestMission, userMission: bestUserMission } = bestResult;
+      const localizedMission = {
+        id: bestMission.id,
+        missionKey: bestMission.missionKey,
+        userMissionId: bestUserMission?.id,
+        title: language === 'de' ? bestMission.titleDe : bestMission.titleEn,
+        description: language === 'de' ? bestMission.descriptionDe : bestMission.descriptionEn,
+        xpReward: bestMission.xpReward,
+        icon: bestMission.icon,
+        color: bestMission.color,
+        maxProgress: bestMission.maxProgress,
+      };
+
+      res.json({ mission: localizedMission, reason });
+    } catch (error) {
+      console.error("Error suggesting mission:", error);
+      res.status(500).json({ error: "Failed to suggest mission" });
+    }
+  });
+
   // ========================
   // User Mission Endpoints
   // ========================
