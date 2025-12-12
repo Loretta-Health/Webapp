@@ -7,8 +7,9 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check } from 'lucide-react';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Activity, Trophy, BookOpen } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
+import CollapsibleSection from '@/components/CollapsibleSection';
 import { Link, useLocation, Redirect } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
@@ -646,9 +647,18 @@ export default function MyDashboard() {
             
             {showLeaderboard ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                <Leaderboard communityType={communityType} />
-                <div className="space-y-4 lg:space-y-6">
-                  <h2 className="text-xl lg:text-2xl font-black text-foreground">{t('achievements.title')}</h2>
+                <CollapsibleSection
+                  title={t('sidebar.leaderboard')}
+                  icon={<Users className="w-5 h-5 text-chart-3" />}
+                  defaultOpen={true}
+                >
+                  <Leaderboard communityType={communityType} />
+                </CollapsibleSection>
+                <CollapsibleSection
+                  title={t('achievements.title')}
+                  icon={<Trophy className="w-5 h-5 text-yellow-500" />}
+                  defaultOpen={true}
+                >
                   <div className="grid grid-cols-1 gap-3 lg:gap-4">
                     <AchievementBadge
                       title={t('achievements.firstSteps.title')}
@@ -678,62 +688,75 @@ export default function MyDashboard() {
                       rarity="epic"
                     />
                   </div>
-                </div>
+                </CollapsibleSection>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                  <div className="lg:col-span-2">
-                    <RiskScoreCard
-                      score={riskScoreData?.overallScore ?? 50}
-                      trend="stable"
-                      message={riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
-                    />
-                  </div>
-                  <div className="space-y-3 lg:space-y-4">
-                    <DailyCheckIn
-                      streak={streak}
-                      dayNumber={streak}
-                      xpReward={50}
-                      onStart={() => setShowCheckInModal(true)}
-                    />
-                    
-                    {allEmotionalCheckins && allEmotionalCheckins.length > 0 && (
-                      <Card className="bg-gradient-to-br from-chart-2/20 via-primary/10 to-secondary/20 border-0 shadow-lg overflow-hidden">
-                        <div className="p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                              <Heart className="w-3 h-3" />
-                              {t('checkin.subtitle')}
-                            </p>
-                            <span className="text-xs text-muted-foreground">{allEmotionalCheckins.length}</span>
-                          </div>
-                          <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
-                            {allEmotionalCheckins.slice(0, 3).map((checkin) => {
-                              const data = formatCheckinData(checkin);
-                              return (
-                                <div key={data.id} className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors">
-                                  <span className="text-lg">{data.emoji}</span>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium truncate">{data.emotion}</p>
-                                    <p className="text-xs text-muted-foreground">{data.dateStr}</p>
+                <CollapsibleSection
+                  title={t('riskScore.title')}
+                  icon={<Heart className="w-5 h-5 text-destructive" />}
+                  defaultOpen={true}
+                >
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+                    <div className="lg:col-span-2">
+                      <RiskScoreCard
+                        score={riskScoreData?.overallScore ?? 50}
+                        trend="stable"
+                        message={riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
+                      />
+                    </div>
+                    <div className="space-y-3 lg:space-y-4">
+                      <DailyCheckIn
+                        streak={streak}
+                        dayNumber={streak}
+                        xpReward={50}
+                        onStart={() => setShowCheckInModal(true)}
+                      />
+                      
+                      {allEmotionalCheckins && allEmotionalCheckins.length > 0 && (
+                        <Card className="bg-gradient-to-br from-chart-2/20 via-primary/10 to-secondary/20 border-0 shadow-lg overflow-hidden">
+                          <div className="p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                                <Heart className="w-3 h-3" />
+                                {t('checkin.subtitle')}
+                              </p>
+                              <span className="text-xs text-muted-foreground">{allEmotionalCheckins.length}</span>
+                            </div>
+                            <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
+                              {allEmotionalCheckins.slice(0, 3).map((checkin) => {
+                                const data = formatCheckinData(checkin);
+                                return (
+                                  <div key={data.id} className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors">
+                                    <span className="text-lg">{data.emoji}</span>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate">{data.emotion}</p>
+                                      <p className="text-xs text-muted-foreground">{data.dateStr}</p>
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            })}
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      </Card>
-                    )}
+                        </Card>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </CollapsibleSection>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mt-6">
-                  <div className="space-y-3 lg:space-y-4">
-                    <h2 className="text-lg lg:text-xl font-black text-foreground flex items-center gap-2">
-                      <Flame className="w-5 h-5 text-primary" />
-                      {t('missions.title')}
-                    </h2>
+                  <CollapsibleSection
+                    title={t('missions.title')}
+                    icon={<Flame className="w-5 h-5 text-primary" />}
+                    defaultOpen={true}
+                    badge={
+                      activeMissions.length > 0 ? (
+                        <Badge variant="secondary" className="ml-2 font-bold text-xs">
+                          {activeMissions.length}
+                        </Badge>
+                      ) : null
+                    }
+                  >
                     <div className="space-y-3">
                       {activeMissions.length === 0 ? (
                         <Card className="p-6 text-center border-dashed">
@@ -769,88 +792,95 @@ export default function MyDashboard() {
                         </Button>
                       </Link>
                     </div>
-                  </div>
+                  </CollapsibleSection>
                   
-                  <div className="space-y-3 lg:space-y-4">
-                    <h2 className="text-lg lg:text-xl font-black text-foreground flex items-center gap-2">
-                      {t('activity.title')}
-                    </h2>
-                    <div className="grid grid-cols-2 gap-2 lg:gap-3">
-                      <ActivityMetric
-                        title={t('activityMetrics.steps.title')}
-                        value={activityData?.steps ?? 0}
-                        goal={(activityData?.stepsGoal ?? 10000).toLocaleString()}
-                        unit={t('activity.steps').toLowerCase()}
-                        icon={Footprints}
-                        progress={Math.min(100, Math.round(((activityData?.steps ?? 0) / (activityData?.stepsGoal ?? 10000)) * 100))}
-                        color="text-chart-1"
-                        explanation={t('activityMetrics.steps.explanation')}
-                        simpleExplanation={t('activityMetrics.steps.explanation')}
-                        href="/activity?type=steps"
-                      />
-                      <ActivityMetric
-                        title={t('activityMetrics.sleep.title')}
-                        value={activityData?.sleepHours ?? 0}
-                        goal={`${activityData?.sleepGoal ?? 8}h`}
-                        unit={t('activity.sleep').toLowerCase()}
-                        icon={MoonIcon}
-                        progress={Math.min(100, Math.round(((activityData?.sleepHours ?? 0) / (activityData?.sleepGoal ?? 8)) * 100))}
-                        color="text-chart-2"
-                        explanation={t('activityMetrics.sleep.explanation')}
-                        simpleExplanation={t('activityMetrics.sleep.simpleExplanation')}
-                        href="/activity?type=sleep"
-                      />
-                      <ActivityMetric
-                        title={t('activityMetrics.heartRate.title')}
-                        value={activityData?.heartRate ?? 0}
-                        goal="60-100"
-                        unit="bpm"
-                        icon={Heart}
-                        progress={activityData?.heartRate ? (activityData.heartRate >= 60 && activityData.heartRate <= 100 ? 100 : 50) : 0}
-                        color="text-destructive"
-                        explanation={t('activityMetrics.heartRate.explanation')}
-                        simpleExplanation={t('activityMetrics.heartRate.simpleExplanation')}
-                        href="/activity?type=heartRate"
-                      />
-                      <ActivityMetric
-                        title={t('activityMetrics.calories.title')}
-                        value={activityData?.calories ?? 0}
-                        goal={(activityData?.caloriesGoal ?? 2000).toLocaleString()}
-                        unit="cal"
-                        icon={Flame}
-                        progress={Math.min(100, Math.round(((activityData?.calories ?? 0) / (activityData?.caloriesGoal ?? 2000)) * 100))}
-                        color="text-chart-3"
-                        explanation={t('activityMetrics.calories.explanation')}
-                        simpleExplanation={t('activityMetrics.calories.explanation')}
-                        href="/activity?type=calories"
-                      />
-                    </div>
-                    
-                    {medications.length > 0 && (
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-bold text-foreground">{t('medications.title')}</h3>
-                        {medications.slice(0, 2).map((med: any) => (
-                          <MedicationTracker
-                            key={med.id}
-                            medicationId={med.id}
-                            name={med.name}
-                            dosage={med.dosage}
-                            timing={med.timing}
-                            frequency={med.frequency}
-                            explanation={med.explanation || t('medications.defaultExplanation')}
-                            simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}
-                          />
-                        ))}
+                  <CollapsibleSection
+                    title={t('activity.title')}
+                    icon={<Activity className="w-5 h-5 text-chart-2" />}
+                    defaultOpen={true}
+                  >
+                    <div className="space-y-3 lg:space-y-4">
+                      <div className="grid grid-cols-2 gap-2 lg:gap-3">
+                        <ActivityMetric
+                          title={t('activityMetrics.steps.title')}
+                          value={activityData?.steps ?? 0}
+                          goal={(activityData?.stepsGoal ?? 10000).toLocaleString()}
+                          unit={t('activity.steps').toLowerCase()}
+                          icon={Footprints}
+                          progress={Math.min(100, Math.round(((activityData?.steps ?? 0) / (activityData?.stepsGoal ?? 10000)) * 100))}
+                          color="text-chart-1"
+                          explanation={t('activityMetrics.steps.explanation')}
+                          simpleExplanation={t('activityMetrics.steps.explanation')}
+                          href="/activity?type=steps"
+                        />
+                        <ActivityMetric
+                          title={t('activityMetrics.sleep.title')}
+                          value={activityData?.sleepHours ?? 0}
+                          goal={`${activityData?.sleepGoal ?? 8}h`}
+                          unit={t('activity.sleep').toLowerCase()}
+                          icon={MoonIcon}
+                          progress={Math.min(100, Math.round(((activityData?.sleepHours ?? 0) / (activityData?.sleepGoal ?? 8)) * 100))}
+                          color="text-chart-2"
+                          explanation={t('activityMetrics.sleep.explanation')}
+                          simpleExplanation={t('activityMetrics.sleep.simpleExplanation')}
+                          href="/activity?type=sleep"
+                        />
+                        <ActivityMetric
+                          title={t('activityMetrics.heartRate.title')}
+                          value={activityData?.heartRate ?? 0}
+                          goal="60-100"
+                          unit="bpm"
+                          icon={Heart}
+                          progress={activityData?.heartRate ? (activityData.heartRate >= 60 && activityData.heartRate <= 100 ? 100 : 50) : 0}
+                          color="text-destructive"
+                          explanation={t('activityMetrics.heartRate.explanation')}
+                          simpleExplanation={t('activityMetrics.heartRate.simpleExplanation')}
+                          href="/activity?type=heartRate"
+                        />
+                        <ActivityMetric
+                          title={t('activityMetrics.calories.title')}
+                          value={activityData?.calories ?? 0}
+                          goal={(activityData?.caloriesGoal ?? 2000).toLocaleString()}
+                          unit="cal"
+                          icon={Flame}
+                          progress={Math.min(100, Math.round(((activityData?.calories ?? 0) / (activityData?.caloriesGoal ?? 2000)) * 100))}
+                          color="text-chart-3"
+                          explanation={t('activityMetrics.calories.explanation')}
+                          simpleExplanation={t('activityMetrics.calories.explanation')}
+                          href="/activity?type=calories"
+                        />
                       </div>
-                    )}
-                  </div>
+                      
+                      {medications.length > 0 && (
+                        <div className="space-y-2">
+                          <h3 className="text-sm font-bold text-foreground">{t('medications.title')}</h3>
+                          {medications.slice(0, 2).map((med: any) => (
+                            <MedicationTracker
+                              key={med.id}
+                              medicationId={med.id}
+                              name={med.name}
+                              dosage={med.dosage}
+                              timing={med.timing}
+                              frequency={med.frequency}
+                              explanation={med.explanation || t('medications.defaultExplanation')}
+                              simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </CollapsibleSection>
                 </div>
                 
                 {!isNewUser && (
-                  <>
-                    <Separator />
+                  <CollapsibleSection
+                    title={t('healthScience.title', 'Health Science')}
+                    icon={<BookOpen className="w-5 h-5 text-chart-3" />}
+                    defaultOpen={false}
+                    className="mt-6"
+                  >
                     <HealthScienceSection category="activity" />
-                  </>
+                  </CollapsibleSection>
                 )}
               </>
             )}
