@@ -165,29 +165,29 @@ const missionsDatabase: Record<string, MissionData> = {
     communityTip: 'Try walking during phone calls or after meals. Every step counts toward your daily goal!',
     stepLabel: 'Minute'
   },
-  'healthy-meal': {
+  'deep-breathing': {
     id: 5,
-    title: 'Eat a healthy meal',
+    title: 'Practice deep breathing',
     frequency: 'daily',
-    description: 'Nourish your body with nutritious food',
-    xpReward: 35,
-    totalSteps: 1,
-    icon: Leaf,
+    description: 'Take 10 slow, deep breaths to relax',
+    xpReward: 25,
+    totalSteps: 10,
+    icon: Wind,
     color: 'chart-2',
-    details: 'Eating a balanced, nutritious meal provides your body with essential vitamins, minerals, and energy. Focus on whole foods, vegetables, lean proteins, and healthy fats.',
+    details: 'Deep breathing exercises activate your parasympathetic nervous system, helping to reduce stress and anxiety. Taking slow, deliberate breaths can lower blood pressure and improve focus.',
     benefits: [
-      { icon: Zap, text: 'Sustained energy throughout the day' },
-      { icon: Brain, text: 'Better mental clarity' },
-      { icon: Heart, text: 'Supports heart health' },
-      { icon: Leaf, text: 'Strengthens immune system' },
+      { icon: Brain, text: 'Reduces stress and anxiety' },
+      { icon: Heart, text: 'Lowers blood pressure' },
+      { icon: Zap, text: 'Increases mental clarity' },
+      { icon: Leaf, text: 'Promotes relaxation' },
     ],
-    initialSteps: [{ id: 1, completed: false }],
+    initialSteps: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, completed: false })),
     alternativeMissions: [
-      { id: 501, title: 'Eat a serving of vegetables', xp: 25, icon: '🥗' },
-      { id: 502, title: 'Prepare a home-cooked meal', xp: 40, icon: '👨‍🍳' },
+      { id: 501, title: 'Do a body scan relaxation', xp: 30, icon: '🧘' },
+      { id: 502, title: 'Practice box breathing', xp: 25, icon: '📦' },
     ],
-    communityTip: 'Try to fill half your plate with vegetables and fruits for a balanced meal!',
-    stepLabel: 'Meal'
+    communityTip: 'Try the 4-7-8 technique: breathe in for 4 seconds, hold for 7, exhale for 8.',
+    stepLabel: 'Breath'
   },
   '1': {
     id: 1,

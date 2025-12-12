@@ -572,19 +572,33 @@ export class DatabaseStorage implements IStorage {
       },
       {
         userId,
-        missionKey: 'healthy-meal',
-        title: 'Eat a healthy meal',
-        description: 'Nourish your body with nutritious food',
+        missionKey: 'deep-breathing',
+        title: 'Practice deep breathing',
+        description: 'Take 10 slow, deep breaths to relax',
         category: 'daily',
-        xpReward: 35,
+        xpReward: 25,
         progress: 0,
-        maxProgress: 1,
+        maxProgress: 10,
         completed: false,
         isActive: false,
-        href: '/mission-details?id=healthy-meal',
+        href: '/mission-details?id=deep-breathing',
         source: 'default',
       },
     ];
+
+    const existingKeys = existingMissions.map(m => m.missionKey);
+    const missingMissions = defaultMissions.filter(m => !existingKeys.includes(m.missionKey));
+    
+    if (missingMissions.length > 0) {
+      for (const mission of missingMissions) {
+        const created = await this.createUserMission(mission);
+        existingMissions.push(created);
+      }
+    }
+    
+    if (existingMissions.length > 0) {
+      return existingMissions;
+    }
 
     const createdMissions: UserMission[] = [];
     for (const mission of defaultMissions) {
