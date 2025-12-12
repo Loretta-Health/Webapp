@@ -1,8 +1,17 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Zap, ChevronRight, Target, Check, Sparkles } from 'lucide-react';
+import { Zap, ChevronRight, Target, Check, Sparkles, Dumbbell, Droplets, Brain, Footprints, Wind, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const iconMap: Record<string, LucideIcon> = {
+  dumbbell: Dumbbell,
+  droplets: Droplets,
+  brain: Brain,
+  footprints: Footprints,
+  wind: Wind,
+  target: Target,
+};
 
 export interface SuggestedMission {
   id: string;
@@ -45,11 +54,14 @@ export default function MissionCardView({
           <div className="p-4 space-y-3">
             <div className="flex items-start gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center shadow-lg">
-                {suggestedMission.icon ? (
-                  <span className="text-2xl">{suggestedMission.icon}</span>
-                ) : (
-                  <Target className="w-6 h-6 text-white" />
-                )}
+                {(() => {
+                  const IconComponent = suggestedMission.icon ? iconMap[suggestedMission.icon.toLowerCase()] : null;
+                  return IconComponent ? (
+                    <IconComponent className="w-6 h-6 text-white" />
+                  ) : (
+                    <Target className="w-6 h-6 text-white" />
+                  );
+                })()}
               </div>
               
               <div className="flex-1">
