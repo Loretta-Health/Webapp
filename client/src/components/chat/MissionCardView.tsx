@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Zap, ChevronRight, Target, Check, Sparkles, Dumbbell, Droplets, Brain, Footprints, Wind, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const iconMap: Record<string, LucideIcon> = {
   dumbbell: Dumbbell,
@@ -39,6 +40,8 @@ export default function MissionCardView({
   onActivate,
   onView
 }: MissionCardViewProps) {
+  const { t } = useTranslation('pages');
+  
   if (!suggestedMission || !showMissionCard) return null;
 
   return (
@@ -68,7 +71,7 @@ export default function MissionCardView({
                 <div className="flex items-center gap-2 mb-1">
                   <Badge className="bg-gradient-to-r from-primary to-chart-2 text-white border-0 text-xs">
                     <Sparkles className="w-3 h-3 mr-1" />
-                    Suggested Mission
+                    {t('chat.missionCard.suggestedMission')}
                   </Badge>
                 </div>
                 <h4 className="font-bold text-foreground">{suggestedMission.title}</h4>
@@ -93,13 +96,13 @@ export default function MissionCardView({
                   onClick={onView}
                   className="text-xs"
                 >
-                  View Details
+                  {t('chat.missionCard.viewDetails')}
                   <ChevronRight className="w-3 h-3 ml-1" />
                 </Button>
                 {missionActivated ? (
                   <Badge className="bg-chart-2 text-white border-0 py-2 px-3">
                     <Check className="w-3 h-3 mr-1" />
-                    Activated!
+                    {t('chat.missionCard.activated')}
                   </Badge>
                 ) : (
                   <Button
@@ -108,7 +111,7 @@ export default function MissionCardView({
                     className="bg-gradient-to-r from-primary to-chart-2 text-white text-xs"
                   >
                     <Target className="w-3 h-3 mr-1" />
-                    Activate Mission
+                    {t('chat.missionCard.activateMission')}
                   </Button>
                 )}
               </div>

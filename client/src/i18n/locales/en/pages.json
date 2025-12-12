@@ -137,7 +137,15 @@
       "sideEffects": "What are my medication side effects?",
       "heartHealth": "How can I improve my heart health?",
       "riskScore": "What does my risk score mean?"
-    }
+    },
+    "missionCard": {
+      "suggestedMission": "Suggested Mission",
+      "viewDetails": "View Details",
+      "activateMission": "Activate Mission",
+      "activated": "Activated!"
+    },
+    "missionActivated": "Mission Activated!",
+    "activationFailed": "Failed to activate mission. Please try again."
   },
   "calendar": {
     "title": "Health Calendar",
