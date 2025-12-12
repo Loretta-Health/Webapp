@@ -22,7 +22,6 @@ import { nanoid } from "nanoid";
 // Scaleway AI configuration
 const SCALEWAY_BASE_URL = 'https://api.scaleway.ai/v1';
 const SCALEWAY_MODEL = 'gemma-3-27b-it';
-const SCALEWAY_API_KEY = process.env.SCALEWAY_API_KEY;
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -48,14 +47,15 @@ async function addXPAndCheckAchievements(userId: string, amount: number): Promis
 }
 
 async function chatWithScaleway(messages: ChatMessage[]): Promise<string> {
-  if (!SCALEWAY_API_KEY) {
+  const apiKey = process.env.SCALEWAY_API_KEY;
+  if (!apiKey) {
     throw new Error('Missing SCALEWAY_API_KEY');
   }
 
   const response = await fetch(`${SCALEWAY_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${SCALEWAY_API_KEY}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
