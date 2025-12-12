@@ -137,7 +137,15 @@
       "sideEffects": "Was sind die Nebenwirkungen meiner Medikamente?",
       "heartHealth": "Wie kann ich meine Herzgesundheit verbessern?",
       "riskScore": "Was bedeutet mein Risikoscore?"
-    }
+    },
+    "missionCard": {
+      "suggestedMission": "Vorgeschlagene Mission",
+      "viewDetails": "Details ansehen",
+      "activateMission": "Mission aktivieren",
+      "activated": "Aktiviert!"
+    },
+    "missionActivated": "Mission aktiviert!",
+    "activationFailed": "Mission konnte nicht aktiviert werden. Bitte versuche es erneut."
   },
   "calendar": {
     "title": "Gesundheitskalender",
