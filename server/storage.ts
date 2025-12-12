@@ -13,6 +13,7 @@ import {
   type InsertRiskScore,
   type EmotionalCheckin,
   type InsertEmotionalCheckin,
+  type Mission,
   type UserMission,
   type InsertUserMission,
   type UpdateUserMission,
@@ -40,6 +41,7 @@ import {
   userGamification,
   riskScores,
   emotionalCheckins,
+  missions,
   userMissions,
   teams,
   teamMembers,
@@ -506,107 +508,43 @@ export class DatabaseStorage implements IStorage {
     await db.delete(userMissions).where(eq(userMissions.id, id));
   }
 
+  async getAllMissions(): Promise<Mission[]> {
+    return await db
+      .select()
+      .from(missions)
+      .where(eq(missions.isActive, true));
+  }
+
+  async getMissionByKey(missionKey: string): Promise<Mission | undefined> {
+    const [mission] = await db
+      .select()
+      .from(missions)
+      .where(eq(missions.missionKey, missionKey));
+    return mission;
+  }
+
   async ensureDefaultMissionsForUser(userId: string): Promise<UserMission[]> {
     const existingMissions = await this.getUserMissions(userId);
+    const catalogMissions = await this.getAllMissions();
     
-    if (existingMissions.length > 0) {
-      return existingMissions;
-    }
-
-    const defaultMissions: InsertUserMission[] = [
-      {
-        userId,
-        missionKey: 'jumping-jacks',
-        title: 'Complete 10 jumping jacks',
-        description: 'Get your heart pumping with quick cardio exercise',
-        category: 'daily',
-        xpReward: 50,
-        progress: 0,
-        maxProgress: 10,
-        completed: false,
-        isActive: false,
-        href: '/mission-details?id=jumping-jacks',
-        source: 'default',
-      },
-      {
-        userId,
-        missionKey: 'water-glasses',
-        title: 'Drink 8 glasses of water',
-        description: 'Stay hydrated throughout the day',
-        category: 'daily',
-        xpReward: 30,
-        progress: 0,
-        maxProgress: 8,
-        completed: false,
-        isActive: false,
-        href: '/mission-details?id=water-glasses',
-        source: 'default',
-      },
-      {
-        userId,
-        missionKey: 'meditation',
-        title: 'Meditate for 5 minutes',
-        description: 'Calm your mind and reduce stress',
-        category: 'daily',
-        xpReward: 40,
-        progress: 0,
-        maxProgress: 5,
-        completed: false,
-        isActive: false,
-        href: '/mission-details?id=meditation',
-        source: 'default',
-      },
-      {
-        userId,
-        missionKey: 'walking',
-        title: 'Take a 10-minute walk',
-        description: 'Get moving and enjoy some fresh air',
-        category: 'daily',
-        xpReward: 45,
-        progress: 0,
-        maxProgress: 10,
-        completed: false,
-        isActive: false,
-        href: '/mission-details?id=walking',
-        source: 'default',
-      },
-      {
-        userId,
-        missionKey: 'deep-breathing',
-        title: 'Practice deep breathing',
-        description: 'Take 10 slow, deep breaths to relax',
-        category: 'daily',
-        xpReward: 25,
-        progress: 0,
-        maxProgress: 10,
-        completed: false,
-        isActive: false,
-        href: '/mission-details?id=deep-breathing',
-        source: 'default',
-      },
-    ];
-
     const existingKeys = existingMissions.map(m => m.missionKey);
-    const missingMissions = defaultMissions.filter(m => !existingKeys.includes(m.missionKey));
+    const missingMissions = catalogMissions.filter(m => !existingKeys.includes(m.missionKey));
     
-    if (missingMissions.length > 0) {
-      for (const mission of missingMissions) {
-        const created = await this.createUserMission(mission);
-        existingMissions.push(created);
-      }
+    for (const catalogMission of missingMissions) {
+      const userMission: InsertUserMission = {
+        userId,
+        missionId: catalogMission.id,
+        missionKey: catalogMission.missionKey,
+        progress: 0,
+        maxProgress: catalogMission.maxProgress || 1,
+        completed: false,
+        isActive: false,
+      };
+      const created = await this.createUserMission(userMission);
+      existingMissions.push(created);
     }
     
-    if (existingMissions.length > 0) {
-      return existingMissions;
-    }
-
-    const createdMissions: UserMission[] = [];
-    for (const mission of defaultMissions) {
-      const created = await this.createUserMission(mission);
-      createdMissions.push(created);
-    }
-
-    return createdMissions;
+    return existingMissions;
   }
 
   async resetUserMissions(userId: string): Promise<UserMission[]> {

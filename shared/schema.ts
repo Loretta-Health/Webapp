@@ -176,25 +176,50 @@ export const insertEmotionalCheckinSchema = createInsertSchema(emotionalCheckins
 export type InsertEmotionalCheckin = z.infer<typeof insertEmotionalCheckinSchema>;
 export type EmotionalCheckin = typeof emotionalCheckins.$inferSelect;
 
-// User missions table - stores per-user mission/quest data
-export const userMissions = pgTable("user_missions", {
+// Missions catalog table - stores all available missions (master list)
+export const missions = pgTable("missions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: text("user_id").notNull(),
-  missionKey: text("mission_key").notNull(), // unique identifier for the mission type
-  title: text("title").notNull(),
-  description: text("description"),
-  category: text("category").notNull(), // 'daily', 'weekly', 'bonus'
+  missionKey: text("mission_key").notNull().unique(), // unique identifier like 'jumping-jacks'
+  titleEn: text("title_en").notNull(), // English title
+  titleDe: text("title_de").notNull(), // German title
+  descriptionEn: text("description_en"), // English description
+  descriptionDe: text("description_de"), // German description
+  category: text("category").notNull().default("daily"), // 'daily', 'weekly', 'bonus'
   xpReward: integer("xp_reward").default(0),
-  progress: integer("progress").default(0),
-  maxProgress: integer("max_progress").default(1),
-  completed: boolean("completed").default(false),
-  legendary: boolean("legendary").default(false),
-  isActive: boolean("is_active").default(false), // whether mission is activated by user
-  href: text("href"),
-  source: text("source").default("default"), // 'default', 'activity', 'chat'
+  maxProgress: integer("max_progress").default(1), // default steps to complete
+  icon: text("icon").default("target"), // icon name for frontend
+  color: text("color").default("chart-1"), // color theme
+  isActive: boolean("is_active").default(true), // whether mission is available in catalog
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export const insertMissionSchema = createInsertSchema(missions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMission = z.infer<typeof insertMissionSchema>;
+export type Mission = typeof missions.$inferSelect;
+
+// User missions table - stores per-user mission activation and progress
+export const userMissions = pgTable("user_missions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  missionId: text("mission_id").notNull(), // references missions.id
+  missionKey: text("mission_key").notNull(), // denormalized for quick access
+  progress: integer("progress").default(0),
+  maxProgress: integer("max_progress").default(1), // can override mission default
+  completed: boolean("completed").default(false),
+  isActive: boolean("is_active").default(false), // whether user has activated this mission
+  activatedAt: timestamp("activated_at"), // when user activated the mission
+  completedAt: timestamp("completed_at"), // when mission was completed
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userMissionUnique: unique().on(table.userId, table.missionId),
+}));
 
 export const insertUserMissionSchema = createInsertSchema(userMissions).omit({
   id: true,
@@ -206,6 +231,8 @@ export const updateUserMissionSchema = z.object({
   progress: z.number().optional(),
   completed: z.boolean().optional(),
   isActive: z.boolean().optional(),
+  activatedAt: z.date().nullable().optional(),
+  completedAt: z.date().nullable().optional(),
 });
 
 export type InsertUserMission = z.infer<typeof insertUserMissionSchema>;
