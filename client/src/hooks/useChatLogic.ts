@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
+import { useLocation } from 'wouter';
 import type { SuggestedMission } from '@/components/chat/MissionCardView';
 import type { MetricData } from '@/components/chat/MetricCard';
 
@@ -36,6 +38,7 @@ interface UseChatLogicReturn {
   handleSend: (text?: string, metricData?: MetricData) => Promise<void>;
   handleImagePick: () => void;
   handleActivateMission: () => void;
+  handleViewMission: () => void;
   handleConfirmEmotion: () => void;
   handleDenyEmotion: () => void;
   setActivityContext: React.Dispatch<React.SetStateAction<ActivityContext | null>>;
@@ -125,9 +128,12 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const [isCheckInConfirmationPending, setIsCheckInConfirmationPending] = useState(false);
   const [activityContext, setActivityContext] = useState<ActivityContext | null>(null);
   const { toast } = useToast();
+  const { i18n, t } = useTranslation();
+  const [, setLocation] = useLocation();
   
   const activityContextRef = useRef<ActivityContext | null>(null);
   activityContextRef.current = activityContext;
+  const lastUserMessageRef = useRef<string>('');
 
   const detectEmotion = useCallback((text: string): string | null => {
     const lowerText = text.toLowerCase();
@@ -155,7 +161,47 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     return null;
   }, []);
 
+  const fetchSuggestedMission = useCallback(async (context: string) => {
+    try {
+      const response = await fetch('/api/missions/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ 
+          context, 
+          language: i18n.language.startsWith('de') ? 'de' : 'en' 
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.mission) {
+          const mission: SuggestedMission = {
+            id: data.mission.id,
+            title: data.mission.title,
+            description: data.mission.description,
+            xpReward: data.mission.xpReward || 0,
+            icon: data.mission.icon || '🎯',
+            category: 'daily',
+            missionKey: data.mission.missionKey,
+            userMissionId: data.mission.userMissionId,
+          };
+          setSuggestedMission(mission);
+          setShowMissionCard(true);
+          setMissionActivated(false);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch suggested mission:', error);
+    }
+  }, [i18n.language]);
+
   const parseAIResponse = useCallback((response: string): void => {
+    if (response.includes('[SUGGEST_MISSION]')) {
+      fetchSuggestedMission(lastUserMessageRef.current);
+      return;
+    }
+
     for (const { pattern, type } of missionTriggerPatterns) {
       const match = response.match(pattern);
       if (match) {
@@ -188,7 +234,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         setMissionActivated(false);
       }
     }
-  }, []);
+  }, [fetchSuggestedMission]);
 
   const getMissionFromContent = (response: string): SuggestedMission | null => {
     const lowerResponse = response.toLowerCase();
@@ -251,6 +297,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     const messageText = text || inputText;
     if (!messageText.trim() && !selectedImage) return;
 
+    lastUserMessageRef.current = messageText;
     const contextInfo = buildContextMessage(metricData);
     const contentForAPI = messageText + contextInfo;
 
@@ -340,21 +387,60 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     });
   }, [toast]);
 
-  const handleActivateMission = useCallback(() => {
-    setMissionActivated(true);
-    toast({
-      title: 'Mission Activated! 🎯',
-      description: `"${suggestedMission?.title}" has been added to your quests.`,
-    });
+  const handleActivateMission = useCallback(async () => {
+    if (!suggestedMission?.userMissionId) {
+      setMissionActivated(true);
+      toast({
+        title: t('chat.missionActivated', 'Mission Activated!') + ' 🎯',
+        description: `"${suggestedMission?.title}" has been added to your quests.`,
+      });
+      return;
+    }
 
-    const systemMessage: ChatMessage = {
-      id: (Date.now() + 2).toString(),
-      role: 'assistant',
-      content: `Great choice! I've activated the "${suggestedMission?.title}" mission for you. You can track your progress in the Dashboard. Good luck! 💪`,
-      timestamp: new Date(),
-    };
-    setMessages(prev => [...prev, systemMessage]);
-  }, [suggestedMission, toast, setMessages]);
+    try {
+      const response = await fetch(`/api/missions/${suggestedMission.userMissionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ isActive: true, activatedAt: new Date().toISOString() }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to activate mission');
+      }
+
+      setMissionActivated(true);
+      toast({
+        title: t('chat.missionActivated', 'Mission Activated!') + ' 🎯',
+        description: `"${suggestedMission?.title}" has been added to your quests.`,
+      });
+
+      const systemMessage: ChatMessage = {
+        id: (Date.now() + 2).toString(),
+        role: 'assistant',
+        content: i18n.language.startsWith('de') 
+          ? `Super Wahl! Ich habe die Mission "${suggestedMission?.title}" für dich aktiviert. Du kannst deinen Fortschritt im Dashboard verfolgen. Viel Erfolg! 💪`
+          : `Great choice! I've activated the "${suggestedMission?.title}" mission for you. You can track your progress in the Dashboard. Good luck! 💪`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, systemMessage]);
+    } catch (error) {
+      console.error('Failed to activate mission:', error);
+      toast({
+        title: t('chat.error', 'Error'),
+        description: t('chat.activationFailed', 'Failed to activate mission. Please try again.'),
+        variant: 'destructive',
+      });
+    }
+  }, [suggestedMission, toast, setMessages, t, i18n.language]);
+
+  const handleViewMission = useCallback(() => {
+    if (suggestedMission?.missionKey) {
+      setLocation(`/mission/${suggestedMission.missionKey}`);
+    } else {
+      setLocation('/missions');
+    }
+  }, [suggestedMission, setLocation]);
 
   const handleConfirmEmotion = useCallback(() => {
     setIsCheckInConfirmationPending(false);
@@ -401,6 +487,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     handleSend,
     handleImagePick,
     handleActivateMission,
+    handleViewMission,
     handleConfirmEmotion,
     handleDenyEmotion,
     setActivityContext,

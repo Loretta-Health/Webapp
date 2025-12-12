@@ -11,6 +11,8 @@ export interface SuggestedMission {
   xpReward: number;
   icon?: string;
   category?: 'daily' | 'weekly' | 'bonus';
+  missionKey?: string;
+  userMissionId?: string;
 }
 
 interface MissionCardViewProps {
