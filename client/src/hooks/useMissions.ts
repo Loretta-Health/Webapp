@@ -3,6 +3,34 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './use-auth';
 import { apiRequest } from '../lib/queryClient';
 
+export interface CatalogMission {
+  id: string;
+  missionKey: string;
+  titleEn: string;
+  titleDe: string;
+  descriptionEn?: string | null;
+  descriptionDe?: string | null;
+  category: string;
+  xpReward: number;
+  maxProgress: number;
+  icon?: string | null;
+  color?: string | null;
+  isActive?: boolean | null;
+}
+
+export interface UserMission {
+  id: string;
+  userId: string;
+  missionId: string;
+  missionKey: string;
+  progress: number;
+  maxProgress: number;
+  completed: boolean;
+  isActive?: boolean | null;
+  activatedAt?: string | null;
+  completedAt?: string | null;
+}
+
 export interface Mission {
   id: string;
   title: string;
@@ -20,6 +48,8 @@ export interface Mission {
   userId?: string;
   createdAt?: string;
   updatedAt?: string;
+  icon?: string | null;
+  color?: string | null;
 }
 
 export function useMissions() {
@@ -27,7 +57,20 @@ export function useMissions() {
   const queryClient = useQueryClient();
   const userId = user?.id;
 
-  const { data: missions = [], isLoading, error } = useQuery<Mission[]>({
+  const { data: catalogMissions = [], isLoading: catalogLoading } = useQuery<CatalogMission[]>({
+    queryKey: ['/api/missions-catalog'],
+    queryFn: async () => {
+      const response = await fetch('/api/missions-catalog', {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch missions catalog');
+      }
+      return response.json();
+    },
+  });
+
+  const { data: userMissions = [], isLoading: userMissionsLoading, error } = useQuery<UserMission[]>({
     queryKey: ['/api/missions', userId],
     queryFn: async () => {
       if (!userId) return [];
@@ -40,6 +83,37 @@ export function useMissions() {
       return response.json();
     },
     enabled: !!userId,
+  });
+
+  const isLoading = catalogLoading || userMissionsLoading;
+
+  const getCurrentLanguage = (): 'en' | 'de' => {
+    if (typeof window !== 'undefined') {
+      const lang = localStorage.getItem('i18nextLng') || 'en';
+      return lang.startsWith('de') ? 'de' : 'en';
+    }
+    return 'en';
+  };
+
+  const missions: Mission[] = userMissions.map(um => {
+    const catalogMission = catalogMissions.find(cm => cm.missionKey === um.missionKey);
+    const lang = getCurrentLanguage();
+    return {
+      id: um.id,
+      title: catalogMission ? (lang === 'de' ? catalogMission.titleDe : catalogMission.titleEn) : um.missionKey,
+      description: catalogMission ? (lang === 'de' ? catalogMission.descriptionDe : catalogMission.descriptionEn) : null,
+      category: catalogMission?.category || 'daily',
+      xpReward: catalogMission?.xpReward || 0,
+      progress: um.progress,
+      maxProgress: um.maxProgress,
+      completed: um.completed,
+      isActive: um.isActive,
+      href: `/mission-details?id=${um.missionKey}`,
+      missionKey: um.missionKey,
+      userId: um.userId,
+      icon: catalogMission?.icon,
+      color: catalogMission?.color,
+    };
   });
 
   const createMissionMutation = useMutation({
@@ -176,6 +250,7 @@ export function useMissions() {
 
   return {
     missions,
+    catalogMissions,
     activeMissions,
     inactiveMissions,
     addMission,

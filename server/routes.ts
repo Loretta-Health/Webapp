@@ -584,6 +584,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========================
+  // Missions Catalog Endpoint
+  // ========================
+
+  app.get("/api/missions-catalog", async (req, res) => {
+    try {
+      const catalog = await storage.getAllMissions();
+      res.json(catalog);
+    } catch (error) {
+      console.error("Error fetching missions catalog:", error);
+      res.status(500).json({ error: "Failed to fetch missions catalog" });
+    }
+  });
+
+  // ========================
   // User Mission Endpoints
   // ========================
 
