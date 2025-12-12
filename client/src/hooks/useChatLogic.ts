@@ -436,9 +436,9 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
 
   const handleViewMission = useCallback(() => {
     if (suggestedMission?.missionKey) {
-      setLocation(`/mission/${suggestedMission.missionKey}`);
+      setLocation(`/mission-details?id=${suggestedMission.missionKey}`);
     } else {
-      setLocation('/missions');
+      setLocation('/my-dashboard');
     }
   }, [suggestedMission, setLocation]);
 
