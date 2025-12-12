@@ -78,8 +78,8 @@
     "availableMissions": "Verfügbare Missionen"
   },
   "checkin": {
-    "title": "Wie fühlst du dich?",
-    "subtitle": "Täglicher emotionaler Check-in",
+    "title": "Täglicher Check-In",
+    "subtitle": "Emotionale Check-ins",
     "happy": "Glücklich",
     "sad": "Traurig",
     "anxious": "Ängstlich",

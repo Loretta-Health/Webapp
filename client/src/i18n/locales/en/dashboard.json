@@ -78,8 +78,8 @@
     "availableMissions": "Available Missions"
   },
   "checkin": {
-    "title": "How are you feeling?",
-    "subtitle": "Daily emotional check-in",
+    "title": "Daily Check-In",
+    "subtitle": "Emotional check-ins",
     "happy": "Happy",
     "sad": "Sad",
     "anxious": "Anxious",
