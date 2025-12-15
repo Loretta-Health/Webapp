@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'wouter';
+import { Link, Redirect } from 'wouter';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,9 +21,25 @@ import {
   Wine,
   Info,
   Target,
-  Sparkles
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/use-auth';
+
+interface RiskScoreData {
+  overallScore: number;
+  diabetesRisk: number;
+  heartRisk: number;
+  strokeRisk: number;
+}
+
+interface RiskScoreHistoryEntry {
+  id: string;
+  overallScore: number;
+  calculatedAt: string;
+}
 
 interface RiskFactor {
   id: string;
@@ -44,8 +60,34 @@ const riskFactors: RiskFactor[] = [
 ];
 
 export default function RiskScoreDetails() {
-  const score = 68;
-  const previousScore = 62;
+  const { user, isLoading: isAuthLoading } = useAuth();
+
+  const { data: riskScoreData, isLoading: isScoreLoading } = useQuery<RiskScoreData>({
+    queryKey: ['/api/risk-scores/latest'],
+    enabled: !!user,
+  });
+
+  const { data: riskScoreHistory } = useQuery<RiskScoreHistoryEntry[]>({
+    queryKey: ['/api/risk-scores'],
+    enabled: !!user,
+  });
+
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Redirect to="/auth" />;
+  }
+
+  const score = riskScoreData?.overallScore ?? 50;
+  const previousScore = riskScoreHistory && riskScoreHistory.length > 1 
+    ? riskScoreHistory[1]?.overallScore ?? score 
+    : score;
   const trend = score > previousScore ? 'up' : score < previousScore ? 'down' : 'stable';
 
   const getScoreColor = () => {
