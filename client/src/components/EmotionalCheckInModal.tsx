@@ -120,12 +120,11 @@ export default function EmotionalCheckInModal({
         const response = await fetch('/api/emotional-checkins', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
-            userId,
             emotion: detectedEmotion,
             userMessage: userResponse,
             aiResponse: supportiveMsg,
-            xpAwarded: 10,
           }),
         });
 

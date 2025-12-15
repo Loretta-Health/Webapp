@@ -99,6 +99,7 @@ export interface IStorage {
 
   // Emotional check-in methods
   getLatestEmotionalCheckin(userId: string): Promise<EmotionalCheckin | undefined>;
+  getAllEmotionalCheckins(userId: string): Promise<EmotionalCheckin[]>;
   saveEmotionalCheckin(data: InsertEmotionalCheckin): Promise<EmotionalCheckin>;
 
   // User mission methods
