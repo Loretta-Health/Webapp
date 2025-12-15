@@ -220,10 +220,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Questionnaire Endpoints
   // ========================
 
-  app.get("/api/questionnaires/:userId", async (req, res) => {
+  app.get("/api/questionnaires", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
-      console.log("[API] GET /api/questionnaires/:userId - Fetching questionnaires for:", userId);
+      const userId = (req.user as any).id;
+      console.log("[API] GET /api/questionnaires - Fetching questionnaires for:", userId);
       const answers = await storage.getAllQuestionnaireAnswers(userId);
       console.log("[API] Found", answers.length, "questionnaire records for user:", userId);
       res.json(answers);
@@ -233,10 +236,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/questionnaires/:userId/:category", async (req, res) => {
+  app.get("/api/questionnaires/:category", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId, category } = req.params;
-      console.log("[API] GET /api/questionnaires/:userId/:category - Fetching for:", { userId, category });
+      const userId = (req.user as any).id;
+      const { category } = req.params;
+      console.log("[API] GET /api/questionnaires/:category - Fetching for:", { userId, category });
       const answers = await storage.getQuestionnaireAnswers(userId, category);
       res.json(answers || null);
     } catch (error) {
@@ -246,9 +253,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/questionnaires", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
+      const userId = (req.user as any).id;
       console.log("[API] POST /api/questionnaires - Received body:", JSON.stringify(req.body));
-      const validatedData = insertQuestionnaireSchema.parse(req.body);
+      const dataWithUserId = { ...req.body, userId };
+      const validatedData = insertQuestionnaireSchema.parse(dataWithUserId);
       console.log("[API] Validated questionnaire data:", JSON.stringify(validatedData));
       const saved = await storage.saveQuestionnaireAnswers(validatedData);
       console.log("[API] Questionnaire saved successfully:", saved.id);
@@ -263,10 +275,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User Profile Endpoints
   // ========================
 
-  app.get("/api/profile/:userId", async (req, res) => {
+  app.get("/api/profile", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
-      console.log("[API] GET /api/profile/:userId - Fetching profile for:", userId);
+      const userId = (req.user as any).id;
+      console.log("[API] GET /api/profile - Fetching profile for:", userId);
       const profile = await storage.getUserProfile(userId);
       console.log("[API] Profile found:", profile ? "yes" : "no");
       res.json(profile || null);
@@ -277,12 +292,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/profile", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
+      const userId = (req.user as any).id;
       console.log("[API] POST /api/profile - Received body:", JSON.stringify(req.body));
-      const validatedData = insertUserProfileSchema.parse(req.body);
+      const dataWithUserId = { ...req.body, userId };
+      const validatedData = insertUserProfileSchema.parse(dataWithUserId);
       console.log("[API] Validated profile data for user:", validatedData.userId);
       
-      const existingProfile = await storage.getUserProfile(validatedData.userId);
+      const existingProfile = await storage.getUserProfile(userId);
       const saved = await storage.saveUserProfile(validatedData);
       console.log("[API] Profile saved successfully:", saved.id);
       
@@ -290,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let achievementsUnlocked: string[] = [];
       if (!existingProfile) {
         const reward = getXPRewardAmount('profile_completed');
-        const xpResult = await addXPAndCheckAchievements(validatedData.userId, reward);
+        const xpResult = await addXPAndCheckAchievements(userId, reward);
         xpAwarded = reward + xpResult.bonusXp;
         achievementsUnlocked = xpResult.achievementsUnlocked;
       }
@@ -306,10 +326,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User Preferences Endpoints
   // ========================
 
-  app.get("/api/preferences/:userId", async (req, res) => {
+  app.get("/api/preferences", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
-      console.log("[API] GET /api/preferences/:userId - Fetching preferences for:", userId);
+      const userId = (req.user as any).id;
+      console.log("[API] GET /api/preferences - Fetching preferences for:", userId);
       const prefs = await storage.getUserPreferences(userId);
       console.log("[API] Preferences found:", prefs ? "yes" : "no");
       res.json(prefs || null);
@@ -320,9 +343,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/preferences", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
+      const userId = (req.user as any).id;
       console.log("[API] POST /api/preferences - Received body:", JSON.stringify(req.body));
-      const validatedData = insertUserPreferencesSchema.parse(req.body);
+      const dataWithUserId = { ...req.body, userId };
+      const validatedData = insertUserPreferencesSchema.parse(dataWithUserId);
       console.log("[API] Validated preferences for user:", validatedData.userId);
       const saved = await storage.saveUserPreferences(validatedData);
       console.log("[API] Preferences saved successfully:", saved.id);
