@@ -520,9 +520,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Emotional Check-in Endpoints
   // ========================
 
-  app.get("/api/emotional-checkins/:userId/latest", async (req, res) => {
+  app.get("/api/emotional-checkins/latest", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       const checkin = await storage.getLatestEmotionalCheckin(userId);
       res.json(checkin || null);
     } catch (error) {
@@ -531,9 +534,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/emotional-checkins/:userId", async (req, res) => {
+  app.get("/api/emotional-checkins", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       const checkins = await storage.getAllEmotionalCheckins(userId);
       res.json(checkins);
     } catch (error) {
@@ -543,12 +549,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/emotional-checkins", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId, emotion, userMessage, aiResponse } = req.body;
+      const userId = (req.user as any).id;
+      const { emotion, userMessage, aiResponse } = req.body;
       const xpAwarded = getXPRewardAmount('emotional_checkin');
       
-      if (!userId || !emotion) {
-        return res.status(400).json({ error: "userId and emotion are required" });
+      if (!emotion) {
+        return res.status(400).json({ error: "emotion is required" });
       }
 
       // Check if this is the user's first emotional check-in

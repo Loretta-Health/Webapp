@@ -111,7 +111,7 @@ export default function MyDashboard() {
   });
 
   const { data: allEmotionalCheckins } = useQuery<EmotionalCheckinData[]>({
-    queryKey: ['/api/emotional-checkins', userId],
+    queryKey: ['/api/emotional-checkins'],
     enabled: !!userId && !!user,
   });
 
@@ -210,7 +210,7 @@ export default function MyDashboard() {
   };
 
   const handleCheckInComplete = (emotion: string, xpAwarded: number) => {
-    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
     queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
   };
 
