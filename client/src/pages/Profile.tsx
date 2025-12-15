@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -685,6 +685,7 @@ export default function Profile() {
   });
   const [pendingSaves, setPendingSaves] = useState<Record<string, boolean>>({});
   const [lorettaConsent, setLorettaConsent] = useState<boolean>(true);
+  const recalculateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const userId = user?.id;
@@ -824,6 +825,39 @@ export default function Profile() {
     }
   }, [backendAnswers]);
 
+  const recalculateRiskScoreMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('POST', '/api/risk-scores/calculate', {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] });
+      toast({
+        title: t('riskScoreUpdated') || 'Risk score updated',
+        description: t('riskScoreRecalculated') || 'Your health risk score has been recalculated based on your updated answers.',
+      });
+    },
+    onError: (error) => {
+      console.error('Failed to recalculate risk score:', error);
+      toast({
+        title: t('error') || 'Error',
+        description: t('riskScoreUpdateFailed') || 'Failed to update your risk score. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const triggerDebouncedRecalculation = useCallback(() => {
+    if (recalculateTimeoutRef.current) {
+      clearTimeout(recalculateTimeoutRef.current);
+    }
+    recalculateTimeoutRef.current = setTimeout(() => {
+      if (!recalculateRiskScoreMutation.isPending) {
+        recalculateRiskScoreMutation.mutate();
+      }
+    }, 1500);
+  }, [recalculateRiskScoreMutation]);
+
   const saveAnswersMutation = useMutation({
     mutationFn: async ({ category, answers }: { category: string; answers: Record<string, string> }) => {
       return apiRequest('POST', '/api/questionnaires', {
@@ -834,6 +868,7 @@ export default function Profile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/questionnaires'] });
+      triggerDebouncedRecalculation();
     },
   });
 
