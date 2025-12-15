@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { Link, Redirect } from 'wouter';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { 
   ChevronRight, 
   AlertCircle, 
@@ -14,15 +12,23 @@ import {
   TrendingDown,
   Activity,
   Heart,
-  Cigarette,
-  Utensils,
   Dumbbell,
   Pill,
   Wine,
   Info,
   Target,
   Sparkles,
-  Loader2
+  Loader2,
+  Scale,
+  Calendar,
+  Droplets,
+  HeartPulse,
+  Brain,
+  Moon,
+  Smile,
+  User,
+  Armchair,
+  Footprints
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -41,23 +47,42 @@ interface RiskScoreHistoryEntry {
   calculatedAt: string;
 }
 
-interface RiskFactor {
+interface RiskFactorData {
   id: string;
-  text: string;
-  type: 'negative' | 'warning' | 'positive';
-  icon: React.ReactNode;
+  name: string;
+  description: string;
   category: string;
+  points: number;
+  maxPoints: number;
+  type: 'negative' | 'warning' | 'positive';
+  icon: string;
 }
 
-const riskFactors: RiskFactor[] = [
-  { id: '1', text: 'Smoking 10 cigarettes per day', type: 'negative', icon: <Cigarette className="w-4 h-4" />, category: 'Lifestyle' },
-  { id: '2', text: 'Limited physical activity', type: 'negative', icon: <Dumbbell className="w-4 h-4" />, category: 'Activity' },
-  { id: '3', text: 'High sugar diet', type: 'negative', icon: <Utensils className="w-4 h-4" />, category: 'Diet' },
-  { id: '4', text: 'Low vegetable intake', type: 'negative', icon: <Utensils className="w-4 h-4" />, category: 'Diet' },
-  { id: '5', text: 'Minimal protein consumption', type: 'negative', icon: <Utensils className="w-4 h-4" />, category: 'Diet' },
-  { id: '6', text: 'Moderate alcohol (1 drink/day)', type: 'warning', icon: <Wine className="w-4 h-4" />, category: 'Lifestyle' },
-  { id: '7', text: 'Taking medication regularly', type: 'positive', icon: <Pill className="w-4 h-4" />, category: 'Medical' },
-];
+const getIconComponent = (iconName: string) => {
+  const iconMap: Record<string, React.ReactNode> = {
+    'scale': <Scale className="w-4 h-4" />,
+    'trending-up': <TrendingUp className="w-4 h-4" />,
+    'trending-down': <TrendingDown className="w-4 h-4" />,
+    'calendar': <Calendar className="w-4 h-4" />,
+    'droplets': <Droplets className="w-4 h-4" />,
+    'heart-pulse': <HeartPulse className="w-4 h-4" />,
+    'activity': <Activity className="w-4 h-4" />,
+    'heart': <Heart className="w-4 h-4" />,
+    'heart-crack': <Heart className="w-4 h-4" />,
+    'heart-off': <Heart className="w-4 h-4" />,
+    'brain': <Brain className="w-4 h-4" />,
+    'kidney': <Droplets className="w-4 h-4" />,
+    'dumbbell': <Dumbbell className="w-4 h-4" />,
+    'armchair': <Armchair className="w-4 h-4" />,
+    'moon': <Moon className="w-4 h-4" />,
+    'wine': <Wine className="w-4 h-4" />,
+    'footprints': <Footprints className="w-4 h-4" />,
+    'smile': <Smile className="w-4 h-4" />,
+    'user': <User className="w-4 h-4" />,
+    'pill': <Pill className="w-4 h-4" />,
+  };
+  return iconMap[iconName] || <Activity className="w-4 h-4" />;
+};
 
 export default function RiskScoreDetails() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -72,7 +97,12 @@ export default function RiskScoreDetails() {
     enabled: !!user,
   });
 
-  if (isAuthLoading) {
+  const { data: riskFactorsData, isLoading: isFactorsLoading } = useQuery<RiskFactorData[]>({
+    queryKey: ['/api/risk-factors'],
+    enabled: !!user,
+  });
+
+  if (isAuthLoading || isScoreLoading || isFactorsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -111,38 +141,71 @@ export default function RiskScoreDetails() {
     return 'Needs Attention';
   };
 
-  const getFactorStyles = (type: RiskFactor['type']) => {
-    switch (type) {
-      case 'negative':
+  const getFactorStyles = (type: 'negative' | 'warning' | 'positive', points: number, maxPoints: number) => {
+    if (type === 'negative') {
+      const intensity = maxPoints > 0 ? Math.min(points / maxPoints, 1) : Math.min(points / 30, 1);
+      if (intensity >= 0.7 || points >= 20) {
         return {
-          bg: 'bg-destructive/10',
-          border: 'border-destructive/20',
-          iconBg: 'bg-destructive/20',
+          bg: 'bg-red-500/20',
+          border: 'border-red-500/40',
+          iconBg: 'bg-red-500/30',
+          iconColor: 'text-red-500',
+          text: 'text-foreground',
+          pointsBg: 'bg-red-500',
+        };
+      } else if (intensity >= 0.4 || points >= 10) {
+        return {
+          bg: 'bg-destructive/15',
+          border: 'border-destructive/30',
+          iconBg: 'bg-destructive/25',
           iconColor: 'text-destructive',
           text: 'text-foreground',
+          pointsBg: 'bg-destructive',
         };
-      case 'warning':
+      }
+      return {
+        bg: 'bg-destructive/10',
+        border: 'border-destructive/20',
+        iconBg: 'bg-destructive/20',
+        iconColor: 'text-destructive',
+        text: 'text-foreground',
+        pointsBg: 'bg-destructive/80',
+      };
+    } else if (type === 'warning') {
+      const intensity = maxPoints > 0 ? Math.min(points / maxPoints, 1) : Math.min(points / 15, 1);
+      if (intensity >= 0.6 || points >= 10) {
         return {
-          bg: 'bg-chart-3/10',
-          border: 'border-chart-3/20',
-          iconBg: 'bg-chart-3/20',
-          iconColor: 'text-chart-3',
+          bg: 'bg-amber-500/15',
+          border: 'border-amber-500/30',
+          iconBg: 'bg-amber-500/25',
+          iconColor: 'text-amber-500',
           text: 'text-foreground',
+          pointsBg: 'bg-amber-500',
         };
-      case 'positive':
-        return {
-          bg: 'bg-primary/10',
-          border: 'border-primary/20',
-          iconBg: 'bg-primary/20',
-          iconColor: 'text-primary',
-          text: 'text-foreground',
-        };
+      }
+      return {
+        bg: 'bg-chart-3/10',
+        border: 'border-chart-3/20',
+        iconBg: 'bg-chart-3/20',
+        iconColor: 'text-chart-3',
+        text: 'text-foreground',
+        pointsBg: 'bg-chart-3',
+      };
     }
+    return {
+      bg: 'bg-primary/10',
+      border: 'border-primary/20',
+      iconBg: 'bg-primary/20',
+      iconColor: 'text-primary',
+      text: 'text-foreground',
+      pointsBg: 'bg-primary',
+    };
   };
 
-  const negativeFactors = riskFactors.filter(f => f.type === 'negative');
-  const warningFactors = riskFactors.filter(f => f.type === 'warning');
-  const positiveFactors = riskFactors.filter(f => f.type === 'positive');
+  const factors = riskFactorsData || [];
+  const negativeFactors = factors.filter(f => f.type === 'negative').sort((a, b) => b.points - a.points);
+  const warningFactors = factors.filter(f => f.type === 'warning').sort((a, b) => b.points - a.points);
+  const positiveFactors = factors.filter(f => f.type === 'positive').sort((a, b) => b.points - a.points);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
@@ -275,26 +338,36 @@ export default function RiskScoreDetails() {
           </div>
           
           <div className="space-y-2">
-            {negativeFactors.map((factor, index) => {
-              const styles = getFactorStyles(factor.type);
-              return (
-                <motion.div
-                  key={factor.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
-                >
-                  <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
-                    {factor.icon}
-                  </div>
-                  <div className="flex-1">
-                    <p className={`text-sm font-medium ${styles.text}`}>{factor.text}</p>
-                    <p className="text-xs text-muted-foreground">{factor.category}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {negativeFactors.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No significant risk factors found. Great job!</p>
+            ) : (
+              negativeFactors.map((factor, index) => {
+                const styles = getFactorStyles(factor.type, factor.points, factor.maxPoints);
+                return (
+                  <motion.div
+                    key={factor.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
+                  >
+                    <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
+                      {getIconComponent(factor.icon)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{factor.description}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className={`${styles.pointsBg} text-white text-xs px-2`}>
+                        +{factor.points} pts
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">{factor.category}</span>
+                    </div>
+                  </motion.div>
+                );
+              })
+            )}
           </div>
         </Card>
 
@@ -313,7 +386,7 @@ export default function RiskScoreDetails() {
             
             <div className="space-y-2">
               {warningFactors.map((factor, index) => {
-                const styles = getFactorStyles(factor.type);
+                const styles = getFactorStyles(factor.type, factor.points, factor.maxPoints);
                 return (
                   <motion.div
                     key={factor.id}
@@ -323,11 +396,17 @@ export default function RiskScoreDetails() {
                     className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
                   >
                     <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
-                      {factor.icon}
+                      {getIconComponent(factor.icon)}
                     </div>
-                    <div className="flex-1">
-                      <p className={`text-sm font-medium ${styles.text}`}>{factor.text}</p>
-                      <p className="text-xs text-muted-foreground">{factor.category}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{factor.description}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className={`${styles.pointsBg} text-white text-xs px-2`}>
+                        +{factor.points} pts
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">{factor.category}</span>
                     </div>
                   </motion.div>
                 );
@@ -337,40 +416,48 @@ export default function RiskScoreDetails() {
         )}
 
         {/* Positive Factors Section */}
-        <Card className="p-5 mb-4 border-0 shadow-lg">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4 text-primary" />
+        {positiveFactors.length > 0 && (
+          <Card className="p-5 mb-4 border-0 shadow-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+              </div>
+              <h3 className="font-bold text-foreground">Keep It Up!</h3>
+              <Badge variant="outline" className="ml-auto text-primary border-primary/30">
+                {positiveFactors.length} factor{positiveFactors.length > 1 ? 's' : ''}
+              </Badge>
             </div>
-            <h3 className="font-bold text-foreground">Keep It Up!</h3>
-            <Badge variant="outline" className="ml-auto text-primary border-primary/30">
-              {positiveFactors.length} factor{positiveFactors.length > 1 ? 's' : ''}
-            </Badge>
-          </div>
-          
-          <div className="space-y-2">
-            {positiveFactors.map((factor, index) => {
-              const styles = getFactorStyles(factor.type);
-              return (
-                <motion.div
-                  key={factor.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: (negativeFactors.length + warningFactors.length + index) * 0.05 }}
-                  className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
-                >
-                  <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
-                    {factor.icon}
-                  </div>
-                  <div className="flex-1">
-                    <p className={`text-sm font-medium ${styles.text}`}>{factor.text}</p>
-                    <p className="text-xs text-muted-foreground">{factor.category}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </Card>
+            
+            <div className="space-y-2">
+              {positiveFactors.map((factor, index) => {
+                const styles = getFactorStyles(factor.type, factor.points, factor.maxPoints);
+                return (
+                  <motion.div
+                    key={factor.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (negativeFactors.length + warningFactors.length + index) * 0.05 }}
+                    className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
+                  >
+                    <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
+                      {getIconComponent(factor.icon)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{factor.description}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge className={`${styles.pointsBg} text-white text-xs px-2`}>
+                        0 pts
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">{factor.category}</span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
 
         {/* Improvement Tips */}
         <Card className="p-5 mb-8 border-0 shadow-lg bg-gradient-to-br from-primary/5 to-chart-2/5">
