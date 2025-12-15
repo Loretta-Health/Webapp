@@ -18,6 +18,11 @@ import {
   insertTeamInviteSchema,
 } from "@shared/schema";
 import { nanoid } from "nanoid";
+import { 
+  getSuggestedMissionTypes, 
+  detectEmotionFromText,
+  type EmotionCategory 
+} from "@shared/emotions";
 
 // Scaleway AI configuration
 const SCALEWAY_BASE_URL = 'https://api.scaleway.ai/v1';
@@ -633,61 +638,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let reason = '';
 
       const recentEmotion = emotionalCheckins.length > 0 
-        ? emotionalCheckins[emotionalCheckins.length - 1]?.emotion 
+        ? emotionalCheckins[emotionalCheckins.length - 1]?.emotion as EmotionCategory | null
         : null;
       const contextLower = (context || '').toLowerCase();
+      
+      const contextEmotion = detectEmotionFromText(contextLower);
+      const effectiveEmotion = contextEmotion || recentEmotion;
+      const suggestedMissionTypes = effectiveEmotion 
+        ? getSuggestedMissionTypes(effectiveEmotion) 
+        : [];
 
       for (const { catalog: mission, userMission } of inactiveMissionsWithUserData) {
         let score = 0;
 
-        if (mission.missionKey === 'deep-breathing' || mission.missionKey === 'meditation') {
-          if (recentEmotion === 'stressed' || recentEmotion === 'anxious') {
-            score += 50;
-            reason = language === 'de' 
-              ? 'Diese Mission kann helfen, Stress abzubauen.' 
-              : 'This mission can help reduce stress.';
-          }
-          if (contextLower.includes('stress') || contextLower.includes('anxious') || contextLower.includes('worried')) {
-            score += 40;
-            reason = language === 'de' 
-              ? 'Basierend auf deinem Gespräch könnte dir das helfen, dich zu entspannen.' 
-              : 'Based on your conversation, this could help you relax.';
+        if (suggestedMissionTypes.includes(mission.missionKey)) {
+          score += 50;
+          if (effectiveEmotion) {
+            const emotionReasonMap: Record<string, { en: string; de: string }> = {
+              stressed: { 
+                en: 'This mission can help reduce stress.', 
+                de: 'Diese Mission kann helfen, Stress abzubauen.' 
+              },
+              anxious: { 
+                en: 'This can help calm your mind.', 
+                de: 'Das kann dir helfen, dich zu beruhigen.' 
+              },
+              tired: { 
+                en: 'This could help boost your energy.', 
+                de: 'Das könnte dir Energie geben.' 
+              },
+              sad: { 
+                en: 'Activity can help lift your mood.', 
+                de: 'Bewegung kann deine Stimmung heben.' 
+              },
+              energetic: { 
+                en: 'Great way to channel your energy!', 
+                de: 'Tolle Möglichkeit, deine Energie zu nutzen!' 
+              },
+              hyper: { 
+                en: 'This can help you focus that energy.', 
+                de: 'Das kann dir helfen, diese Energie zu fokussieren.' 
+              },
+              overwhelmed: { 
+                en: 'A small step to help you feel better.', 
+                de: 'Ein kleiner Schritt, um dich besser zu fühlen.' 
+              },
+              sick: { 
+                en: 'Gentle activity to support your recovery.', 
+                de: 'Sanfte Aktivität zur Unterstützung deiner Genesung.' 
+              },
+              motivated: { 
+                en: 'Perfect for your current motivation!', 
+                de: 'Perfekt für deine aktuelle Motivation!' 
+              },
+              bored: { 
+                en: 'A fun activity to shake things up.', 
+                de: 'Eine spaßige Aktivität für Abwechslung.' 
+              },
+              peaceful: { 
+                en: 'Maintain your calm with this gentle activity.', 
+                de: 'Bewahre deine Ruhe mit dieser sanften Aktivität.' 
+              },
+              calm: { 
+                en: 'Perfect for your relaxed state.', 
+                de: 'Perfekt für deinen entspannten Zustand.' 
+              },
+            };
+            const emotionReason = emotionReasonMap[effectiveEmotion];
+            if (emotionReason) {
+              reason = language === 'de' ? emotionReason.de : emotionReason.en;
+            }
           }
         }
 
-        if (mission.missionKey === 'jumping-jacks' || mission.missionKey === 'walking') {
-          if (recentEmotion === 'tired' || recentEmotion === 'sad') {
-            score += 40;
-            reason = language === 'de' 
-              ? 'Bewegung kann deine Energie und Stimmung verbessern.' 
-              : 'Exercise can boost your energy and mood.';
-          }
-          if (contextLower.includes('energy') || contextLower.includes('tired') || contextLower.includes('exercise')) {
-            score += 35;
-            reason = language === 'de' 
-              ? 'Eine kurze Aktivität könnte dir Energie geben.' 
-              : 'A quick activity could give you energy.';
-          }
-          const physicalActivity = questionnaire?.answers?.physicalActivity;
-          if (physicalActivity === 'sedentary' || physicalActivity === 'light') {
-            score += 30;
-            reason = language === 'de' 
-              ? 'Basierend auf deinem Aktivitätslevel ist dies ein guter Start.' 
-              : 'Based on your activity level, this is a good starting point.';
-          }
-        }
-
-        if (mission.missionKey === 'water-glasses') {
-          if (contextLower.includes('water') || contextLower.includes('hydrat') || contextLower.includes('thirst')) {
+        if (contextLower.includes('water') || contextLower.includes('hydrat') || contextLower.includes('thirst')) {
+          if (mission.missionKey === 'water-glasses') {
             score += 45;
             reason = language === 'de' 
               ? 'Hydriert zu bleiben ist wichtig für deine Gesundheit.' 
               : 'Staying hydrated is important for your health.';
           }
-          score += 15;
+        }
+
+        if (contextLower.includes('energy') || contextLower.includes('exercise') || contextLower.includes('active')) {
+          if (mission.missionKey === 'jumping-jacks' || mission.missionKey === 'walking') {
+            score += 35;
+            reason = language === 'de' 
+              ? 'Eine kurze Aktivität könnte dir Energie geben.' 
+              : 'A quick activity could give you energy.';
+          }
+        }
+
+        const physicalActivity = questionnaire?.answers?.physicalActivity;
+        if (physicalActivity === 'sedentary' || physicalActivity === 'light') {
+          if (mission.missionKey === 'jumping-jacks' || mission.missionKey === 'walking') {
+            score += 25;
+          }
         }
 
         score += (mission.xpReward || 0) / 10;
+        score += 10;
 
         if (score > bestScore) {
           bestScore = score;

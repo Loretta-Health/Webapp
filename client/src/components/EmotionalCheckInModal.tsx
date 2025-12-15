@@ -7,6 +7,12 @@ import { Heart, Send, Sparkles, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from './MascotCharacter';
 import { useToast } from '@/hooks/use-toast';
+import { 
+  detectEmotionFromText, 
+  getRandomSupportiveMessage, 
+  getEmotionEmoji,
+  type EmotionCategory 
+} from '../../../shared/emotions';
 
 interface EmotionalCheckInModalProps {
   open: boolean;
@@ -21,112 +27,6 @@ interface Message {
   id: string;
   role: 'assistant' | 'user';
   content: string;
-}
-
-const emotionKeywords: Record<string, string[]> = {
-  happy: ['happy', 'great', 'wonderful', 'amazing', 'joyful', 'excited', 'good', 'fantastic', 'awesome', 'excellent', 'thrilled', 'delighted', 'cheerful', 'pleased', 'content'],
-  sad: ['sad', 'down', 'depressed', 'unhappy', 'blue', 'low', 'miserable', 'gloomy', 'heartbroken', 'disappointed'],
-  anxious: ['anxious', 'worried', 'nervous', 'panicked', 'uneasy', 'tense', 'apprehensive', 'fearful'],
-  stressed: ['stressed', 'pressure', 'overwhelmed', 'burnt out', 'exhausted', 'frazzled', 'swamped'],
-  calm: ['calm', 'peaceful', 'relaxed', 'serene', 'tranquil', 'at ease', 'chill', 'mellow'],
-  tired: ['tired', 'exhausted', 'fatigued', 'sleepy', 'drained', 'worn out', 'weary'],
-  energetic: ['energetic', 'energized', 'pumped', 'active', 'motivated', 'alive', 'vibrant', 'dynamic'],
-  frustrated: ['frustrated', 'annoyed', 'irritated', 'angry', 'upset', 'mad', 'furious', 'aggravated'],
-  grateful: ['grateful', 'thankful', 'appreciative', 'blessed', 'fortunate'],
-  hopeful: ['hopeful', 'optimistic', 'positive', 'confident', 'encouraged', 'upbeat'],
-  lonely: ['lonely', 'alone', 'isolated', 'disconnected'],
-  confused: ['confused', 'lost', 'uncertain', 'unsure', 'puzzled'],
-  neutral: ['okay', 'fine', 'alright', 'so-so', 'meh', 'normal', 'average'],
-};
-
-const emotionEmojis: Record<string, string> = {
-  happy: '😊',
-  sad: '😢',
-  anxious: '😰',
-  stressed: '😫',
-  calm: '😌',
-  tired: '😴',
-  energetic: '⚡',
-  frustrated: '😤',
-  grateful: '🙏',
-  hopeful: '🌟',
-  lonely: '🥺',
-  confused: '🤔',
-  neutral: '😐',
-};
-
-const supportiveMessages: Record<string, string[]> = {
-  happy: [
-    "That's wonderful to hear! Keep embracing that positive energy. Remember, joy is contagious - spread it around!",
-    "I'm so glad you're feeling good! Happiness boosts your immune system and overall health.",
-  ],
-  sad: [
-    "I'm sorry you're feeling down. Remember, it's okay to feel this way. Take it one moment at a time, and be gentle with yourself.",
-    "Sadness is part of being human. Consider reaching out to someone you trust, or try a brief walk outside.",
-  ],
-  anxious: [
-    "Anxiety can be tough, but you're not alone. Try taking some slow, deep breaths. You've got through difficult moments before.",
-    "When anxiety hits, grounding exercises can help. Focus on 5 things you can see, 4 you can touch, 3 you can hear.",
-  ],
-  stressed: [
-    "Stress can feel overwhelming, but remember to take breaks. Even 5 minutes of quiet can help reset your mind.",
-    "You're dealing with a lot right now. Consider breaking tasks into smaller steps, and celebrate small wins.",
-  ],
-  calm: [
-    "It's great that you're feeling at peace. This calm state is so valuable for your health and wellbeing.",
-    "Enjoy this peaceful moment. Calm times help your body recover and recharge.",
-  ],
-  tired: [
-    "Rest is so important for your health. Listen to your body - if you can, try to get some extra sleep tonight.",
-    "Feeling tired is your body's way of asking for rest. Be kind to yourself and prioritize recovery.",
-  ],
-  energetic: [
-    "That energy is fantastic! Channel it into something you enjoy - maybe a walk, a workout, or a creative project!",
-    "Ride that wave of energy! Active moments like these are great for both your body and mind.",
-  ],
-  frustrated: [
-    "Frustration is valid. Taking a step back can help. Try to identify what's bothering you most.",
-    "It's okay to feel frustrated. Consider writing down what's on your mind - it can help process these feelings.",
-  ],
-  grateful: [
-    "Gratitude is powerful! It's amazing how acknowledging the good things can lift your whole day.",
-    "That thankful feeling is wonderful for your mental health. Keep noticing those positive moments!",
-  ],
-  hopeful: [
-    "Hope is a beautiful thing. That optimistic outlook can really help carry you through challenges.",
-    "Your positive outlook is inspiring! Keep that hopeful energy going.",
-  ],
-  lonely: [
-    "Loneliness can be hard. Remember, reaching out - even a small message to someone - can help bridge that gap.",
-    "You matter, and you're not as alone as you might feel. Consider connecting with someone today, even briefly.",
-  ],
-  confused: [
-    "It's okay to not have all the answers. Sometimes clarity comes with time and rest.",
-    "Feeling uncertain is normal. Try writing down your thoughts - it can help sort things out.",
-  ],
-  neutral: [
-    "Sometimes 'okay' is perfectly fine. Not every day needs to be extraordinary.",
-    "Feeling neutral is valid. Take this steady moment to check in with what you need today.",
-  ],
-};
-
-function detectEmotion(text: string): string | null {
-  const lowerText = text.toLowerCase();
-  
-  for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
-    for (const keyword of keywords) {
-      const regex = new RegExp(`\\b${keyword}\\b`, 'i');
-      if (regex.test(lowerText)) {
-        return emotion;
-      }
-    }
-  }
-  return null;
-}
-
-function getRandomSupportiveMessage(emotion: string): string {
-  const messages = supportiveMessages[emotion] || supportiveMessages.neutral;
-  return messages[Math.floor(Math.random() * messages.length)];
 }
 
 export default function EmotionalCheckInModal({
@@ -176,13 +76,13 @@ export default function EmotionalCheckInModal({
     setInputText('');
     setLoading(true);
 
-    const emotion = detectEmotion(inputText);
+    const emotion = detectEmotionFromText(inputText);
     
     await new Promise(resolve => setTimeout(resolve, 800));
 
     if (emotion) {
       setDetectedEmotion(emotion);
-      const emoji = emotionEmojis[emotion] || '';
+      const emoji = getEmotionEmoji(emotion);
       const confirmMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -207,7 +107,7 @@ export default function EmotionalCheckInModal({
     if (confirmed && detectedEmotion) {
       setLoading(true);
       
-      const supportiveMsg = getRandomSupportiveMessage(detectedEmotion);
+      const supportiveMsg = getRandomSupportiveMessage(detectedEmotion as EmotionCategory);
       const supportMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
