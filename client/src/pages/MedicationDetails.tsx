@@ -52,10 +52,10 @@ export default function MedicationDetails() {
   
   const addXPMutation = useMutation({
     mutationFn: async (amount: number) => {
-      return apiRequest('POST', `/api/gamification/${userId}/xp`, { amount });
+      return apiRequest('POST', `/api/gamification/xp`, { amount });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
     },
   });
   

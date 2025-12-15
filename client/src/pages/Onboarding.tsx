@@ -1272,17 +1272,17 @@ export default function Onboarding() {
   const [initialStepSet, setInitialStepSet] = useState(false);
 
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
-    queryKey: ['/api/questionnaires', userId],
+    queryKey: ['/api/questionnaires'],
     enabled: !!userId,
   });
 
   const { data: profileData, isLoading: profileLoading } = useQuery<{ firstName?: string; lastName?: string; email?: string } | null>({
-    queryKey: ['/api/profile', userId],
+    queryKey: ['/api/profile'],
     enabled: !!userId,
   });
 
   const { data: preferencesData, isLoading: prefsLoading } = useQuery<{ consentGiven?: boolean } | null>({
-    queryKey: ['/api/preferences', userId],
+    queryKey: ['/api/preferences'],
     enabled: !!userId,
   });
 
@@ -1458,7 +1458,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Profile saved successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
     },
     onError: (error) => {
       console.error('Failed to save profile:', error);
@@ -1480,7 +1480,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Questionnaire saved successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/questionnaires', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/questionnaires'] });
     },
     onError: (error) => {
       console.error('Failed to save questionnaire:', error);
@@ -1497,7 +1497,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Risk score saved successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores'] });
     },
     onError: (error) => {
       console.error('Failed to save risk score:', error);
@@ -1519,7 +1519,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Gamification initialized successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
     },
     onError: (error) => {
       console.error('Failed to initialize gamification:', error);
@@ -1539,7 +1539,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Achievements initialized successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/achievements', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/achievements'] });
     },
     onError: (error) => {
       console.error('Failed to initialize achievements:', error);
@@ -1559,7 +1559,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Missions initialized successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
     },
     onError: (error) => {
       console.error('Failed to initialize missions:', error);

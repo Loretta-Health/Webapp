@@ -102,6 +102,13 @@ export interface IStorage {
   getAllEmotionalCheckins(userId: string): Promise<EmotionalCheckin[]>;
   saveEmotionalCheckin(data: InsertEmotionalCheckin): Promise<EmotionalCheckin>;
 
+  // Mission catalog methods
+  getAllMissions(): Promise<Mission[]>;
+  getBaseMissions(): Promise<Mission[]>;
+  getAlternativeMissions(): Promise<Mission[]>;
+  getAlternativeFor(parentMissionKey: string): Promise<Mission | undefined>;
+  getMissionByKey(missionKey: string): Promise<Mission | undefined>;
+
   // User mission methods
   getUserMissions(userId: string): Promise<UserMission[]>;
   createUserMission(data: InsertUserMission): Promise<UserMission>;
@@ -516,6 +523,32 @@ export class DatabaseStorage implements IStorage {
       .where(eq(missions.isActive, true));
   }
 
+  async getBaseMissions(): Promise<Mission[]> {
+    return await db
+      .select()
+      .from(missions)
+      .where(and(eq(missions.isActive, true), eq(missions.isAlternative, false)));
+  }
+
+  async getAlternativeMissions(): Promise<Mission[]> {
+    return await db
+      .select()
+      .from(missions)
+      .where(and(eq(missions.isActive, true), eq(missions.isAlternative, true)));
+  }
+
+  async getAlternativeFor(parentMissionKey: string): Promise<Mission | undefined> {
+    const [mission] = await db
+      .select()
+      .from(missions)
+      .where(and(
+        eq(missions.isActive, true),
+        eq(missions.isAlternative, true),
+        eq(missions.alternativeOf, parentMissionKey)
+      ));
+    return mission;
+  }
+
   async getMissionByKey(missionKey: string): Promise<Mission | undefined> {
     const [mission] = await db
       .select()
@@ -526,10 +559,10 @@ export class DatabaseStorage implements IStorage {
 
   async ensureDefaultMissionsForUser(userId: string): Promise<UserMission[]> {
     const existingMissions = await this.getUserMissions(userId);
-    const catalogMissions = await this.getAllMissions();
+    const baseMissions = await this.getBaseMissions();
     
     const existingKeys = existingMissions.map(m => m.missionKey);
-    const missingMissions = catalogMissions.filter(m => !existingKeys.includes(m.missionKey));
+    const missingMissions = baseMissions.filter(m => !existingKeys.includes(m.missionKey));
     
     for (const catalogMission of missingMissions) {
       const userMission: InsertUserMission = {

@@ -22,12 +22,12 @@ export default function Welcome() {
   const { progress, isLoading, markConsentComplete, isConsentComplete, isQuestionnaireComplete } = useOnboardingProgress();
 
   const { data: preferencesData, isLoading: prefsLoading } = useQuery<UserPreferences>({
-    queryKey: ['/api/preferences', userId],
+    queryKey: ['/api/preferences'],
     enabled: !!userId,
   });
 
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
-    queryKey: ['/api/questionnaires', userId],
+    queryKey: ['/api/questionnaires'],
     enabled: !!userId,
   });
 

@@ -735,7 +735,7 @@ export default function Profile() {
   };
 
   const { data: backendProfile, isLoading: isProfileLoading } = useQuery<BackendProfile | null>({
-    queryKey: ['/api/profile', userId],
+    queryKey: ['/api/profile'],
     enabled: !!userId,
   });
 
@@ -782,7 +782,7 @@ export default function Profile() {
   }, [backendProfile, profileLoaded, user]);
 
   const { data: backendAnswers } = useQuery<Array<{ category: string; answers: Record<string, string> }>>({
-    queryKey: ['/api/questionnaires', userId],
+    queryKey: ['/api/questionnaires'],
     enabled: !!userId,
   });
 
@@ -802,9 +802,9 @@ export default function Profile() {
   }
 
   const { data: activitiesData } = useQuery<ActivityData[]>({
-    queryKey: ['/api/activities', userId],
+    queryKey: ['/api/activities'],
     queryFn: async () => {
-      const res = await fetch(`/api/activities/${userId}?days=7`);
+      const res = await fetch(`/api/activities?days=7`, { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to fetch activities');
       return res.json();
     },
@@ -833,7 +833,7 @@ export default function Profile() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/questionnaires', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/questionnaires'] });
     },
   });
 
@@ -914,7 +914,7 @@ export default function Profile() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
     },
   });
 

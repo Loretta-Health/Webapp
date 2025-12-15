@@ -209,7 +209,7 @@ export default function LeaderboardPage() {
     if (!user?.id) return;
     setLoadingAchievements(true);
     try {
-      const response = await fetch(`/api/achievements/${user.id}`, {
+      const response = await fetch(`/api/achievements`, {
         credentials: 'include',
       });
       if (response.ok) {
@@ -232,7 +232,7 @@ export default function LeaderboardPage() {
 
   const fetchTeams = async () => {
     try {
-      const response = await fetch(`/api/teams/user/${user?.id}`, {
+      const response = await fetch(`/api/teams/me`, {
         credentials: 'include',
       });
       const data = await response.json();

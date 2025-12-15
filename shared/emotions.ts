@@ -271,3 +271,27 @@ export function getSuggestedMissionTypes(emotion: EmotionCategory): string[] {
   const emotionDef = getEmotionByKey(emotion);
   return emotionDef?.suggestedMissionTypes || ['water-glasses'];
 }
+
+/**
+ * Emotions that should trigger alternative (easier) missions
+ * These are low-energy or difficult emotional states where users need gentler options
+ */
+export const LOW_MOOD_EMOTIONS: EmotionCategory[] = [
+  'sick',
+  'stressed', 
+  'anxious',
+  'tired',
+  'sad',
+  'overwhelmed',
+  'frustrated',
+  'angry',
+  'lonely',
+];
+
+/**
+ * Check if an emotion qualifies as "low mood" for alternative mission suggestions
+ */
+export function isLowMoodEmotion(emotion: EmotionCategory | string | null): boolean {
+  if (!emotion) return false;
+  return LOW_MOOD_EMOTIONS.includes(emotion as EmotionCategory);
+}
