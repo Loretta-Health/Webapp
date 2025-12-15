@@ -101,38 +101,38 @@ export default function MyDashboard() {
   const { progress: onboardingProgress, isConsentComplete, isQuestionnaireComplete } = useOnboardingProgress();
   
   const { data: gamificationData } = useQuery<GamificationData>({
-    queryKey: ['/api/gamification', userId],
-    enabled: !!userId && !!user,
+    queryKey: ['/api/gamification'],
+    enabled: !!user,
   });
 
   const { data: riskScoreData } = useQuery<RiskScoreData>({
-    queryKey: ['/api/risk-scores', userId, 'latest'],
-    enabled: !!userId && !!user,
+    queryKey: ['/api/risk-scores/latest'],
+    enabled: !!user,
   });
 
   const { data: allEmotionalCheckins } = useQuery<EmotionalCheckinData[]>({
     queryKey: ['/api/emotional-checkins'],
-    enabled: !!userId && !!user,
+    enabled: !!user,
   });
 
   const { data: preferencesData } = useQuery<{ consentGiven: boolean; consentDate: string | null }>({
-    queryKey: ['/api/preferences', userId],
-    enabled: !!userId && !!user,
+    queryKey: ['/api/preferences'],
+    enabled: !!user,
   });
 
   const { data: profileData } = useQuery<{ firstName: string | null; lastName: string | null; dateOfBirth: string | null }>({
-    queryKey: ['/api/profile', userId],
-    enabled: !!userId && !!user,
+    queryKey: ['/api/profile'],
+    enabled: !!user,
   });
 
   const { data: questionnaireData } = useQuery<{ category: string; answers: Record<string, string> }[]>({
-    queryKey: ['/api/questionnaires', userId],
-    enabled: !!userId && !!user,
+    queryKey: ['/api/questionnaires'],
+    enabled: !!user,
   });
 
   const { data: activityData } = useQuery<ActivityData>({
-    queryKey: ['/api/activities', userId, 'today'],
-    enabled: !!userId && !!user,
+    queryKey: ['/api/activities/today'],
+    enabled: !!user,
   });
 
   // Core question IDs that must be answered for questionnaire to be complete (must match Onboarding.tsx baseQuestions)
@@ -169,10 +169,10 @@ export default function MyDashboard() {
 
   const checkInMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('POST', `/api/gamification/${userId}/checkin`, {});
+      return apiRequest('POST', `/api/gamification/checkin`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
     },
   });
 
@@ -181,7 +181,7 @@ export default function MyDashboard() {
       return apiRequest('POST', `/api/gamification/${userId}/xp`, { amount });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
     },
   });
 
@@ -211,7 +211,7 @@ export default function MyDashboard() {
 
   const handleCheckInComplete = (emotion: string, xpAwarded: number) => {
     queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
   };
 
   const getEmotionEmoji = (emotion: string): string => {

@@ -178,7 +178,7 @@ export default function ActivityDetails() {
   const [optimisticValue, setOptimisticValue] = useState<string | null>(null);
   
   const { data: activityData, isLoading, isFetching } = useQuery<ActivityData>({
-    queryKey: ['/api/activities', userId, 'today'],
+    queryKey: ['/api/activities/today'],
     enabled: !!userId,
   });
   
@@ -251,14 +251,14 @@ export default function ActivityDetails() {
           break;
       }
       
-      return apiRequest('PATCH', `/api/activities/${userId}`, updateData);
+      return apiRequest('PATCH', `/api/activities`, updateData);
     },
     onMutate: async (value: string) => {
       setOptimisticValue(value);
       setIsEditing(false);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/activities', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
     },
     onError: () => {
       setOptimisticValue(null);

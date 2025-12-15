@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
+import { userMissions } from "@shared/schema";
 import { setupAuth } from "./auth";
 import { HEALTH_NAVIGATOR_SYSTEM_PROMPT } from "./prompts";
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
@@ -21,7 +24,8 @@ import { nanoid } from "nanoid";
 import { 
   getSuggestedMissionTypes, 
   detectEmotionFromText,
-  type EmotionCategory 
+  isLowMoodEmotion,
+  type EmotionCategory,
 } from "@shared/emotions";
 
 // Scaleway AI configuration
@@ -365,9 +369,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Gamification Endpoints
   // ========================
 
-  app.get("/api/gamification/:userId", async (req, res) => {
+  app.get("/api/gamification", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       let gamification = await storage.getUserGamification(userId);
       
       if (!gamification) {
@@ -379,12 +386,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get XP from user_xp table and compute level
       const xpRecord = await storage.getUserXp(userId);
       const xp = xpRecord?.totalXp || 0;
       const level = calculateLevelFromXP(xp);
       
-      // Return combined data for backwards compatibility
       res.json({
         ...gamification,
         xp,
@@ -397,8 +402,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/gamification", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const validatedData = insertUserGamificationSchema.parse(req.body);
+      const userId = (req.user as any).id;
+      const dataWithUserId = { ...req.body, userId };
+      const validatedData = insertUserGamificationSchema.parse(dataWithUserId);
       const saved = await storage.saveUserGamification(validatedData);
       res.json(saved);
     } catch (error) {
@@ -407,9 +417,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/gamification/:userId/xp", async (req, res) => {
+  app.post("/api/gamification/xp", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       const { amount } = req.body;
       
       if (typeof amount !== 'number' || amount < 0) {
@@ -428,9 +441,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/gamification/:userId/checkin", async (req, res) => {
+  app.post("/api/gamification/checkin", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       
       const currentGamification = await storage.getUserGamification(userId);
       const isFirstCheckin = !currentGamification || currentGamification.currentStreak === 0;
@@ -440,7 +456,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let xpAwarded = 0;
       const allAchievementsUnlocked: string[] = [];
       
-      // Award checkin XP and check XP achievements
       const checkinReward = isFirstCheckin 
         ? getXPRewardAmount('first_checkin')
         : getXPRewardAmount('streak_update');
@@ -449,12 +464,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       xpAwarded += checkinReward + xpResult.bonusXp;
       allAchievementsUnlocked.push(...xpResult.achievementsUnlocked);
       
-      // Process all checkin-related achievements via achievement manager
       const achievementResult = await processCheckin(userId, updated.currentStreak || 0);
       xpAwarded += achievementResult.totalXpAwarded;
       allAchievementsUnlocked.push(...achievementResult.achievementsUnlocked);
       
-      // Final check for XP-based achievements after all XP awarded
       const finalXpRecord = await storage.getUserXp(userId);
       if (finalXpRecord) {
         const finalXpAchResult = await processXpEarned(userId, finalXpRecord.totalXp);
@@ -477,9 +490,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Risk Score Endpoints
   // ========================
 
-  app.get("/api/risk-scores/:userId", async (req, res) => {
+  app.get("/api/risk-scores", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       const scores = await storage.getAllRiskScores(userId);
       res.json(scores);
     } catch (error) {
@@ -488,9 +504,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/risk-scores/:userId/latest", async (req, res) => {
+  app.get("/api/risk-scores/latest", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       const score = await storage.getLatestRiskScore(userId);
       res.json(score || null);
     } catch (error) {
@@ -500,8 +519,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/risk-scores", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const validatedData = insertRiskScoreSchema.parse(req.body);
+      const userId = (req.user as any).id;
+      const dataWithUserId = { ...req.body, userId };
+      const validatedData = insertRiskScoreSchema.parse(dataWithUserId);
       const saved = await storage.saveRiskScore(validatedData);
       res.json(saved);
     } catch (error) {
@@ -510,27 +534,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // @deprecated - Legacy risk score calculation endpoint
-  // Kept as fallback when ML prediction API is unavailable
-  // TODO: Remove once ML prediction service is stable in production
-  app.post("/api/risk-scores/:userId/calculate", async (req, res) => {
-    console.warn("[DEPRECATED] /api/risk-scores/:userId/calculate endpoint called - using legacy risk calculation as fallback");
+  app.post("/api/risk-scores/calculate", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    console.warn("[DEPRECATED] /api/risk-scores/calculate endpoint called - using legacy risk calculation as fallback");
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       
-      // Get all questionnaire answers for this user
       const answers = await storage.getAllQuestionnaireAnswers(userId);
       
-      // Combine all answers into one object
       const allAnswers: Record<string, string> = {};
       answers.forEach(a => {
         Object.assign(allAnswers, a.answers);
       });
       
-      // Calculate risk scores based on answers
       const riskScore = calculateRiskScores(allAnswers);
       
-      // Save the calculated risk score
       const saved = await storage.saveRiskScore({
         userId,
         ...riskScore,
@@ -813,11 +833,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // User Mission Endpoints
   // ========================
 
-  app.get("/api/missions/:userId", async (req, res) => {
+  app.get("/api/missions", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
-      const missions = await storage.ensureDefaultMissionsForUser(userId);
-      res.json(missions);
+      const userId = (req.user as any).id;
+      const userMissions = await storage.ensureDefaultMissionsForUser(userId);
+      
+      const latestCheckin = await storage.getLatestEmotionalCheckin(userId);
+      const isLowMood = latestCheckin && isLowMoodEmotion(latestCheckin.emotion);
+      const today = new Date().toDateString();
+      const checkinDate = latestCheckin?.checkedInAt ? new Date(latestCheckin.checkedInAt).toDateString() : null;
+      const isCheckinToday = checkinDate === today;
+      
+      let missionData: any[] = [];
+      
+      for (const userMission of userMissions) {
+        const catalogMission = await storage.getMissionByKey(userMission.missionKey);
+        
+        let displayMission = catalogMission;
+        let alternativeMission = null;
+        let showAlternative = false;
+        
+        if (isLowMood && isCheckinToday && catalogMission && !catalogMission.isAlternative) {
+          const altMission = await storage.getAlternativeFor(catalogMission.missionKey);
+          if (altMission) {
+            alternativeMission = altMission;
+            showAlternative = true;
+          }
+        }
+        
+        missionData.push({
+          ...userMission,
+          catalog: catalogMission,
+          alternativeMission,
+          showAlternative,
+          isLowMood: isLowMood && isCheckinToday,
+        });
+      }
+      
+      res.json(missionData);
     } catch (error) {
       console.error("Error fetching missions:", error);
       res.status(500).json({ error: "Failed to fetch missions" });
@@ -825,8 +881,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/missions", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const validatedData = insertUserMissionSchema.parse(req.body);
+      const userId = (req.user as any).id;
+      const dataWithUserId = { ...req.body, userId };
+      const validatedData = insertUserMissionSchema.parse(dataWithUserId);
       const created = await storage.createUserMission(validatedData);
       res.json(created);
     } catch (error) {
@@ -836,11 +897,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch("/api/missions/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
       const { id } = req.params;
       const validatedData = updateUserMissionSchema.parse(req.body);
       
-      // Auto-set activatedAt when activating a mission
       if (validatedData.isActive === true && !validatedData.activatedAt) {
         validatedData.activatedAt = new Date();
       }
@@ -858,7 +921,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/missions/activate-alternative", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    try {
+      const userId = (req.user as any).id;
+      const { parentMissionKey, alternativeMissionKey } = req.body;
+      
+      if (!parentMissionKey || !alternativeMissionKey) {
+        return res.status(400).json({ error: "parentMissionKey and alternativeMissionKey are required" });
+      }
+      
+      const latestCheckin = await storage.getLatestEmotionalCheckin(userId);
+      const today = new Date().toDateString();
+      const checkinDate = latestCheckin?.checkedInAt ? new Date(latestCheckin.checkedInAt).toDateString() : null;
+      
+      if (!latestCheckin || !isLowMoodEmotion(latestCheckin.emotion) || checkinDate !== today) {
+        return res.status(400).json({ error: "Alternative missions are only available when you've checked in with a low mood today" });
+      }
+      
+      const altMission = await storage.getMissionByKey(alternativeMissionKey);
+      if (!altMission || !altMission.isAlternative || altMission.alternativeOf !== parentMissionKey) {
+        return res.status(400).json({ error: "Invalid alternative mission" });
+      }
+      
+      const existingAlt = await db.select().from(userMissions)
+        .where(and(eq(userMissions.userId, userId), eq(userMissions.missionKey, alternativeMissionKey)));
+      
+      if (existingAlt.length > 0) {
+        const updated = await storage.updateUserMission(existingAlt[0].id, {
+          isActive: true,
+          activatedAt: new Date(),
+          progress: 0,
+          completed: false,
+        });
+        return res.json({ ...updated, type: 'updated' });
+      }
+      
+      const created = await storage.createUserMission({
+        userId,
+        missionId: altMission.id,
+        missionKey: altMission.missionKey,
+        progress: 0,
+        maxProgress: altMission.maxProgress || 1,
+        completed: false,
+        isActive: true,
+        activatedAt: new Date(),
+      });
+      
+      res.json({ ...created, type: 'created' });
+    } catch (error) {
+      console.error("Error activating alternative mission:", error);
+      res.status(500).json({ error: "Failed to activate alternative mission" });
+    }
+  });
+
   app.delete("/api/missions/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
       const { id } = req.params;
       await storage.deleteUserMission(id);
@@ -946,10 +1068,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user's achievements with progress (ensures all achievements exist for user)
-  app.get("/api/achievements/:userId", async (req, res) => {
+  app.get("/api/achievements/user", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       await storage.ensureUserHasAllAchievements(userId);
       const achievements = await storage.getUserAchievementWithDetails(userId);
       res.json(achievements);
@@ -959,10 +1083,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update user achievement progress by achievementId (single source of truth for achievement updates)
-  app.post("/api/achievements/:userId/progress/:achievementId", async (req, res) => {
+  app.post("/api/achievements/progress/:achievementId", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId, achievementId } = req.params;
+      const userId = (req.user as any).id;
+      const { achievementId } = req.params;
       const { progress } = req.body;
       
       if (typeof progress !== 'number') {
@@ -990,9 +1117,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Activity Endpoints
   // ========================
 
-  app.get("/api/activities/:userId", async (req, res) => {
+  app.get("/api/activities", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       const days = parseInt(req.query.days as string) || 7;
       const activities = await storage.getUserActivities(userId, days);
       res.json(activities);
@@ -1002,9 +1132,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/activities/:userId/today", async (req, res) => {
+  app.get("/api/activities/today", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       const today = new Date().toISOString().split('T')[0];
       const activity = await storage.getUserActivityForDate(userId, today);
       res.json(activity || { 
@@ -1027,12 +1160,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/activities", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId, date, ...data } = req.body;
+      const userId = (req.user as any).id;
+      const { date, ...data } = req.body;
       const activityDate = date || new Date().toISOString().split('T')[0];
       const saved = await storage.saveUserActivity({ userId, date: activityDate, ...data });
       
-      // Process activity-related achievements
       const achievementResult = await processActivityLogged(userId, activityDate, {
         steps: saved.steps || undefined,
         stepsGoal: saved.stepsGoal || undefined,
@@ -1052,15 +1188,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/activities/:userId", async (req, res) => {
+  app.patch("/api/activities", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
     try {
-      const { userId } = req.params;
+      const userId = (req.user as any).id;
       const { date, ...data } = req.body;
       const activityDate = date || new Date().toISOString().split('T')[0];
       const updated = await storage.updateUserActivity(userId, activityDate, data);
       
       if (updated) {
-        // Process activity-related achievements
         const achievementResult = await processActivityLogged(userId, activityDate, {
           steps: updated.steps || undefined,
           stepsGoal: updated.stepsGoal || undefined,
@@ -1619,19 +1757,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Onboarding Progress Endpoints
   // ========================
 
-  app.get("/api/onboarding-progress/:userId", async (req, res) => {
+  app.get("/api/onboarding-progress", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: "Not authenticated" });
     }
     
     try {
-      const { userId } = req.params;
-      const authenticatedUserId = (req.user as any).id;
-      
-      if (userId !== authenticatedUserId) {
-        return res.status(403).json({ error: "Cannot access another user's onboarding progress" });
-      }
-      
+      const userId = (req.user as any).id;
       const progress = await storage.getOnboardingProgress(userId);
       
       if (!progress) {
@@ -1645,19 +1777,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/onboarding-progress/:userId", async (req, res) => {
+  app.post("/api/onboarding-progress", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: "Not authenticated" });
     }
     
     try {
-      const { userId } = req.params;
-      const authenticatedUserId = (req.user as any).id;
-      
-      if (userId !== authenticatedUserId) {
-        return res.status(403).json({ error: "Cannot update another user's onboarding progress" });
-      }
-      
+      const userId = (req.user as any).id;
       const rawData = req.body;
       
       const updateData: Record<string, any> = {};

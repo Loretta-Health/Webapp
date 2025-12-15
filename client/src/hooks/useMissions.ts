@@ -71,10 +71,10 @@ export function useMissions() {
   });
 
   const { data: userMissions = [], isLoading: userMissionsLoading, error } = useQuery<UserMission[]>({
-    queryKey: ['/api/missions', userId],
+    queryKey: ['/api/missions'],
     queryFn: async () => {
       if (!userId) return [];
-      const response = await fetch(`/api/missions/${userId}`, {
+      const response = await fetch(`/api/missions`, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -129,7 +129,7 @@ export function useMissions() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
     },
   });
 
@@ -139,7 +139,7 @@ export function useMissions() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
     },
   });
 
@@ -149,18 +149,18 @@ export function useMissions() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
     },
   });
 
   const resetMissionsMutation = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error('No user ID');
-      const response = await apiRequest('POST', `/api/missions/${userId}/reset`);
+      const response = await apiRequest('POST', `/api/missions/reset`);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
     },
   });
 

@@ -23,10 +23,10 @@ export function useOnboardingProgress() {
   const userId = user?.id;
 
   const { data: progress, isLoading, error, isError } = useQuery<OnboardingProgress | null>({
-    queryKey: ['/api/onboarding-progress', userId],
+    queryKey: ['/api/onboarding-progress'],
     queryFn: async () => {
       if (!userId) return null;
-      const response = await fetch(`/api/onboarding-progress/${userId}`, {
+      const response = await fetch(`/api/onboarding-progress`, {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -58,11 +58,11 @@ export function useOnboardingProgress() {
       onboardingCompletedAt: string;
     }>) => {
       if (!userId) throw new Error('No user ID');
-      const response = await apiRequest('POST', `/api/onboarding-progress/${userId}`, data);
+      const response = await apiRequest('POST', `/api/onboarding-progress`, data);
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/onboarding-progress', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/onboarding-progress'] });
     },
     onError: (error) => {
       console.error('Failed to update onboarding progress:', error);
