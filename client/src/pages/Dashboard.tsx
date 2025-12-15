@@ -12,6 +12,7 @@ import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessi
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
+import { useQuery } from '@tanstack/react-query';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import marcPhoto from '@assets/image_1764091454235.png';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
@@ -78,6 +79,11 @@ export default function Dashboard() {
   const [registerForm, setRegisterForm] = useState({ username: '', password: '', confirmPassword: '' });
   const [registerError, setRegisterError] = useState('');
   const { user, logoutMutation, loginMutation, registerMutation } = useAuth();
+
+  const { data: riskScoreData } = useQuery<RiskScoreData>({
+    queryKey: ['/api/risk-scores/latest'],
+    enabled: !!user,
+  });
   
   const demoMissions = [
     { id: 'daily-checkin', title: 'Daily Check-In', description: 'Complete your daily health check-in', category: 'daily' as const, xpReward: 50, completed: true, progress: 1, maxProgress: 1, legendary: false, href: '/mission-details?id=daily-checkin' },
@@ -491,7 +497,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
                   <div className="lg:col-span-2">
                     <RiskScoreCard
-                      score={68}
+                      score={user && riskScoreData ? riskScoreData.overallScore : 68}
                       trend="up"
                       message="Elevated due to smoking habits and limited exercise"
                     />
