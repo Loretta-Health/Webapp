@@ -12,7 +12,8 @@ interface MedicationTrackerProps {
   medicationId: string;
   name: string;
   dosage: string;
-  timing: string;
+  scheduledTimes?: string[];
+  notes?: string | null;
   frequency: string;
   explanation?: string;
   simpleExplanation?: string;
@@ -23,7 +24,8 @@ export default function MedicationTracker({
   medicationId,
   name,
   dosage,
-  timing,
+  scheduledTimes = [],
+  notes,
   frequency,
   explanation = 'A medication prescribed by your healthcare provider.',
   simpleExplanation = 'Medicine that helps keep you healthy.',
@@ -69,9 +71,13 @@ export default function MedicationTracker({
               <p className="text-sm text-muted-foreground mb-1">{dosage}</p>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="w-3 h-3" />
-                <span>{timing}</span>
-                <span>•</span>
-                <span className="capitalize">{frequency}</span>
+                <span>{scheduledTimes.length > 0 ? scheduledTimes.join(', ') : frequency}</span>
+                {notes && (
+                  <>
+                    <span>•</span>
+                    <span className="truncate max-w-[100px]">{notes}</span>
+                  </>
+                )}
               </div>
             </div>
             

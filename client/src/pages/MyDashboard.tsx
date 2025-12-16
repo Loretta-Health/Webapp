@@ -906,7 +906,8 @@ export default function MyDashboard() {
                             medicationId={med.id}
                             name={med.name}
                             dosage={med.dosage}
-                            timing={med.timing}
+                            scheduledTimes={med.scheduledTimes || []}
+                            notes={med.notes}
                             frequency={med.frequency}
                             explanation={med.explanation || t('medications.defaultExplanation')}
                             simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}

@@ -141,7 +141,9 @@ export default function MedicationDetails() {
               <div className="flex flex-wrap gap-2">
                 <Badge className={colorClasses.primary.badge}>
                   <Clock className="w-3 h-3 mr-1" />
-                  {medication.timing}
+                  {(medication.scheduledTimes || []).length > 0 
+                    ? medication.scheduledTimes.join(', ')
+                    : medication.frequency}
                 </Badge>
                 <Badge variant="secondary">
                   <Zap className="w-3 h-3 mr-1" />
@@ -154,6 +156,12 @@ export default function MedicationDetails() {
                   </Badge>
                 )}
               </div>
+              {medication.notes && (
+                <div className="mt-3 p-3 rounded-lg bg-muted/50 text-sm">
+                  <span className="font-medium">{t('medicationDetails.notes', 'Notes')}:</span>{' '}
+                  <span className="text-muted-foreground">{medication.notes}</span>
+                </div>
+              )}
             </div>
           </div>
           
