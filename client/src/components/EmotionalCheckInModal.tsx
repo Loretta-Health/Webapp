@@ -7,6 +7,7 @@ import { Heart, Send, Sparkles, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from './MascotCharacter';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { 
   detectEmotionFromText, 
   getRandomSupportiveMessage, 
@@ -45,6 +46,7 @@ export default function EmotionalCheckInModal({
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -129,6 +131,10 @@ export default function EmotionalCheckInModal({
         });
 
         if (response.ok) {
+          // Invalidate weekly stats so they refresh
+          queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins/weekly-stats'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
+          
           toast({
             title: 'Check-in Complete! +10 XP',
             description: `Thanks for sharing that you're feeling ${detectedEmotion}.`,

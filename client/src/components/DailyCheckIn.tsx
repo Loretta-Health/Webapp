@@ -37,9 +37,9 @@ export default function DailyCheckIn({
   className = ''
 }: DailyCheckInProps) {
   // Fetch weekly check-in stats from the database
+  // Data is invalidated when a new check-in is completed
   const { data: weeklyStats } = useQuery<WeeklyStats>({
     queryKey: ['/api/emotional-checkins/weekly-stats'],
-    staleTime: 30000, // Refresh every 30 seconds
   });
 
   const completedDays = weeklyStats?.completedDays || [false, false, false, false, false, false, false];
