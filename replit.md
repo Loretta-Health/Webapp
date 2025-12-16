@@ -24,6 +24,8 @@ Preferred communication style: Simple, everyday language.
 - **Questionnaire**: 46 questions across various health categories, mapped to NHANES-style API parameters.
 - **ML Integration**: Designed to integrate with an external ML prediction API (currently bypassed due to issues, using a fallback evidence-based risk model).
 - **Risk Calculation**: Uses an evidence-based model considering BMI, age, weight changes, medical history, lifestyle, and other factors, capped at 0-100.
+- **Data Sync**: Bidirectional synchronization between profile and questionnaire for shared fields (age, height, weight, ethnicity). Changes to either automatically update the other.
+- **Auto-Recalculation**: Risk scores automatically recalculate when profile health data or questionnaire answers are updated.
 
 ### Internationalization (i18n)
 - Implemented with `react-i18next` and `i18next-browser-languagedetector`.
