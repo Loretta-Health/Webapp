@@ -147,7 +147,7 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="name">{language === 'en' ? 'Medication Name' : 'Medikamentenname'} *</Label>
+            <Label htmlFor="name">{language === 'en' ? 'Medication Name' : 'Medikamentenname'}</Label>
             <Input
               id="name"
               value={formData.name}
@@ -158,7 +158,7 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dosage">{language === 'en' ? 'Dosage (optional)' : 'Dosierung (optional)'}</Label>
+            <Label htmlFor="dosage">{language === 'en' ? 'Dosage' : 'Dosierung'}</Label>
             <Input
               id="dosage"
               value={formData.dosage}
