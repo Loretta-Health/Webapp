@@ -91,15 +91,19 @@ export default function MedicationTracker({
             <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
           </div>
           
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">{t('medications.todaysProgress')}</span>
-              <span className="font-bold text-foreground">{progress.taken}/{progress.total}</span>
+          {frequency !== 'as-needed' && progress.total > 0 && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">
+                  {frequency === 'weekly' ? t('medications.thisWeeksProgress', "This week's progress") : t('medications.todaysProgress')}
+                </span>
+                <span className="font-bold text-foreground">{progress.taken}/{progress.total}</span>
+              </div>
+              <Progress value={progressPercent} className="h-2" />
             </div>
-            <Progress value={progressPercent} className="h-2" />
-          </div>
+          )}
           
-          {progress.isComplete && (
+          {frequency !== 'as-needed' && progress.isComplete && (
             <div className="mt-3 flex items-center justify-center gap-2 text-sm text-primary font-bold">
               <Check className="w-4 h-4" />
               {t('medications.allDosesTaken')}
