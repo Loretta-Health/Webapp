@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Activity, Trophy, BookOpen, Pill, Smile } from 'lucide-react';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Activity, Trophy, BookOpen, Pill, Smile, ChevronRight } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import CollapsibleSection from '@/components/CollapsibleSection';
 import { Link, useLocation, Redirect } from 'wouter';
@@ -501,6 +501,28 @@ export default function MyDashboard() {
                 <MascotCharacter size="sm" pose={isNewUser ? "encourage" : "celebrate"} className="hidden sm:block" />
               </div>
             </div>
+            
+            {/* Speak to Loretta Button */}
+            <Link href="/chat">
+              <Card className="bg-gradient-to-r from-chart-2/20 via-emerald-500/10 to-primary/20 border-chart-2/30 hover:border-chart-2/50 transition-all hover:shadow-lg cursor-pointer group">
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center shadow-lg">
+                      <MessageCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-foreground group-hover:text-chart-2 transition-colors">
+                        {t('chat.speakToLoretta', 'Speak to Loretta')}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {t('chat.speakToLorettaSubtitle', 'Get personalized health guidance and support')}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-chart-2 transition-colors" />
+                </div>
+              </Card>
+            </Link>
             
             {showSetupChecklist && (
               <CollapsibleSection
