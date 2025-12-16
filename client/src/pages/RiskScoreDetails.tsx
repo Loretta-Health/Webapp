@@ -227,7 +227,6 @@ export default function RiskScoreDetails() {
           </div>
         </div>
       </div>
-
       {/* Score Card - Overlapping Header */}
       <div className="max-w-4xl mx-auto px-4 -mt-24">
         <Card className="p-6 mb-6 border-0 shadow-xl">
@@ -317,10 +316,7 @@ export default function RiskScoreDetails() {
             </div>
             <div>
               <h3 className="font-bold text-foreground mb-1">What does this mean?</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Your risk score is calculated from your lifestyle, medical history, and daily habits. 
-                Focus on improving red items first for the biggest impact on your health.
-              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">Your risk score is calculated from your lifestyle, medical history, and daily habits. Focus on improving the red items that can be changed first for the biggest impact on your health.</p>
             </div>
           </div>
         </Card>
