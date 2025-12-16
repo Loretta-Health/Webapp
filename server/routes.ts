@@ -1173,14 +1173,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req.user as any).id;
       const { name, dosage, scheduledTimes, notes, frequency, dosesPerDay, explanation, simpleExplanation } = req.body;
       
-      if (!name || !dosage || !frequency) {
-        return res.status(400).json({ error: "Missing required fields: name, dosage, frequency" });
+      if (!name || !frequency) {
+        return res.status(400).json({ error: "Missing required fields: name, frequency" });
       }
       
       const medication = await storage.createMedication({
         userId,
         name,
-        dosage,
+        dosage: dosage || '',
+        timing: frequency, // Legacy field - use frequency as timing
         scheduledTimes: scheduledTimes || [],
         notes: notes || null,
         frequency,
