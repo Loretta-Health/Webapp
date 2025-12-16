@@ -675,6 +675,36 @@ export default function MissionDetails() {
   
   const { missions, activeMissions, inactiveMissions, updateMissionProgress, activateMission, deactivateMission } = useMissions();
 
+  // Get mission data - use default if no ID provided
+  const missionData = urlMissionId ? (missionsDatabase[urlMissionId] || missionsDatabase['1']) : missionsDatabase['1'];
+  
+  const existingMission = missions.find(m => 
+    m.missionKey === urlMissionId || m.href?.includes(`?id=${urlMissionId}`)
+  );
+  const initialProgress = existingMission?.progress || 0;
+  
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  const [steps, setSteps] = useState<MissionStep[]>(() => {
+    const stepsWithProgress = missionData.initialSteps.map((step, index) => ({
+      ...step,
+      completed: index < initialProgress,
+      time: index < initialProgress ? step.time : undefined,
+    }));
+    return stepsWithProgress;
+  });
+  const [showCelebration, setShowCelebration] = useState(false);
+  
+  useEffect(() => {
+    if (existingMission && urlMissionId) {
+      const currentMissionData = missionsDatabase[urlMissionId] || missionsDatabase['1'];
+      setSteps(currentMissionData.initialSteps.map((step, index) => ({
+        ...step,
+        completed: index < existingMission.progress,
+        time: index < existingMission.progress ? step.time : undefined,
+      })));
+    }
+  }, [existingMission?.progress, urlMissionId]);
+
   // If no specific mission ID, show all missions overview
   if (!urlMissionId) {
     return (
@@ -788,35 +818,10 @@ export default function MissionDetails() {
     );
   }
   
-  const missionData = missionsDatabase[urlMissionId] || missionsDatabase['1'];
+  // These use the missionData already computed above
   const MissionIcon = missionData.icon;
   const colors = colorClasses[missionData.color] || colorClasses['chart-1'];
-  
-  const existingMission = missions.find(m => 
-    m.missionKey === urlMissionId || m.href?.includes(`?id=${urlMissionId}`)
-  );
   const dbMissionId = existingMission?.id;
-  const initialProgress = existingMission?.progress || 0;
-  
-  const [steps, setSteps] = useState<MissionStep[]>(() => {
-    const stepsWithProgress = missionData.initialSteps.map((step, index) => ({
-      ...step,
-      completed: index < initialProgress,
-      time: index < initialProgress ? step.time : undefined,
-    }));
-    return stepsWithProgress;
-  });
-  const [showCelebration, setShowCelebration] = useState(false);
-  
-  useEffect(() => {
-    if (existingMission) {
-      setSteps(missionData.initialSteps.map((step, index) => ({
-        ...step,
-        completed: index < existingMission.progress,
-        time: index < existingMission.progress ? step.time : undefined,
-      })));
-    }
-  }, [existingMission?.progress]);
   
   const completedCount = steps.filter(s => s.completed).length;
   const progressPercent = (completedCount / missionData.totalSteps) * 100;
