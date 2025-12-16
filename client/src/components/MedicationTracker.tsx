@@ -44,21 +44,6 @@ export default function MedicationTracker({
   return (
     <Link href={`/medication-details?id=${medicationId}`}>
       <Card className={`relative overflow-hidden cursor-pointer hover:border-primary/50 transition-all ${className}`} data-testid="medication-tracker">
-        <div className="absolute top-2 right-2 flex gap-1">
-          <Badge 
-            variant="secondary" 
-            className={`font-black text-xs ${adherencePercent >= 80 ? 'bg-primary/20 text-primary' : adherencePercent >= 50 ? 'bg-chart-3/20 text-chart-3' : 'bg-destructive/20 text-destructive'}`}
-          >
-            {adherencePercent}%
-          </Badge>
-          {streak > 0 && (
-            <Badge variant="secondary" className="font-black text-xs">
-              <Flame className="w-3 h-3 mr-1 fill-chart-3 text-chart-3" />
-              {streak}
-            </Badge>
-          )}
-        </div>
-        
         <div className="p-4">
           <div className="flex items-start gap-3 mb-4">
             <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
@@ -67,16 +52,30 @@ export default function MedicationTracker({
               <Pill className={`w-6 h-6 ${progress.isComplete ? 'text-white' : 'text-muted-foreground'}`} />
             </div>
             
-            <div className="flex-1">
-              <h4 className="font-bold text-foreground mb-1" data-testid="medication-name">
-                <MedicalTerm 
-                  term={name}
-                  explanation={explanation}
-                  simpleExplanation={simpleExplanation}
-                  category="medication"
-                />
-              </h4>
-              <p className="text-sm text-muted-foreground mb-1">{dosage}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h4 className="font-bold text-foreground truncate" data-testid="medication-name">
+                  <MedicalTerm 
+                    term={name}
+                    explanation={explanation}
+                    simpleExplanation={simpleExplanation}
+                    category="medication"
+                  />
+                </h4>
+                <Badge 
+                  variant="secondary" 
+                  className={`font-black text-xs shrink-0 ${adherencePercent >= 80 ? 'bg-primary/20 text-primary' : adherencePercent >= 50 ? 'bg-chart-3/20 text-chart-3' : 'bg-destructive/20 text-destructive'}`}
+                >
+                  {adherencePercent}%
+                </Badge>
+                {streak > 0 && (
+                  <Badge variant="secondary" className="font-black text-xs shrink-0">
+                    <Flame className="w-3 h-3 mr-1 fill-chart-3 text-chart-3" />
+                    {streak}
+                  </Badge>
+                )}
+              </div>
+              {dosage && <p className="text-sm text-muted-foreground mb-1">{dosage}</p>}
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="w-3 h-3" />
                 <span>{scheduledTimes.length > 0 ? scheduledTimes.join(', ') : frequency}</span>
@@ -89,7 +88,7 @@ export default function MedicationTracker({
               </div>
             </div>
             
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
           </div>
           
           <div className="space-y-2">

@@ -309,55 +309,6 @@ export default function MedicationDetails() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="p-5">
-            <h3 className="text-lg font-black text-foreground mb-3">{t('medicationDetails.aboutMedication')}</h3>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              {medication.explanation || medication.simpleExplanation}
-            </p>
-            
-            <h4 className="font-bold text-foreground mb-3">{t('medicationDetails.benefitsOfAdherence')}</h4>
-            <div className="grid grid-cols-2 gap-3">
-              {benefits.map((benefit, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-primary/10 to-transparent rounded-lg"
-                >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                    <benefit.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-sm font-semibold text-foreground">{benefit.text}</span>
-                </motion.div>
-              ))}
-            </div>
-          </Card>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="p-4 border-chart-3/30 bg-gradient-to-r from-chart-3/5 to-transparent">
-            <div className="flex items-start gap-3">
-              <MascotCharacter pose="celebrate" size="sm" />
-              <div>
-                <p className="font-bold text-foreground mb-1">{tDashboard('community.communityTip')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('medicationDetails.communityTipContent')}
-                </p>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
           <Card className="p-4 border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-transparent">
