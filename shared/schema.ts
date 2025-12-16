@@ -435,9 +435,8 @@ export const medications = pgTable("medications", {
   userId: text("user_id").notNull(),
   name: text("name").notNull(),
   dosage: text("dosage").notNull(),
-  scheduledTimes: jsonb("scheduled_times").$type<string[]>().default([]).notNull(), // Array of times like ["08:00", "14:00", "20:00"]
-  notes: text("notes"), // Special notes like "take with food", "avoid dairy", etc.
-  frequency: text("frequency").notNull(), // 'daily', 'twice daily', 'weekly', etc.
+  timing: text("timing").notNull(), // Legacy field kept for database compatibility
+  frequency: text("frequency").notNull(), // 'daily', 'weekly', 'as-needed'
   dosesPerDay: integer("doses_per_day").default(1).notNull(),
   xpPerDose: integer("xp_per_dose").default(10).notNull(),
   explanation: text("explanation"), // Medical explanation
@@ -445,6 +444,8 @@ export const medications = pgTable("medications", {
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  scheduledTimes: jsonb("scheduled_times").$type<string[]>().default([]).notNull(), // Array of times like ["08:00", "14:00", "20:00"] or ["monday:08:00"]
+  notes: text("notes"), // Special notes like "take with food", "avoid dairy", etc.
 });
 
 export const insertMedicationSchema = createInsertSchema(medications).omit({

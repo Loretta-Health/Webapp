@@ -54,7 +54,7 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.dosage) {
+    if (!formData.name) {
       return;
     }
 
@@ -158,13 +158,12 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dosage">{language === 'en' ? 'Dosage' : 'Dosierung'} *</Label>
+            <Label htmlFor="dosage">{language === 'en' ? 'Dosage (optional)' : 'Dosierung (optional)'}</Label>
             <Input
               id="dosage"
               value={formData.dosage}
               onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
               placeholder={language === 'en' ? 'e.g., 2000 IU or 500mg' : 'z.B., 2000 IE oder 500mg'}
-              required
             />
           </div>
 
@@ -397,7 +396,7 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
             <Button 
               type="submit" 
               className="flex-1 bg-gradient-to-r from-primary to-chart-2 font-bold"
-              disabled={isCreating || !formData.name || !formData.dosage}
+              disabled={isCreating || !formData.name}
             >
               {isCreating ? (
                 <>
