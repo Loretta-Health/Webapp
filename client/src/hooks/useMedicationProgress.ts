@@ -12,7 +12,8 @@ export interface Medication {
   userId: string;
   name: string;
   dosage: string;
-  timing: string;
+  scheduledTimes: string[];
+  notes?: string | null;
   frequency: string;
   dosesPerDay: number;
   xpPerDose: number;
@@ -40,7 +41,8 @@ export interface MedicationLog {
 export interface CreateMedicationInput {
   name: string;
   dosage: string;
-  timing: string;
+  scheduledTimes: string[];
+  notes?: string;
   frequency: string;
   dosesPerDay?: number;
   xpPerDose?: number;
@@ -231,7 +233,8 @@ export interface MedicationProgress {
   id: string;
   name: string;
   dosage: string;
-  timing: string;
+  scheduledTimes: string[];
+  notes?: string;
   frequency: string;
   dosesPerDay: number;
   takenToday: MedicationDose[];

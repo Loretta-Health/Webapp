@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Pill, Plus, Loader2 } from 'lucide-react';
+import { Pill, Plus, Loader2, Clock, X } from 'lucide-react';
 import { useMedicationProgress, type CreateMedicationInput } from '@/hooks/useMedicationProgress';
 import { useTranslation } from 'react-i18next';
 
@@ -15,14 +15,15 @@ interface AddMedicationModalProps {
 }
 
 export default function AddMedicationModal({ open, onOpenChange }: AddMedicationModalProps) {
-  const { t, i18n } = useTranslation('dashboard');
+  const { i18n } = useTranslation('dashboard');
   const language = i18n.language;
   const { createMedication, isCreating } = useMedicationProgress();
   
   const [formData, setFormData] = useState<CreateMedicationInput>({
     name: '',
     dosage: '',
-    timing: 'morning',
+    scheduledTimes: ['08:00'],
+    notes: '',
     frequency: 'daily',
     dosesPerDay: 1,
     xpPerDose: 10,
@@ -30,20 +31,8 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
     simpleExplanation: '',
   });
 
-  const timingOptions = [
-    { value: 'morning', label: language === 'en' ? 'Morning' : 'Morgens' },
-    { value: 'afternoon', label: language === 'en' ? 'Afternoon' : 'Nachmittags' },
-    { value: 'evening', label: language === 'en' ? 'Evening' : 'Abends' },
-    { value: 'night', label: language === 'en' ? 'Night' : 'Nachts' },
-    { value: 'with-food', label: language === 'en' ? 'With food' : 'Mit Essen' },
-    { value: 'before-food', label: language === 'en' ? 'Before food' : 'Vor dem Essen' },
-    { value: 'after-food', label: language === 'en' ? 'After food' : 'Nach dem Essen' },
-  ];
-
   const frequencyOptions = [
     { value: 'daily', label: language === 'en' ? 'Daily' : 'Täglich' },
-    { value: 'twice-daily', label: language === 'en' ? 'Twice daily' : 'Zweimal täglich' },
-    { value: 'three-times-daily', label: language === 'en' ? 'Three times daily' : 'Dreimal täglich' },
     { value: 'weekly', label: language === 'en' ? 'Weekly' : 'Wöchentlich' },
     { value: 'as-needed', label: language === 'en' ? 'As needed' : 'Bei Bedarf' },
   ];
@@ -55,13 +44,19 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
       return;
     }
 
-    const result = await createMedication(formData);
+    const dataToSubmit = {
+      ...formData,
+      dosesPerDay: formData.scheduledTimes.length,
+    };
+
+    const result = await createMedication(dataToSubmit);
     
     if (result) {
       setFormData({
         name: '',
         dosage: '',
-        timing: 'morning',
+        scheduledTimes: ['08:00'],
+        notes: '',
         frequency: 'daily',
         dosesPerDay: 1,
         xpPerDose: 10,
@@ -72,12 +67,21 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
     }
   };
 
-  const handleFrequencyChange = (value: string) => {
-    let dosesPerDay = 1;
-    if (value === 'twice-daily') dosesPerDay = 2;
-    if (value === 'three-times-daily') dosesPerDay = 3;
-    
-    setFormData({ ...formData, frequency: value, dosesPerDay });
+  const addTime = () => {
+    const newTimes = [...formData.scheduledTimes, '12:00'];
+    setFormData({ ...formData, scheduledTimes: newTimes, dosesPerDay: newTimes.length });
+  };
+
+  const removeTime = (index: number) => {
+    if (formData.scheduledTimes.length <= 1) return;
+    const newTimes = formData.scheduledTimes.filter((_, i) => i !== index);
+    setFormData({ ...formData, scheduledTimes: newTimes, dosesPerDay: newTimes.length });
+  };
+
+  const updateTime = (index: number, value: string) => {
+    const newTimes = [...formData.scheduledTimes];
+    newTimes[index] = value;
+    setFormData({ ...formData, scheduledTimes: newTimes });
   };
 
   return (
@@ -122,34 +126,89 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>{language === 'en' ? 'When to take' : 'Einnahmezeit'}</Label>
-              <Select value={formData.timing} onValueChange={(value) => setFormData({ ...formData, timing: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {timingOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label>{language === 'en' ? 'Frequency' : 'Häufigkeit'}</Label>
+            <Select 
+              value={formData.frequency} 
+              onValueChange={(value) => setFormData({ ...formData, frequency: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {frequencyOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="space-y-2">
-              <Label>{language === 'en' ? 'Frequency' : 'Häufigkeit'}</Label>
-              <Select value={formData.frequency} onValueChange={handleFrequencyChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {frequencyOptions.map(option => (
-                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                {language === 'en' ? 'Scheduled Times' : 'Geplante Zeiten'}
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addTime}
+                className="h-8 px-3"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                {language === 'en' ? 'Add Time' : 'Zeit hinzufügen'}
+              </Button>
             </div>
+            
+            <div className="space-y-2">
+              {formData.scheduledTimes.map((time, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div className="flex-1 flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+                    <span className="text-sm font-medium text-muted-foreground w-16">
+                      {language === 'en' ? `Dose ${index + 1}` : `Dosis ${index + 1}`}
+                    </span>
+                    <Input
+                      type="time"
+                      value={time}
+                      onChange={(e) => updateTime(index, e.target.value)}
+                      className="w-32 h-8"
+                    />
+                  </div>
+                  {formData.scheduledTimes.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeTime(index)}
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {language === 'en' 
+                ? `${formData.scheduledTimes.length} dose${formData.scheduledTimes.length > 1 ? 's' : ''} per day`
+                : `${formData.scheduledTimes.length} Dosis${formData.scheduledTimes.length > 1 ? 'en' : ''} pro Tag`}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">
+              {language === 'en' ? 'Special Notes (optional)' : 'Besondere Hinweise (optional)'}
+            </Label>
+            <Textarea
+              id="notes"
+              value={formData.notes || ''}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder={language === 'en' 
+                ? 'e.g., Take with food, avoid dairy, take on empty stomach...'
+                : 'z.B., Mit Essen einnehmen, Milchprodukte vermeiden, auf nüchternen Magen einnehmen...'}
+              rows={2}
+            />
           </div>
 
           <div className="space-y-2">

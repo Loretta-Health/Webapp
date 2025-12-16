@@ -435,7 +435,8 @@ export const medications = pgTable("medications", {
   userId: text("user_id").notNull(),
   name: text("name").notNull(),
   dosage: text("dosage").notNull(),
-  timing: text("timing").notNull(), // 'morning', 'afternoon', 'evening', 'with food', etc.
+  scheduledTimes: jsonb("scheduled_times").$type<string[]>().default([]).notNull(), // Array of times like ["08:00", "14:00", "20:00"]
+  notes: text("notes"), // Special notes like "take with food", "avoid dairy", etc.
   frequency: text("frequency").notNull(), // 'daily', 'twice daily', 'weekly', etc.
   dosesPerDay: integer("doses_per_day").default(1).notNull(),
   xpPerDose: integer("xp_per_dose").default(10).notNull(),
@@ -455,7 +456,8 @@ export const insertMedicationSchema = createInsertSchema(medications).omit({
 export const updateMedicationSchema = z.object({
   name: z.string().optional(),
   dosage: z.string().optional(),
-  timing: z.string().optional(),
+  scheduledTimes: z.array(z.string()).optional(),
+  notes: z.string().optional(),
   frequency: z.string().optional(),
   dosesPerDay: z.number().optional(),
   xpPerDose: z.number().optional(),
