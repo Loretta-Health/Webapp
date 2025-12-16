@@ -1243,7 +1243,7 @@ export class DatabaseStorage implements IStorage {
   async createMedication(data: InsertMedication): Promise<Medication> {
     const [created] = await db
       .insert(medications)
-      .values(data)
+      .values(data as typeof medications.$inferInsert)
       .returning();
     
     // Initialize adherence record
@@ -1323,13 +1323,42 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
     
-    // Decrement adherence stats
+    // Recalculate adherence stats based on remaining logs
     const existing = await this.getMedicationAdherence(medicationId);
-    if (existing && existing.totalDosesTaken > 0) {
+    if (existing) {
+      // Get the most recent remaining log to determine lastTakenDate
+      const remainingLogs = await db
+        .select()
+        .from(medicationLogs)
+        .where(eq(medicationLogs.medicationId, medicationId))
+        .orderBy(desc(medicationLogs.scheduledDate))
+        .limit(1);
+      
+      const newLastTakenDate = remainingLogs.length > 0 ? remainingLogs[0].scheduledDate : null;
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      // Recalculate streak based on remaining data
+      let newStreak = existing.currentStreak;
+      
+      // If we removed the dose that was keeping the streak, we need to recalculate
+      if (!newLastTakenDate) {
+        // No more logs, reset streak
+        newStreak = 0;
+      } else if (newLastTakenDate !== today && newLastTakenDate !== yesterdayStr) {
+        // The most recent remaining dose is too old, streak is broken
+        newStreak = 0;
+      }
+      // If still has recent doses, keep current streak (might be slightly off but acceptable)
+      
       await db
         .update(medicationAdherence)
         .set({
-          totalDosesTaken: existing.totalDosesTaken - 1,
+          totalDosesTaken: Math.max(0, existing.totalDosesTaken - 1),
+          lastTakenDate: newLastTakenDate,
+          currentStreak: newStreak,
           updatedAt: new Date(),
         })
         .where(eq(medicationAdherence.medicationId, medicationId));
