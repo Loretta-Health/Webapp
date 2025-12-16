@@ -45,8 +45,35 @@ const colorClasses = {
   }
 };
 
+const dayNames: Record<string, { en: string; de: string }> = {
+  monday: { en: 'Mon', de: 'Mo' },
+  tuesday: { en: 'Tue', de: 'Di' },
+  wednesday: { en: 'Wed', de: 'Mi' },
+  thursday: { en: 'Thu', de: 'Do' },
+  friday: { en: 'Fri', de: 'Fr' },
+  saturday: { en: 'Sat', de: 'Sa' },
+  sunday: { en: 'Sun', de: 'So' },
+};
+
+function formatWeeklySchedule(scheduledTimes: string[], language: string): string {
+  if (!scheduledTimes || scheduledTimes.length === 0) return language === 'en' ? 'Weekly' : 'Wöchentlich';
+  
+  return scheduledTimes.map(schedule => {
+    // Format is "day:HH:MM" e.g. "monday:08:00"
+    const parts = schedule.split(':');
+    if (parts.length < 2) return schedule;
+    
+    const day = parts[0];
+    const time = parts.slice(1).join(':'); // Rejoin time parts
+    
+    const dayName = dayNames[day.toLowerCase()]?.[language === 'de' ? 'de' : 'en'] || day;
+    
+    return `${dayName} ${time}`;
+  }).join(', ');
+}
+
 export default function MedicationDetails() {
-  const { t } = useTranslation('pages');
+  const { t, i18n } = useTranslation('pages');
   const { t: tDashboard } = useTranslation('dashboard');
   const [, navigate] = useLocation();
   const searchString = useSearch();
@@ -201,9 +228,13 @@ export default function MedicationDetails() {
               <div className="flex flex-wrap gap-2">
                 <Badge className={colorClasses.primary.badge}>
                   <Clock className="w-3 h-3 mr-1" />
-                  {(medication.scheduledTimes || []).length > 0 
-                    ? medication.scheduledTimes.join(', ')
-                    : medication.frequency}
+                  {medication.frequency === 'as-needed' 
+                    ? t('medicationDetails.asNeeded', 'As needed')
+                    : medication.frequency === 'weekly'
+                      ? formatWeeklySchedule(medication.scheduledTimes || [], i18n.language)
+                      : (medication.scheduledTimes || []).length > 0 
+                        ? medication.scheduledTimes.join(', ')
+                        : t('medicationDetails.daily', 'Daily')}
                 </Badge>
                 <Badge 
                   variant="secondary"
@@ -227,24 +258,35 @@ export default function MedicationDetails() {
             </div>
           </div>
           
-          <div className="space-y-2 mb-4">
-            <div className="flex justify-between text-sm">
-              <span className="font-bold text-foreground">{t('medicationDetails.todaysProgress')}</span>
-              <span className="text-muted-foreground">{t('medicationDetails.doses', { taken: progress.taken, total: progress.total })}</span>
+          {medication.frequency !== 'as-needed' && progress.total > 0 && (
+            <div className="space-y-2 mb-4">
+              <div className="flex justify-between text-sm">
+                <span className="font-bold text-foreground">
+                  {medication.frequency === 'weekly' 
+                    ? t('medicationDetails.thisWeeksProgress', "This week's progress")
+                    : t('medicationDetails.todaysProgress')}
+                </span>
+                <span className="text-muted-foreground">{t('medicationDetails.doses', { taken: progress.taken, total: progress.total })}</span>
+              </div>
+              <Progress value={progressPercent} className="h-3" />
             </div>
-            <Progress value={progressPercent} className="h-3" />
-          </div>
+          )}
           
           <Button
             className="w-full bg-gradient-to-r from-primary to-chart-2 font-black text-lg py-6"
             onClick={handleLogDose}
-            disabled={progress.isComplete}
+            disabled={medication.frequency !== 'as-needed' && progress.isComplete}
             data-testid="button-log-dose"
           >
-            {progress.isComplete ? (
+            {medication.frequency !== 'as-needed' && progress.isComplete ? (
               <>
                 <Check className="w-5 h-5 mr-2" />
                 {t('medicationDetails.allDosesTaken')}
+              </>
+            ) : medication.frequency === 'as-needed' ? (
+              <>
+                <Pill className="w-5 h-5 mr-2" />
+                {t('medicationDetails.logDoseAsNeeded', 'Log Dose')}
               </>
             ) : (
               <>
@@ -255,56 +297,58 @@ export default function MedicationDetails() {
           </Button>
         </motion.div>
         
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="p-5">
-            <h3 className="text-lg font-black text-foreground mb-3">{t('medicationDetails.doseLog')}</h3>
-            <div className="space-y-3">
-              {(medication.takenToday || []).map((dose: MedicationDose, index: number) => (
-                <motion.div
-                  key={dose.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`flex items-center gap-3 p-3 rounded-lg ${
-                    dose.taken 
-                      ? colorClasses.primary.stepComplete 
-                      : 'bg-muted/50'
-                  }`}
-                  data-testid={`dose-${dose.id}`}
-                >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    dose.taken ? 'bg-white/20' : 'bg-muted'
-                  }`}>
-                    {dose.taken ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      <span className={dose.taken ? 'text-white' : 'text-muted-foreground'}>
-                        {dose.id}
+        {medication.frequency !== 'as-needed' && (medication.takenToday || []).length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="p-5">
+              <h3 className="text-lg font-black text-foreground mb-3">{t('medicationDetails.doseLog')}</h3>
+              <div className="space-y-3">
+                {(medication.takenToday || []).map((dose: MedicationDose, index: number) => (
+                  <motion.div
+                    key={dose.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className={`flex items-center gap-3 p-3 rounded-lg ${
+                      dose.taken 
+                        ? colorClasses.primary.stepComplete 
+                        : 'bg-muted/50'
+                    }`}
+                    data-testid={`dose-${dose.id}`}
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      dose.taken ? 'bg-white/20' : 'bg-muted'
+                    }`}>
+                      {dose.taken ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <span className={dose.taken ? 'text-white' : 'text-muted-foreground'}>
+                          {dose.id}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <span className={`font-bold ${dose.taken ? 'text-white' : 'text-foreground'}`}>
+                        {t('medicationDetails.dose', { id: dose.id })}
                       </span>
+                      {dose.time && (
+                        <span className={`text-sm ml-2 ${dose.taken ? 'text-white/80' : 'text-muted-foreground'}`}>
+                          {t('medicationDetails.takenAt', { time: dose.time })}
+                        </span>
+                      )}
+                    </div>
+                    {dose.taken && (
+                      <Check className="w-5 h-5 text-white" />
                     )}
-                  </div>
-                  <div className="flex-1">
-                    <span className={`font-bold ${dose.taken ? 'text-white' : 'text-foreground'}`}>
-                      {t('medicationDetails.dose', { id: dose.id })}
-                    </span>
-                    {dose.time && (
-                      <span className={`text-sm ml-2 ${dose.taken ? 'text-white/80' : 'text-muted-foreground'}`}>
-                        {t('medicationDetails.takenAt', { time: dose.time })}
-                      </span>
-                    )}
-                  </div>
-                  {dose.taken && (
-                    <Check className="w-5 h-5 text-white" />
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          </Card>
-        </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            </Card>
+          </motion.div>
+        )}
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
