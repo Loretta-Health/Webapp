@@ -15,6 +15,7 @@ interface MedicationTrackerProps {
   scheduledTimes?: string[];
   notes?: string | null;
   frequency: string;
+  adherencePercent?: number;
   explanation?: string;
   simpleExplanation?: string;
   className?: string;
@@ -27,6 +28,7 @@ export default function MedicationTracker({
   scheduledTimes = [],
   notes,
   frequency,
+  adherencePercent = 100,
   explanation = 'A medication prescribed by your healthcare provider.',
   simpleExplanation = 'Medicine that helps keep you healthy.',
   className = ''
@@ -42,14 +44,20 @@ export default function MedicationTracker({
   return (
     <Link href={`/medication-details?id=${medicationId}`}>
       <Card className={`relative overflow-hidden cursor-pointer hover:border-primary/50 transition-all ${className}`} data-testid="medication-tracker">
-        {streak > 0 && (
-          <div className="absolute top-2 right-2">
+        <div className="absolute top-2 right-2 flex gap-1">
+          <Badge 
+            variant="secondary" 
+            className={`font-black text-xs ${adherencePercent >= 80 ? 'bg-primary/20 text-primary' : adherencePercent >= 50 ? 'bg-chart-3/20 text-chart-3' : 'bg-destructive/20 text-destructive'}`}
+          >
+            {adherencePercent}%
+          </Badge>
+          {streak > 0 && (
             <Badge variant="secondary" className="font-black text-xs">
               <Flame className="w-3 h-3 mr-1 fill-chart-3 text-chart-3" />
-              {t('medications.daysStreak', { count: streak })}
+              {streak}
             </Badge>
-          </div>
-        )}
+          )}
+        </div>
         
         <div className="p-4">
           <div className="flex items-start gap-3 mb-4">

@@ -16,8 +16,21 @@ import {
   Clock,
   Pill,
   Flame,
-  AlertTriangle
+  AlertTriangle,
+  Trash2,
+  Loader2
 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from '@/components/MascotCharacter';
 import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
@@ -42,11 +55,12 @@ export default function MedicationDetails() {
   const { user } = useAuth();
   const userId = user?.id;
   
-  const { medications, logDose, getProgress, isLogging, isLoading } = useMedicationProgress();
+  const { medications, logDose, getProgress, deleteMedication, isLogging, isLoading } = useMedicationProgress();
   const medication = medications.find(m => m.id === medicationId);
   const progress = getProgress(medicationId);
   
   const [showCelebration, setShowCelebration] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   if (isLoading) {
     return (
@@ -81,6 +95,15 @@ export default function MedicationDetails() {
         setTimeout(() => setShowCelebration(false), 2000);
       }
     }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    const success = await deleteMedication(medicationId);
+    if (success) {
+      navigate('/my-dashboard');
+    }
+    setIsDeleting(false);
   };
   
   const benefits = [
@@ -119,7 +142,44 @@ export default function MedicationDetails() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
           </Link>
-          <h1 className="text-xl font-black text-foreground">{t('medicationDetails.title')}</h1>
+          <h1 className="text-xl font-black text-foreground flex-1">{t('medicationDetails.title')}</h1>
+          
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="icon" variant="ghost" className="text-destructive hover:bg-destructive/10">
+                <Trash2 className="w-5 h-5" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {t('medicationDetails.deleteConfirm.title', 'Delete Medication')}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('medicationDetails.deleteConfirm.description', 'Are you sure you want to delete this medication? This action cannot be undone and all tracking history will be lost.')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>
+                  {t('common.cancel', 'Cancel')}
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {t('common.deleting', 'Deleting...')}
+                    </>
+                  ) : (
+                    t('common.delete', 'Delete')
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </header>
       
@@ -148,6 +208,12 @@ export default function MedicationDetails() {
                 <Badge variant="secondary">
                   <Zap className="w-3 h-3 mr-1" />
                   {t('medicationDetails.xpPerDose', { xp: medication.xpPerDose })}
+                </Badge>
+                <Badge 
+                  variant="secondary"
+                  className={`${(medication.adherencePercent ?? 100) >= 80 ? 'bg-primary/20 text-primary' : (medication.adherencePercent ?? 100) >= 50 ? 'bg-chart-3/20 text-chart-3' : 'bg-destructive/20 text-destructive'}`}
+                >
+                  {medication.adherencePercent ?? 100}% {t('medicationDetails.adherence', 'Adherence')}
                 </Badge>
                 {medication.streak > 0 && (
                   <Badge variant="secondary">

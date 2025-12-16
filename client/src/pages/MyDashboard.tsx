@@ -909,6 +909,7 @@ export default function MyDashboard() {
                             scheduledTimes={med.scheduledTimes || []}
                             notes={med.notes}
                             frequency={med.frequency}
+                            adherencePercent={med.adherencePercent ?? 100}
                             explanation={med.explanation || t('medications.defaultExplanation')}
                             simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}
                           />
