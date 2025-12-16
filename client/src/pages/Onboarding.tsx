@@ -1327,16 +1327,14 @@ export default function Onboarding() {
     if (!allLoading && !initialStepSet && !effectiveOnboardingComplete) {
       let targetStep: OnboardingStep = 'consent';
       
-      if (effectiveConsentComplete && !profileComplete) {
-        targetStep = 'registration';
-      } else if (effectiveConsentComplete && profileComplete) {
+      if (effectiveConsentComplete) {
         targetStep = 'questionnaire';
       }
       
       setStep(targetStep);
       setInitialStepSet(true);
     }
-  }, [allLoading, effectiveConsentComplete, profileComplete, effectiveOnboardingComplete, initialStepSet]);
+  }, [allLoading, effectiveConsentComplete, effectiveOnboardingComplete, initialStepSet]);
 
   // Load saved answers from database and pre-fill from profile data
   const [savedAnswersLoaded, setSavedAnswersLoaded] = useState(false);
@@ -1654,8 +1652,8 @@ export default function Onboarding() {
   const stepProgress = {
     welcome: 0,
     consent: 15,
-    registration: 30,
-    questionnaire: 30 + (currentQuestion / questions.length) * 60,
+    registration: 20, // Kept for type compatibility but skipped in flow
+    questionnaire: 20 + (currentQuestion / questions.length) * 70,
     riskScore: 100,
   };
 
@@ -1667,7 +1665,7 @@ export default function Onboarding() {
       newsletterSubscribed: newsletterOptIn,
     });
     await markConsentComplete();
-    setStep('registration');
+    setStep('questionnaire');
   };
 
   const handleConsentDecline = () => {
