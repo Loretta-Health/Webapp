@@ -162,32 +162,58 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
             </div>
             
             <div className="space-y-2">
-              {formData.scheduledTimes.map((time, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <div className="flex-1 flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
-                    <span className="text-sm font-medium text-muted-foreground w-16">
-                      {language === 'en' ? `Dose ${index + 1}` : `Dosis ${index + 1}`}
-                    </span>
-                    <Input
-                      type="time"
-                      value={time}
-                      onChange={(e) => updateTime(index, e.target.value)}
-                      className="w-32 h-8"
-                    />
+              {formData.scheduledTimes.map((time, index) => {
+                const [hours, minutes] = time.split(':');
+                return (
+                  <div key={index} className="flex items-center gap-2">
+                    <div className="flex-1 flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+                      <span className="text-sm font-medium text-muted-foreground w-16">
+                        {language === 'en' ? `Dose ${index + 1}` : `Dosis ${index + 1}`}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Select
+                          value={hours}
+                          onValueChange={(h) => updateTime(index, `${h}:${minutes}`)}
+                        >
+                          <SelectTrigger className="w-20 h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
+                              <SelectItem key={h} value={h}>{h}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <span className="text-lg font-bold">:</span>
+                        <Select
+                          value={minutes}
+                          onValueChange={(m) => updateTime(index, `${hours}:${m}`)}
+                        >
+                          <SelectTrigger className="w-20 h-8">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {['00', '15', '30', '45'].map(m => (
+                              <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    {formData.scheduledTimes.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeTime(index)}
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
-                  {formData.scheduledTimes.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeTime(index)}
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
             <p className="text-xs text-muted-foreground">
               {language === 'en' 
