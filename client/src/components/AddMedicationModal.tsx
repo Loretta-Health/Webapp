@@ -31,8 +31,6 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
     notes: '',
     frequency: 'daily',
     dosesPerDay: 1,
-    explanation: '',
-    simpleExplanation: '',
   });
 
   const [weeklySchedule, setWeeklySchedule] = useState<ScheduledTime[]>([{ day: 'monday', time: '08:00' }]);
@@ -90,8 +88,6 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
         notes: '',
         frequency: 'daily',
         dosesPerDay: 1,
-        explanation: '',
-        simpleExplanation: '',
       });
       setWeeklySchedule([{ day: 'monday', time: '08:00' }]);
       onOpenChange(false);
@@ -376,30 +372,15 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
 
           <div className="space-y-2">
             <Label htmlFor="notes">
-              {language === 'en' ? 'Special Notes (optional)' : 'Besondere Hinweise (optional)'}
+              {language === 'en' ? 'Notes (optional)' : 'Hinweise (optional)'}
             </Label>
             <Textarea
               id="notes"
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder={language === 'en' 
-                ? 'e.g., Take with food, avoid dairy, take on empty stomach...'
-                : 'z.B., Mit Essen einnehmen, Milchprodukte vermeiden, auf nüchternen Magen einnehmen...'}
-              rows={2}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="explanation">
-              {language === 'en' ? 'What is this medication for? (optional)' : 'Wofür ist dieses Medikament? (optional)'}
-            </Label>
-            <Textarea
-              id="explanation"
-              value={formData.explanation || ''}
-              onChange={(e) => setFormData({ ...formData, explanation: e.target.value })}
-              placeholder={language === 'en' 
-                ? 'e.g., Helps maintain bone health and immune function'
-                : 'z.B., Unterstützt die Knochengesundheit und Immunfunktion'}
+                ? 'e.g., For blood pressure, take with food, avoid grapefruit...'
+                : 'z.B., Für Blutdruck, mit Essen einnehmen, Grapefruit vermeiden...'}
               rows={2}
             />
           </div>
