@@ -267,7 +267,7 @@ export default function RiskScoreDetails() {
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-4xl font-black ${getScoreColor()}`}>{score}</span>
+                <span className={`text-4xl font-black ${getScoreColor()}`}>{Math.round(score)}</span>
                 <span className="text-xs text-muted-foreground font-medium">out of 100</span>
               </div>
             </motion.div>
