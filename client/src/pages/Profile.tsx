@@ -1057,11 +1057,18 @@ export default function Profile() {
   const getDisplayValue = (key: string, value: string) => {
     const displayMaps: Record<string, Record<string, { en: string; de: string }>> = {
       ethnicity: {
+        'white-european': { en: 'White / European', de: 'Weiß / Europäisch' },
+        'black-african': { en: 'Black / African', de: 'Schwarz / Afrikanisch' },
         'afro-caribbean': { en: 'Afro-Caribbean', de: 'Afro-Karibisch' },
-        'caucasian': { en: 'Caucasian', de: 'Kaukasisch' },
-        'asian': { en: 'Asian', de: 'Asiatisch' },
-        'hispanic': { en: 'Hispanic', de: 'Hispanisch' },
-        'mixed': { en: 'Mixed', de: 'Gemischt' },
+        'hispanic-latino': { en: 'Hispanic / Latino', de: 'Hispanisch / Lateinamerikanisch' },
+        'east-asian': { en: 'East Asian', de: 'Ostasiatisch' },
+        'south-asian': { en: 'South Asian', de: 'Südasiatisch' },
+        'southeast-asian': { en: 'Southeast Asian', de: 'Südostasiatisch' },
+        'middle-eastern': { en: 'Middle Eastern / North African', de: 'Nahöstlich / Nordafrikanisch' },
+        'native-american': { en: 'Native American / Indigenous', de: 'Indigene Bevölkerung Amerikas' },
+        'pacific-islander': { en: 'Pacific Islander', de: 'Pazifikinsulaner' },
+        'mixed-multiracial': { en: 'Mixed / Multiracial', de: 'Gemischt / Multiethnisch' },
+        'prefer-not-to-say': { en: 'Prefer not to say', de: 'Möchte ich nicht angeben' },
         'other': { en: 'Other', de: 'Andere' },
       },
       socioeconomicStatus: {
@@ -2341,11 +2348,18 @@ export default function Profile() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="white-european">{language === 'en' ? 'White / European' : 'Weiß / Europäisch'}</SelectItem>
+                      <SelectItem value="black-african">{language === 'en' ? 'Black / African' : 'Schwarz / Afrikanisch'}</SelectItem>
                       <SelectItem value="afro-caribbean">{language === 'en' ? 'Afro-Caribbean' : 'Afro-Karibisch'}</SelectItem>
-                      <SelectItem value="caucasian">{language === 'en' ? 'Caucasian' : 'Kaukasisch'}</SelectItem>
-                      <SelectItem value="asian">{language === 'en' ? 'Asian' : 'Asiatisch'}</SelectItem>
-                      <SelectItem value="hispanic">{language === 'en' ? 'Hispanic' : 'Hispanisch'}</SelectItem>
-                      <SelectItem value="mixed">{language === 'en' ? 'Mixed' : 'Gemischt'}</SelectItem>
+                      <SelectItem value="hispanic-latino">{language === 'en' ? 'Hispanic / Latino' : 'Hispanisch / Lateinamerikanisch'}</SelectItem>
+                      <SelectItem value="east-asian">{language === 'en' ? 'East Asian' : 'Ostasiatisch'}</SelectItem>
+                      <SelectItem value="south-asian">{language === 'en' ? 'South Asian' : 'Südasiatisch'}</SelectItem>
+                      <SelectItem value="southeast-asian">{language === 'en' ? 'Southeast Asian' : 'Südostasiatisch'}</SelectItem>
+                      <SelectItem value="middle-eastern">{language === 'en' ? 'Middle Eastern / North African' : 'Nahöstlich / Nordafrikanisch'}</SelectItem>
+                      <SelectItem value="native-american">{language === 'en' ? 'Native American / Indigenous' : 'Indigene Bevölkerung Amerikas'}</SelectItem>
+                      <SelectItem value="pacific-islander">{language === 'en' ? 'Pacific Islander' : 'Pazifikinsulaner'}</SelectItem>
+                      <SelectItem value="mixed-multiracial">{language === 'en' ? 'Mixed / Multiracial' : 'Gemischt / Multiethnisch'}</SelectItem>
+                      <SelectItem value="prefer-not-to-say">{language === 'en' ? 'Prefer not to say' : 'Möchte ich nicht angeben'}</SelectItem>
                       <SelectItem value="other">{language === 'en' ? 'Other' : 'Andere'}</SelectItem>
                     </SelectContent>
                   </Select>
