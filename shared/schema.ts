@@ -209,19 +209,24 @@ export type Mission = typeof missions.$inferSelect;
 export const userMissions = pgTable("user_missions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: text("user_id").notNull(),
-  missionId: text("mission_id").notNull(), // references missions.id
   missionKey: text("mission_key").notNull(), // denormalized for quick access
+  title: text("title").notNull(), // mission title for display
+  description: text("description"), // mission description
+  category: text("category").notNull().default("daily"), // mission category
+  xpReward: integer("xp_reward"), // XP earned on completion
   progress: integer("progress").default(0),
   maxProgress: integer("max_progress").default(1), // can override mission default
   completed: boolean("completed").default(false),
-  isActive: boolean("is_active").default(false), // whether user has activated this mission
-  activatedAt: timestamp("activated_at"), // when user activated the mission
-  completedAt: timestamp("completed_at"), // when mission was completed
+  legendary: boolean("legendary").default(false), // special achievement
+  href: text("href"), // link to mission details
+  source: text("source").default("default"), // where mission came from
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-}, (table) => ({
-  userMissionUnique: unique().on(table.userId, table.missionId),
-}));
+  isActive: boolean("is_active").default(false), // whether user has activated this mission
+  missionId: text("mission_id"), // references missions.id (optional for legacy)
+  activatedAt: timestamp("activated_at"), // when user activated the mission
+  completedAt: timestamp("completed_at"), // when mission was completed
+});
 
 export const insertUserMissionSchema = createInsertSchema(userMissions).omit({
   id: true,
