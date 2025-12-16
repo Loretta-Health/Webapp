@@ -8,6 +8,32 @@ import MedicalTerm from './MedicalTerm';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { useTranslation } from 'react-i18next';
 
+const dayNames: Record<string, { en: string; de: string }> = {
+  monday: { en: 'Mon', de: 'Mo' },
+  tuesday: { en: 'Tue', de: 'Di' },
+  wednesday: { en: 'Wed', de: 'Mi' },
+  thursday: { en: 'Thu', de: 'Do' },
+  friday: { en: 'Fri', de: 'Fr' },
+  saturday: { en: 'Sat', de: 'Sa' },
+  sunday: { en: 'Sun', de: 'So' },
+};
+
+function formatWeeklySchedule(scheduledTimes: string[], language: string): string {
+  if (!scheduledTimes || scheduledTimes.length === 0) return language === 'en' ? 'Weekly' : 'Wöchentlich';
+  
+  return scheduledTimes.map(schedule => {
+    const parts = schedule.split(':');
+    if (parts.length < 2) return schedule;
+    
+    const day = parts[0];
+    const time = parts.slice(1).join(':');
+    
+    const dayName = dayNames[day.toLowerCase()]?.[language === 'de' ? 'de' : 'en'] || day;
+    
+    return `${dayName} ${time}`;
+  }).join(', ');
+}
+
 interface MedicationTrackerProps {
   medicationId: string;
   name: string;
@@ -33,7 +59,7 @@ export default function MedicationTracker({
   simpleExplanation = 'Medicine that helps keep you healthy.',
   className = ''
 }: MedicationTrackerProps) {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   const { getProgress, getMedication } = useMedicationProgress();
   const progress = getProgress(medicationId);
   const medication = getMedication(medicationId);
@@ -78,7 +104,15 @@ export default function MedicationTracker({
               {dosage && <p className="text-sm text-muted-foreground mb-1">{dosage}</p>}
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Clock className="w-3 h-3" />
-                <span>{scheduledTimes.length > 0 ? scheduledTimes.join(', ') : frequency}</span>
+                <span>
+                  {frequency === 'as-needed' 
+                    ? (i18n.language === 'de' ? 'Bei Bedarf' : 'As needed')
+                    : frequency === 'weekly'
+                      ? formatWeeklySchedule(scheduledTimes, i18n.language)
+                      : scheduledTimes.length > 0 
+                        ? scheduledTimes.join(', ') 
+                        : (i18n.language === 'de' ? 'Täglich' : 'Daily')}
+                </span>
                 {notes && (
                   <>
                     <span>•</span>
