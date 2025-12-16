@@ -1171,7 +1171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       const userId = (req.user as any).id;
-      const { name, dosage, scheduledTimes, notes, frequency, dosesPerDay, xpPerDose, explanation, simpleExplanation } = req.body;
+      const { name, dosage, scheduledTimes, notes, frequency, dosesPerDay, explanation, simpleExplanation } = req.body;
       
       if (!name || !dosage || !frequency) {
         return res.status(400).json({ error: "Missing required fields: name, dosage, frequency" });
@@ -1185,7 +1185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notes: notes || null,
         frequency,
         dosesPerDay: dosesPerDay || (scheduledTimes?.length || 1),
-        xpPerDose: xpPerDose || 10,
+        xpPerDose: 0,
         explanation,
         simpleExplanation,
         isActive: true,
@@ -1288,24 +1288,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         doseNumber: doseNumber || 1,
         scheduledDate: today,
-        xpAwarded: medication.xpPerDose,
+        xpAwarded: 0,
       });
-      
-      // Award XP
-      await storage.addXP(userId, medication.xpPerDose);
       
       // Get updated adherence
       const adherence = await storage.getMedicationAdherence(medicationId);
       
-      // Process medication achievement
-      const achievementResult = await processMedicationTaken(userId, adherence?.currentStreak || 1);
-      
       res.json({
         success: true,
         log,
-        xpAwarded: medication.xpPerDose,
+        xpAwarded: 0,
         streak: adherence?.currentStreak || 1,
-        achievementsUnlocked: achievementResult.achievementsUnlocked,
+        achievementsUnlocked: [],
       });
     } catch (error) {
       console.error("Error logging medication dose:", error);

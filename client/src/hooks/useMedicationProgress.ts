@@ -16,7 +16,6 @@ export interface Medication {
   notes?: string | null;
   frequency: string;
   dosesPerDay: number;
-  xpPerDose: number;
   explanation?: string | null;
   simpleExplanation?: string | null;
   isActive: boolean;
@@ -37,7 +36,6 @@ export interface MedicationLog {
   doseNumber: number;
   takenAt: string;
   scheduledDate: string;
-  xpAwarded: number;
 }
 
 export interface CreateMedicationInput {
@@ -47,7 +45,6 @@ export interface CreateMedicationInput {
   notes?: string;
   frequency: string;
   dosesPerDay?: number;
-  xpPerDose?: number;
   explanation?: string;
   simpleExplanation?: string;
 }
@@ -55,7 +52,6 @@ export interface CreateMedicationInput {
 export interface LogDoseResult {
   success: boolean;
   log: MedicationLog;
-  xpAwarded: number;
   streak: number;
   achievementsUnlocked: string[];
 }
@@ -240,7 +236,6 @@ export interface MedicationProgress {
   frequency: string;
   dosesPerDay: number;
   takenToday: MedicationDose[];
-  xpPerDose: number;
   streak: number;
   lastResetDate: string;
   explanation?: string;
