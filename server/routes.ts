@@ -1082,10 +1082,247 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========================
-  // Medication Tracking Endpoint
+  // Medication Tracking Endpoints
   // ========================
 
-  app.post("/api/medications/:userId/log", async (req, res) => {
+  // Get all medications for the current user
+  app.get("/api/medications", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const userMedications = await storage.getUserMedications(userId);
+      
+      // Get adherence data for each medication
+      const medicationsWithAdherence = await Promise.all(
+        userMedications.map(async (med) => {
+          const adherence = await storage.getMedicationAdherence(med.id);
+          const today = new Date().toISOString().split('T')[0];
+          const logsToday = await storage.getMedicationLogsForDate(userId, today);
+          const dosesTakenToday = logsToday.filter(log => log.medicationId === med.id).length;
+          
+          return {
+            ...med,
+            streak: adherence?.currentStreak || 0,
+            longestStreak: adherence?.longestStreak || 0,
+            totalDosesTaken: adherence?.totalDosesTaken || 0,
+            dosesTakenToday,
+          };
+        })
+      );
+      
+      res.json(medicationsWithAdherence);
+    } catch (error) {
+      console.error("Error fetching medications:", error);
+      res.status(500).json({ error: "Failed to fetch medications" });
+    }
+  });
+
+  // Get a specific medication
+  app.get("/api/medications/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { id } = req.params;
+      const medication = await storage.getMedication(id);
+      
+      if (!medication) {
+        return res.status(404).json({ error: "Medication not found" });
+      }
+      
+      // Verify ownership
+      if (medication.userId !== (req.user as any).id) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      
+      const adherence = await storage.getMedicationAdherence(id);
+      const logs = await storage.getMedicationLogs(id, 30);
+      
+      res.json({
+        ...medication,
+        streak: adherence?.currentStreak || 0,
+        longestStreak: adherence?.longestStreak || 0,
+        totalDosesTaken: adherence?.totalDosesTaken || 0,
+        recentLogs: logs,
+      });
+    } catch (error) {
+      console.error("Error fetching medication:", error);
+      res.status(500).json({ error: "Failed to fetch medication" });
+    }
+  });
+
+  // Create a new medication
+  app.post("/api/medications", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const { name, dosage, timing, frequency, dosesPerDay, xpPerDose, explanation, simpleExplanation } = req.body;
+      
+      if (!name || !dosage || !timing || !frequency) {
+        return res.status(400).json({ error: "Missing required fields: name, dosage, timing, frequency" });
+      }
+      
+      const medication = await storage.createMedication({
+        userId,
+        name,
+        dosage,
+        timing,
+        frequency,
+        dosesPerDay: dosesPerDay || 1,
+        xpPerDose: xpPerDose || 10,
+        explanation,
+        simpleExplanation,
+        isActive: true,
+      });
+      
+      res.json(medication);
+    } catch (error) {
+      console.error("Error creating medication:", error);
+      res.status(500).json({ error: "Failed to create medication" });
+    }
+  });
+
+  // Update a medication
+  app.patch("/api/medications/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { id } = req.params;
+      const medication = await storage.getMedication(id);
+      
+      if (!medication) {
+        return res.status(404).json({ error: "Medication not found" });
+      }
+      
+      if (medication.userId !== (req.user as any).id) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      
+      const updated = await storage.updateMedication(id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating medication:", error);
+      res.status(500).json({ error: "Failed to update medication" });
+    }
+  });
+
+  // Delete a medication
+  app.delete("/api/medications/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { id } = req.params;
+      const medication = await storage.getMedication(id);
+      
+      if (!medication) {
+        return res.status(404).json({ error: "Medication not found" });
+      }
+      
+      if (medication.userId !== (req.user as any).id) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      
+      await storage.deleteMedication(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting medication:", error);
+      res.status(500).json({ error: "Failed to delete medication" });
+    }
+  });
+
+  // Log a medication dose
+  app.post("/api/medications/:id/log", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const { id: medicationId } = req.params;
+      const { doseNumber } = req.body;
+      
+      const medication = await storage.getMedication(medicationId);
+      
+      if (!medication) {
+        return res.status(404).json({ error: "Medication not found" });
+      }
+      
+      if (medication.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if this dose was already logged today
+      const logsToday = await storage.getMedicationLogsForDate(userId, today);
+      const existingDose = logsToday.find(
+        log => log.medicationId === medicationId && log.doseNumber === (doseNumber || 1)
+      );
+      
+      if (existingDose) {
+        return res.status(400).json({ error: "This dose was already logged today" });
+      }
+      
+      const log = await storage.logMedicationDose({
+        medicationId,
+        userId,
+        doseNumber: doseNumber || 1,
+        scheduledDate: today,
+        xpAwarded: medication.xpPerDose,
+      });
+      
+      // Award XP
+      await storage.addXP(userId, medication.xpPerDose);
+      
+      // Get updated adherence
+      const adherence = await storage.getMedicationAdherence(medicationId);
+      
+      // Process medication achievement
+      const achievementResult = await processMedicationTaken(userId, adherence?.currentStreak || 1);
+      
+      res.json({
+        success: true,
+        log,
+        xpAwarded: medication.xpPerDose,
+        streak: adherence?.currentStreak || 1,
+        achievementsUnlocked: achievementResult.achievementsUnlocked,
+      });
+    } catch (error) {
+      console.error("Error logging medication dose:", error);
+      res.status(500).json({ error: "Failed to log medication dose" });
+    }
+  });
+
+  // Get medication logs for today
+  app.get("/api/medications/logs/today", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const today = new Date().toISOString().split('T')[0];
+      const logs = await storage.getMedicationLogsForDate(userId, today);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching medication logs:", error);
+      res.status(500).json({ error: "Failed to fetch medication logs" });
+    }
+  });
+
+  // Legacy endpoint for backward compatibility
+  app.post("/api/medications/:userId/log-legacy", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: "Not authenticated" });
     }

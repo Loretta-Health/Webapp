@@ -34,6 +34,14 @@ import {
   type UpdateOnboardingProgress,
   type UserXp,
   type InsertUserXp,
+  type Medication,
+  type InsertMedication,
+  type UpdateMedication,
+  type MedicationLog,
+  type InsertMedicationLog,
+  type MedicationAdherence,
+  type InsertMedicationAdherence,
+  type UpdateMedicationAdherence,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -51,6 +59,9 @@ import {
   userActivities,
   onboardingProgress,
   userXp,
+  medications,
+  medicationLogs,
+  medicationAdherence,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -162,6 +173,22 @@ export interface IStorage {
   getOnboardingProgress(userId: string): Promise<OnboardingProgress | undefined>;
   createOnboardingProgress(userId: string): Promise<OnboardingProgress>;
   updateOnboardingProgress(userId: string, data: UpdateOnboardingProgress): Promise<OnboardingProgress | undefined>;
+
+  // Medication methods
+  getUserMedications(userId: string): Promise<Medication[]>;
+  getMedication(id: string): Promise<Medication | undefined>;
+  createMedication(data: InsertMedication): Promise<Medication>;
+  updateMedication(id: string, data: UpdateMedication): Promise<Medication | undefined>;
+  deleteMedication(id: string): Promise<void>;
+
+  // Medication log methods
+  getMedicationLogsForDate(userId: string, date: string): Promise<MedicationLog[]>;
+  getMedicationLogs(medicationId: string, limit?: number): Promise<MedicationLog[]>;
+  logMedicationDose(data: InsertMedicationLog): Promise<MedicationLog>;
+
+  // Medication adherence methods
+  getMedicationAdherence(medicationId: string): Promise<MedicationAdherence | undefined>;
+  updateMedicationAdherence(medicationId: string, userId: string, data: UpdateMedicationAdherence): Promise<MedicationAdherence>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -571,6 +598,7 @@ export class DatabaseStorage implements IStorage {
         missionKey: catalogMission.missionKey,
         title: catalogMission.titleEn,
         description: catalogMission.descriptionEn,
+        category: catalogMission.category,
         xpReward: catalogMission.xpReward,
         progress: 0,
         maxProgress: catalogMission.maxProgress || 1,
@@ -1189,6 +1217,166 @@ export class DatabaseStorage implements IStorage {
         .values({
           userId,
           ...data,
+        })
+        .returning();
+      return created;
+    }
+  }
+
+  // Medication methods
+  async getUserMedications(userId: string): Promise<Medication[]> {
+    return await db
+      .select()
+      .from(medications)
+      .where(and(eq(medications.userId, userId), eq(medications.isActive, true)))
+      .orderBy(desc(medications.createdAt));
+  }
+
+  async getMedication(id: string): Promise<Medication | undefined> {
+    const [medication] = await db
+      .select()
+      .from(medications)
+      .where(eq(medications.id, id));
+    return medication;
+  }
+
+  async createMedication(data: InsertMedication): Promise<Medication> {
+    const [created] = await db
+      .insert(medications)
+      .values(data)
+      .returning();
+    
+    // Initialize adherence record
+    await db.insert(medicationAdherence).values({
+      medicationId: created.id,
+      userId: data.userId,
+      currentStreak: 0,
+      longestStreak: 0,
+      totalDosesTaken: 0,
+      totalDosesScheduled: 0,
+    });
+    
+    return created;
+  }
+
+  async updateMedication(id: string, data: UpdateMedication): Promise<Medication | undefined> {
+    const [updated] = await db
+      .update(medications)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(medications.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMedication(id: string): Promise<void> {
+    // Soft delete by setting isActive to false
+    await db
+      .update(medications)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(medications.id, id));
+  }
+
+  // Medication log methods
+  async getMedicationLogsForDate(userId: string, date: string): Promise<MedicationLog[]> {
+    return await db
+      .select()
+      .from(medicationLogs)
+      .where(and(
+        eq(medicationLogs.userId, userId),
+        eq(medicationLogs.scheduledDate, date)
+      ))
+      .orderBy(desc(medicationLogs.takenAt));
+  }
+
+  async getMedicationLogs(medicationId: string, limit: number = 30): Promise<MedicationLog[]> {
+    return await db
+      .select()
+      .from(medicationLogs)
+      .where(eq(medicationLogs.medicationId, medicationId))
+      .orderBy(desc(medicationLogs.takenAt))
+      .limit(limit);
+  }
+
+  async logMedicationDose(data: InsertMedicationLog): Promise<MedicationLog> {
+    const [log] = await db
+      .insert(medicationLogs)
+      .values(data)
+      .returning();
+    
+    // Update adherence stats
+    await this.updateMedicationAdherence(data.medicationId, data.userId, {
+      totalDosesTaken: 1, // Will be incremented
+      lastTakenDate: data.scheduledDate,
+    });
+    
+    return log;
+  }
+
+  // Medication adherence methods
+  async getMedicationAdherence(medicationId: string): Promise<MedicationAdherence | undefined> {
+    const [adherence] = await db
+      .select()
+      .from(medicationAdherence)
+      .where(eq(medicationAdherence.medicationId, medicationId));
+    return adherence;
+  }
+
+  async updateMedicationAdherence(medicationId: string, userId: string, data: UpdateMedicationAdherence): Promise<MedicationAdherence> {
+    const existing = await this.getMedicationAdherence(medicationId);
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (existing) {
+      // Calculate streak
+      let newStreak = existing.currentStreak;
+      let newLongestStreak = existing.longestStreak;
+      
+      if (data.lastTakenDate) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        
+        if (existing.lastTakenDate === yesterdayStr || existing.lastTakenDate === today) {
+          // Continue streak
+          if (existing.lastTakenDate !== today) {
+            newStreak = existing.currentStreak + 1;
+          }
+        } else if (!existing.lastTakenDate) {
+          // First dose ever
+          newStreak = 1;
+        } else {
+          // Streak broken
+          newStreak = 1;
+        }
+        
+        if (newStreak > newLongestStreak) {
+          newLongestStreak = newStreak;
+        }
+      }
+      
+      const [updated] = await db
+        .update(medicationAdherence)
+        .set({
+          currentStreak: newStreak,
+          longestStreak: newLongestStreak,
+          totalDosesTaken: existing.totalDosesTaken + (data.totalDosesTaken || 0),
+          totalDosesScheduled: existing.totalDosesScheduled + (data.totalDosesScheduled || 0),
+          lastTakenDate: data.lastTakenDate || existing.lastTakenDate,
+          updatedAt: new Date(),
+        })
+        .where(eq(medicationAdherence.medicationId, medicationId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(medicationAdherence)
+        .values({
+          medicationId,
+          userId,
+          currentStreak: 1,
+          longestStreak: 1,
+          totalDosesTaken: data.totalDosesTaken || 0,
+          totalDosesScheduled: data.totalDosesScheduled || 0,
+          lastTakenDate: data.lastTakenDate,
         })
         .returning();
       return created;

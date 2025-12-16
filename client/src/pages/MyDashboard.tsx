@@ -35,6 +35,7 @@ import EnergyBar from '@/components/EnergyBar';
 import HealthScienceSection from '@/components/HealthScienceSection';
 import CommunitySelector, { type CommunityType } from '@/components/CommunitySelector';
 import EmotionalCheckInModal from '@/components/EmotionalCheckInModal';
+import AddMedicationModal from '@/components/AddMedicationModal';
 import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
@@ -91,6 +92,7 @@ export default function MyDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [communityType, setCommunityType] = useState<CommunityType>('loretta');
   const [showCheckInModal, setShowCheckInModal] = useState(false);
+  const [showAddMedicationModal, setShowAddMedicationModal] = useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
@@ -882,34 +884,62 @@ export default function MyDashboard() {
                   </CollapsibleSection>
                 </div>
                 
-                {medications.length > 0 && (
-                  <CollapsibleSection
-                    title={t('medications.title')}
-                    icon={<Pill className="w-5 h-5 text-primary" />}
-                    defaultOpen={true}
-                    className="mt-6"
-                    badge={
+                <CollapsibleSection
+                  title={t('medications.title')}
+                  icon={<Pill className="w-5 h-5 text-primary" />}
+                  defaultOpen={true}
+                  className="mt-6"
+                  badge={
+                    medications.length > 0 ? (
                       <Badge variant="secondary" className="ml-2 font-bold text-xs">
                         {medications.length}
                       </Badge>
-                    }
-                  >
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                      {medications.slice(0, 4).map((med: any) => (
-                        <MedicationTracker
-                          key={med.id}
-                          medicationId={med.id}
-                          name={med.name}
-                          dosage={med.dosage}
-                          timing={med.timing}
-                          frequency={med.frequency}
-                          explanation={med.explanation || t('medications.defaultExplanation')}
-                          simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}
-                        />
-                      ))}
+                    ) : null
+                  }
+                >
+                  {medications.length > 0 ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        {medications.slice(0, 4).map((med: any) => (
+                          <MedicationTracker
+                            key={med.id}
+                            medicationId={med.id}
+                            name={med.name}
+                            dosage={med.dosage}
+                            timing={med.timing}
+                            frequency={med.frequency}
+                            explanation={med.explanation || t('medications.defaultExplanation')}
+                            simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}
+                          />
+                        ))}
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAddMedicationModal(true)}
+                        className="w-full"
+                        data-testid="button-add-medication"
+                      >
+                        <Pill className="w-4 h-4 mr-2" />
+                        {t('medications.addMedication', 'Add Medication')}
+                      </Button>
                     </div>
-                  </CollapsibleSection>
-                )}
+                  ) : (
+                    <Card className="p-6 text-center bg-muted/30 border-dashed">
+                      <Pill className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                      <p className="text-muted-foreground mb-4">
+                        {t('medications.noMedications', 'No medications tracked yet')}
+                      </p>
+                      <Button
+                        onClick={() => setShowAddMedicationModal(true)}
+                        className="bg-gradient-to-r from-primary to-chart-2 font-bold"
+                        data-testid="button-add-first-medication"
+                      >
+                        <Pill className="w-4 h-4 mr-2" />
+                        {t('medications.addFirstMedication', 'Add Your First Medication')}
+                      </Button>
+                    </Card>
+                  )}
+                </CollapsibleSection>
                 
                 {!isNewUser && (
                   <CollapsibleSection
@@ -966,6 +996,11 @@ export default function MyDashboard() {
         onClose={() => setShowCheckInModal(false)}
         userId={userId || ''}
         onCheckInComplete={handleCheckInComplete}
+      />
+      
+      <AddMedicationModal
+        open={showAddMedicationModal}
+        onOpenChange={setShowAddMedicationModal}
       />
       
       <Dialog open={showPrivacyPolicy} onOpenChange={setShowPrivacyPolicy}>

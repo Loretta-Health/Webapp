@@ -428,3 +428,92 @@ export const updateOnboardingProgressSchema = z.object({
 export type InsertOnboardingProgress = z.infer<typeof insertOnboardingProgressSchema>;
 export type UpdateOnboardingProgress = z.infer<typeof updateOnboardingProgressSchema>;
 export type OnboardingProgress = typeof onboardingProgress.$inferSelect;
+
+// Medications table - stores user's medications
+export const medications = pgTable("medications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  name: text("name").notNull(),
+  dosage: text("dosage").notNull(),
+  timing: text("timing").notNull(), // 'morning', 'afternoon', 'evening', 'with food', etc.
+  frequency: text("frequency").notNull(), // 'daily', 'twice daily', 'weekly', etc.
+  dosesPerDay: integer("doses_per_day").default(1).notNull(),
+  xpPerDose: integer("xp_per_dose").default(10).notNull(),
+  explanation: text("explanation"), // Medical explanation
+  simpleExplanation: text("simple_explanation"), // Simple explanation for health literacy
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMedicationSchema = createInsertSchema(medications).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const updateMedicationSchema = z.object({
+  name: z.string().optional(),
+  dosage: z.string().optional(),
+  timing: z.string().optional(),
+  frequency: z.string().optional(),
+  dosesPerDay: z.number().optional(),
+  xpPerDose: z.number().optional(),
+  explanation: z.string().optional(),
+  simpleExplanation: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
+export type InsertMedication = z.infer<typeof insertMedicationSchema>;
+export type UpdateMedication = z.infer<typeof updateMedicationSchema>;
+export type Medication = typeof medications.$inferSelect;
+
+// Medication logs table - tracks when doses are taken
+export const medicationLogs = pgTable("medication_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  medicationId: text("medication_id").notNull(),
+  userId: text("user_id").notNull(),
+  doseNumber: integer("dose_number").default(1).notNull(), // Which dose of the day (1st, 2nd, etc.)
+  takenAt: timestamp("taken_at").defaultNow(),
+  scheduledDate: text("scheduled_date").notNull(), // Date string for the day (YYYY-MM-DD)
+  xpAwarded: integer("xp_awarded").default(10),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMedicationLogSchema = createInsertSchema(medicationLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertMedicationLog = z.infer<typeof insertMedicationLogSchema>;
+export type MedicationLog = typeof medicationLogs.$inferSelect;
+
+// Medication adherence stats - aggregated adherence tracking
+export const medicationAdherence = pgTable("medication_adherence", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  medicationId: text("medication_id").notNull(),
+  userId: text("user_id").notNull(),
+  currentStreak: integer("current_streak").default(0).notNull(),
+  longestStreak: integer("longest_streak").default(0).notNull(),
+  totalDosesTaken: integer("total_doses_taken").default(0).notNull(),
+  totalDosesScheduled: integer("total_doses_scheduled").default(0).notNull(),
+  lastTakenDate: text("last_taken_date"), // Date string (YYYY-MM-DD)
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMedicationAdherenceSchema = createInsertSchema(medicationAdherence).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const updateMedicationAdherenceSchema = z.object({
+  currentStreak: z.number().optional(),
+  longestStreak: z.number().optional(),
+  totalDosesTaken: z.number().optional(),
+  totalDosesScheduled: z.number().optional(),
+  lastTakenDate: z.string().optional(),
+});
+
+export type InsertMedicationAdherence = z.infer<typeof insertMedicationAdherenceSchema>;
+export type UpdateMedicationAdherence = z.infer<typeof updateMedicationAdherenceSchema>;
+export type MedicationAdherence = typeof medicationAdherence.$inferSelect;

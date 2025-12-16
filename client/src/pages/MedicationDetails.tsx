@@ -20,9 +20,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from '@/components/MascotCharacter';
-import { useMedicationProgress } from '@/hooks/useMedicationProgress';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
 import { useAuth } from '@/hooks/use-auth';
 
 const colorClasses = {
@@ -44,20 +42,19 @@ export default function MedicationDetails() {
   const { user } = useAuth();
   const userId = user?.id;
   
-  const { getMedication, logDose, getProgress } = useMedicationProgress();
-  const medication = getMedication(medicationId);
+  const { medications, logDose, getProgress, isLogging, isLoading } = useMedicationProgress();
+  const medication = medications.find(m => m.id === medicationId);
   const progress = getProgress(medicationId);
   
   const [showCelebration, setShowCelebration] = useState(false);
   
-  const addXPMutation = useMutation({
-    mutationFn: async (amount: number) => {
-      return apiRequest('POST', `/api/gamification/xp`, { amount });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
-    },
-  });
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">{t('common.loading', 'Loading...')}</div>
+      </div>
+    );
+  }
   
   if (!medication) {
     return (
@@ -72,19 +69,17 @@ export default function MedicationDetails() {
     );
   }
   
-  const progressPercent = (progress.taken / progress.total) * 100;
-  const nextDose = medication.takenToday.find(d => !d.taken);
+  const progressPercent = progress.total > 0 ? (progress.taken / progress.total) * 100 : 0;
+  const nextDose = medication.takenToday?.find((d: { id: number; taken: boolean }) => !d.taken);
   
-  const handleLogDose = () => {
+  const handleLogDose = async () => {
     if (nextDose) {
-      const { success, xpEarned } = logDose(medicationId, nextDose.id);
+      const { success } = await logDose(medicationId, nextDose.id);
       
-      if (success && xpEarned > 0) {
-        addXPMutation.mutate(xpEarned);
+      if (success) {
+        setShowCelebration(true);
+        setTimeout(() => setShowCelebration(false), 2000);
       }
-      
-      setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 2000);
     }
   };
   
@@ -198,7 +193,7 @@ export default function MedicationDetails() {
           <Card className="p-5">
             <h3 className="text-lg font-black text-foreground mb-3">{t('medicationDetails.doseLog')}</h3>
             <div className="space-y-3">
-              {medication.takenToday.map((dose, index) => (
+              {(medication.takenToday || []).map((dose: MedicationDose, index: number) => (
                 <motion.div
                   key={dose.id}
                   initial={{ opacity: 0, x: -10 }}
