@@ -2212,40 +2212,8 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     }
   }
   
-  // Age
-  const age = parseNumeric(answers.RIDAGEYR || answers.age);
-  if (age > 0) {
-    let agePoints = 0;
-    let ageType: 'negative' | 'warning' | 'positive' = 'positive';
-    
-    if (age < 35) {
-      agePoints = 0;
-      ageType = 'positive';
-    } else if (age < 45) {
-      agePoints = 5;
-      ageType = 'positive';
-    } else if (age < 55) {
-      agePoints = 12;
-      ageType = 'warning';
-    } else if (age < 65) {
-      agePoints = 18;
-      ageType = 'warning';
-    } else {
-      agePoints = 25;
-      ageType = 'negative';
-    }
-    
-    factors.push({
-      id: 'age',
-      name: 'Age Factor',
-      description: `${age} years old`,
-      category: 'Demographics',
-      points: agePoints,
-      maxPoints: 25,
-      type: ageType,
-      icon: 'calendar',
-    });
-  }
+  // Age - NOT included in displayed factors since users cannot control their age
+  // Age is still used internally for risk calculation but not shown to users
   
   // === MEDICAL HISTORY ===
   const hasDiabetes = answers.DIQ180 === '1' || answers.diabetes === 'yes';
