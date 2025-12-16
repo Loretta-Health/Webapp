@@ -1099,9 +1099,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const medicationsWithAdherence = await Promise.all(
         userMedications.map(async (med) => {
           const adherence = await storage.getMedicationAdherence(med.id);
-          const today = new Date().toISOString().split('T')[0];
-          const logsToday = await storage.getMedicationLogsForDate(userId, today);
-          const dosesTakenToday = logsToday.filter(log => log.medicationId === med.id).length;
+          const today = new Date();
+          const todayStr = today.toISOString().split('T')[0];
+          
+          let dosesTakenToday = 0;
+          
+          if (med.frequency === 'daily') {
+            // For daily medications, count doses taken today
+            const logsToday = await storage.getMedicationLogsForDate(userId, todayStr);
+            dosesTakenToday = logsToday.filter(log => log.medicationId === med.id).length;
+          } else if (med.frequency === 'weekly') {
+            // For weekly medications, count doses taken this week
+            // Week starts on Sunday (0) and ends on Saturday (6)
+            const dayOfWeek = today.getDay();
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - dayOfWeek);
+            startOfWeek.setHours(0, 0, 0, 0);
+            
+            // Get all logs for this medication from the last 7 days
+            const weekLogs = await storage.getMedicationLogs(med.id, 7);
+            dosesTakenToday = weekLogs.filter(log => {
+              const logDate = new Date(log.takenAt!);
+              return logDate >= startOfWeek;
+            }).length;
+          }
+          // For 'as-needed', dosesTakenToday stays 0 (no progress tracking)
           
           const totalDosesTaken = adherence?.totalDosesTaken || 0;
           const totalDosesScheduled = adherence?.totalDosesScheduled || 0;
