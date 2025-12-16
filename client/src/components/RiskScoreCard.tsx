@@ -96,7 +96,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
             </svg>
             
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl lg:text-6xl font-black text-foreground" data-testid="score-number">{score}</span>
+              <span className="text-4xl lg:text-6xl font-black text-foreground" data-testid="score-number">{Math.round(score)}</span>
               <span className="text-lg lg:text-2xl font-bold text-muted-foreground">/100</span>
             </div>
           </div>
