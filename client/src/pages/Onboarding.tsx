@@ -1801,8 +1801,51 @@ export default function Onboarding() {
     }
   };
   
-  const handleGetEarlyResults = () => {
-    finishQuestionnaire(answers);
+  const handleGetEarlyResults = async () => {
+    setIsPredicting(true);
+    localStorage.setItem('loretta_questionnaire', JSON.stringify(answers));
+    saveQuestionnaireMutation.mutate(answers);
+    
+    try {
+      // Calculate and save risk score
+      const fallbackResponse = await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
+      const fallbackData = await fallbackResponse.json();
+      
+      const diabetesProbability = (fallbackData.diabetesRisk || 0) / 100;
+      const score = 100 - (fallbackData.overallScore || 50);
+      let color = 'text-muted-foreground';
+      let level = 'Unknown';
+      
+      if (score >= 80) { color = 'text-primary'; level = 'Low'; }
+      else if (score >= 60) { color = 'text-chart-2'; level = 'Moderate'; }
+      else if (score >= 40) { color = 'text-chart-3'; level = 'Elevated'; }
+      else { color = 'text-destructive'; level = 'High'; }
+      
+      const fullScore = {
+        diabetes_probability: diabetesProbability,
+        risk_level: level,
+        score,
+        level,
+        color,
+      };
+      
+      setRiskScore(fullScore);
+      localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+      initializeGamificationMutation.mutate();
+      initializeAchievementsMutation.mutate();
+      initializeMissionsMutation.mutate();
+      
+      // Mark questionnaire as complete and navigate to risk score page
+      await markQuestionnaireComplete();
+      navigate('/risk-score');
+    } catch (error) {
+      console.error('[Prediction] Failed to calculate risk score:', error);
+      // Fallback: still navigate even if calculation fails
+      await markQuestionnaireComplete();
+      navigate('/risk-score');
+    } finally {
+      setIsPredicting(false);
+    }
   };
   
   const handleContinueWithModules = () => {
