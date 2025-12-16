@@ -721,6 +721,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get weekly check-in stats (which days this week had check-ins)
+  app.get("/api/emotional-checkins/weekly-stats", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    try {
+      const userId = (req.user as any).id;
+      const checkins = await storage.getAllEmotionalCheckins(userId);
+      
+      // Get start of current week (Monday)
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Sunday is 0, Monday is 1
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() + mondayOffset);
+      weekStart.setHours(0, 0, 0, 0);
+      
+      // Get end of week (Sunday)
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+      
+      // Track which days have check-ins (0 = Monday, 6 = Sunday)
+      const completedDays: boolean[] = [false, false, false, false, false, false, false];
+      
+      for (const checkin of checkins) {
+        if (checkin.checkedInAt) {
+          const checkinDate = new Date(checkin.checkedInAt);
+          if (checkinDate >= weekStart && checkinDate <= weekEnd) {
+            const dayIndex = (checkinDate.getDay() + 6) % 7; // Convert Sun=0 to Mon=0 format
+            completedDays[dayIndex] = true;
+          }
+        }
+      }
+      
+      const daysCompleted = completedDays.filter(Boolean).length;
+      
+      res.json({
+        completedDays,
+        daysCompleted,
+        totalDays: 7
+      });
+    } catch (error) {
+      console.error("Error fetching weekly check-in stats:", error);
+      res.status(500).json({ error: "Failed to fetch weekly check-in stats" });
+    }
+  });
+
   // ========================
   // Missions Catalog Endpoint
   // ========================

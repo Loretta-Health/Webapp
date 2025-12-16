@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Flame, Zap, Trophy, Target, TrendingUp, Sparkles } from 'lucide-react';
 import MascotCharacter from './MascotCharacter';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 
 interface DailyCheckInProps {
   streak: number;
@@ -14,8 +15,13 @@ interface DailyCheckInProps {
   className?: string;
 }
 
+interface WeeklyStats {
+  completedDays: boolean[];
+  daysCompleted: number;
+  totalDays: number;
+}
+
 const weekDays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-const completedDays = [true, true, true, true, true, true, false];
 
 const upcomingRewards = [
   { day: 21, reward: '100 XP Bonus', icon: Zap },
@@ -30,6 +36,18 @@ export default function DailyCheckIn({
   onStart,
   className = ''
 }: DailyCheckInProps) {
+  // Fetch weekly check-in stats from the database
+  const { data: weeklyStats } = useQuery<WeeklyStats>({
+    queryKey: ['/api/emotional-checkins/weekly-stats'],
+    staleTime: 30000, // Refresh every 30 seconds
+  });
+
+  const completedDays = weeklyStats?.completedDays || [false, false, false, false, false, false, false];
+  const daysCompleted = weeklyStats?.daysCompleted || 0;
+  
+  // Calculate today's index (Monday = 0, Sunday = 6)
+  const todayIndex = (new Date().getDay() + 6) % 7;
+
   return (
     <Card className={`relative overflow-hidden ${className}`} data-testid="daily-checkin">
       <div className="absolute top-0 right-0">
@@ -97,7 +115,7 @@ export default function DailyCheckIn({
             <span className="text-xs font-bold text-muted-foreground uppercase">This Week</span>
             <div className="flex items-center gap-1">
               <TrendingUp className="w-3 h-3 text-chart-2" />
-              <span className="text-xs font-bold text-chart-2">6/7 days</span>
+              <span className="text-xs font-bold text-chart-2">{daysCompleted}/7 days</span>
             </div>
           </div>
           <div className="flex justify-between gap-1">
@@ -113,7 +131,7 @@ export default function DailyCheckIn({
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                   completedDays[index] 
                     ? 'bg-gradient-to-br from-primary to-chart-2 text-white shadow-lg shadow-primary/30' 
-                    : index === 6 
+                    : index === todayIndex 
                       ? 'bg-muted/50 text-muted-foreground border-2 border-dashed border-primary/30'
                       : 'bg-muted/50 text-muted-foreground'
                 }`}>
