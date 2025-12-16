@@ -1330,6 +1330,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Undo a medication dose
+  app.delete("/api/medications/:medicationId/log/:logId", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { medicationId, logId } = req.params;
+      const userId = (req.user as any).id;
+      
+      // Verify the medication belongs to the user
+      const medication = await storage.getMedication(medicationId);
+      if (!medication || medication.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      
+      const success = await storage.undoMedicationDose(logId, medicationId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Log not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error undoing medication dose:", error);
+      res.status(500).json({ error: "Failed to undo medication dose" });
+    }
+  });
+
   // Get medication logs for today
   app.get("/api/medications/logs/today", async (req, res) => {
     if (!req.isAuthenticated()) {

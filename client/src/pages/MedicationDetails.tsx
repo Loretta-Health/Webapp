@@ -18,7 +18,9 @@ import {
   Flame,
   AlertTriangle,
   Trash2,
-  Loader2
+  Loader2,
+  Pencil,
+  Undo2
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -35,6 +37,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from '@/components/MascotCharacter';
 import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
 import { useAuth } from '@/hooks/use-auth';
+import AddMedicationModal from '@/components/AddMedicationModal';
 
 const colorClasses = {
   primary: {
@@ -82,12 +85,14 @@ export default function MedicationDetails() {
   const { user } = useAuth();
   const userId = user?.id;
   
-  const { medications, logDose, getProgress, deleteMedication, isLogging, isLoading } = useMedicationProgress();
+  const { medications, logDose, undoLogDose, getProgress, deleteMedication, isLogging, isLoading } = useMedicationProgress();
   const medication = medications.find(m => m.id === medicationId);
   const progress = getProgress(medicationId);
   
   const [showCelebration, setShowCelebration] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [undoingDose, setUndoingDose] = useState<number | null>(null);
   
   if (isLoading) {
     return (
@@ -132,6 +137,12 @@ export default function MedicationDetails() {
     }
     setIsDeleting(false);
   };
+
+  const handleUndoDose = async (doseNumber: number) => {
+    setUndoingDose(doseNumber);
+    await undoLogDose(medicationId, doseNumber);
+    setUndoingDose(null);
+  };
   
   const benefits = [
     { icon: Heart, text: t('medicationDetails.benefits.maintainsHealth') },
@@ -170,6 +181,10 @@ export default function MedicationDetails() {
             </Button>
           </Link>
           <h1 className="text-xl font-black text-foreground flex-1">{t('medicationDetails.title')}</h1>
+          
+          <Button size="icon" variant="ghost" onClick={() => setIsEditModalOpen(true)}>
+            <Pencil className="w-5 h-5" />
+          </Button>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -341,7 +356,22 @@ export default function MedicationDetails() {
                       )}
                     </div>
                     {dose.taken && (
-                      <Check className="w-5 h-5 text-white" />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/20"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUndoDose(dose.id);
+                        }}
+                        disabled={undoingDose === dose.id}
+                      >
+                        {undoingDose === dose.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Undo2 className="w-4 h-4" />
+                        )}
+                      </Button>
                     )}
                   </motion.div>
                 ))}
@@ -370,6 +400,20 @@ export default function MedicationDetails() {
           </Card>
         </motion.div>
       </main>
+
+      <AddMedicationModal 
+        open={isEditModalOpen} 
+        onOpenChange={setIsEditModalOpen}
+        medicationToEdit={medication ? {
+          id: medication.id,
+          name: medication.name,
+          dosage: medication.dosage || '',
+          scheduledTimes: medication.scheduledTimes || [],
+          notes: medication.notes,
+          frequency: medication.frequency || 'daily',
+          dosesPerDay: medication.dosesPerDay || 1,
+        } : null}
+      />
     </div>
   );
 }

@@ -117,6 +117,19 @@ export function useMedicationProgress() {
     },
   });
 
+  // Undo dose mutation
+  const undoLogDoseMutation = useMutation({
+    mutationFn: async ({ medicationId, logId }: { medicationId: string; logId: string }) => {
+      const response = await apiRequest('DELETE', `/api/medications/${medicationId}/log/${logId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
+    },
+  });
+
   // Get a specific medication by ID
   const getMedication = (medicationId: string): Medication | undefined => {
     return medications.find(m => m.id === medicationId);
@@ -130,6 +143,23 @@ export function useMedicationProgress() {
     } catch (error) {
       console.error('Failed to log dose:', error);
       return { success: false, xpEarned: 0 };
+    }
+  };
+
+  // Undo a logged dose
+  const undoLogDose = async (medicationId: string, doseNumber: number): Promise<boolean> => {
+    try {
+      // Find the log entry for this dose
+      const log = todayLogs.find(l => l.medicationId === medicationId && l.doseNumber === doseNumber);
+      if (!log) {
+        console.error('Log not found for dose:', doseNumber);
+        return false;
+      }
+      await undoLogDoseMutation.mutateAsync({ medicationId, logId: log.id as string });
+      return true;
+    } catch (error) {
+      console.error('Failed to undo dose:', error);
+      return false;
     }
   };
 
@@ -216,6 +246,7 @@ export function useMedicationProgress() {
     refetch,
     getMedication,
     logDose,
+    undoLogDose,
     getProgress,
     getTotalProgress,
     createMedication,
@@ -223,6 +254,7 @@ export function useMedicationProgress() {
     deleteMedication,
     isCreating: createMedicationMutation.isPending,
     isLogging: logDoseMutation.isPending,
+    isUpdating: updateMedicationMutation.isPending,
   };
 }
 
