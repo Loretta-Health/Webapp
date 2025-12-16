@@ -740,27 +740,56 @@ export default function Profile() {
     enabled: !!userId,
   });
 
+  const { data: backendAnswers } = useQuery<Array<{ category: string; answers: Record<string, string> }>>({
+    queryKey: ['/api/questionnaires'],
+    enabled: !!userId,
+  });
+
   useEffect(() => {
-    if (backendProfile && !profileLoaded) {
-      const loadedProfile: ProfileData = {
-        firstName: backendProfile.firstName || user?.firstName || '',
-        lastName: backendProfile.lastName || user?.lastName || '',
-        age: backendProfile.age ? parseInt(backendProfile.age) : 0,
-        height: backendProfile.height ? parseInt(backendProfile.height) : 0,
-        weight: backendProfile.weight ? parseInt(backendProfile.weight) : 0,
-        bloodType: backendProfile.bloodType || '',
-        allergies: backendProfile.allergies || '',
-        ethnicity: backendProfile.ethnicity || '',
-        socioeconomicStatus: backendProfile.socioeconomicStatus || '',
-        educationLevel: backendProfile.educationLevel || '',
-        employmentStatus: backendProfile.employmentStatus || '',
-        housingStatus: backendProfile.housingStatus || '',
-        profilePhoto: backendProfile.profilePhoto || '',
+    if ((backendProfile || backendAnswers) && !profileLoaded) {
+      // Get questionnaire answers for pre-filling if profile data is missing
+      const mergedAnswers: Record<string, string> = {};
+      if (backendAnswers && backendAnswers.length > 0) {
+        backendAnswers.forEach((item) => {
+          Object.assign(mergedAnswers, item.answers);
+        });
+      }
+      
+      // Map questionnaire fields to profile fields
+      const getQuestionnaireValue = (questionId: string): string | number | undefined => {
+        const value = mergedAnswers[questionId];
+        return value || undefined;
       };
+      
+      const loadedProfile: ProfileData = {
+        firstName: backendProfile?.firstName || user?.firstName || '',
+        lastName: backendProfile?.lastName || user?.lastName || '',
+        // Pre-fill from questionnaire if profile is missing but questionnaire has data
+        age: backendProfile?.age ? parseInt(backendProfile.age) : 
+             (getQuestionnaireValue('age') ? parseInt(String(getQuestionnaireValue('age'))) : 0),
+        height: backendProfile?.height ? parseInt(backendProfile.height) : 
+                (getQuestionnaireValue('height') ? parseInt(String(getQuestionnaireValue('height'))) : 0),
+        weight: backendProfile?.weight ? parseInt(backendProfile.weight) : 
+                (getQuestionnaireValue('weight_current') ? parseInt(String(getQuestionnaireValue('weight_current'))) : 0),
+        bloodType: backendProfile?.bloodType || '',
+        allergies: backendProfile?.allergies || '',
+        ethnicity: backendProfile?.ethnicity || 
+                   (getQuestionnaireValue('ethnicity') ? String(getQuestionnaireValue('ethnicity')) : ''),
+        socioeconomicStatus: backendProfile?.socioeconomicStatus || '',
+        educationLevel: backendProfile?.educationLevel || '',
+        employmentStatus: backendProfile?.employmentStatus || '',
+        housingStatus: backendProfile?.housingStatus || '',
+        profilePhoto: backendProfile?.profilePhoto || '',
+      };
+      
       setProfileData(loadedProfile);
       setEditForm(loadedProfile);
       setProfileLoaded(true);
-    } else if (backendProfile === null && !profileLoaded && user) {
+      
+      if (mergedAnswers.age || mergedAnswers.height || mergedAnswers.weight_current || mergedAnswers.ethnicity) {
+        console.log('[Profile] Pre-filled from questionnaire data');
+      }
+    } else if (backendProfile === null && !backendAnswers && !profileLoaded && user) {
       const loadedProfile: ProfileData = {
         firstName: user.firstName || '',
         lastName: user.lastName || '',
@@ -780,12 +809,7 @@ export default function Profile() {
       setEditForm(loadedProfile);
       setProfileLoaded(true);
     }
-  }, [backendProfile, profileLoaded, user]);
-
-  const { data: backendAnswers } = useQuery<Array<{ category: string; answers: Record<string, string> }>>({
-    queryKey: ['/api/questionnaires'],
-    enabled: !!userId,
-  });
+  }, [backendProfile, backendAnswers, profileLoaded, user]);
 
   interface ActivityData {
     id: number;
@@ -953,10 +977,46 @@ export default function Profile() {
     },
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setProfileData(editForm);
     localStorage.setItem('loretta_profile', JSON.stringify(editForm));
     saveProfileMutation.mutate(editForm);
+    
+    // Sync profile fields to questionnaire for bidirectional consistency
+    const profileToQuestionnaireMap: Record<string, string> = {
+      'age': 'age',
+      'height': 'height', 
+      'weight': 'weight_current',
+      'ethnicity': 'ethnicity',
+    };
+    
+    const questionnaireUpdates: Record<string, string> = {};
+    if (editForm.age > 0) questionnaireUpdates['age'] = String(editForm.age);
+    if (editForm.height > 0) questionnaireUpdates['height'] = String(editForm.height);
+    if (editForm.weight > 0) questionnaireUpdates['weight_current'] = String(editForm.weight);
+    if (editForm.ethnicity) questionnaireUpdates['ethnicity'] = editForm.ethnicity;
+    
+    if (Object.keys(questionnaireUpdates).length > 0) {
+      // Merge with existing questionnaire answers
+      const existingAnswers = questionnaireAnswers || {};
+      const mergedAnswers = { ...existingAnswers, ...questionnaireUpdates };
+      
+      try {
+        await apiRequest('POST', '/api/questionnaires', {
+          userId,
+          category: 'health_risk_assessment',
+          answers: mergedAnswers,
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/questionnaires'] });
+        console.log('[Profile] Synced to questionnaire:', Object.keys(questionnaireUpdates).join(', '));
+        
+        // Recalculate risk score with updated data
+        recalculateRiskScoreMutation.mutate();
+      } catch (error) {
+        console.error('[Profile] Failed to sync to questionnaire:', error);
+      }
+    }
+    
     setIsEditOpen(false);
     toast({
       title: localT.editModal.saved,

@@ -268,6 +268,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("[API] Validated questionnaire data:", JSON.stringify(validatedData));
       const saved = await storage.saveQuestionnaireAnswers(validatedData);
       console.log("[API] Questionnaire saved successfully:", saved.id);
+      
+      // Automatically recalculate risk score when questionnaire is updated
+      try {
+        const allAnswers = await storage.getAllQuestionnaireAnswers(userId);
+        const mergedAnswers: Record<string, string> = {};
+        allAnswers.forEach(a => {
+          Object.assign(mergedAnswers, a.answers);
+        });
+        
+        // Also merge in profile data for comprehensive risk calculation
+        const profile = await storage.getUserProfile(userId);
+        if (profile) {
+          if (profile.age && !mergedAnswers.age) mergedAnswers.age = profile.age;
+          if (profile.height && !mergedAnswers.height) mergedAnswers.height = profile.height;
+          if (profile.weight && !mergedAnswers.weight_current) mergedAnswers.weight_current = profile.weight;
+        }
+        
+        const riskScore = calculateRiskScores(mergedAnswers);
+        await storage.saveRiskScore({
+          userId,
+          ...riskScore,
+        });
+        console.log("[API] Risk score auto-recalculated after questionnaire update");
+      } catch (riskError) {
+        console.error("[API] Failed to auto-recalculate risk score:", riskError);
+        // Don't fail the whole request if risk calculation fails
+      }
+      
       res.json(saved);
     } catch (error) {
       console.error("[API] Error saving questionnaire:", error);
@@ -317,6 +345,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const xpResult = await addXPAndCheckAchievements(userId, reward);
         xpAwarded = reward + xpResult.bonusXp;
         achievementsUnlocked = xpResult.achievementsUnlocked;
+      }
+      
+      // Automatically recalculate risk score when profile is updated with health-relevant data
+      if (saved.age || saved.height || saved.weight) {
+        try {
+          const allAnswers = await storage.getAllQuestionnaireAnswers(userId);
+          const mergedAnswers: Record<string, string> = {};
+          allAnswers.forEach(a => {
+            Object.assign(mergedAnswers, a.answers);
+          });
+          
+          // Merge in profile data (profile takes precedence for these fields)
+          if (saved.age) mergedAnswers.age = saved.age;
+          if (saved.height) mergedAnswers.height = saved.height;
+          if (saved.weight) mergedAnswers.weight_current = saved.weight;
+          
+          const riskScore = calculateRiskScores(mergedAnswers);
+          await storage.saveRiskScore({
+            userId,
+            ...riskScore,
+          });
+          console.log("[API] Risk score auto-recalculated after profile update");
+        } catch (riskError) {
+          console.error("[API] Failed to auto-recalculate risk score:", riskError);
+        }
       }
       
       res.json({ ...saved, xpAwarded, achievementsUnlocked });

@@ -1276,7 +1276,15 @@ export default function Onboarding() {
     enabled: !!userId,
   });
 
-  const { data: profileData, isLoading: profileLoading } = useQuery<{ firstName?: string; lastName?: string; email?: string } | null>({
+  const { data: profileData, isLoading: profileLoading } = useQuery<{ 
+    firstName?: string; 
+    lastName?: string; 
+    email?: string;
+    age?: string;
+    height?: string;
+    weight?: string;
+    ethnicity?: string;
+  } | null>({
     queryKey: ['/api/profile'],
     enabled: !!userId,
   });
@@ -1330,19 +1338,21 @@ export default function Onboarding() {
     }
   }, [allLoading, effectiveConsentComplete, profileComplete, effectiveOnboardingComplete, initialStepSet]);
 
-  // Load saved answers from database and resume from first unanswered question
+  // Load saved answers from database and pre-fill from profile data
   const [savedAnswersLoaded, setSavedAnswersLoaded] = useState(false);
   
   useEffect(() => {
-    if (questLoading || savedAnswersLoaded) return;
+    if (questLoading || profileLoading || savedAnswersLoaded) return;
     
+    const loadedAnswers: QuestionnaireAnswer[] = [];
+    const answeredIds = new Set<string>();
+    
+    // First, load saved questionnaire answers
     if (Array.isArray(questionnaireData) && questionnaireData.length > 0) {
       const healthRecord = questionnaireData.find(r => r.category === 'health_risk_assessment');
       if (healthRecord?.answers && typeof healthRecord.answers === 'object') {
         const savedAnswersRecord = healthRecord.answers as Record<string, string>;
-        const loadedAnswers: QuestionnaireAnswer[] = [];
         
-        // Convert saved Record<string, string> to QuestionnaireAnswer[]
         for (const [questionId, answerValue] of Object.entries(savedAnswersRecord)) {
           const question = baseQuestions.find(q => q.id === questionId);
           let riskWeight = 0;
@@ -1357,49 +1367,111 @@ export default function Onboarding() {
             answer: answerValue,
             riskWeight,
           });
-        }
-        
-        if (loadedAnswers.length > 0) {
-          setAnswers(loadedAnswers);
-          console.log('[Onboarding] Loaded', loadedAnswers.length, 'saved answers');
-          
-          // Find first unanswered core question
-          const answeredIds = new Set(loadedAnswers.map(a => a.questionId));
-          const firstUnansweredIndex = coreQuestionIds.findIndex(id => !answeredIds.has(id));
-          
-          if (firstUnansweredIndex !== -1 && firstUnansweredIndex > 0) {
-            setCurrentQuestion(firstUnansweredIndex);
-            console.log('[Onboarding] Resuming from question', firstUnansweredIndex);
-          }
+          answeredIds.add(questionId);
         }
       }
     }
+    
+    // Pre-fill from profile data for fields that aren't already answered
+    if (profileData) {
+      const profileMappings: { questionId: string; profileField: keyof typeof profileData; }[] = [
+        { questionId: 'age', profileField: 'age' },
+        { questionId: 'height', profileField: 'height' },
+        { questionId: 'weight_current', profileField: 'weight' },
+        { questionId: 'ethnicity', profileField: 'ethnicity' },
+      ];
+      
+      for (const mapping of profileMappings) {
+        const profileValue = profileData[mapping.profileField];
+        if (profileValue && !answeredIds.has(mapping.questionId)) {
+          const question = baseQuestions.find(q => q.id === mapping.questionId);
+          let riskWeight = 0;
+          
+          if (question?.options) {
+            const matchingOption = question.options.find(o => o.value === profileValue);
+            riskWeight = matchingOption?.riskWeight || 0;
+          }
+          
+          loadedAnswers.push({
+            questionId: mapping.questionId,
+            answer: profileValue,
+            riskWeight,
+          });
+          answeredIds.add(mapping.questionId);
+          console.log(`[Onboarding] Pre-filled ${mapping.questionId} from profile: ${profileValue}`);
+        }
+      }
+    }
+    
+    if (loadedAnswers.length > 0) {
+      setAnswers(loadedAnswers);
+      console.log('[Onboarding] Loaded', loadedAnswers.length, 'total answers (questionnaire + profile)');
+      
+      // Find first unanswered core question
+      const firstUnansweredIndex = coreQuestionIds.findIndex(id => !answeredIds.has(id));
+      
+      if (firstUnansweredIndex !== -1 && firstUnansweredIndex > 0) {
+        setCurrentQuestion(firstUnansweredIndex);
+        console.log('[Onboarding] Resuming from question', firstUnansweredIndex);
+      }
+    }
+    
     setSavedAnswersLoaded(true);
-  }, [questLoading, questionnaireData, savedAnswersLoaded, coreQuestionIds]);
+  }, [questLoading, profileLoading, questionnaireData, profileData, savedAnswersLoaded, coreQuestionIds]);
 
-  // Auto-save answers after each change (debounced)
+  // Auto-save answers after each change (debounced) and sync to profile
   const [lastSavedCount, setLastSavedCount] = useState(0);
   
   useEffect(() => {
     if (!savedAnswersLoaded || !userId || answers.length === 0) return;
     if (answers.length === lastSavedCount) return; // No new answers
     
-    const saveTimer = setTimeout(() => {
+    const saveTimer = setTimeout(async () => {
       const answersRecord: Record<string, string> = {};
       answers.forEach(a => {
         answersRecord[a.questionId] = String(a.answer);
       });
       
-      apiRequest('POST', '/api/questionnaires', {
-        userId,
-        category: 'health_risk_assessment',
-        answers: answersRecord,
-      }).then(() => {
+      try {
+        // Save questionnaire answers
+        await apiRequest('POST', '/api/questionnaires', {
+          userId,
+          category: 'health_risk_assessment',
+          answers: answersRecord,
+        });
         console.log('[Onboarding] Auto-saved', answers.length, 'answers');
         setLastSavedCount(answers.length);
-      }).catch((error) => {
+        
+        // Sync relevant fields to profile
+        const profileUpdates: Record<string, string> = {};
+        const questionToProfileMap: Record<string, string> = {
+          'age': 'age',
+          'height': 'height',
+          'weight_current': 'weight',
+          'ethnicity': 'ethnicity',
+        };
+        
+        for (const [questionId, profileField] of Object.entries(questionToProfileMap)) {
+          const answer = answers.find(a => a.questionId === questionId);
+          if (answer) {
+            profileUpdates[profileField] = String(answer.answer);
+          }
+        }
+        
+        if (Object.keys(profileUpdates).length > 0) {
+          await apiRequest('POST', '/api/profile', {
+            userId,
+            ...profileUpdates,
+          });
+          queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+          console.log('[Onboarding] Synced to profile:', Object.keys(profileUpdates).join(', '));
+        }
+        
+        // Recalculate risk score with updated data
+        queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] });
+      } catch (error) {
         console.error('[Onboarding] Auto-save failed:', error);
-      });
+      }
     }, 1000); // Debounce 1 second
     
     return () => clearTimeout(saveTimer);
