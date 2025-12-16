@@ -26,7 +26,6 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
     notes: '',
     frequency: 'daily',
     dosesPerDay: 1,
-    xpPerDose: 10,
     explanation: '',
     simpleExplanation: '',
   });
@@ -59,7 +58,6 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
         notes: '',
         frequency: 'daily',
         dosesPerDay: 1,
-        xpPerDose: 10,
         explanation: '',
         simpleExplanation: '',
       });

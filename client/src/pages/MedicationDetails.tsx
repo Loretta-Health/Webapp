@@ -205,10 +205,6 @@ export default function MedicationDetails() {
                     ? medication.scheduledTimes.join(', ')
                     : medication.frequency}
                 </Badge>
-                <Badge variant="secondary">
-                  <Zap className="w-3 h-3 mr-1" />
-                  {t('medicationDetails.xpPerDose', { xp: medication.xpPerDose })}
-                </Badge>
                 <Badge 
                   variant="secondary"
                   className={`${(medication.adherencePercent ?? 100) >= 80 ? 'bg-primary/20 text-primary' : (medication.adherencePercent ?? 100) >= 50 ? 'bg-chart-3/20 text-chart-3' : 'bg-destructive/20 text-destructive'}`}
@@ -302,9 +298,7 @@ export default function MedicationDetails() {
                     )}
                   </div>
                   {dose.taken && (
-                    <Badge className="bg-white/20 text-white border-0">
-                      +{medication.xpPerDose} XP
-                    </Badge>
+                    <Check className="w-5 h-5 text-white" />
                   )}
                 </motion.div>
               ))}
