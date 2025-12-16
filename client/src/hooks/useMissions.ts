@@ -164,6 +164,19 @@ export function useMissions() {
     },
   });
 
+  const activateAlternativeMutation = useMutation({
+    mutationFn: async ({ parentMissionKey, alternativeMissionKey }: { parentMissionKey: string; alternativeMissionKey: string }) => {
+      const response = await apiRequest('POST', '/api/missions/activate-alternative', {
+        parentMissionKey,
+        alternativeMissionKey,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+    },
+  });
+
   const addMission = useCallback((mission: Omit<Mission, 'id'> & { id?: string }) => {
     createMissionMutation.mutate(mission);
   }, [createMissionMutation]);
@@ -246,6 +259,10 @@ export function useMissions() {
     }
   }, [missions, updateMissionMutation]);
 
+  const activateAlternativeMission = useCallback((parentMissionKey: string, alternativeMissionKey: string) => {
+    return activateAlternativeMutation.mutateAsync({ parentMissionKey, alternativeMissionKey });
+  }, [activateAlternativeMutation]);
+
   const activeMissions = missions.filter(m => m.isActive);
   const inactiveMissions = missions.filter(m => !m.isActive);
   const completedCount = missions.filter(m => m.completed).length;
@@ -265,6 +282,8 @@ export function useMissions() {
     activateMission,
     deactivateMission,
     toggleMissionActive,
+    activateAlternativeMission,
+    isActivatingAlternative: activateAlternativeMutation.isPending,
     completedCount,
     totalCount,
     isLoading,

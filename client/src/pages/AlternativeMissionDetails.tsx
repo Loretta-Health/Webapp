@@ -71,67 +71,172 @@ const colorClasses: Record<string, { card: string; iconBg: string; badge: string
 };
 
 const alternativeMissionsDatabase: Record<string, AlternativeMissionData> = {
-  '101': {
-    id: '101',
-    title: 'Drink herbal tea',
-    icon: '🍵',
+  'sip-water': {
+    id: 'sip-water',
+    title: 'Sip Water Slowly',
+    icon: '💧',
     frequency: 'daily',
-    description: 'Stay hydrated with calming herbal tea - a delicious alternative to plain water.',
-    xpReward: 25,
-    totalSteps: 6,
+    description: 'Drink 4 glasses of water at your own pace - a gentler hydration goal.',
+    xpReward: 30,
+    totalSteps: 4,
     color: 'chart-2',
-    details: 'Herbal teas like chamomile, peppermint, or ginger provide hydration along with additional health benefits. They\'re caffeine-free and can help with relaxation, digestion, and overall wellness.',
+    details: 'When you\'re feeling low, staying hydrated is still important but can feel overwhelming. This gentler alternative lets you hydrate at your own pace.',
     benefits: [
       { icon: Droplets, text: 'Hydrates your body' },
-      { icon: Leaf, text: 'Natural antioxidants' },
+      { icon: Leaf, text: 'Gentle pace' },
       { icon: Brain, text: 'Promotes relaxation' },
-      { icon: Heart, text: 'Supports digestion' },
+      { icon: Heart, text: 'Supports wellbeing' },
     ],
-    communityTip: 'Keep a variety of herbal teas at your desk. Peppermint is great for focus, chamomile for relaxation!',
-    stepLabel: 'Cup',
-    replacesId: '1',
+    communityTip: 'Keep a water bottle nearby. Small sips throughout the day add up!',
+    stepLabel: 'Glass',
+    replacesId: 'water-glasses',
+    replacesTitle: 'Drink 8 glasses of water'
+  },
+  'gentle-stretching': {
+    id: 'gentle-stretching',
+    title: 'Gentle Stretching',
+    icon: '🧘',
+    frequency: 'daily',
+    description: 'Do 5 minutes of gentle stretching - a calming alternative to intense exercise.',
+    xpReward: 50,
+    totalSteps: 5,
+    color: 'chart-3',
+    details: 'When you\'re not feeling up for jumping jacks, gentle stretching is a wonderful way to get your body moving without the intensity.',
+    benefits: [
+      { icon: Activity, text: 'Releases tension' },
+      { icon: Heart, text: 'Calms the body' },
+      { icon: Brain, text: 'Reduces stress' },
+      { icon: Leaf, text: 'Improves flexibility' },
+    ],
+    communityTip: 'Focus on your breathing while stretching. Even 5 minutes can make a big difference.',
+    stepLabel: 'Minute',
+    replacesId: 'jumping-jacks',
+    replacesTitle: 'Complete 10 jumping jacks'
+  },
+  'short-walk': {
+    id: 'short-walk',
+    title: 'Short Walk',
+    icon: '🚶',
+    frequency: 'daily',
+    description: 'Take a 5-minute easy walk - move at your own comfortable pace.',
+    xpReward: 45,
+    totalSteps: 5,
+    color: 'chart-1',
+    details: 'A shorter, gentler walk is perfect when you\'re not feeling up for a full 10-minute walk. Any movement is beneficial!',
+    benefits: [
+      { icon: Footprints, text: 'Easy movement' },
+      { icon: Heart, text: 'Gentle cardio' },
+      { icon: Brain, text: 'Clears your mind' },
+      { icon: Leaf, text: 'Fresh air' },
+    ],
+    communityTip: 'A short walk around your home or office counts too. Every step matters!',
+    stepLabel: 'Minute',
+    replacesId: 'walking',
+    replacesTitle: 'Take a 10-minute walk'
+  },
+  'rest-breathe': {
+    id: 'rest-breathe',
+    title: 'Rest & Breathe',
+    icon: '💨',
+    frequency: 'daily',
+    description: 'Take 3 slow, deep breaths - the gentlest form of mindfulness.',
+    xpReward: 25,
+    totalSteps: 3,
+    color: 'chart-4',
+    details: 'When a full breathing exercise feels like too much, just take 3 slow breaths. It\'s the simplest way to center yourself.',
+    benefits: [
+      { icon: Wind, text: 'Calms your mind' },
+      { icon: Heart, text: 'Lowers heart rate' },
+      { icon: Brain, text: 'Reduces stress' },
+      { icon: Leaf, text: 'Takes only seconds' },
+    ],
+    communityTip: 'Breathe in for 4 counts, out for 4 counts. That\'s all you need.',
+    stepLabel: 'Breath',
+    replacesId: 'deep-breathing',
+    replacesTitle: 'Practice deep breathing'
+  },
+  'quiet-rest': {
+    id: 'quiet-rest',
+    title: 'Quiet Rest',
+    icon: '🌙',
+    frequency: 'daily',
+    description: 'Take 3 minutes of quiet rest - just be still and breathe.',
+    xpReward: 40,
+    totalSteps: 3,
+    color: 'chart-2',
+    details: 'Sometimes meditation feels like too much. Quiet rest means simply sitting still without any pressure to clear your mind.',
+    benefits: [
+      { icon: Moon, text: 'Peaceful pause' },
+      { icon: Heart, text: 'Calms your body' },
+      { icon: Brain, text: 'Mental rest' },
+      { icon: Leaf, text: 'No pressure' },
+    ],
+    communityTip: 'Find a comfortable spot, close your eyes if you want, and just be. That\'s it.',
+    stepLabel: 'Minute',
+    replacesId: 'meditation',
+    replacesTitle: 'Meditate for 5 minutes'
+  },
+  '101': {
+    id: 'sip-water',
+    title: 'Sip Water Slowly',
+    icon: '💧',
+    frequency: 'daily',
+    description: 'Drink 4 glasses of water at your own pace.',
+    xpReward: 30,
+    totalSteps: 4,
+    color: 'chart-2',
+    details: 'A gentler hydration goal for when you\'re not feeling your best.',
+    benefits: [
+      { icon: Droplets, text: 'Hydrates your body' },
+      { icon: Leaf, text: 'Gentle pace' },
+      { icon: Brain, text: 'Promotes relaxation' },
+      { icon: Heart, text: 'Supports wellbeing' },
+    ],
+    communityTip: 'Keep a water bottle nearby. Small sips add up!',
+    stepLabel: 'Glass',
+    replacesId: 'water-glasses',
     replacesTitle: 'Drink 8 glasses of water'
   },
   '102': {
-    id: '102',
-    title: 'Eat water-rich fruits',
-    icon: '🍉',
+    id: 'sip-water',
+    title: 'Sip Water Slowly',
+    icon: '💧',
     frequency: 'daily',
-    description: 'Get your hydration from delicious fruits like watermelon, oranges, and grapes.',
-    xpReward: 20,
+    description: 'Drink 4 glasses of water at your own pace.',
+    xpReward: 30,
     totalSteps: 4,
     color: 'chart-1',
-    details: 'Water-rich fruits like watermelon (92% water), strawberries, and oranges are excellent for hydration. They also provide vitamins, fiber, and natural sugars for energy.',
+    details: 'A gentler hydration goal for when you\'re not feeling your best.',
     benefits: [
       { icon: Droplets, text: 'Natural hydration' },
-      { icon: Zap, text: 'Natural energy boost' },
-      { icon: Leaf, text: 'Rich in vitamins' },
-      { icon: Heart, text: 'Fiber for digestion' },
+      { icon: Zap, text: 'No pressure' },
+      { icon: Leaf, text: 'Take your time' },
+      { icon: Heart, text: 'Self-care first' },
     ],
-    communityTip: 'Keep pre-cut fruit in your fridge for easy snacking. Frozen grapes make a refreshing treat!',
-    stepLabel: 'Serving',
-    replacesId: '1',
+    communityTip: 'Keep a water bottle nearby. Small sips add up!',
+    stepLabel: 'Glass',
+    replacesId: 'water-glasses',
     replacesTitle: 'Drink 8 glasses of water'
   },
   '201': {
-    id: '201',
-    title: 'Do 20 squats',
-    icon: '🦵',
+    id: 'gentle-stretching',
+    title: 'Gentle Stretching',
+    icon: '🧘',
     frequency: 'daily',
-    description: 'Strengthen your legs and core with 20 squats throughout the day.',
-    xpReward: 45,
-    totalSteps: 4,
+    description: 'Do 5 minutes of gentle stretching instead.',
+    xpReward: 50,
+    totalSteps: 5,
     color: 'chart-2',
-    details: 'Squats are a compound exercise that work multiple muscle groups including quads, hamstrings, glutes, and core. They\'re excellent for building lower body strength and improving mobility.',
+    details: 'A calming alternative to intense exercise when you need something gentler.',
     benefits: [
-      { icon: Dumbbell, text: 'Builds leg strength' },
-      { icon: Flame, text: 'Burns calories' },
-      { icon: Activity, text: 'Improves mobility' },
-      { icon: Heart, text: 'Boosts circulation' },
+      { icon: Activity, text: 'Releases tension' },
+      { icon: Heart, text: 'Calms the body' },
+      { icon: Brain, text: 'Reduces stress' },
+      { icon: Leaf, text: 'Improves flexibility' },
     ],
-    communityTip: 'Do 5 squats every hour. By the end of the day, you\'ll have done 40+ without even trying!',
-    stepLabel: 'Set of 5',
-    replacesId: '2',
+    communityTip: 'Focus on your breathing while stretching.',
+    stepLabel: 'Minute',
+    replacesId: 'jumping-jacks',
     replacesTitle: 'Complete 10 jumping jacks'
   },
   '202': {
@@ -332,9 +437,10 @@ export default function AlternativeMissionDetails() {
   const altId = params.get('id') || '101';
   const originalMissionId = params.get('original') || '1';
   
-  const { addMission, removeMission, missions } = useMissions();
+  const { activateAlternativeMission, isActivatingAlternative, missions } = useMissions();
   const [showSuccess, setShowSuccess] = useState(false);
   const [isReplaced, setIsReplaced] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const missionData = alternativeMissionsDatabase[altId];
   
@@ -353,30 +459,26 @@ export default function AlternativeMissionDetails() {
   
   const colors = colorClasses[missionData.color] || colorClasses['chart-1'];
   
-  const alreadyActive = missions.some(m => m.id === altId);
+  const alreadyActive = missions.some(m => m.missionKey === altId || m.id === altId);
   
-  const handleReplaceMission = () => {
-    removeMission(missionData.replacesId);
-    
-    addMission({
-      id: altId,
-      title: missionData.title,
-      description: missionData.description,
-      category: 'daily',
-      xpReward: missionData.xpReward,
-      progress: 0,
-      maxProgress: missionData.totalSteps,
-      completed: false,
-      href: `/mission-details?id=${altId}`,
-      source: 'activity',
-    });
-    
-    setShowSuccess(true);
-    setIsReplaced(true);
-    
-    setTimeout(() => {
-      navigate('/my-dashboard');
-    }, 1500);
+  const handleReplaceMission = async () => {
+    setError(null);
+    try {
+      await activateAlternativeMission(missionData.replacesId, altId);
+      setShowSuccess(true);
+      setIsReplaced(true);
+      
+      setTimeout(() => {
+        navigate('/my-dashboard');
+      }, 1500);
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Failed to activate alternative mission';
+      if (errorMessage.includes('low mood')) {
+        setError('Alternative missions are only available when you check in with a low mood today. Try checking in first!');
+      } else {
+        setError(errorMessage);
+      }
+    }
   };
   
   return (
@@ -469,30 +571,41 @@ export default function AlternativeMissionDetails() {
             <div className="p-4 bg-muted/30 rounded-xl border border-dashed border-muted-foreground/20 mb-4">
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <RefreshCw className="w-4 h-4" />
-                <span>Replaces: <strong className="text-foreground">{missionData.replacesTitle}</strong></span>
+                <span>Replaces: <strong className="text-foreground">{missionData.replacesTitle}</strong> (for today only)</span>
               </div>
             </div>
             
+            {error && (
+              <div className="p-3 mb-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+            
             <Button
               size="lg"
-              className={`w-full font-black text-white ${colors.button} ${isReplaced || alreadyActive ? '' : 'animate-pulse-glow'}`}
-              disabled={isReplaced || alreadyActive}
+              className={`w-full font-black text-white ${colors.button} ${isReplaced || alreadyActive || isActivatingAlternative ? '' : 'animate-pulse-glow'}`}
+              disabled={isReplaced || alreadyActive || isActivatingAlternative}
               onClick={handleReplaceMission}
             >
               {isReplaced ? (
                 <>
                   <Check className="w-5 h-5 mr-2" />
-                  Replaced!
+                  Activated for Today!
                 </>
               ) : alreadyActive ? (
                 <>
                   <Check className="w-5 h-5 mr-2" />
                   Already Active
                 </>
+              ) : isActivatingAlternative ? (
+                <>
+                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                  Activating...
+                </>
               ) : (
                 <>
                   <RefreshCw className="w-5 h-5 mr-2" />
-                  Replace Mission
+                  Activate for Today
                 </>
               )}
             </Button>
