@@ -167,8 +167,12 @@ export default function QROnboarding() {
     }
   };
 
-  const proceedToOnboarding = () => {
-    navigate('/onboarding');
+  const proceedToAuth = () => {
+    // Store the invite code to process after authentication
+    if (scannedData?.code) {
+      localStorage.setItem('loretta_pending_invite', scannedData.code);
+    }
+    navigate('/auth');
   };
 
   return (
@@ -658,17 +662,17 @@ export default function QROnboarding() {
               
               <div className="space-y-3 mt-auto">
                 <Button
-                  onClick={proceedToOnboarding}
+                  onClick={proceedToAuth}
                   className="w-full bg-gradient-to-r from-primary to-chart-2 font-black text-lg py-6"
-                  data-testid="button-continue-onboarding"
+                  data-testid="button-continue-auth"
                 >
                   <Heart className="w-5 h-5 mr-2" />
-                  Continue to Setup
+                  Sign In / Create Account
                   <ChevronRight className="w-5 h-5 ml-2" />
                 </Button>
                 
                 <p className="text-xs text-center text-muted-foreground">
-                  By continuing, you'll be guided through our privacy-first onboarding process
+                  Sign in to your account or create a new one to continue
                 </p>
               </div>
             </motion.div>

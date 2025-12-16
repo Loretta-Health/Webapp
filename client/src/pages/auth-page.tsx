@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
+import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +14,7 @@ import lorettaLogo from '@assets/logos/loretta_logo.png';
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
+  const { isOnboardingComplete, isLoading: onboardingLoading } = useOnboardingProgress();
   const { t } = useTranslation('auth');
   
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
@@ -27,10 +29,19 @@ export default function AuthPage() {
   const [registerError, setRegisterError] = useState('');
 
   useEffect(() => {
-    if (user) {
-      setLocation('/welcome');
+    if (user && !onboardingLoading) {
+      const pendingInvite = localStorage.getItem('loretta_pending_invite');
+      
+      if (pendingInvite && isOnboardingComplete) {
+        // User has completed onboarding and has a pending invite - go directly to team invite
+        localStorage.removeItem('loretta_pending_invite');
+        setLocation(`/team-invite?code=${pendingInvite}`);
+      } else {
+        // Normal flow - go to welcome/onboarding
+        setLocation('/welcome');
+      }
     }
-  }, [user, setLocation]);
+  }, [user, isOnboardingComplete, onboardingLoading, setLocation]);
 
   if (user) {
     return null;
