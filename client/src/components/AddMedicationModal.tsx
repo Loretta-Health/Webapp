@@ -1,17 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Pill, Plus, Loader2, Clock, X, Calendar } from 'lucide-react';
+import { Pill, Plus, Loader2, Clock, X, Calendar, Pencil } from 'lucide-react';
 import { useMedicationProgress, type CreateMedicationInput } from '@/hooks/useMedicationProgress';
 import { useTranslation } from 'react-i18next';
+
+interface MedicationToEdit {
+  id: string;
+  name: string;
+  dosage: string;
+  scheduledTimes: string[];
+  notes?: string | null;
+  frequency: string;
+  dosesPerDay: number;
+}
 
 interface AddMedicationModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  medicationToEdit?: MedicationToEdit | null;
 }
 
 interface ScheduledTime {
@@ -19,10 +30,11 @@ interface ScheduledTime {
   time: string;
 }
 
-export default function AddMedicationModal({ open, onOpenChange }: AddMedicationModalProps) {
+export default function AddMedicationModal({ open, onOpenChange, medicationToEdit }: AddMedicationModalProps) {
   const { i18n } = useTranslation('dashboard');
   const language = i18n.language;
-  const { createMedication, isCreating } = useMedicationProgress();
+  const { createMedication, updateMedication, isCreating, isUpdating } = useMedicationProgress();
+  const isEditMode = !!medicationToEdit;
   
   const [formData, setFormData] = useState<CreateMedicationInput>({
     name: '',
@@ -34,6 +46,50 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
   });
 
   const [weeklySchedule, setWeeklySchedule] = useState<ScheduledTime[]>([{ day: 'monday', time: '08:00' }]);
+
+  // Populate form when editing
+  useEffect(() => {
+    if (medicationToEdit && open) {
+      const freq = medicationToEdit.frequency || 'daily';
+      
+      if (freq === 'weekly') {
+        // Parse weekly schedule from "day:HH:MM" format
+        const parsed = medicationToEdit.scheduledTimes.map(s => {
+          const parts = s.split(':');
+          return { day: parts[0], time: parts.slice(1).join(':') };
+        });
+        setWeeklySchedule(parsed.length > 0 ? parsed : [{ day: 'monday', time: '08:00' }]);
+        setFormData({
+          name: medicationToEdit.name,
+          dosage: medicationToEdit.dosage || '',
+          scheduledTimes: [],
+          notes: medicationToEdit.notes || '',
+          frequency: freq,
+          dosesPerDay: medicationToEdit.dosesPerDay,
+        });
+      } else {
+        setFormData({
+          name: medicationToEdit.name,
+          dosage: medicationToEdit.dosage || '',
+          scheduledTimes: medicationToEdit.scheduledTimes.length > 0 ? medicationToEdit.scheduledTimes : ['08:00'],
+          notes: medicationToEdit.notes || '',
+          frequency: freq,
+          dosesPerDay: medicationToEdit.dosesPerDay,
+        });
+      }
+    } else if (!open) {
+      // Reset form when modal closes
+      setFormData({
+        name: '',
+        dosage: '',
+        scheduledTimes: ['08:00'],
+        notes: '',
+        frequency: 'daily',
+        dosesPerDay: 1,
+      });
+      setWeeklySchedule([{ day: 'monday', time: '08:00' }]);
+    }
+  }, [medicationToEdit, open]);
 
   const frequencyOptions = [
     { value: 'daily', label: language === 'en' ? 'Daily' : 'Täglich' },
@@ -78,7 +134,12 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
       dosesPerDay,
     };
 
-    const result = await createMedication(dataToSubmit);
+    let result;
+    if (isEditMode && medicationToEdit) {
+      result = await updateMedication(medicationToEdit.id, dataToSubmit);
+    } else {
+      result = await createMedication(dataToSubmit);
+    }
     
     if (result) {
       setFormData({
@@ -132,16 +193,22 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-              <Pill className="w-6 h-6 text-primary" />
+              {isEditMode ? <Pencil className="w-6 h-6 text-primary" /> : <Pill className="w-6 h-6 text-primary" />}
             </div>
             <DialogTitle className="text-xl font-black">
-              {language === 'en' ? 'Add Medication' : 'Medikament hinzufügen'}
+              {isEditMode 
+                ? (language === 'en' ? 'Edit Medication' : 'Medikament bearbeiten')
+                : (language === 'en' ? 'Add Medication' : 'Medikament hinzufügen')}
             </DialogTitle>
           </div>
           <DialogDescription>
-            {language === 'en' 
-              ? 'Add a medication you want to track. You can edit or remove it later.'
-              : 'Fügen Sie ein Medikament hinzu, das Sie verfolgen möchten. Sie können es später bearbeiten oder entfernen.'}
+            {isEditMode
+              ? (language === 'en' 
+                  ? 'Update the details for this medication.'
+                  : 'Aktualisieren Sie die Details für dieses Medikament.')
+              : (language === 'en' 
+                  ? 'Add a medication you want to track. You can edit or remove it later.'
+                  : 'Fügen Sie ein Medikament hinzu, das Sie verfolgen möchten. Sie können es später bearbeiten oder entfernen.')}
           </DialogDescription>
         </DialogHeader>
         
@@ -396,12 +463,19 @@ export default function AddMedicationModal({ open, onOpenChange }: AddMedication
             <Button 
               type="submit" 
               className="flex-1 bg-gradient-to-r from-primary to-chart-2 font-bold"
-              disabled={isCreating || !formData.name}
+              disabled={isCreating || isUpdating || !formData.name}
             >
-              {isCreating ? (
+              {(isCreating || isUpdating) ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {language === 'en' ? 'Adding...' : 'Hinzufügen...'}
+                  {isEditMode 
+                    ? (language === 'en' ? 'Saving...' : 'Speichern...')
+                    : (language === 'en' ? 'Adding...' : 'Hinzufügen...')}
+                </>
+              ) : isEditMode ? (
+                <>
+                  <Pencil className="w-4 h-4 mr-2" />
+                  {language === 'en' ? 'Save Changes' : 'Änderungen speichern'}
                 </>
               ) : (
                 <>

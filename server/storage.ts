@@ -1312,6 +1312,32 @@ export class DatabaseStorage implements IStorage {
     return log;
   }
 
+  async undoMedicationDose(logId: string, medicationId: string): Promise<boolean> {
+    // Delete the log entry
+    const deleted = await db
+      .delete(medicationLogs)
+      .where(eq(medicationLogs.id, logId))
+      .returning();
+    
+    if (deleted.length === 0) {
+      return false;
+    }
+    
+    // Decrement adherence stats
+    const existing = await this.getMedicationAdherence(medicationId);
+    if (existing && existing.totalDosesTaken > 0) {
+      await db
+        .update(medicationAdherence)
+        .set({
+          totalDosesTaken: existing.totalDosesTaken - 1,
+          updatedAt: new Date(),
+        })
+        .where(eq(medicationAdherence.medicationId, medicationId));
+    }
+    
+    return true;
+  }
+
   // Medication adherence methods
   async getMedicationAdherence(medicationId: string): Promise<MedicationAdherence | undefined> {
     const [adherence] = await db
