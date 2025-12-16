@@ -279,13 +279,13 @@ export default function RiskScoreDetails() {
               {trend === 'up' && (
                 <div className="flex items-center gap-1 text-primary text-sm font-medium">
                   <TrendingUp className="w-4 h-4" />
-                  <span>+{score - previousScore} pts</span>
+                  <span>+{Math.round(score - previousScore)} pts</span>
                 </div>
               )}
               {trend === 'down' && (
                 <div className="flex items-center gap-1 text-destructive text-sm font-medium">
                   <TrendingDown className="w-4 h-4" />
-                  <span>{score - previousScore} pts</span>
+                  <span>{Math.round(score - previousScore)} pts</span>
                 </div>
               )}
             </div>
