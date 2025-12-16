@@ -25,6 +25,8 @@ export interface Medication {
   streak: number;
   longestStreak: number;
   totalDosesTaken: number;
+  totalDosesScheduled: number;
+  adherencePercent: number;
   dosesTakenToday: number;
 }
 

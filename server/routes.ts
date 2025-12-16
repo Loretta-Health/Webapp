@@ -1103,11 +1103,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const logsToday = await storage.getMedicationLogsForDate(userId, today);
           const dosesTakenToday = logsToday.filter(log => log.medicationId === med.id).length;
           
+          const totalDosesTaken = adherence?.totalDosesTaken || 0;
+          const totalDosesScheduled = adherence?.totalDosesScheduled || 0;
+          const adherencePercent = totalDosesScheduled > 0 
+            ? Math.round((totalDosesTaken / totalDosesScheduled) * 100)
+            : 100;
+          
           return {
             ...med,
             streak: adherence?.currentStreak || 0,
             longestStreak: adherence?.longestStreak || 0,
-            totalDosesTaken: adherence?.totalDosesTaken || 0,
+            totalDosesTaken,
+            totalDosesScheduled,
+            adherencePercent,
             dosesTakenToday,
           };
         })
@@ -1163,19 +1171,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       const userId = (req.user as any).id;
-      const { name, dosage, timing, frequency, dosesPerDay, xpPerDose, explanation, simpleExplanation } = req.body;
+      const { name, dosage, scheduledTimes, notes, frequency, dosesPerDay, xpPerDose, explanation, simpleExplanation } = req.body;
       
-      if (!name || !dosage || !timing || !frequency) {
-        return res.status(400).json({ error: "Missing required fields: name, dosage, timing, frequency" });
+      if (!name || !dosage || !frequency) {
+        return res.status(400).json({ error: "Missing required fields: name, dosage, frequency" });
       }
       
       const medication = await storage.createMedication({
         userId,
         name,
         dosage,
-        timing,
+        scheduledTimes: scheduledTimes || [],
+        notes: notes || null,
         frequency,
-        dosesPerDay: dosesPerDay || 1,
+        dosesPerDay: dosesPerDay || (scheduledTimes?.length || 1),
         xpPerDose: xpPerDose || 10,
         explanation,
         simpleExplanation,
