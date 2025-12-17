@@ -1,4 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+
+export const BERLIN_COORDINATES = {
+  latitude: 52.52,
+  longitude: 13.405,
+};
 
 interface GeolocationState {
   latitude: number | null;
@@ -6,31 +11,47 @@ interface GeolocationState {
   accuracy: number | null;
   error: string | null;
   loading: boolean;
+  usingDefault: boolean;
 }
 
 interface GeolocationOptions {
   enableHighAccuracy?: boolean;
   timeout?: number;
   maximumAge?: number;
+  defaultLocation?: { latitude: number; longitude: number };
 }
 
+const LOCATION_ENABLED_KEY = 'loretta_location_enabled';
+
 export function useGeolocation(options: GeolocationOptions = {}) {
+  const defaultLocation = options.defaultLocation || BERLIN_COORDINATES;
+  
+  const [locationEnabled, setLocationEnabled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const stored = localStorage.getItem(LOCATION_ENABLED_KEY);
+    return stored === 'true';
+  });
+
   const [state, setState] = useState<GeolocationState>({
-    latitude: null,
-    longitude: null,
+    latitude: defaultLocation.latitude,
+    longitude: defaultLocation.longitude,
     accuracy: null,
     error: null,
     loading: false,
+    usingDefault: true,
   });
 
-  const requestLocation = useCallback(async (): Promise<{ latitude: number; longitude: number } | null> => {
+  const requestLocation = useCallback(async (): Promise<{ latitude: number; longitude: number }> => {
     if (!navigator.geolocation) {
       setState(prev => ({
         ...prev,
-        error: 'Geolocation is not supported by your browser',
+        latitude: defaultLocation.latitude,
+        longitude: defaultLocation.longitude,
+        error: 'Geolocation is not supported by your browser. Using default location.',
         loading: false,
+        usingDefault: true,
       }));
-      return null;
+      return defaultLocation;
     }
 
     setState(prev => ({ ...prev, loading: true, error: null }));
@@ -45,6 +66,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
             accuracy,
             error: null,
             loading: false,
+            usingDefault: false,
           });
           resolve({ latitude, longitude });
         },
@@ -52,25 +74,26 @@ export function useGeolocation(options: GeolocationOptions = {}) {
           let errorMessage: string;
           switch (error.code) {
             case error.PERMISSION_DENIED:
-              errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
+              errorMessage = 'Location permission denied. Using default location (Berlin).';
               break;
             case error.POSITION_UNAVAILABLE:
-              errorMessage = 'Location information unavailable.';
+              errorMessage = 'Location unavailable. Using default location (Berlin).';
               break;
             case error.TIMEOUT:
-              errorMessage = 'Location request timed out.';
+              errorMessage = 'Location request timed out. Using default location (Berlin).';
               break;
             default:
-              errorMessage = 'An unknown error occurred while getting location.';
+              errorMessage = 'Could not get location. Using default location (Berlin).';
           }
           setState({
-            latitude: null,
-            longitude: null,
+            latitude: defaultLocation.latitude,
+            longitude: defaultLocation.longitude,
             accuracy: null,
             error: errorMessage,
             loading: false,
+            usingDefault: true,
           });
-          resolve(null);
+          resolve(defaultLocation);
         },
         {
           enableHighAccuracy: options.enableHighAccuracy ?? false,
@@ -79,11 +102,41 @@ export function useGeolocation(options: GeolocationOptions = {}) {
         }
       );
     });
-  }, [options.enableHighAccuracy, options.timeout, options.maximumAge]);
+  }, [options.enableHighAccuracy, options.timeout, options.maximumAge, defaultLocation]);
+
+  const toggleLocationEnabled = useCallback(async () => {
+    const newValue = !locationEnabled;
+    setLocationEnabled(newValue);
+    localStorage.setItem(LOCATION_ENABLED_KEY, String(newValue));
+    
+    if (newValue) {
+      await requestLocation();
+    } else {
+      setState({
+        latitude: defaultLocation.latitude,
+        longitude: defaultLocation.longitude,
+        accuracy: null,
+        error: null,
+        loading: false,
+        usingDefault: true,
+      });
+    }
+  }, [locationEnabled, requestLocation, defaultLocation]);
+
+  useEffect(() => {
+    if (locationEnabled) {
+      requestLocation();
+    }
+  }, []);
 
   return {
     ...state,
+    locationEnabled,
     requestLocation,
+    toggleLocationEnabled,
     isSupported: typeof navigator !== 'undefined' && 'geolocation' in navigator,
+    coordinates: state.latitude && state.longitude 
+      ? { latitude: state.latitude, longitude: state.longitude }
+      : defaultLocation,
   };
 }

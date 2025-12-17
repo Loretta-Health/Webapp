@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, LogIn, UserPlus, Loader2 } from 'lucide-react';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, LogIn, UserPlus, Loader2, MapPin, MapPinOff } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
@@ -34,6 +34,8 @@ import EnergyBar from '@/components/EnergyBar';
 import HealthScienceSection from '@/components/HealthScienceSection';
 import CommunitySelector, { type CommunityType } from '@/components/CommunitySelector';
 import EmotionalCheckInModal from '@/components/EmotionalCheckInModal';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface GamificationData {
@@ -79,6 +81,7 @@ export default function Dashboard() {
   const [registerForm, setRegisterForm] = useState({ username: '', password: '', confirmPassword: '' });
   const [registerError, setRegisterError] = useState('');
   const { user, logoutMutation, loginMutation, registerMutation } = useAuth();
+  const { locationEnabled, toggleLocationEnabled, usingDefault, loading: locationLoading } = useGeolocation();
 
   const { data: riskScoreData } = useQuery<RiskScoreData>({
     queryKey: ['/api/risk-scores/latest'],
@@ -428,6 +431,32 @@ export default function Dashboard() {
             <Badge variant="secondary" className="font-bold text-xs lg:text-sm" data-testid="user-rank">
               Rank #4
             </Badge>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    size="icon" 
+                    variant="ghost"
+                    onClick={toggleLocationEnabled}
+                    disabled={locationLoading}
+                    data-testid="button-location-toggle"
+                    className={locationEnabled && !usingDefault ? 'text-primary' : ''}
+                  >
+                    {locationLoading ? (
+                      <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 animate-spin" />
+                    ) : locationEnabled && !usingDefault ? (
+                      <MapPin className="w-4 h-4 lg:w-5 lg:h-5" />
+                    ) : (
+                      <MapPinOff className="w-4 h-4 lg:w-5 lg:h-5" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{locationEnabled && !usingDefault ? 'Using your location' : 'Using default location (Berlin)'}</p>
+                  <p className="text-xs text-muted-foreground">Click to {locationEnabled ? 'disable' : 'enable'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button 
               size="icon" 
               variant="ghost"
