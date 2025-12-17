@@ -316,10 +316,14 @@
     "logCompletion": "Abschluss protokollieren",
     "tabs": {
       "mainMission": "Hauptmission",
-      "alternatives": "Alternative Missionen"
+      "alternatives": "Alternative Missionen",
+      "weatherAlternatives": "Indoor-Optionen"
     },
     "stepsRemaining": "Noch {{count}} übrig...",
-    "alternativesHint": "Alternative Missionen bringen auch XP! Wähle, was am besten zu dir passt."
+    "alternativesHint": "Alternative Missionen bringen auch XP! Wähle, was am besten zu dir passt.",
+    "weatherWarning": "Wetterwarnung",
+    "weatherBadConditions": "Das aktuelle Wetter ist nicht ideal für Aktivitäten im Freien.",
+    "weatherAlternativesHint": "Indoor-Alternativen ermöglichen dir, aktiv zu bleiben, ohne nach draußen zu gehen. Schließe diese ab, um XP zu verdienen!"
   },
   "alternativeMission": {
     "title": "Alternative Mission",

@@ -31,6 +31,7 @@ import MascotCharacter from '@/components/MascotCharacter';
 import { useMissions } from '@/hooks/useMissions';
 import { useQuery } from '@tanstack/react-query';
 import { isLowMoodEmotion } from '../../../shared/emotions';
+import { useWeatherAssessment } from '@/hooks/useWeatherAssessment';
 
 interface MissionStep {
   id: number;
@@ -53,6 +54,8 @@ interface MissionData {
   alternativeMissions: { id: number; title: string; xp: number; icon: string }[];
   communityTip: string;
   stepLabel: string;
+  isWeatherDependent?: boolean;
+  badWeatherAlternatives?: { id: number; title: string; xp: number; icon: string }[];
 }
 
 const colorClasses: Record<string, { card: string; iconBg: string; badge: string; stepComplete: string }> = {
@@ -165,7 +168,13 @@ const missionsDatabase: Record<string, MissionData> = {
       { id: 402, title: 'Look out the window for 5 mins', xp: 40, icon: '🪟' },
     ],
     communityTip: 'Try walking during phone calls or after meals. Every step counts toward your daily goal!',
-    stepLabel: 'Minute'
+    stepLabel: 'Minute',
+    isWeatherDependent: true,
+    badWeatherAlternatives: [
+      { id: 4001, title: 'Walk around your home for 10 mins', xp: 45, icon: '🏠' },
+      { id: 4002, title: 'March in place for 5 mins', xp: 40, icon: '🚶' },
+      { id: 4003, title: 'Do indoor stretching routine', xp: 35, icon: '🧘' },
+    ],
   },
   'deep-breathing': {
     id: 5,
@@ -278,7 +287,13 @@ const missionsDatabase: Record<string, MissionData> = {
       { id: 302, title: 'Look out the window for 5 mins', xp: 25, icon: '🪟' },
     ],
     communityTip: 'Try walking during phone calls or after meals. Every step counts toward your daily goal!',
-    stepLabel: 'Walk'
+    stepLabel: 'Walk',
+    isWeatherDependent: true,
+    badWeatherAlternatives: [
+      { id: 3001, title: 'Walk around your home for 5 mins', xp: 30, icon: '🏠' },
+      { id: 3002, title: 'March in place for 3 mins', xp: 25, icon: '🚶' },
+      { id: 3003, title: 'Do light indoor exercises', xp: 25, icon: '🏃' },
+    ],
   },
   'activity-sleep': {
     id: 4,
@@ -689,6 +704,9 @@ export default function MissionDetails() {
     return checkinDate === today && isLowMoodEmotion(latestCheckin.emotion);
   }, [latestCheckin]);
 
+  // Check weather for bad weather alternatives
+  const { isBadWeather, assessment: weatherAssessment } = useWeatherAssessment();
+
   // Get mission data - use default if no ID provided
   const missionData = urlMissionId ? (missionsDatabase[urlMissionId] || missionsDatabase['1']) : missionsDatabase['1'];
   
@@ -1039,13 +1057,26 @@ export default function MissionDetails() {
         </motion.div>
         
         <Tabs defaultValue="main" className="w-full">
-          <TabsList className={`grid w-full bg-muted/50 ${hasLowMoodToday && missionData.alternativeMissions.length > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <TabsList className={`grid w-full bg-muted/50 ${
+            (hasLowMoodToday && missionData.alternativeMissions.length > 0) && 
+            (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length) 
+              ? 'grid-cols-3' 
+              : (hasLowMoodToday && missionData.alternativeMissions.length > 0) || 
+                (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length) 
+                ? 'grid-cols-2' 
+                : 'grid-cols-1'
+          }`}>
             <TabsTrigger value="main" className="font-bold" data-testid="tab-main-mission">
               {t('missionDetails.tabs.mainMission')}
             </TabsTrigger>
             {hasLowMoodToday && missionData.alternativeMissions.length > 0 && (
               <TabsTrigger value="alternatives" className="font-bold" data-testid="tab-alternatives">
                 {t('missionDetails.tabs.alternatives')}
+              </TabsTrigger>
+            )}
+            {isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length && (
+              <TabsTrigger value="weather" className="font-bold" data-testid="tab-weather-alternatives">
+                {t('missionDetails.tabs.weatherAlternatives')}
               </TabsTrigger>
             )}
           </TabsList>
@@ -1191,6 +1222,62 @@ export default function MissionDetails() {
                 <div className="text-center py-4">
                   <p className="text-muted-foreground text-sm">
                     {t('missionDetails.alternativesHint')}
+                  </p>
+                </div>
+              </Card>
+            </TabsContent>
+          )}
+          
+          {isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length && (
+            <TabsContent value="weather" className="mt-4 space-y-3">
+              <Card className="p-4 bg-gradient-to-r from-blue-500/10 to-slate-500/10 border-blue-500/20">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-slate-500 flex items-center justify-center flex-shrink-0">
+                    <Wind className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-foreground mb-1">{t('missionDetails.weatherWarning')}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {weatherAssessment?.reason || t('missionDetails.weatherBadConditions')}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              
+              {missionData.badWeatherAlternatives.map((alt, index) => (
+                <motion.div
+                  key={alt.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Link href={`/alternative-mission?id=${alt.id}&original=${urlMissionId}&type=weather`}>
+                    <Card 
+                      className="p-4 hover-elevate cursor-pointer transition-all"
+                      data-testid={`weather-alternative-mission-${index}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-slate-500/20 flex items-center justify-center text-2xl">
+                          {alt.icon}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-foreground">{alt.title}</h4>
+                          <div className="flex items-center gap-1 text-primary">
+                            <Zap className="w-4 h-4 fill-primary" />
+                            <span className="text-sm font-bold">+{alt.xp} XP</span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
+              
+              <Card className="p-4 border-dashed border-2 border-muted-foreground/20">
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground text-sm">
+                    {t('missionDetails.weatherAlternativesHint')}
                   </p>
                 </div>
               </Card>
