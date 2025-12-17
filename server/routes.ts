@@ -2246,6 +2246,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========================
+  // Weather & Outdoor Activity Endpoints
+  // ========================
+
+  app.get("/api/weather/outdoor-assessment", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { latitude, longitude } = req.query;
+      
+      if (!latitude || !longitude) {
+        return res.status(400).json({ error: "Latitude and longitude are required" });
+      }
+      
+      const lat = parseFloat(latitude as string);
+      const lon = parseFloat(longitude as string);
+      
+      if (isNaN(lat) || isNaN(lon)) {
+        return res.status(400).json({ error: "Invalid coordinates" });
+      }
+      
+      if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+        return res.status(400).json({ error: "Coordinates out of range" });
+      }
+      
+      const { getOutdoorActivityAssessment } = await import('./services/weatherService');
+      const assessment = await getOutdoorActivityAssessment(lat, lon);
+      
+      res.json(assessment);
+    } catch (error) {
+      console.error("Error fetching weather assessment:", error);
+      res.status(500).json({ error: "Failed to fetch weather assessment" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
