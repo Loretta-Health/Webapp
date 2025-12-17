@@ -85,6 +85,20 @@ interface ActivityData {
   waterGoal: number;
 }
 
+interface UserAchievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  maxProgress: number;
+  xpReward: number;
+  category: string;
+  progress: number;
+  unlocked: boolean;
+  unlockedAt: string | null;
+}
+
 export default function MyDashboard() {
   const { t } = useTranslation('dashboard');
   const [, navigate] = useLocation();
@@ -137,6 +151,11 @@ export default function MyDashboard() {
 
   const { data: activityData } = useQuery<ActivityData>({
     queryKey: ['/api/activities/today'],
+    enabled: !!user,
+  });
+
+  const { data: userAchievements } = useQuery<UserAchievement[]>({
+    queryKey: ['/api/achievements/user'],
     enabled: !!user,
   });
 
@@ -356,7 +375,7 @@ export default function MyDashboard() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('sidebar.achievements')}</span>
-                <span className="font-bold text-sidebar-foreground">{gamificationData?.achievements?.length || 0} {t('sidebar.total')}</span>
+                <span className="font-bold text-sidebar-foreground">{userAchievements?.filter(a => a.unlocked).length || 0} {t('sidebar.total')}</span>
               </div>
             </div>
           </div>
@@ -709,33 +728,51 @@ export default function MyDashboard() {
                   defaultOpen={true}
                 >
                   <div className="grid grid-cols-1 gap-3 lg:gap-4">
-                    <AchievementBadge
-                      title={t('achievements.firstSteps.title')}
-                      description={t('achievements.firstSteps.description')}
-                      icon="target"
-                      unlocked={streak >= 1}
-                      rarity="common"
-                      unlockedDate={streak >= 1 ? t('achievements.recently') : undefined}
-                    />
-                    <AchievementBadge
-                      title={t('achievements.weekWarrior.title')}
-                      description={t('achievements.weekWarrior.description')}
-                      icon="flame"
-                      unlocked={streak >= 7}
-                      rarity="rare"
-                      unlockedDate={streak >= 7 ? t('achievements.recently') : undefined}
-                      progress={streak >= 7 ? undefined : streak}
-                      maxProgress={streak >= 7 ? undefined : 7}
-                    />
-                    <AchievementBadge
-                      title={t('achievements.healthChampion.title')}
-                      description={t('achievements.healthChampion.description')}
-                      icon="crown"
-                      unlocked={level >= 15}
-                      progress={level >= 15 ? undefined : level}
-                      maxProgress={level >= 15 ? undefined : 15}
-                      rarity="epic"
-                    />
+                    {userAchievements && userAchievements.length > 0 ? (
+                      userAchievements.slice(0, 6).map((achievement) => (
+                        <AchievementBadge
+                          key={achievement.id}
+                          title={achievement.title}
+                          description={achievement.description}
+                          icon={achievement.icon as any}
+                          unlocked={achievement.unlocked}
+                          rarity={achievement.rarity}
+                          unlockedDate={achievement.unlockedAt ? format(new Date(achievement.unlockedAt), 'MMM d, yyyy') : undefined}
+                          progress={achievement.unlocked ? undefined : achievement.progress}
+                          maxProgress={achievement.unlocked ? undefined : achievement.maxProgress}
+                        />
+                      ))
+                    ) : (
+                      <>
+                        <AchievementBadge
+                          title={t('achievements.firstSteps.title')}
+                          description={t('achievements.firstSteps.description')}
+                          icon="target"
+                          unlocked={streak >= 1}
+                          rarity="common"
+                          unlockedDate={streak >= 1 ? t('achievements.recently') : undefined}
+                        />
+                        <AchievementBadge
+                          title={t('achievements.weekWarrior.title')}
+                          description={t('achievements.weekWarrior.description')}
+                          icon="flame"
+                          unlocked={streak >= 7}
+                          rarity="rare"
+                          unlockedDate={streak >= 7 ? t('achievements.recently') : undefined}
+                          progress={streak >= 7 ? undefined : streak}
+                          maxProgress={streak >= 7 ? undefined : 7}
+                        />
+                        <AchievementBadge
+                          title={t('achievements.healthChampion.title')}
+                          description={t('achievements.healthChampion.description')}
+                          icon="crown"
+                          unlocked={level >= 15}
+                          progress={level >= 15 ? undefined : level}
+                          maxProgress={level >= 15 ? undefined : 15}
+                          rarity="epic"
+                        />
+                      </>
+                    )}
                   </div>
                 </CollapsibleSection>
               </div>

@@ -1594,7 +1594,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = (req.user as any).id;
       await storage.ensureUserHasAllAchievements(userId);
       const achievements = await storage.getUserAchievementWithDetails(userId);
-      res.json(achievements);
+      
+      // Flatten the response for easier client consumption
+      const flattenedAchievements = achievements.map(ua => ({
+        id: ua.achievement.id,
+        title: ua.achievement.title,
+        description: ua.achievement.description,
+        icon: ua.achievement.icon,
+        rarity: ua.achievement.rarity,
+        maxProgress: ua.achievement.maxProgress,
+        xpReward: ua.achievement.xpReward,
+        category: ua.achievement.category,
+        progress: ua.progress,
+        unlocked: ua.unlocked,
+        unlockedAt: ua.unlockedAt,
+      }));
+      
+      res.json(flattenedAchievements);
     } catch (error) {
       console.error("Error fetching user achievements:", error);
       res.status(500).json({ error: "Failed to fetch user achievements" });
