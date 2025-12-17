@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Activity, Trophy, BookOpen, Pill, Smile, ChevronRight } from 'lucide-react';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Activity, Trophy, BookOpen, Pill, Smile, ChevronRight, MapPin, MapPinOff } from 'lucide-react';
 import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
 import CollapsibleSection from '@/components/CollapsibleSection';
 import { Link, useLocation, Redirect } from 'wouter';
@@ -36,6 +36,8 @@ import HealthScienceSection from '@/components/HealthScienceSection';
 import CommunitySelector, { type CommunityType } from '@/components/CommunitySelector';
 import EmotionalCheckInModal from '@/components/EmotionalCheckInModal';
 import AddMedicationModal from '@/components/AddMedicationModal';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
@@ -96,6 +98,7 @@ export default function MyDashboard() {
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
+  const { locationEnabled, toggleLocationEnabled, usingDefault, loading: locationLoading } = useGeolocation();
   const userId = user?.id;
   const { activeMissions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
@@ -475,6 +478,32 @@ export default function MyDashboard() {
               </Badge>
             )}
             <LanguageSwitcher />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    size="icon" 
+                    variant="ghost"
+                    onClick={toggleLocationEnabled}
+                    disabled={locationLoading}
+                    data-testid="button-location-toggle"
+                    className={locationEnabled && !usingDefault ? 'text-white' : 'text-white/60'}
+                  >
+                    {locationLoading ? (
+                      <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 animate-spin" />
+                    ) : locationEnabled && !usingDefault ? (
+                      <MapPin className="w-4 h-4 lg:w-5 lg:h-5" />
+                    ) : (
+                      <MapPinOff className="w-4 h-4 lg:w-5 lg:h-5" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{locationEnabled && !usingDefault ? t('location.usingYours', 'Using your location') : t('location.usingDefault', 'Using default location (Berlin)')}</p>
+                  <p className="text-xs text-muted-foreground">{t('location.clickTo', 'Click to')} {locationEnabled ? t('location.disable', 'disable') : t('location.enable', 'enable')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button 
               size="icon" 
               variant="ghost"
