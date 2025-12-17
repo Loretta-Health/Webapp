@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useLocation, Link, useSearch } from 'wouter';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, 
   Zap, 
@@ -20,6 +22,8 @@ import {
   Moon,
   Wind,
   Clock,
+  Undo2,
+  XCircle,
   type LucideIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -427,20 +431,148 @@ const alternativeMissionsDatabase: Record<string, AlternativeMissionData> = {
     stepLabel: 'Minute',
     replacesId: 'jumping-jacks',
     replacesTitle: 'Complete 10 jumping jacks'
+  },
+  '3001': {
+    id: 'indoor-walk-short',
+    title: 'Walk Around Your Home',
+    icon: '🏠',
+    frequency: 'daily',
+    description: 'Take a 5-minute walk around your home - perfect for bad weather days.',
+    xpReward: 30,
+    totalSteps: 5,
+    color: 'chart-1',
+    details: 'When the weather outside is not ideal, you can still get your steps in by walking around your home. Move from room to room, take the stairs if you have them.',
+    benefits: [
+      { icon: Footprints, text: 'Keeps you moving' },
+      { icon: Heart, text: 'Gentle cardio' },
+      { icon: Brain, text: 'Clears your mind' },
+      { icon: Leaf, text: 'No weather worries' },
+    ],
+    communityTip: 'Try walking while listening to a podcast or your favorite music!',
+    stepLabel: 'Minute',
+    replacesId: 'activity-steps',
+    replacesTitle: '5 minute outdoor walk'
+  },
+  '3002': {
+    id: 'march-in-place-short',
+    title: 'March in Place',
+    icon: '🚶',
+    frequency: 'daily',
+    description: 'March in place for 3 minutes - easy indoor activity.',
+    xpReward: 25,
+    totalSteps: 3,
+    color: 'chart-2',
+    details: 'Marching in place is a simple but effective way to get your blood flowing without needing any space or equipment.',
+    benefits: [
+      { icon: Activity, text: 'Easy to do anywhere' },
+      { icon: Heart, text: 'Gets heart pumping' },
+      { icon: Flame, text: 'Burns calories' },
+      { icon: Zap, text: 'Boosts energy' },
+    ],
+    communityTip: 'Lift your knees high and swing your arms for more intensity!',
+    stepLabel: 'Minute',
+    replacesId: 'activity-steps',
+    replacesTitle: '5 minute outdoor walk'
+  },
+  '3003': {
+    id: 'light-indoor-exercises',
+    title: 'Light Indoor Exercises',
+    icon: '🏃',
+    frequency: 'daily',
+    description: 'Do light indoor exercises for a few minutes.',
+    xpReward: 25,
+    totalSteps: 3,
+    color: 'chart-3',
+    details: 'A mix of simple exercises you can do indoors: arm circles, leg lifts, toe touches, and gentle twists.',
+    benefits: [
+      { icon: Activity, text: 'Full body movement' },
+      { icon: Heart, text: 'Improves circulation' },
+      { icon: Brain, text: 'Refreshes your mind' },
+      { icon: Leaf, text: 'Gentle on joints' },
+    ],
+    communityTip: 'Start slowly and increase intensity as you warm up.',
+    stepLabel: 'Exercise',
+    replacesId: 'activity-steps',
+    replacesTitle: '5 minute outdoor walk'
+  },
+  '4001': {
+    id: 'indoor-walk-long',
+    title: 'Walk Around Your Home',
+    icon: '🏠',
+    frequency: 'daily',
+    description: 'Take a 10-minute walk around your home - perfect for bad weather days.',
+    xpReward: 45,
+    totalSteps: 10,
+    color: 'chart-1',
+    details: 'When outdoor walking is not possible, walking around your home is a great alternative. Use hallways, walk up and down stairs, or create a path through different rooms.',
+    benefits: [
+      { icon: Footprints, text: 'Same step benefits' },
+      { icon: Heart, text: 'Good cardio' },
+      { icon: Brain, text: 'Mental refresh' },
+      { icon: Leaf, text: 'Weather-proof' },
+    ],
+    communityTip: 'Put on comfortable shoes even indoors for better support!',
+    stepLabel: 'Minute',
+    replacesId: 'walking',
+    replacesTitle: 'Take a 10-minute walk'
+  },
+  '4002': {
+    id: 'march-in-place-long',
+    title: 'March in Place',
+    icon: '🚶',
+    frequency: 'daily',
+    description: 'March in place for 5 minutes - easy indoor cardio.',
+    xpReward: 40,
+    totalSteps: 5,
+    color: 'chart-2',
+    details: 'Marching in place gets your heart rate up and your legs moving without needing to go outside. Great for any weather!',
+    benefits: [
+      { icon: Activity, text: 'No equipment needed' },
+      { icon: Heart, text: 'Elevates heart rate' },
+      { icon: Flame, text: 'Burns calories' },
+      { icon: Zap, text: 'Quick energy boost' },
+    ],
+    communityTip: 'Add arm movements for a full-body workout!',
+    stepLabel: 'Minute',
+    replacesId: 'walking',
+    replacesTitle: 'Take a 10-minute walk'
+  },
+  '4003': {
+    id: 'indoor-stretching-routine',
+    title: 'Indoor Stretching Routine',
+    icon: '🧘',
+    frequency: 'daily',
+    description: 'Do a gentle indoor stretching routine.',
+    xpReward: 35,
+    totalSteps: 5,
+    color: 'chart-3',
+    details: 'A calming stretching routine you can do in any room. Focus on major muscle groups: neck, shoulders, back, legs.',
+    benefits: [
+      { icon: Activity, text: 'Improves flexibility' },
+      { icon: Heart, text: 'Relaxes muscles' },
+      { icon: Brain, text: 'Reduces tension' },
+      { icon: Leaf, text: 'Promotes calm' },
+    ],
+    communityTip: 'Hold each stretch for 15-30 seconds and breathe deeply.',
+    stepLabel: 'Stretch',
+    replacesId: 'walking',
+    replacesTitle: 'Take a 10-minute walk'
   }
 };
 
 export default function AlternativeMissionDetails() {
+  const { t } = useTranslation('pages');
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const altId = params.get('id') || '101';
   const originalMissionId = params.get('original') || '1';
   
-  const { activateAlternativeMission, isActivatingAlternative, missions } = useMissions();
+  const { activateAlternativeMission, isActivatingAlternative, missions, logMissionStep, undoMissionStep, deactivateMission } = useMissions();
   const [showSuccess, setShowSuccess] = useState(false);
   const [isReplaced, setIsReplaced] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
   
   const missionData = alternativeMissionsDatabase[altId];
   
@@ -448,9 +580,9 @@ export default function AlternativeMissionDetails() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <Card className="p-8 text-center">
-          <p className="text-muted-foreground">Mission not found</p>
+          <p className="text-muted-foreground">{t('alternativeMission.notFound')}</p>
           <Link href="/my-dashboard">
-            <Button className="mt-4">Go Back</Button>
+            <Button className="mt-4">{t('alternativeMission.goBack')}</Button>
           </Link>
         </Card>
       </div>
@@ -459,27 +591,50 @@ export default function AlternativeMissionDetails() {
   
   const colors = colorClasses[missionData.color] || colorClasses['chart-1'];
   
-  const alreadyActive = missions.some(m => m.missionKey === missionData.id || m.id === missionData.id);
+  const activeMission = missions.find(m => m.missionKey === missionData.id);
+  const alreadyActive = !!activeMission;
+  const currentProgress = activeMission?.progress || 0;
+  const maxProgress = missionData.totalSteps;
+  const isCompleted = currentProgress >= maxProgress;
+  const progressPercent = (currentProgress / maxProgress) * 100;
   
   const handleReplaceMission = async () => {
     setError(null);
     try {
-      // Use missionData.id instead of altId to ensure we pass the database mission key
       const missionKey = missionData.id;
       await activateAlternativeMission(missionData.replacesId, missionKey);
       setShowSuccess(true);
       setIsReplaced(true);
       
       setTimeout(() => {
-        navigate('/my-dashboard');
+        setShowSuccess(false);
       }, 1500);
     } catch (err: any) {
       const errorMessage = err?.message || 'Failed to activate alternative mission';
       if (errorMessage.includes('low mood')) {
-        setError('Alternative missions are only available when you check in with a low mood today. Try checking in first!');
+        setError(t('alternativeMission.lowMoodRequired'));
       } else {
         setError(errorMessage);
       }
+    }
+  };
+
+  const handleLogStep = () => {
+    if (activeMission && currentProgress < maxProgress) {
+      logMissionStep(activeMission.id);
+    }
+  };
+
+  const handleUndoStep = () => {
+    if (activeMission && currentProgress > 0) {
+      undoMissionStep(activeMission.id);
+    }
+  };
+
+  const handleDeactivate = () => {
+    if (activeMission) {
+      deactivateMission(activeMission.id);
+      navigate(`/mission-details?id=${originalMissionId}`);
     }
   };
   
@@ -583,36 +738,108 @@ export default function AlternativeMissionDetails() {
               </div>
             )}
             
-            <Button
-              size="lg"
-              className={`w-full font-black text-white ${colors.button} ${isReplaced || alreadyActive || isActivatingAlternative ? '' : 'animate-pulse-glow'}`}
-              disabled={isReplaced || alreadyActive || isActivatingAlternative}
-              onClick={handleReplaceMission}
-            >
-              {isReplaced ? (
-                <>
-                  <Check className="w-5 h-5 mr-2" />
-                  Activated for Today!
-                </>
-              ) : alreadyActive ? (
-                <>
-                  <Check className="w-5 h-5 mr-2" />
-                  Already Active
-                </>
-              ) : isActivatingAlternative ? (
-                <>
-                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  Activating...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-5 h-5 mr-2" />
-                  Activate for Today
-                </>
-              )}
-            </Button>
+            {!alreadyActive ? (
+              <Button
+                size="lg"
+                className={`w-full font-black text-white ${colors.button} ${isActivatingAlternative ? '' : 'animate-pulse-glow'}`}
+                disabled={isActivatingAlternative}
+                onClick={handleReplaceMission}
+              >
+                {isActivatingAlternative ? (
+                  <>
+                    <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                    {t('alternativeMission.activating')}
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-5 h-5 mr-2" />
+                    {t('alternativeMission.activateForToday')}
+                  </>
+                )}
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-bold text-foreground">{t('alternativeMission.progress')}</span>
+                  <span className="text-muted-foreground">{currentProgress}/{maxProgress} {missionData.stepLabel}s</span>
+                </div>
+                <Progress value={progressPercent} className="h-3" />
+                
+                <div className="flex gap-2">
+                  <Button
+                    size="lg"
+                    className={`flex-1 font-black text-white ${colors.button}`}
+                    disabled={isCompleted}
+                    onClick={handleLogStep}
+                  >
+                    {isCompleted ? (
+                      <>
+                        <Check className="w-5 h-5 mr-2" />
+                        {t('alternativeMission.completed')}
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-5 h-5 mr-2 fill-current" />
+                        {t('alternativeMission.logStep')}
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    disabled={currentProgress === 0}
+                    onClick={handleUndoStep}
+                    title={t('alternativeMission.undoStep')}
+                  >
+                    <Undo2 className="w-5 h-5" />
+                  </Button>
+                </div>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground hover:text-destructive"
+                  onClick={() => setShowDeactivateConfirm(true)}
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  {t('alternativeMission.returnToMain')}
+                </Button>
+              </div>
+            )}
           </Card>
         </motion.div>
+        
+        {showDeactivateConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 px-4"
+          >
+            <Card className="p-6 max-w-sm w-full">
+              <h3 className="text-lg font-bold mb-2">{t('alternativeMission.confirmDeactivate')}</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                {t('alternativeMission.confirmDeactivateText')}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowDeactivateConfirm(false)}
+                >
+                  {t('alternativeMission.cancel')}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  onClick={handleDeactivate}
+                >
+                  {t('alternativeMission.deactivate')}
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
+        )}
         
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -659,22 +886,40 @@ export default function AlternativeMissionDetails() {
           transition={{ delay: 0.3 }}
         >
           <Card className="p-5">
-            <h3 className="text-lg font-black text-foreground mb-4">How It Works</h3>
+            <h3 className="text-lg font-black text-foreground mb-4">{t('alternativeMission.todaysProgress')}</h3>
             <div className="space-y-3">
-              {Array.from({ length: missionData.totalSteps }).map((_, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-bold text-muted-foreground">
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <span className="font-bold text-foreground">{missionData.stepLabel} #{index + 1}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-primary">
-                    <Zap className="w-4 h-4 fill-primary" />
-                    <span className="text-sm font-bold">+{missionData.xpReward} XP</span>
-                  </div>
-                </div>
-              ))}
+              {Array.from({ length: missionData.totalSteps }).map((_, index) => {
+                const stepCompleted = alreadyActive && index < currentProgress;
+                return (
+                  <motion.div 
+                    key={index} 
+                    className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
+                      stepCompleted 
+                        ? 'bg-gradient-to-r from-chart-2/20 to-emerald-500/10 border border-chart-2/30' 
+                        : 'bg-muted/30'
+                    }`}
+                    initial={false}
+                    animate={stepCompleted ? { scale: [1, 1.02, 1] } : {}}
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                      stepCompleted 
+                        ? 'bg-gradient-to-br from-chart-2 to-emerald-500 text-white' 
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {stepCompleted ? <Check className="w-4 h-4" /> : index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <span className={`font-bold ${stepCompleted ? 'text-chart-2' : 'text-foreground'}`}>
+                        {missionData.stepLabel} #{index + 1}
+                      </span>
+                    </div>
+                    <div className={`flex items-center gap-1 ${stepCompleted ? 'text-chart-2' : 'text-primary'}`}>
+                      <Zap className={`w-4 h-4 ${stepCompleted ? 'fill-chart-2' : 'fill-primary'}`} />
+                      <span className="text-sm font-bold">{stepCompleted ? t('alternativeMission.earned') : `+${missionData.xpReward}`} XP</span>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </Card>
         </motion.div>
