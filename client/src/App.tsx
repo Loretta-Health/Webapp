@@ -99,7 +99,7 @@ function Router() {
         <ConsentGuard><Invite /></ConsentGuard>
       )} />
       <ProtectedRoute path="/leaderboard" component={() => (
-        <ConsentGuard><LeaderboardPage /></ConsentGuard>
+        <LeaderboardPage />
       )} />
       <ProtectedRoute path="/calendar" component={() => (
         <ConsentGuard><Calendar /></ConsentGuard>
