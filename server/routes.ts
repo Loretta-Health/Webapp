@@ -87,6 +87,50 @@ async function chatWithScaleway(messages: ChatMessage[]): Promise<string> {
   return assistantMessage;
 }
 
+// Content moderation for AI safety
+const BLOCKED_INPUT_PATTERNS = [
+  /how\s+to\s+(kill|hurt|harm|poison)/i,
+  /suicide\s+(method|how|way)/i,
+  /make\s+(bomb|weapon|drug)/i,
+  /illegal\s+drug/i,
+  /(child|minor)\s*(porn|abuse)/i,
+  /hack(ing)?\s+(into|password)/i,
+];
+
+const EMERGENCY_KEYWORDS = [
+  /suicid(e|al)/i,
+  /kill\s+(myself|me)/i,
+  /want\s+to\s+die/i,
+  /end\s+(my|it\s+all)/i,
+  /self[- ]?harm/i,
+  /overdose/i,
+];
+
+const EMERGENCY_RESPONSE = `I'm concerned about what you've shared. Please know that help is available:
+
+**Emergency Numbers:**
+- Germany: 112 (Emergency) or 0800 111 0 111 (Crisis Hotline)
+- US: 911 (Emergency) or 988 (Suicide & Crisis Lifeline)
+- International: Contact your local emergency services
+
+You're not alone, and trained professionals are ready to help 24/7. Please reach out now.`;
+
+function checkForEmergency(text: string): boolean {
+  return EMERGENCY_KEYWORDS.some(pattern => pattern.test(text));
+}
+
+function isBlockedContent(text: string): boolean {
+  return BLOCKED_INPUT_PATTERNS.some(pattern => pattern.test(text));
+}
+
+function sanitizeOutput(text: string): string {
+  // Remove any accidentally leaked system prompt markers
+  let sanitized = text.replace(/===.*?===/g, '');
+  // Remove any instruction-like content that might have leaked
+  sanitized = sanitized.replace(/STRICT BOUNDARIES|SAFETY GUARDRAILS|MUST refuse/gi, '');
+  return sanitized.trim();
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes (/api/register, /api/login, /api/logout, /api/user)
   setupAuth(app);
@@ -109,13 +153,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 3. Consider using middleware to DRY up these checks
   // =============================================================================
   
-  // Chat endpoint for Health Navigator
+  // Chat endpoint for Health Navigator with safety guardrails
   app.post("/api/chat", async (req, res) => {
     try {
       const { messages } = req.body;
       
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Messages array is required" });
+      }
+
+      // Get the latest user message for moderation
+      const latestUserMessage = messages.filter((m: { role: string }) => m.role === 'user').pop();
+      const userText = latestUserMessage?.content || '';
+
+      // Check for emergency/crisis situations first - provide immediate help
+      if (checkForEmergency(userText)) {
+        console.log("[SAFETY] Emergency keywords detected, providing crisis resources");
+        return res.json({ message: EMERGENCY_RESPONSE });
+      }
+
+      // Block clearly harmful content
+      if (isBlockedContent(userText)) {
+        console.log("[SAFETY] Blocked content detected");
+        return res.json({ 
+          message: "I'm your health and wellness assistant, so I can only help with health-related questions. Is there something about your health or wellness I can help with?" 
+        });
       }
 
       const chatMessages: ChatMessage[] = [
@@ -128,7 +190,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const assistantMessage = await chatWithScaleway(chatMessages);
       
-      res.json({ message: assistantMessage || "I'm sorry, I couldn't generate a response. Please try again." });
+      // Sanitize output to prevent prompt leakage
+      const safeResponse = sanitizeOutput(assistantMessage || "I'm sorry, I couldn't generate a response. Please try again.");
+      
+      res.json({ message: safeResponse });
     } catch (error) {
       console.error("Chat API error:", error);
       res.status(500).json({ error: "Failed to get response from AI" });
