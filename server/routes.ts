@@ -998,6 +998,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { catalog: bestMission, userMission: bestUserMission } = bestResult;
+      
+      // Check if user has low mood and should get alternative
+      const latestCheckin = await storage.getLatestEmotionalCheckin(userId);
+      const isLowMood = latestCheckin && isLowMoodEmotion(latestCheckin.emotion);
+      const today = new Date().toDateString();
+      const checkinDate = latestCheckin?.checkedInAt ? new Date(latestCheckin.checkedInAt).toDateString() : null;
+      const isCheckinToday = checkinDate === today;
+      const shouldShowAlternative = isLowMood && isCheckinToday && !bestMission.isAlternative;
+      
+      let alternativeMission = null;
+      if (shouldShowAlternative) {
+        const altMission = await storage.getAlternativeFor(bestMission.missionKey);
+        if (altMission) {
+          alternativeMission = {
+            id: altMission.id,
+            missionKey: altMission.missionKey,
+            title: language === 'de' ? altMission.titleDe : altMission.titleEn,
+            description: language === 'de' ? altMission.descriptionDe : altMission.descriptionEn,
+            xpReward: altMission.xpReward,
+            icon: altMission.icon,
+            color: altMission.color,
+            maxProgress: altMission.maxProgress,
+          };
+          reason = language === 'de' 
+            ? 'Hier ist eine sanftere Alternative, die zu deiner aktuellen Stimmung passt.' 
+            : 'Here\'s a gentler alternative that matches your current mood.';
+        }
+      }
+      
       const localizedMission = {
         id: bestMission.id,
         missionKey: bestMission.missionKey,
@@ -1010,7 +1039,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxProgress: bestMission.maxProgress,
       };
 
-      res.json({ mission: localizedMission, reason });
+      res.json({ 
+        mission: alternativeMission || localizedMission, 
+        originalMission: alternativeMission ? localizedMission : null,
+        isAlternative: !!alternativeMission,
+        reason 
+      });
     } catch (error) {
       console.error("Error suggesting mission:", error);
       res.status(500).json({ error: "Failed to suggest mission" });

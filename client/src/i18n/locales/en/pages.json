@@ -333,7 +333,21 @@
     "benefits": "Benefits",
     "howItWorks": "How It Works",
     "proTip": "Pro Tip",
-    "medicalDisclaimer": "Medical Disclaimer"
+    "medicalDisclaimer": "Medical Disclaimer",
+    "activating": "Activating...",
+    "activateForToday": "Activate for Today",
+    "progress": "Progress",
+    "completed": "Completed!",
+    "logStep": "Log Step",
+    "undoStep": "Undo last step",
+    "returnToMain": "Return to Main Mission",
+    "confirmDeactivate": "Return to Main Mission?",
+    "confirmDeactivateText": "This will deactivate the alternative mission. Your progress will be saved but you'll return to the original mission.",
+    "cancel": "Cancel",
+    "deactivate": "Return to Main",
+    "todaysProgress": "Today's Progress",
+    "earned": "Earned",
+    "lowMoodRequired": "Alternative missions are only available when you check in with a low mood today. Try checking in first!"
   },
   "activityDetails": {
     "title": "Health Literacy Navigator",

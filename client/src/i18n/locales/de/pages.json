@@ -333,7 +333,21 @@
     "benefits": "Vorteile",
     "howItWorks": "So funktioniert es",
     "proTip": "Profi-Tipp",
-    "medicalDisclaimer": "Medizinischer Haftungsausschluss"
+    "medicalDisclaimer": "Medizinischer Haftungsausschluss",
+    "activating": "Aktiviere...",
+    "activateForToday": "Für heute aktivieren",
+    "progress": "Fortschritt",
+    "completed": "Abgeschlossen!",
+    "logStep": "Schritt protokollieren",
+    "undoStep": "Letzten Schritt rückgängig",
+    "returnToMain": "Zur Hauptmission zurück",
+    "confirmDeactivate": "Zur Hauptmission zurück?",
+    "confirmDeactivateText": "Dies deaktiviert die alternative Mission. Dein Fortschritt wird gespeichert, aber du kehrst zur ursprünglichen Mission zurück.",
+    "cancel": "Abbrechen",
+    "deactivate": "Zur Hauptmission",
+    "todaysProgress": "Heutiger Fortschritt",
+    "earned": "Verdient",
+    "lowMoodRequired": "Alternative Missionen sind nur verfügbar, wenn du heute mit einer schlechten Stimmung eingecheckt hast. Versuche zuerst einzuchecken!"
   },
   "activityDetails": {
     "title": "Gesundheitskompetenz-Navigator",

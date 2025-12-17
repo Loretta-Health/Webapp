@@ -227,6 +227,20 @@ export function useMissions() {
     }
   }, [missions, updateMissionMutation]);
 
+  const undoMissionStep = useCallback((missionId: string) => {
+    const mission = missions.find(m => m.id === missionId);
+    if (mission && mission.progress > 0) {
+      const newProgress = mission.progress - 1;
+      updateMissionMutation.mutate({
+        id: missionId,
+        data: {
+          progress: newProgress,
+          completed: false,
+        },
+      });
+    }
+  }, [missions, updateMissionMutation]);
+
   const removeMission = useCallback((missionId: string) => {
     deleteMissionMutation.mutate(missionId);
   }, [deleteMissionMutation]);
@@ -277,6 +291,7 @@ export function useMissions() {
     updateMissionProgress,
     completeMission,
     logMissionStep,
+    undoMissionStep,
     removeMission,
     resetMissions,
     activateMission,
