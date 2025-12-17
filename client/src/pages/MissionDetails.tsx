@@ -89,8 +89,8 @@ const missionsDatabase: Record<string, MissionData> = {
     ],
     initialSteps: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, completed: false })),
     alternativeMissions: [
-      { id: 201, title: 'Do 20 squats', xp: 45, icon: '🦵' },
-      { id: 202, title: 'Take a 5-min walk', xp: 35, icon: '🚶' },
+      { id: 201, title: 'Gentle stretching for 2 mins', xp: 50, icon: '🌸' },
+      { id: 202, title: 'Walk in place for 1 minute', xp: 45, icon: '🚶' },
     ],
     communityTip: 'Try doing your jumping jacks in sets of 10 with short breaks. This helps maintain form and prevents fatigue!',
     stepLabel: 'Rep'
@@ -113,8 +113,8 @@ const missionsDatabase: Record<string, MissionData> = {
     ],
     initialSteps: Array.from({ length: 8 }, (_, i) => ({ id: i + 1, completed: false })),
     alternativeMissions: [
-      { id: 101, title: 'Drink herbal tea', xp: 25, icon: '🍵' },
-      { id: 102, title: 'Eat water-rich fruits', xp: 20, icon: '🍉' },
+      { id: 101, title: 'Sip water slowly, 4 small sips', xp: 30, icon: '💧' },
+      { id: 102, title: 'Drink warm herbal tea', xp: 30, icon: '🍵' },
     ],
     communityTip: 'Try keeping a water bottle at your desk as a visual reminder to stay hydrated throughout the day.',
     stepLabel: 'Glass'
@@ -137,8 +137,8 @@ const missionsDatabase: Record<string, MissionData> = {
     ],
     initialSteps: Array.from({ length: 5 }, (_, i) => ({ id: i + 1, completed: false })),
     alternativeMissions: [
-      { id: 301, title: 'Practice deep breathing', xp: 30, icon: '🧘' },
-      { id: 302, title: 'Do a body scan', xp: 35, icon: '💆' },
+      { id: 301, title: 'Quiet rest for 3 minutes', xp: 40, icon: '😌' },
+      { id: 302, title: 'Listen to calming music', xp: 40, icon: '🎵' },
     ],
     communityTip: 'Find a quiet spot, close your eyes, and focus on your breath. Even 5 minutes can transform your day!',
     stepLabel: 'Minute'
@@ -161,8 +161,8 @@ const missionsDatabase: Record<string, MissionData> = {
     ],
     initialSteps: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, completed: false })),
     alternativeMissions: [
-      { id: 401, title: 'March in place for 5 mins', xp: 25, icon: '🚶' },
-      { id: 402, title: 'Climb stairs for 3 mins', xp: 30, icon: '🪜' },
+      { id: 401, title: 'Walk gently in place for 2 mins', xp: 45, icon: '🚶' },
+      { id: 402, title: 'Look out the window for 5 mins', xp: 40, icon: '🪟' },
     ],
     communityTip: 'Try walking during phone calls or after meals. Every step counts toward your daily goal!',
     stepLabel: 'Minute'
@@ -185,8 +185,8 @@ const missionsDatabase: Record<string, MissionData> = {
     ],
     initialSteps: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, completed: false })),
     alternativeMissions: [
-      { id: 501, title: 'Do a body scan relaxation', xp: 30, icon: '🧘' },
-      { id: 502, title: 'Practice box breathing', xp: 25, icon: '📦' },
+      { id: 501, title: 'Rest and take 3 slow breaths', xp: 25, icon: '🌬️' },
+      { id: 502, title: 'Close your eyes for 1 minute', xp: 25, icon: '😌' },
     ],
     communityTip: 'Try the 4-7-8 technique: breathe in for 4 seconds, hold for 7, exhale for 8.',
     stepLabel: 'Breath'
@@ -218,8 +218,8 @@ const missionsDatabase: Record<string, MissionData> = {
       { id: 8, completed: false },
     ],
     alternativeMissions: [
-      { id: 101, title: 'Drink herbal tea', xp: 25, icon: '🍵' },
-      { id: 102, title: 'Eat water-rich fruits', xp: 20, icon: '🍉' },
+      { id: 101, title: 'Sip water slowly, 4 small sips', xp: 30, icon: '💧' },
+      { id: 102, title: 'Drink warm herbal tea', xp: 30, icon: '🍵' },
     ],
     communityTip: 'Try keeping a water bottle at your desk as a visual reminder to stay hydrated throughout the day.',
     stepLabel: 'Glass'
@@ -247,8 +247,8 @@ const missionsDatabase: Record<string, MissionData> = {
       { id: 4, completed: true, time: '7:00 PM' },
     ],
     alternativeMissions: [
-      { id: 201, title: 'Do 20 squats', xp: 45, icon: '🦵' },
-      { id: 202, title: 'Take a 5-min walk', xp: 35, icon: '🚶' },
+      { id: 201, title: 'Gentle stretching for 2 mins', xp: 50, icon: '🌸' },
+      { id: 202, title: 'Walk in place for 1 minute', xp: 45, icon: '🚶' },
     ],
     communityTip: 'Try doing your jumping jacks in sets of 10 with short breaks. This helps maintain form and prevents fatigue!',
     stepLabel: 'Set'
@@ -274,8 +274,8 @@ const missionsDatabase: Record<string, MissionData> = {
       { id: 2, completed: false },
     ],
     alternativeMissions: [
-      { id: 301, title: 'March in place for 5 mins', xp: 25, icon: '🚶' },
-      { id: 302, title: 'Climb stairs for 3 mins', xp: 30, icon: '🪜' },
+      { id: 301, title: 'Walk gently in place for 2 mins', xp: 30, icon: '🚶' },
+      { id: 302, title: 'Look out the window for 5 mins', xp: 25, icon: '🪟' },
     ],
     communityTip: 'Try walking during phone calls or after meals. Every step counts toward your daily goal!',
     stepLabel: 'Walk'
@@ -300,8 +300,8 @@ const missionsDatabase: Record<string, MissionData> = {
       { id: 1, completed: false },
     ],
     alternativeMissions: [
-      { id: 401, title: 'Read a book before bed', xp: 20, icon: '📖' },
-      { id: 402, title: 'Practice meditation', xp: 25, icon: '🧘' },
+      { id: 401, title: 'Rest with eyes closed for 5 mins', xp: 25, icon: '😌' },
+      { id: 402, title: 'Listen to soft music', xp: 20, icon: '🎵' },
     ],
     communityTip: 'Try dimming the lights and reading a book instead of scrolling. Your body will thank you!',
     stepLabel: 'Night'
@@ -328,8 +328,8 @@ const missionsDatabase: Record<string, MissionData> = {
       { id: 3, completed: false },
     ],
     alternativeMissions: [
-      { id: 501, title: 'Try box breathing', xp: 20, icon: '📦' },
-      { id: 502, title: 'Do gentle stretching', xp: 15, icon: '🧘' },
+      { id: 501, title: 'Rest and take 3 slow breaths', xp: 20, icon: '🌬️' },
+      { id: 502, title: 'Sit quietly for 2 minutes', xp: 15, icon: '😌' },
     ],
     communityTip: 'Try the 4-7-8 technique: breathe in for 4 seconds, hold for 7, exhale for 8.',
     stepLabel: 'Session'
@@ -357,8 +357,8 @@ const missionsDatabase: Record<string, MissionData> = {
       { id: 4, completed: false },
     ],
     alternativeMissions: [
-      { id: 601, title: 'Do desk exercises', xp: 15, icon: '💪' },
-      { id: 602, title: 'Take the stairs', xp: 20, icon: '🪜' },
+      { id: 601, title: 'Stand up and stretch gently', xp: 15, icon: '🌸' },
+      { id: 602, title: 'Walk to the window and back', xp: 15, icon: '🚶' },
     ],
     communityTip: 'Set a timer every 2 hours to remind yourself to move. Your body and mind will perform better!',
     stepLabel: 'Break'
