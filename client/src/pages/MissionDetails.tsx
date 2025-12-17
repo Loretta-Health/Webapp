@@ -29,6 +29,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from '@/components/MascotCharacter';
 import { useMissions } from '@/hooks/useMissions';
+import { useQuery } from '@tanstack/react-query';
+import { isLowMoodEmotion } from '../../../shared/emotions';
 
 interface MissionStep {
   id: number;
@@ -675,6 +677,18 @@ export default function MissionDetails() {
   
   const { missions, activeMissions, inactiveMissions, updateMissionProgress, activateMission, deactivateMission } = useMissions();
 
+  // Check if user has a low mood check-in today for alternative missions
+  const { data: latestCheckin } = useQuery<{ emotion: string; checkedInAt: string } | null>({
+    queryKey: ['/api/emotional-checkins/latest'],
+  });
+  
+  const hasLowMoodToday = useMemo(() => {
+    if (!latestCheckin) return false;
+    const checkinDate = new Date(latestCheckin.checkedInAt).toDateString();
+    const today = new Date().toDateString();
+    return checkinDate === today && isLowMoodEmotion(latestCheckin.emotion);
+  }, [latestCheckin]);
+
   // Get mission data - use default if no ID provided
   const missionData = urlMissionId ? (missionsDatabase[urlMissionId] || missionsDatabase['1']) : missionsDatabase['1'];
   
@@ -1023,13 +1037,15 @@ export default function MissionDetails() {
         </motion.div>
         
         <Tabs defaultValue="main" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-muted/50">
+          <TabsList className={`grid w-full bg-muted/50 ${hasLowMoodToday && missionData.alternativeMissions.length > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
             <TabsTrigger value="main" className="font-bold" data-testid="tab-main-mission">
               {t('missionDetails.tabs.mainMission')}
             </TabsTrigger>
-            <TabsTrigger value="alternatives" className="font-bold" data-testid="tab-alternatives">
-              {t('missionDetails.tabs.alternatives')}
-            </TabsTrigger>
+            {hasLowMoodToday && missionData.alternativeMissions.length > 0 && (
+              <TabsTrigger value="alternatives" className="font-bold" data-testid="tab-alternatives">
+                {t('missionDetails.tabs.alternatives')}
+              </TabsTrigger>
+            )}
           </TabsList>
           
           <TabsContent value="main" className="mt-4 space-y-4">
@@ -1137,45 +1153,47 @@ export default function MissionDetails() {
             </motion.div>
           </TabsContent>
           
-          <TabsContent value="alternatives" className="mt-4 space-y-3">
-            {missionData.alternativeMissions.map((alt, index) => (
-              <motion.div
-                key={alt.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link href={`/alternative-mission?id=${alt.id}&original=${urlMissionId}`}>
-                  <Card 
-                    className="p-4 hover-elevate cursor-pointer transition-all"
-                    data-testid={`alternative-mission-${index}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center text-2xl">
-                        {alt.icon}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-foreground">{alt.title}</h4>
-                        <div className="flex items-center gap-1 text-primary">
-                          <Zap className="w-4 h-4 fill-primary" />
-                          <span className="text-sm font-bold">+{alt.xp} XP</span>
+          {hasLowMoodToday && missionData.alternativeMissions.length > 0 && (
+            <TabsContent value="alternatives" className="mt-4 space-y-3">
+              {missionData.alternativeMissions.map((alt, index) => (
+                <motion.div
+                  key={alt.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Link href={`/alternative-mission?id=${alt.id}&original=${urlMissionId}`}>
+                    <Card 
+                      className="p-4 hover-elevate cursor-pointer transition-all"
+                      data-testid={`alternative-mission-${index}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center text-2xl">
+                          {alt.icon}
                         </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-foreground">{alt.title}</h4>
+                          <div className="flex items-center gap-1 text-primary">
+                            <Zap className="w-4 h-4 fill-primary" />
+                            <span className="text-sm font-bold">+{alt.xp} XP</span>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
                       </div>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
-            
-            <Card className="p-4 border-dashed border-2 border-muted-foreground/20">
-              <div className="text-center py-4">
-                <p className="text-muted-foreground text-sm">
-                  {t('missionDetails.alternativesHint')}
-                </p>
-              </div>
-            </Card>
-          </TabsContent>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
+              
+              <Card className="p-4 border-dashed border-2 border-muted-foreground/20">
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground text-sm">
+                    {t('missionDetails.alternativesHint')}
+                  </p>
+                </div>
+              </Card>
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>
