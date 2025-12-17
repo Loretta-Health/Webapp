@@ -795,34 +795,36 @@ export default function MissionDetails() {
             {inactiveMissions.length > 0 && (
               <div className="space-y-3">
                 {inactiveMissions.map((mission) => (
-                  <Card key={mission.id} className="p-4 opacity-60 hover:opacity-100 transition-all">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-foreground">{mission.title}</h3>
-                          <Badge variant="secondary" className="text-xs">
-                            {tDashboard('missions.inactive')}
-                          </Badge>
+                  <Link key={mission.id} href={`/mission-details?id=${mission.missionKey}`}>
+                    <Card className="p-4 opacity-60 hover:opacity-100 transition-all cursor-pointer hover:shadow-md">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-foreground">{mission.title}</h3>
+                            <Badge variant="secondary" className="text-xs">
+                              {tDashboard('missions.inactive')}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{mission.description}</p>
+                          <span className="text-xs font-bold text-primary mt-2 block">+{mission.xpReward} XP</span>
                         </div>
-                        <p className="text-sm text-muted-foreground">{mission.description}</p>
-                        <span className="text-xs font-bold text-primary mt-2 block">+{mission.xpReward} XP</span>
-                      </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <Link href={`/mission-details?id=${mission.missionKey}`}>
-                          <Button variant="ghost" size="sm">
-                            <ChevronRight className="w-4 h-4" />
+                        <div className="flex items-center gap-2 ml-4">
+                          <Button 
+                            variant="default" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              activateMission(mission.id);
+                            }}
+                          >
+                            {tDashboard('missions.activateMission')}
                           </Button>
-                        </Link>
-                        <Button 
-                          variant="default" 
-                          size="sm"
-                          onClick={() => activateMission(mission.id)}
-                        >
-                          {tDashboard('missions.activateMission')}
-                        </Button>
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        </div>
                       </div>
-                    </div>
-                  </Card>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             )}
