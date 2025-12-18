@@ -156,7 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chat endpoint for Health Navigator with safety guardrails
   app.post("/api/chat", async (req, res) => {
     try {
-      const { messages } = req.body;
+      const { messages, weatherContext } = req.body;
       
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Messages array is required" });
@@ -180,8 +180,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Build dynamic context with weather information
+      let dynamicContext = '';
+      if (weatherContext) {
+        const { isGoodForOutdoor, weatherDescription, temperature, warnings } = weatherContext;
+        dynamicContext = `\n\n=== CURRENT WEATHER CONTEXT ===
+Current weather at user's location:
+- Conditions: ${weatherDescription || 'Unknown'}
+- Temperature: ${temperature !== undefined ? `${temperature}°C` : 'Unknown'}
+- Suitable for outdoor activities: ${isGoodForOutdoor ? 'YES' : 'NO'}
+${warnings && warnings.length > 0 ? `- Weather warnings: ${warnings.join(', ')}` : ''}
+
+${!isGoodForOutdoor ? `IMPORTANT: The weather is currently BAD for outdoor activities. If the user has an outdoor mission activated (like walking or jumping jacks), proactively suggest an indoor alternative. For example:
+- If they mention going for a walk, suggest "walking around your home" instead
+- If they mention outdoor exercise, suggest indoor alternatives
+- Be helpful about the weather situation without being overly cautious` : ''}
+=== END WEATHER CONTEXT ===`;
+      }
+
       const chatMessages: ChatMessage[] = [
-        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT },
+        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + dynamicContext },
         ...messages.map((msg: { role: string; content: string }) => ({
           role: msg.role as "user" | "assistant",
           content: msg.content,

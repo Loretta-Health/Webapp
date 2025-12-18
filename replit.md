@@ -20,6 +20,15 @@ Preferred communication style: Simple, everyday language.
 - **API Endpoints**: Comprehensive RESTful API for managing user data (questionnaires, profiles, preferences, gamification, risk scores), and AI chat.
 - **Authentication**: Session-based using Passport.js (local strategy), PostgreSQL session store, secure password hashing, and protected routes.
 
+### AI Health Navigator with Weather Awareness
+- **Weather Context**: The AI chat system receives real-time weather data from the user's location via browser geolocation.
+- **Weather Service**: Uses Open-Meteo API (free, no API key required) to fetch current conditions and outdoor activity suitability.
+- **Outdoor Assessment**: Weather data is analyzed for temperature, precipitation, wind, visibility, and UV index to determine if conditions are suitable for outdoor activities.
+- **Dynamic Prompts**: When weather is bad for outdoor activities, the AI is instructed to proactively suggest indoor alternatives for outdoor missions.
+- **Alternative Mission Suggestions**: The AI recommends gentler indoor alternatives only when:
+  1. The user has an outdoor mission ACTIVATED (in progress)
+  2. AND either: user doesn't feel well OR weather is bad for outdoor activities
+
 ### Health Questionnaire & Risk Prediction
 - **Questionnaire**: 46 questions across various health categories, mapped to NHANES-style API parameters.
 - **ML Integration**: Designed to integrate with an external ML prediction API (currently bypassed due to issues, using a fallback evidence-based risk model).

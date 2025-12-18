@@ -1,10 +1,17 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import type { SuggestedMission } from '@/components/chat/MissionCardView';
 import type { MetricData } from '@/components/chat/MetricCard';
+
+interface WeatherContext {
+  isGoodForOutdoor: boolean;
+  weatherDescription: string;
+  temperature: number;
+  warnings: string[];
+}
 
 export interface ChatMessage {
   id: string;
@@ -128,6 +135,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const [pendingEmotion, setPendingEmotion] = useState<string | null>(null);
   const [isCheckInConfirmationPending, setIsCheckInConfirmationPending] = useState(false);
   const [activityContext, setActivityContext] = useState<ActivityContext | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const { toast } = useToast();
   const { i18n, t } = useTranslation();
   const [, setLocation] = useLocation();
@@ -136,6 +144,51 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const activityContextRef = useRef<ActivityContext | null>(null);
   activityContextRef.current = activityContext;
   const lastUserMessageRef = useRef<string>('');
+  const weatherContextRef = useRef<WeatherContext | null>(null);
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.log('Geolocation not available:', error.message);
+        },
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+      );
+    }
+  }, []);
+
+  const { data: weatherData } = useQuery({
+    queryKey: ['/api/weather/outdoor-assessment', userLocation?.lat, userLocation?.lon],
+    queryFn: async () => {
+      if (!userLocation) return null;
+      const response = await fetch(
+        `/api/weather/outdoor-assessment?latitude=${userLocation.lat}&longitude=${userLocation.lon}`,
+        { credentials: 'include' }
+      );
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!userLocation,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (weatherData) {
+      weatherContextRef.current = {
+        isGoodForOutdoor: weatherData.isGoodForOutdoor,
+        weatherDescription: weatherData.weatherData?.weatherDescription || 'Unknown',
+        temperature: weatherData.weatherData?.temperature,
+        warnings: weatherData.warnings || [],
+      };
+    }
+  }, [weatherData]);
 
   const detectEmotion = useCallback((text: string): string | null => {
     const lowerText = text.toLowerCase();
@@ -361,6 +414,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
             type: activityContextRef.current.type,
             metricData: activityContextRef.current.metricData,
           } : undefined,
+          weatherContext: weatherContextRef.current,
         }),
       });
 
