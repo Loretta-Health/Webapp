@@ -1799,6 +1799,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get the authenticated user's communities - MUST be before /api/teams/:id
+  app.get("/api/teams/me", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const teams = await storage.getUserTeams(userId);
+      res.json(teams);
+    } catch (error) {
+      console.error("Error fetching user teams:", error);
+      res.status(500).json({ error: "Failed to fetch user teams" });
+    }
+  });
+
+  // Get current user's membership in Loretta community - MUST be before /api/teams/:id
+  app.get("/api/teams/loretta-community/membership", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const member = await storage.getTeamMember('loretta-community', userId);
+      
+      if (!member) {
+        return res.status(404).json({ error: "Not a member of Loretta community" });
+      }
+      
+      res.json(member);
+    } catch (error) {
+      console.error("Error fetching Loretta membership:", error);
+      res.status(500).json({ error: "Failed to fetch membership" });
+    }
+  });
+
   app.get("/api/teams/:id", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: "Not authenticated" });
@@ -1822,22 +1859,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching team:", error);
       res.status(500).json({ error: "Failed to fetch team" });
-    }
-  });
-
-  // Get the authenticated user's communities
-  app.get("/api/teams/me", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
-    
-    try {
-      const userId = (req.user as any).id;
-      const teams = await storage.getUserTeams(userId);
-      res.json(teams);
-    } catch (error) {
-      console.error("Error fetching user teams:", error);
-      res.status(500).json({ error: "Failed to fetch user teams" });
     }
   });
 
@@ -1910,27 +1931,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting team:", error);
       res.status(500).json({ error: "Failed to delete team" });
-    }
-  });
-
-  // Get current user's membership in Loretta community
-  app.get("/api/teams/loretta-community/membership", async (req, res) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
-    
-    try {
-      const userId = (req.user as any).id;
-      const member = await storage.getTeamMember('loretta-community', userId);
-      
-      if (!member) {
-        return res.status(404).json({ error: "Not a member of Loretta community" });
-      }
-      
-      res.json(member);
-    } catch (error) {
-      console.error("Error fetching Loretta membership:", error);
-      res.status(500).json({ error: "Failed to fetch membership" });
     }
   });
 
