@@ -23,6 +23,8 @@ export interface SuggestedMission {
   category?: 'daily' | 'weekly' | 'bonus';
   missionKey?: string;
   userMissionId?: string;
+  isAlternative?: boolean;
+  parentMissionKey?: string;
 }
 
 interface MissionCardViewProps {

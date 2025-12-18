@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'wouter';
+import { useQueryClient } from '@tanstack/react-query';
 import type { SuggestedMission } from '@/components/chat/MissionCardView';
 import type { MetricData } from '@/components/chat/MetricCard';
 
@@ -130,6 +131,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const { toast } = useToast();
   const { i18n, t } = useTranslation();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   
   const activityContextRef = useRef<ActivityContext | null>(null);
   activityContextRef.current = activityContext;
@@ -185,6 +187,8 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
             category: 'daily',
             missionKey: data.mission.missionKey,
             userMissionId: data.mission.userMissionId,
+            isAlternative: data.isAlternative || false,
+            parentMissionKey: data.originalMission?.missionKey,
           };
           setSuggestedMission(mission);
           setShowMissionCard(true);
@@ -388,55 +392,90 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   }, [toast]);
 
   const handleActivateMission = useCallback(async () => {
-    if (!suggestedMission?.userMissionId) {
-      setMissionActivated(true);
-      toast({
-        title: t('chat.missionActivated', 'Mission Activated!') + ' 🎯',
-        description: `"${suggestedMission?.title}" has been added to your quests.`,
-      });
+    if (!suggestedMission) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/missions/${suggestedMission.userMissionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ isActive: true }),
-      });
+      let response;
+      
+      if (suggestedMission.isAlternative && suggestedMission.parentMissionKey && suggestedMission.missionKey) {
+        response = await fetch('/api/missions/activate-alternative', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            parentMissionKey: suggestedMission.parentMissionKey,
+            alternativeMissionKey: suggestedMission.missionKey,
+          }),
+        });
+      } else if (suggestedMission.userMissionId) {
+        response = await fetch(`/api/missions/${suggestedMission.userMissionId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ isActive: true }),
+        });
+      } else {
+        setMissionActivated(true);
+        toast({
+          title: t('chat.missionActivated', 'Mission Activated!') + ' 🎯',
+          description: `"${suggestedMission.title}" has been added to your quests.`,
+        });
+        return;
+      }
 
       if (!response.ok) {
-        throw new Error('Failed to activate mission');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to activate mission');
       }
+
+      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
 
       setMissionActivated(true);
       toast({
         title: t('chat.missionActivated', 'Mission Activated!') + ' 🎯',
-        description: `"${suggestedMission?.title}" has been added to your quests.`,
+        description: `"${suggestedMission.title}" has been added to your quests.`,
       });
 
       const systemMessage: ChatMessage = {
         id: (Date.now() + 2).toString(),
         role: 'assistant',
         content: i18n.language.startsWith('de') 
-          ? `Super Wahl! Ich habe die Mission "${suggestedMission?.title}" für dich aktiviert. Du kannst deinen Fortschritt im Dashboard verfolgen. Viel Erfolg! 💪`
-          : `Great choice! I've activated the "${suggestedMission?.title}" mission for you. You can track your progress in the Dashboard. Good luck! 💪`,
+          ? `Super Wahl! Ich habe die Mission "${suggestedMission.title}" für dich aktiviert. Du kannst deinen Fortschritt im Dashboard verfolgen. Viel Erfolg! 💪`
+          : `Great choice! I've activated the "${suggestedMission.title}" mission for you. You can track your progress in the Dashboard. Good luck! 💪`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, systemMessage]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to activate mission:', error);
-      toast({
-        title: t('chat.error', 'Error'),
-        description: t('chat.activationFailed', 'Failed to activate mission. Please try again.'),
-        variant: 'destructive',
-      });
+      const errorMessage = error?.message || '';
+      
+      if (errorMessage.includes('low mood')) {
+        toast({
+          title: t('chat.error', 'Error'),
+          description: i18n.language.startsWith('de')
+            ? 'Alternative Missionen sind nur verfügbar, wenn du heute mit schlechter Stimmung eingecheckt hast.'
+            : 'Alternative missions are only available when you\'ve checked in with a low mood today.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: t('chat.error', 'Error'),
+          description: t('chat.activationFailed', 'Failed to activate mission. Please try again.'),
+          variant: 'destructive',
+        });
+      }
     }
-  }, [suggestedMission, toast, setMessages, t, i18n.language]);
+  }, [suggestedMission, toast, setMessages, t, i18n.language, queryClient]);
 
   const handleViewMission = useCallback(() => {
     if (suggestedMission?.missionKey) {
-      setLocation(`/mission-details?id=${suggestedMission.missionKey}`);
+      if (suggestedMission.isAlternative) {
+        setLocation(`/alternative-mission?id=${suggestedMission.missionKey}`);
+      } else {
+        setLocation(`/mission-details?id=${suggestedMission.missionKey}`);
+      }
     } else {
       setLocation('/my-dashboard');
     }
