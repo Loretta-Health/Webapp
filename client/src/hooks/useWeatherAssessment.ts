@@ -47,8 +47,9 @@ export function useWeatherAssessment() {
       
       return response.json();
     },
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 15 * 60 * 1000,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 10 * 60 * 1000,
+    refetchOnMount: 'always',
     retry: 2,
   });
 

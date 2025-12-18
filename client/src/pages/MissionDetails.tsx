@@ -697,8 +697,11 @@ export default function MissionDetails() {
   const { missions, activeMissions, inactiveMissions, updateMissionProgress, activateMission, deactivateMission } = useMissions();
 
   // Check if user has a low mood check-in today for alternative missions
-  const { data: latestCheckin } = useQuery<{ emotion: string; checkedInAt: string } | null>({
+  // Always refetch on mount to ensure fresh mood data
+  const { data: latestCheckin, refetch: refetchMood } = useQuery<{ emotion: string; checkedInAt: string } | null>({
     queryKey: ['/api/emotional-checkins/latest'],
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
   
   const hasLowMoodToday = useMemo(() => {
@@ -708,8 +711,14 @@ export default function MissionDetails() {
     return checkinDate === today && isLowMoodEmotion(latestCheckin.emotion);
   }, [latestCheckin]);
 
-  // Check weather for bad weather alternatives
-  const { isBadWeather: actualBadWeather, assessment: weatherAssessment } = useWeatherAssessment();
+  // Check weather for bad weather alternatives - always refetch on mount
+  const { isBadWeather: actualBadWeather, assessment: weatherAssessment, refetch: refetchWeather } = useWeatherAssessment();
+  
+  // Ensure mood and weather are refreshed when entering mission details
+  useEffect(() => {
+    refetchMood();
+    refetchWeather();
+  }, [urlMissionId]);
   const isBadWeather = simulateBadWeather || actualBadWeather;
 
   // Get mission data - use default if no ID provided
