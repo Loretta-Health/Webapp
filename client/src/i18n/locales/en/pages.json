@@ -321,9 +321,17 @@
     },
     "stepsRemaining": "{{count}} more to go...",
     "alternativesHint": "Alternative missions earn XP too! Choose what works best for you.",
+    "moodBanner": {
+      "title": "Take It Easy Today",
+      "description": "You logged that you weren't feeling well today. Try out one of these gentler alternative missions instead."
+    },
     "weatherWarning": "Weather Alert",
     "weatherBadConditions": "Current weather conditions are not ideal for outdoor activities.",
-    "weatherAlternativesHint": "Indoor alternatives let you stay active without going outside. Complete these to earn XP!"
+    "weatherAlternativesHint": "Indoor alternatives let you stay active without going outside. Complete these to earn XP!",
+    "weatherBanner": {
+      "title": "Weather Alert",
+      "description": "The weather isn't great today. Try one of these indoor alternatives instead!"
+    }
   },
   "alternativeMission": {
     "title": "Alternative Mission",
