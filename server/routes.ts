@@ -180,6 +180,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Fetch user's activated missions if authenticated
+      let activeMissionsContext = '';
+      if (req.isAuthenticated()) {
+        const userId = (req.user as any).id;
+        const userMissionsList = await storage.getUserMissions(userId);
+        const activeMissions = userMissionsList.filter(m => m.isActive);
+        
+        if (activeMissions.length > 0) {
+          const missionDescriptions = await Promise.all(
+            activeMissions.map(async (m) => {
+              const catalogMission = await storage.getMissionByKey(m.missionKey);
+              const altMission = catalogMission ? await storage.getAlternativeFor(m.missionKey) : null;
+              return {
+                key: m.missionKey,
+                title: catalogMission?.titleEn || m.missionKey,
+                progress: m.progress,
+                goal: catalogMission?.maxProgress || 0,
+                alternativeTitle: altMission?.titleEn || null,
+                alternativeKey: altMission?.missionKey || null,
+              };
+            })
+          );
+          
+          activeMissionsContext = `\n\n=== USER'S ACTIVATED MISSIONS ===
+The user currently has these missions ACTIVATED (in progress):
+${missionDescriptions.map(m => `- "${m.title}" (key: ${m.key}, progress: ${m.progress}/${m.goal})${m.alternativeTitle ? ` → Alternative: "${m.alternativeTitle}"` : ''}`).join('\n')}
+
+IMPORTANT - SUGGESTING ALTERNATIVES:
+If the user expresses they CANNOT do one of their activated missions (phrases like "I can't", "I'm unable to", "it's too hard", "I don't feel up to", "I'm too tired for", "I can't do the walk", "jumping jacks are too hard today", etc.), you should:
+1. Acknowledge their situation with empathy
+2. Suggest the gentler alternative mission that corresponds to their activated mission
+3. Use the tag [SUGGEST_MISSION] at the end to show them the alternative
+
+Match what the user says to their activated missions:
+${missionDescriptions.filter(m => m.alternativeTitle).map(m => `- If they mention "${m.title.toLowerCase()}" or related words → suggest "${m.alternativeTitle}"`).join('\n')}
+
+Do NOT suggest alternatives for missions the user hasn't activated.
+=== END ACTIVATED MISSIONS ===`;
+        }
+      }
+
       // Build dynamic context with weather information
       let dynamicContext = '';
       if (weatherContext) {
@@ -199,7 +240,7 @@ ${!isGoodForOutdoor ? `IMPORTANT: The weather is currently BAD for outdoor activ
       }
 
       const chatMessages: ChatMessage[] = [
-        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + dynamicContext },
+        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + activeMissionsContext + dynamicContext },
         ...messages.map((msg: { role: string; content: string }) => ({
           role: msg.role as "user" | "assistant",
           content: msg.content,
