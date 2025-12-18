@@ -33,6 +33,7 @@ import { useMissions } from '@/hooks/useMissions';
 import { useQuery } from '@tanstack/react-query';
 import { isLowMoodEmotion } from '../../../shared/emotions';
 import { useWeatherAssessment } from '@/hooks/useWeatherAssessment';
+import { useWeatherSimulation } from '@/contexts/WeatherSimulationContext';
 
 interface MissionStep {
   id: number;
@@ -691,8 +692,8 @@ export default function MissionDetails() {
   const params = new URLSearchParams(searchString);
   const urlMissionId = params.get('id');
   
-  // Debug toggle for simulating bad weather (testing only)
-  const [simulateBadWeather, setSimulateBadWeather] = useState(false);
+  // Get global weather simulation state
+  const { simulateBadWeather } = useWeatherSimulation();
   
   const { missions, activeMissions, inactiveMissions, updateMissionProgress, activateMission, deactivateMission } = useMissions();
 
@@ -940,27 +941,6 @@ export default function MissionDetails() {
           <h1 className="text-xl font-black text-foreground">{t('missionDetails.title')}</h1>
         </div>
       </header>
-      
-      {/* Debug toggle for testing weather alternatives */}
-      {missionData.isWeatherDependent && (
-        <div className="max-w-2xl mx-auto px-4 pt-4">
-          <Card className="p-3 bg-amber-500/10 border-amber-500/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-amber-500/20 text-amber-700 border-amber-500/30 text-xs">
-                  TEST MODE
-                </Badge>
-                <span className="text-sm text-muted-foreground">Simulate bad weather</span>
-              </div>
-              <Switch
-                checked={simulateBadWeather}
-                onCheckedChange={setSimulateBadWeather}
-                data-testid="toggle-simulate-weather"
-              />
-            </div>
-          </Card>
-        </div>
-      )}
       
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
         <motion.div
