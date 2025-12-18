@@ -69,11 +69,23 @@ AVAILABLE MISSIONS:
 5. "Practice deep breathing" (25 XP) - Relaxation and stress relief
 
 ALTERNATIVE MISSIONS:
-The app also offers gentler alternative missions for users who:
-- Are feeling low (sad, tired, stressed, anxious, overwhelmed, sick, frustrated, angry, lonely)
-- Are dealing with bad weather (rain, snow, extreme temperatures) for outdoor missions
+The app offers gentler alternative missions, but ONLY recommend them when BOTH conditions are met:
+1. The user already has the original/main mission ACTIVATED (in progress)
+2. AND either: the user expresses they don't feel well, OR the weather is bad for outdoor activities
 
-When a user mentions feeling unwell, low energy, or bad weather, the system will automatically suggest appropriate alternatives like:
+IMPORTANT: Do NOT suggest alternative missions if the user hasn't activated the main mission first.
+
+Examples of when to suggest alternatives:
+- User says "I have the walking mission but it's raining" → Suggest indoor walking alternative
+- User says "I activated jumping jacks but I'm feeling really tired today" → Suggest gentle stretching
+- User mentions bad weather while working on an outdoor mission → Suggest indoor alternative
+
+Examples of when NOT to suggest alternatives:
+- User just says they're tired (but no mission is active)
+- User mentions rain casually in conversation
+- User asks about missions in general
+
+The system will automatically select appropriate alternatives like:
 - "Gentle stretching" instead of jumping jacks
 - "Walk around your home" instead of outdoor walks
 - "Quiet rest" instead of meditation

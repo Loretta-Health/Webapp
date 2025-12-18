@@ -1000,12 +1000,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { catalog: bestMission, userMission: bestUserMission } = bestResult;
       
       // Check if user has low mood and should get alternative
+      // ONLY suggest alternatives if the original mission is ACTIVATED
       const latestCheckin = await storage.getLatestEmotionalCheckin(userId);
       const isLowMood = latestCheckin && isLowMoodEmotion(latestCheckin.emotion);
       const today = new Date().toDateString();
       const checkinDate = latestCheckin?.checkedInAt ? new Date(latestCheckin.checkedInAt).toDateString() : null;
       const isCheckinToday = checkinDate === today;
-      const shouldShowAlternative = isLowMood && isCheckinToday && !bestMission.isAlternative;
+      const missionIsActive = bestUserMission?.isActive === true;
+      const shouldShowAlternative = missionIsActive && isLowMood && isCheckinToday && !bestMission.isAlternative;
       
       let alternativeMission = null;
       if (shouldShowAlternative) {
@@ -1078,7 +1080,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let alternativeMission = null;
         let showAlternative = false;
         
-        if (isLowMood && isCheckinToday && catalogMission && !catalogMission.isAlternative) {
+        // Only show alternative if: mission is ACTIVATED AND (low mood OR bad weather)
+        const missionIsActive = userMission.isActive === true;
+        if (missionIsActive && isLowMood && isCheckinToday && catalogMission && !catalogMission.isAlternative) {
           const altMission = await storage.getAlternativeFor(catalogMission.missionKey);
           if (altMission) {
             alternativeMission = altMission;
@@ -1153,6 +1157,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!parentMissionKey || !alternativeMissionKey) {
         return res.status(400).json({ error: "parentMissionKey and alternativeMissionKey are required" });
+      }
+      
+      // Check if the parent/original mission is ACTIVATED
+      const parentUserMission = await db.select().from(userMissions)
+        .where(and(eq(userMissions.userId, userId), eq(userMissions.missionKey, parentMissionKey)));
+      
+      if (parentUserMission.length === 0 || !parentUserMission[0].isActive) {
+        return res.status(400).json({ error: "You need to have the original mission activated first before switching to an alternative" });
       }
       
       const latestCheckin = await storage.getLatestEmotionalCheckin(userId);
