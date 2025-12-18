@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
+      queryClient.clear();
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Welcome back!",
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json();
     },
     onSuccess: (user: SelectUser) => {
+      queryClient.clear();
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Account created!",
@@ -79,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiRequest("POST", "/api/logout");
     },
     onSuccess: () => {
-      queryClient.setQueryData(["/api/user"], null);
+      queryClient.clear();
       localStorage.removeItem('loretta_consent');
       toast({
         title: "Signed out",
