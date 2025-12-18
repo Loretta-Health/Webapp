@@ -71,27 +71,18 @@ interface Achievement {
   maxProgress?: number;
 }
 
-interface DbAchievement {
+interface FlatAchievement {
   id: string;
-  userId: string;
-  achievementId: string;
+  title: string;
+  description: string;
+  icon: string;
+  rarity: string;
+  maxProgress: number;
+  xpReward: number;
+  category: string;
   progress: number;
   unlocked: boolean;
   unlockedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  achievement: {
-    id: string;
-    title: string;
-    description: string;
-    icon: string;
-    rarity: string;
-    maxProgress: number;
-    xpReward: number;
-    category: string;
-    sortOrder: number;
-    createdAt: string;
-  };
 }
 
 function formatRelativeDate(dateString: string | null, t: (key: string, options?: Record<string, unknown>) => string): string | undefined {
@@ -111,17 +102,17 @@ function formatRelativeDate(dateString: string | null, t: (key: string, options?
   return t('leaderboard.relativeDates.monthsAgo', { count: Math.floor(diffDays / 30) });
 }
 
-function mapDbToAchievement(dbAchievement: DbAchievement, t: (key: string, options?: Record<string, unknown>) => string): Achievement {
+function mapFlatToAchievement(flat: FlatAchievement, t: (key: string, options?: Record<string, unknown>) => string): Achievement {
   return {
-    id: dbAchievement.achievementId,
-    title: dbAchievement.achievement.title,
-    description: dbAchievement.achievement.description,
-    icon: dbAchievement.achievement.icon as Achievement['icon'],
-    unlocked: dbAchievement.unlocked,
-    rarity: dbAchievement.achievement.rarity as Achievement['rarity'],
-    unlockedDate: formatRelativeDate(dbAchievement.unlockedAt, t),
-    progress: dbAchievement.progress,
-    maxProgress: dbAchievement.achievement.maxProgress,
+    id: flat.id,
+    title: flat.title,
+    description: flat.description,
+    icon: flat.icon as Achievement['icon'],
+    unlocked: flat.unlocked,
+    rarity: flat.rarity as Achievement['rarity'],
+    unlockedDate: formatRelativeDate(flat.unlockedAt, t),
+    progress: flat.progress,
+    maxProgress: flat.maxProgress,
   };
 }
 
@@ -209,12 +200,12 @@ export default function LeaderboardPage() {
     if (!user?.id) return;
     setLoadingAchievements(true);
     try {
-      const response = await fetch(`/api/achievements`, {
+      const response = await fetch(`/api/achievements/user`, {
         credentials: 'include',
       });
       if (response.ok) {
-        const data: DbAchievement[] = await response.json();
-        const mapped = data.map(d => mapDbToAchievement(d, t));
+        const data: FlatAchievement[] = await response.json();
+        const mapped = data.map(d => mapFlatToAchievement(d, t));
         setAchievements(sortAchievements(mapped));
       }
     } catch (err) {
