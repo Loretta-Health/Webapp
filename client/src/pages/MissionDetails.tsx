@@ -1084,25 +1084,18 @@ export default function MissionDetails() {
         
         <Tabs defaultValue="main" className="w-full">
           <TabsList className={`grid w-full bg-muted/50 ${
-            (hasLowMoodToday && missionData.alternativeMissions.length > 0) && 
-            (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length) 
-              ? 'grid-cols-3' 
-              : (hasLowMoodToday && missionData.alternativeMissions.length > 0) || 
-                (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length) 
-                ? 'grid-cols-2' 
-                : 'grid-cols-1'
+            ((hasLowMoodToday && missionData.alternativeMissions.length > 0) || 
+             (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length))
+              ? 'grid-cols-2' 
+              : 'grid-cols-1'
           }`}>
             <TabsTrigger value="main" className="font-bold" data-testid="tab-main-mission">
               {t('missionDetails.tabs.mainMission')}
             </TabsTrigger>
-            {hasLowMoodToday && missionData.alternativeMissions.length > 0 && (
+            {((hasLowMoodToday && missionData.alternativeMissions.length > 0) || 
+              (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length)) && (
               <TabsTrigger value="alternatives" className="font-bold" data-testid="tab-alternatives">
                 {t('missionDetails.tabs.alternatives')}
-              </TabsTrigger>
-            )}
-            {isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length && (
-              <TabsTrigger value="weather" className="font-bold" data-testid="tab-weather-alternatives">
-                {t('missionDetails.tabs.weatherAlternatives')}
               </TabsTrigger>
             )}
           </TabsList>
@@ -1212,23 +1205,45 @@ export default function MissionDetails() {
             </motion.div>
           </TabsContent>
           
-          {hasLowMoodToday && missionData.alternativeMissions.length > 0 && (
+          {((hasLowMoodToday && missionData.alternativeMissions.length > 0) || 
+            (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length)) && (
             <TabsContent value="alternatives" className="mt-4 space-y-3">
-              <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-                    <Heart className="w-5 h-5 text-white" />
+              {/* Mood banner - show when user has low mood today */}
+              {hasLowMoodToday && missionData.alternativeMissions.length > 0 && (
+                <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                      <Heart className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-foreground mb-1">{t('missionDetails.moodBanner.title')}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {t('missionDetails.moodBanner.description')}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-black text-foreground mb-1">{t('missionDetails.moodBanner.title')}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {t('missionDetails.moodBanner.description')}
-                    </p>
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              )}
               
-              {missionData.alternativeMissions.map((alt, index) => (
+              {/* Weather banner - show when weather is bad for outdoor activities */}
+              {isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length && (
+                <Card className="p-4 bg-gradient-to-r from-blue-500/10 to-slate-500/10 border-blue-500/20">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-slate-500 flex items-center justify-center flex-shrink-0">
+                      <Wind className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-black text-foreground mb-1">{t('missionDetails.weatherBanner.title')}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {t('missionDetails.weatherBanner.description')}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )}
+              
+              {/* Mood-based alternatives */}
+              {hasLowMoodToday && missionData.alternativeMissions.map((alt, index) => (
                 <motion.div
                   key={alt.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -1241,7 +1256,7 @@ export default function MissionDetails() {
                       data-testid={`alternative-mission-${index}`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center text-2xl">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center text-2xl">
                           {alt.icon}
                         </div>
                         <div className="flex-1">
@@ -1258,38 +1273,13 @@ export default function MissionDetails() {
                 </motion.div>
               ))}
               
-              <Card className="p-4 border-dashed border-2 border-muted-foreground/20">
-                <div className="text-center py-4">
-                  <p className="text-muted-foreground text-sm">
-                    {t('missionDetails.alternativesHint')}
-                  </p>
-                </div>
-              </Card>
-            </TabsContent>
-          )}
-          
-          {isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length && (
-            <TabsContent value="weather" className="mt-4 space-y-3">
-              <Card className="p-4 bg-gradient-to-r from-blue-500/10 to-slate-500/10 border-blue-500/20">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-slate-500 flex items-center justify-center flex-shrink-0">
-                    <Wind className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-foreground mb-1">{t('missionDetails.weatherBanner.title')}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {t('missionDetails.weatherBanner.description')}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-              
-              {missionData.badWeatherAlternatives.map((alt, index) => (
+              {/* Weather-based alternatives */}
+              {isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.map((alt, index) => (
                 <motion.div
                   key={alt.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: (missionData.alternativeMissions.length + index) * 0.1 }}
                 >
                   <Link href={`/alternative-mission?id=${alt.id}&original=${urlMissionId}&type=weather`}>
                     <Card 
@@ -1317,7 +1307,7 @@ export default function MissionDetails() {
               <Card className="p-4 border-dashed border-2 border-muted-foreground/20">
                 <div className="text-center py-4">
                   <p className="text-muted-foreground text-sm">
-                    {t('missionDetails.weatherAlternativesHint')}
+                    {t('missionDetails.alternativesHint')}
                   </p>
                 </div>
               </Card>
