@@ -139,28 +139,37 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
 
   const detectEmotion = useCallback((text: string): string | null => {
     const lowerText = text.toLowerCase();
-    const emotionPattern = /i(?:'m| am)\s+(?:feeling\s+)?(\w+)/i;
-    const match = text.match(emotionPattern);
     
-    if (match) {
-      const potentialEmotion = match[1].toLowerCase();
-      for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
-        if (keywords.includes(potentialEmotion) || emotion === potentialEmotion) {
-          return emotion;
+    const explicitPatterns = [
+      /i(?:'m| am)\s+feeling\s+(\w+)/i,
+      /i\s+feel\s+(?:so\s+)?(\w+)/i,
+      /feeling\s+(?:really|very|so|quite)\s+(\w+)/i,
+      /i(?:'m| am)\s+(?:so|really|very)\s+(\w+)\s+(?:today|right now|now)/i,
+    ];
+    
+    for (const pattern of explicitPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        const potentialEmotion = match[1].toLowerCase();
+        for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
+          if (keywords.includes(potentialEmotion) || emotion === potentialEmotion) {
+            return emotion;
+          }
         }
       }
     }
     
-    for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
-      const foundKeyword = keywords.find(keyword => {
-        const regex = new RegExp(`\\b${keyword}\\b`, 'i');
-        return regex.test(lowerText);
-      });
-      if (foundKeyword) {
-        return emotion;
-      }
-    }
     return null;
+  }, []);
+
+  const cleanAIResponse = useCallback((response: string): string => {
+    return response
+      .replace(/\[SUGGEST_MISSION\]/gi, '')
+      .replace(/\[MISSION:\d+\]/gi, '')
+      .replace(/\[CHECK_IN\]/gi, '')
+      .replace(/\[EMOTION_DETECTED:[^\]]+\]/gi, '')
+      .replace(/\[ALTERNATIVE_MISSION:[^\]]+\]/gi, '')
+      .trim();
   }, []);
 
   const fetchSuggestedMission = useCallback(async (context: string) => {
@@ -360,16 +369,19 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       }
 
       const data = await response.json();
+      
+      parseAIResponse(data.message);
+      
+      const cleanedMessage = cleanAIResponse(data.message);
 
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.message,
+        content: cleanedMessage,
         timestamp: new Date(),
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-      parseAIResponse(data.message);
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage: ChatMessage = {
@@ -382,7 +394,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     } finally {
       setLoading(false);
     }
-  }, [inputText, selectedImage, messages, setMessages, detectEmotion, parseAIResponse]);
+  }, [inputText, selectedImage, messages, setMessages, detectEmotion, parseAIResponse, cleanAIResponse]);
 
   const handleImagePick = useCallback(() => {
     toast({
