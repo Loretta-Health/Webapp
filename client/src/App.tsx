@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { WeatherSimulationProvider } from "@/contexts/WeatherSimulationContext";
 import Dashboard from "@/pages/Dashboard";
 import MyDashboard from "@/pages/MyDashboard";
 import Welcome from "@/pages/Welcome";
@@ -128,10 +129,12 @@ function App() {
     }>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
+          <WeatherSimulationProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </WeatherSimulationProvider>
         </AuthProvider>
       </QueryClientProvider>
     </Suspense>

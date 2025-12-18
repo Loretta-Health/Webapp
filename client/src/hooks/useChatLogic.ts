@@ -5,6 +5,7 @@ import { useLocation } from 'wouter';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import type { SuggestedMission } from '@/components/chat/MissionCardView';
 import type { MetricData } from '@/components/chat/MetricCard';
+import { useWeatherSimulation } from '@/contexts/WeatherSimulationContext';
 
 interface WeatherContext {
   isGoodForOutdoor: boolean;
@@ -140,6 +141,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const { i18n, t } = useTranslation();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { simulateBadWeather } = useWeatherSimulation();
   
   const activityContextRef = useRef<ActivityContext | null>(null);
   activityContextRef.current = activityContext;
@@ -180,7 +182,14 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   });
 
   useEffect(() => {
-    if (weatherData) {
+    if (simulateBadWeather) {
+      weatherContextRef.current = {
+        isGoodForOutdoor: false,
+        weatherDescription: 'Simulated bad weather (testing)',
+        temperature: 0,
+        warnings: ['Simulated bad weather for testing'],
+      };
+    } else if (weatherData) {
       weatherContextRef.current = {
         isGoodForOutdoor: weatherData.isGoodForOutdoor,
         weatherDescription: weatherData.weatherData?.weatherDescription || 'Unknown',
@@ -188,7 +197,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         warnings: weatherData.warnings || [],
       };
     }
-  }, [weatherData]);
+  }, [weatherData, simulateBadWeather]);
 
   const detectEmotion = useCallback((text: string): string | null => {
     const lowerText = text.toLowerCase();

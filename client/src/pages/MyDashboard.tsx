@@ -41,6 +41,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
+import { useWeatherSimulation } from '@/contexts/WeatherSimulationContext';
+import { Switch } from '@/components/ui/switch';
+import { CloudRain } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface GamificationData {
@@ -113,6 +116,7 @@ export default function MyDashboard() {
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
   const { locationEnabled, toggleLocationEnabled, usingDefault, loading: locationLoading } = useGeolocation();
+  const { simulateBadWeather, setSimulateBadWeather } = useWeatherSimulation();
   const userId = user?.id;
   const { activeMissions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
@@ -520,6 +524,25 @@ export default function MyDashboard() {
                 <TooltipContent>
                   <p>{locationEnabled && !usingDefault ? t('location.usingYours', 'Using your location') : t('location.usingDefault', 'Using default location (Berlin)')}</p>
                   <p className="text-xs text-muted-foreground">{t('location.clickTo', 'Click to')} {locationEnabled ? t('location.disable', 'disable') : t('location.enable', 'enable')}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    size="icon" 
+                    variant="ghost"
+                    onClick={() => setSimulateBadWeather(!simulateBadWeather)}
+                    data-testid="button-weather-simulation"
+                    className={simulateBadWeather ? 'text-amber-400 bg-amber-500/20' : 'text-white/60'}
+                  >
+                    <CloudRain className="w-4 h-4 lg:w-5 lg:h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{simulateBadWeather ? 'Bad weather simulation ON' : 'Bad weather simulation OFF'}</p>
+                  <p className="text-xs text-muted-foreground">Click to toggle test mode</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
