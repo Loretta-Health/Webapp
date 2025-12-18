@@ -1188,6 +1188,20 @@ export default function MissionDetails() {
           
           {hasLowMoodToday && missionData.alternativeMissions.length > 0 && (
             <TabsContent value="alternatives" className="mt-4 space-y-3">
+              <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                    <Heart className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-foreground mb-1">{t('missionDetails.moodBanner.title')}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {t('missionDetails.moodBanner.description')}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+              
               {missionData.alternativeMissions.map((alt, index) => (
                 <motion.div
                   key={alt.id}
@@ -1236,9 +1250,9 @@ export default function MissionDetails() {
                     <Wind className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-black text-foreground mb-1">{t('missionDetails.weatherWarning')}</h4>
+                    <h4 className="font-black text-foreground mb-1">{t('missionDetails.weatherBanner.title')}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {weatherAssessment?.reason || t('missionDetails.weatherBadConditions')}
+                      {t('missionDetails.weatherBanner.description')}
                     </p>
                   </div>
                 </div>

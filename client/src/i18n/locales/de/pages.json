@@ -321,9 +321,17 @@
     },
     "stepsRemaining": "Noch {{count}} übrig...",
     "alternativesHint": "Alternative Missionen bringen auch XP! Wähle, was am besten zu dir passt.",
+    "moodBanner": {
+      "title": "Nimm es heute ruhig",
+      "description": "Du hast heute angegeben, dass du dich nicht gut fühlst. Probiere stattdessen eine dieser sanfteren alternativen Missionen."
+    },
     "weatherWarning": "Wetterwarnung",
     "weatherBadConditions": "Das aktuelle Wetter ist nicht ideal für Aktivitäten im Freien.",
-    "weatherAlternativesHint": "Indoor-Alternativen ermöglichen dir, aktiv zu bleiben, ohne nach draußen zu gehen. Schließe diese ab, um XP zu verdienen!"
+    "weatherAlternativesHint": "Indoor-Alternativen ermöglichen dir, aktiv zu bleiben, ohne nach draußen zu gehen. Schließe diese ab, um XP zu verdienen!",
+    "weatherBanner": {
+      "title": "Wetterwarnung",
+      "description": "Das Wetter ist heute nicht so gut. Probiere stattdessen eine dieser Indoor-Alternativen!"
+    }
   },
   "alternativeMission": {
     "title": "Alternative Mission",
