@@ -5,6 +5,7 @@ import {
   MapPin, CloudRain, Smile, Pill, BookOpen, Check, Sparkles, ChevronDown, ChevronUp
 } from 'lucide-react';
 import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
+import logoHorizontalBlue from '@assets/Logo_horizontal_blue@2x_(1)_1766161586795.png';
 
 function CollapsibleSection({ 
   title, 
@@ -69,24 +70,14 @@ export default function UIMockup1() {
       `}>
         <div className="p-4 lg:p-6 space-y-4 lg:space-y-5">
           <div className="flex items-center justify-between lg:hidden">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#013DC4] flex items-center justify-center p-1.5">
-                <img src={logomarkViolet} alt="Loretta" className="w-full h-full object-contain brightness-0 invert" />
-              </div>
-              <span className="text-lg font-bold text-[#013DC4]">loretta</span>
-            </div>
+            <img src={logoHorizontalBlue} alt="Loretta" className="h-8 object-contain" />
             <button onClick={() => setSidebarOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg">
               <X className="w-5 h-5 text-gray-500" />
             </button>
           </div>
           
           <div className="hidden lg:flex justify-center">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-[#013DC4] flex items-center justify-center p-2">
-                <img src={logomarkViolet} alt="Loretta" className="w-full h-full object-contain brightness-0 invert" />
-              </div>
-              <span className="text-xl font-bold text-[#013DC4]">loretta</span>
-            </div>
+            <img src={logoHorizontalBlue} alt="Loretta" className="h-10 object-contain" />
           </div>
           
           <div className="text-center py-2">
