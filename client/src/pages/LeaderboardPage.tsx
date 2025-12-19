@@ -386,7 +386,11 @@ export default function LeaderboardPage() {
 
               {selectedCommunity === 'friends' ? (
                 <div className="space-y-3">
-                  {user && (
+                  {user && !userGamification ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : user && userGamification ? (
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -410,19 +414,19 @@ export default function LeaderboardPage() {
                           <Badge variant="secondary" className="text-xs">{t('leaderboard.you')}</Badge>
                         </p>
                         <p className="text-sm text-muted-foreground flex items-center gap-3">
-                          <span>{(userGamification?.xp || 0).toLocaleString()} XP</span>
+                          <span>{userGamification.xp.toLocaleString()} XP</span>
                           <span className="flex items-center gap-1">
                             <Flame className="w-3 h-3 text-chart-3" />
-                            {t('leaderboard.dayStreak', { count: userGamification?.currentStreak || 0 })}
+                            {t('leaderboard.dayStreak', { count: userGamification.currentStreak })}
                           </span>
                         </p>
                       </div>
                       
                       <Badge className="bg-primary/20 text-primary">
-                        {t('leaderboard.lvl', { level: userGamification?.level || 1 })}
+                        {t('leaderboard.lvl', { level: userGamification.level })}
                       </Badge>
                     </motion.div>
-                  )}
+                  ) : null}
                   
                   <div className="text-center py-8 border-t border-border mt-4">
                     <UserPlus className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
