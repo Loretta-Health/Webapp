@@ -57,7 +57,7 @@ function HomeRoute() {
     return <Redirect to="/my-dashboard" />;
   }
   
-  return <Redirect to="/dashboard" />;
+  return <Redirect to="/auth" />;
 }
 
 function Router() {
