@@ -65,20 +65,20 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
           
           <div className="flex items-center justify-center mb-4 lg:mb-6">
             <div className="relative w-32 h-32 lg:w-48 lg:h-48">
-            <svg className="w-full h-full transform -rotate-90">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
               <circle
-                cx="50%"
-                cy="50%"
-                r="45%"
+                cx="50"
+                cy="50"
+                r="45"
                 stroke="currentColor"
                 strokeWidth="8"
                 fill="none"
-                className="text-muted/20"
+                className="text-muted/40"
               />
               <circle
-                cx="50%"
-                cy="50%"
-                r="45%"
+                cx="50"
+                cy="50"
+                r="45"
                 stroke="url(#scoreGradient)"
                 strokeWidth="8"
                 fill="none"
@@ -88,9 +88,10 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
                 data-testid="score-circle"
               />
               <defs>
-                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" className={score >= 80 ? 'text-primary' : score >= 60 ? 'text-chart-3' : 'text-destructive'} stopColor="currentColor" />
-                  <stop offset="100%" className="text-chart-4" stopColor="currentColor" />
+                <linearGradient id="scoreGradient" x1="0%" y1="100%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor={score >= 80 ? 'hsl(210, 100%, 50%)' : score >= 60 ? 'hsl(35, 100%, 55%)' : 'hsl(0, 85%, 60%)'} />
+                  <stop offset="50%" stopColor="hsl(260, 70%, 60%)" />
+                  <stop offset="100%" stopColor="hsl(260, 70%, 60%)" />
                 </linearGradient>
               </defs>
             </svg>
