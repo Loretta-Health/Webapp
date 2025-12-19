@@ -10,8 +10,7 @@ export default function Declined() {
   const { t } = useTranslation('pages');
 
   const handleGoBack = () => {
-    localStorage.removeItem('loretta_consent');
-    setLocation('/');
+    setLocation('/welcome');
   };
 
   return (

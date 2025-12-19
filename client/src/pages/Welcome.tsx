@@ -1,42 +1,41 @@
 import ConsentForm from '@/components/ConsentForm';
 import { useLocation } from 'wouter';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { useEffect } from 'react';
-
-interface UserPreferences {
-  consentGiven?: boolean;
-}
 
 interface QuestionnaireRecord {
   category: string;
   answers: Record<string, string>;
 }
 
+interface UserPreferences {
+  consentAccepted?: boolean;
+}
+
 export default function Welcome() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const userId = user?.id;
-  const { progress, isLoading, markConsentComplete, isConsentComplete, isQuestionnaireComplete } = useOnboardingProgress();
-
-  const { data: preferencesData, isLoading: prefsLoading } = useQuery<UserPreferences>({
-    queryKey: ['/api/preferences'],
-    enabled: !!userId,
-  });
+  const { isLoading, markConsentComplete, isConsentComplete, isQuestionnaireComplete } = useOnboardingProgress();
 
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
     queryKey: ['/api/questionnaires'],
     enabled: !!userId,
   });
 
-  const legacyConsentComplete = preferencesData?.consentGiven === true || localStorage.getItem('loretta_consent') === 'accepted';
+  const { data: preferencesData, isLoading: prefsLoading } = useQuery<UserPreferences | null>({
+    queryKey: ['/api/preferences'],
+    enabled: !!userId,
+  });
+
   const legacyQuestionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
   
-  const allLoading = isLoading || prefsLoading || questLoading;
-  const effectiveConsentComplete = isConsentComplete || legacyConsentComplete;
+  const allLoading = isLoading || questLoading || prefsLoading;
   const effectiveQuestionnaireComplete = isQuestionnaireComplete || legacyQuestionnaireComplete;
+  const effectiveConsentComplete = isConsentComplete || preferencesData?.consentAccepted === true;
 
   useEffect(() => {
     if (!allLoading && effectiveConsentComplete) {
@@ -51,19 +50,18 @@ export default function Welcome() {
   const savePreferencesMutation = useMutation({
     mutationFn: async ({ consentAccepted, newsletterSubscribed }: { consentAccepted: boolean; newsletterSubscribed: boolean }) => {
       return apiRequest('POST', '/api/preferences', {
-        userId,
         consentAccepted,
         consentDate: new Date().toISOString(),
         newsletterSubscribed,
       });
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/preferences'] });
+    },
   });
 
   const handleAccept = async (newsletterOptIn: boolean) => {
-    localStorage.setItem('loretta_consent', 'accepted');
-    localStorage.setItem('loretta_newsletter', newsletterOptIn ? 'subscribed' : 'not_subscribed');
-    
-    savePreferencesMutation.mutate({
+    await savePreferencesMutation.mutateAsync({
       consentAccepted: true,
       newsletterSubscribed: newsletterOptIn,
     });
@@ -75,10 +73,8 @@ export default function Welcome() {
     }
   };
 
-  const handleDecline = () => {
-    localStorage.setItem('loretta_consent', 'declined');
-    
-    savePreferencesMutation.mutate({
+  const handleDecline = async () => {
+    await savePreferencesMutation.mutateAsync({
       consentAccepted: false,
       newsletterSubscribed: false,
     });

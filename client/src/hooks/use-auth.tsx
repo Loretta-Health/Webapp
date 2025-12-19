@@ -61,9 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: SelectUser) => {
       queryClient.clear();
-      // Clear any stale consent/onboarding data for new users
-      localStorage.removeItem('loretta_consent');
-      localStorage.removeItem('loretta_newsletter');
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Account created!",
@@ -85,7 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.clear();
-      localStorage.removeItem('loretta_consent');
       toast({
         title: "Signed out",
         description: "You've been logged out successfully",
