@@ -527,25 +527,16 @@ export default function MyDashboard() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    size="icon" 
-                    variant="ghost"
-                    onClick={() => setSimulateBadWeather(!simulateBadWeather)}
-                    data-testid="button-weather-simulation"
-                    className={simulateBadWeather ? 'text-amber-400 bg-amber-500/20' : 'text-white/60'}
-                  >
-                    <CloudRain className="w-4 h-4 lg:w-5 lg:h-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{simulateBadWeather ? 'Bad weather simulation ON' : 'Bad weather simulation OFF'}</p>
-                  <p className="text-xs text-muted-foreground">Click to toggle test mode</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-white/10">
+              <CloudRain className={`w-4 h-4 ${simulateBadWeather ? 'text-amber-400' : 'text-white/60'}`} />
+              <span className="text-xs text-white/80 hidden sm:inline">{t('weather.simulateBadWeather', 'Simulate Bad Weather')}</span>
+              <Switch
+                checked={simulateBadWeather}
+                onCheckedChange={setSimulateBadWeather}
+                data-testid="switch-weather-simulation"
+                className="data-[state=checked]:bg-amber-500"
+              />
+            </div>
             <Button 
               size="icon" 
               variant="ghost"

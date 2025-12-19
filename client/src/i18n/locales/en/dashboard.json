@@ -214,5 +214,8 @@
     "privacyContent1": "We collect health data to provide personalized insights and improve your wellness journey.",
     "privacyContent2": "Your data is encrypted and never shared with third parties without your explicit consent."
   },
-  "disclaimer": "Loretta is not a diagnostic tool. Always consult healthcare professionals for medical advice."
+  "disclaimer": "Loretta is not a diagnostic tool. Always consult healthcare professionals for medical advice.",
+  "weather": {
+    "simulateBadWeather": "Simulate Bad Weather"
+  }
 }

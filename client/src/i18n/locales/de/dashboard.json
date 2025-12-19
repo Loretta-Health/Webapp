@@ -214,5 +214,8 @@
     "privacyContent1": "Wir erfassen Gesundheitsdaten, um personalisierte Einblicke zu bieten und deine Wellness-Reise zu verbessern.",
     "privacyContent2": "Deine Daten sind verschlüsselt und werden niemals ohne deine ausdrückliche Zustimmung an Dritte weitergegeben."
   },
-  "disclaimer": "Loretta ist kein Diagnosewerkzeug. Konsultiere immer medizinische Fachleute für medizinische Beratung."
+  "disclaimer": "Loretta ist kein Diagnosewerkzeug. Konsultiere immer medizinische Fachleute für medizinische Beratung.",
+  "weather": {
+    "simulateBadWeather": "Schlechtes Wetter simulieren"
+  }
 }
