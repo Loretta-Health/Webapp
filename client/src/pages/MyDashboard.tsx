@@ -347,12 +347,9 @@ export default function MyDashboard() {
               </div>
             </div>
             <h2 className="text-lg lg:text-xl font-black text-sidebar-foreground">{user.username}</h2>
-            <p className="text-xs lg:text-sm text-muted-foreground mb-2">
+            <p className="text-xs lg:text-sm text-muted-foreground">
               {isNewUser ? t('sidebar.newMember') : t('sidebar.healthExplorer', { level })}
             </p>
-            <div className="flex justify-center">
-              <StreakCounter days={streak} size="md" showLabel={true} />
-            </div>
           </div>
           
           <Separator />
@@ -362,7 +359,10 @@ export default function MyDashboard() {
           <Separator />
           
           <div className="space-y-2">
-            <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase">{t('sidebar.todaysProgress')}</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase">{t('sidebar.todaysProgress')}</h3>
+              <StreakCounter days={streak} size="sm" showLabel={false} />
+            </div>
             <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t('sidebar.xpEarned')}</span>
