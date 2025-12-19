@@ -28,6 +28,7 @@ import RiskScoreDetails from "@/pages/RiskScoreDetails";
 import AlternativeMissionDetails from "@/pages/AlternativeMissionDetails";
 import AuthPage from "@/pages/auth-page";
 import TeamInvite from "@/pages/TeamInvite";
+import JoinFriend from "@/pages/JoinFriend";
 import NotFound from "@/pages/not-found";
 
 function ConsentGuard({ children }: { children: React.ReactNode }) {
@@ -95,6 +96,7 @@ function Router() {
         <ConsentGuard><ActivityDetails /></ConsentGuard>
       )} />
       <Route path="/join" component={QROnboarding} />
+      <Route path="/join/:code" component={JoinFriend} />
       <ProtectedRoute path="/onboarding" component={Onboarding} />
       <ProtectedRoute path="/invite" component={() => (
         <ConsentGuard><Invite /></ConsentGuard>

@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
-import { userMissions } from "@shared/schema";
+import { eq, and, or } from "drizzle-orm";
+import { userMissions, userInviteCodes, friendships } from "@shared/schema";
 import { setupAuth } from "./auth";
 import { HEALTH_NAVIGATOR_SYSTEM_PROMPT } from "./prompts";
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
@@ -2355,6 +2355,162 @@ ${!isGoodForOutdoor ? `IMPORTANT: The weather is currently BAD for outdoor activ
     } catch (error) {
       console.error("Error deleting invite:", error);
       res.status(500).json({ error: "Failed to delete invite" });
+    }
+  });
+
+  // ========================
+  // Friend System Endpoints
+  // ========================
+
+  // Get or create user's unique invite code
+  app.get("/api/friends/invite-code", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      
+      // Check if user already has an invite code
+      const existing = await db.select().from(userInviteCodes).where(eq(userInviteCodes.userId, userId));
+      
+      if (existing.length > 0) {
+        return res.json({ inviteCode: existing[0].inviteCode });
+      }
+      
+      // Create a new unique invite code
+      const inviteCode = nanoid(8);
+      await db.insert(userInviteCodes).values({
+        userId,
+        inviteCode,
+      });
+      
+      res.json({ inviteCode });
+    } catch (error) {
+      console.error("Error getting invite code:", error);
+      res.status(500).json({ error: "Failed to get invite code" });
+    }
+  });
+
+  // Accept a friend invite
+  app.post("/api/friends/accept/:code", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const { code } = req.params;
+      const userId = (req.user as any).id;
+      
+      // Find the invite code owner
+      const inviteRecord = await db.select().from(userInviteCodes).where(eq(userInviteCodes.inviteCode, code));
+      
+      if (inviteRecord.length === 0) {
+        return res.status(404).json({ error: "Invalid invite code" });
+      }
+      
+      const friendId = inviteRecord[0].userId;
+      
+      // Can't add yourself as a friend
+      if (friendId === userId) {
+        return res.status(400).json({ error: "You cannot add yourself as a friend" });
+      }
+      
+      // Check if already friends (in either direction)
+      const existingFriendship = await db.select().from(friendships)
+        .where(
+          or(
+            and(eq(friendships.userId, userId), eq(friendships.friendId, friendId)),
+            and(eq(friendships.userId, friendId), eq(friendships.friendId, userId))
+          )
+        );
+      
+      if (existingFriendship.length > 0) {
+        return res.status(400).json({ error: "Already friends with this user" });
+      }
+      
+      // Create bidirectional friendship
+      await db.insert(friendships).values([
+        { userId, friendId },
+        { userId: friendId, friendId: userId },
+      ]);
+      
+      // Get friend's username
+      const friend = await storage.getUser(friendId);
+      
+      res.json({ 
+        success: true, 
+        message: `You are now friends with ${friend?.username || 'this user'}`,
+        friendUsername: friend?.username,
+      });
+    } catch (error) {
+      console.error("Error accepting friend invite:", error);
+      res.status(500).json({ error: "Failed to accept friend invite" });
+    }
+  });
+
+  // Get user's friends list with their gamification data
+  app.get("/api/friends", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      
+      // Get all friendships for this user
+      const userFriendships = await db.select().from(friendships).where(eq(friendships.userId, userId));
+      
+      // Get friend details with gamification data
+      const friendsData = await Promise.all(
+        userFriendships.map(async (friendship) => {
+          const friend = await storage.getUser(friendship.friendId);
+          const gamification = await storage.getUserGamification(friendship.friendId);
+          const xpData = await storage.getUserXp(friendship.friendId);
+          
+          const level = xpData ? calculateLevelFromXP(xpData.totalXp) : 1;
+          return {
+            id: friendship.friendId,
+            username: friend?.username || 'Unknown',
+            xp: xpData?.totalXp || 0,
+            level,
+            currentStreak: gamification?.currentStreak || 0,
+          };
+        })
+      );
+      
+      // Sort by XP (highest first)
+      friendsData.sort((a, b) => b.xp - a.xp);
+      
+      res.json(friendsData);
+    } catch (error) {
+      console.error("Error fetching friends:", error);
+      res.status(500).json({ error: "Failed to fetch friends" });
+    }
+  });
+
+  // Remove a friend
+  app.delete("/api/friends/:friendId", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const { friendId } = req.params;
+      
+      // Delete both directions of the friendship
+      await db.delete(friendships).where(
+        or(
+          and(eq(friendships.userId, userId), eq(friendships.friendId, friendId)),
+          and(eq(friendships.userId, friendId), eq(friendships.friendId, userId))
+        )
+      );
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing friend:", error);
+      res.status(500).json({ error: "Failed to remove friend" });
     }
   });
 

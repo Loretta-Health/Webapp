@@ -100,6 +100,11 @@
       "message": "Invite friends to compare progress and motivate each other!",
       "inviteFriends": "Invite Friends"
     },
+    "inviteFriends": {
+      "title": "Invite Friends",
+      "message": "Share your unique link with friends to add them to your leaderboard!",
+      "copy": "Copy"
+    },
     "waitingMembers": {
       "title": "Waiting for Members",
       "message": "Team members will appear here once they accept the invite and agree to share their stats."
@@ -425,5 +430,25 @@
   },
   "invite": {
     "communityTipContent": "Invite friends and family to join your team. Compare progress on the leaderboard and motivate each other!"
+  },
+  "joinFriend": {
+    "loading": {
+      "title": "Adding Friend...",
+      "message": "Please wait while we connect you with your friend."
+    },
+    "success": {
+      "title": "Friend Added!",
+      "message": "You are now friends with {{username}}. You can see their progress on your leaderboard!",
+      "viewLeaderboard": "View Leaderboard"
+    },
+    "alreadyFriends": {
+      "title": "Already Friends",
+      "message": "You are already friends with this user.",
+      "viewLeaderboard": "View Leaderboard"
+    },
+    "error": {
+      "title": "Oops!",
+      "goBack": "Go to Leaderboard"
+    }
   }
 }
