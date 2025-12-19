@@ -23,12 +23,14 @@ import {
   Sun,
   Moon,
   Loader2,
-  Plus
+  Plus,
+  UserPlus
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
+import CommunitySelector, { CommunityType } from '@/components/CommunitySelector';
 
 interface Team {
   id: string;
@@ -157,6 +159,7 @@ const rarityProgressBgColors = {
 
 export default function LeaderboardPage() {
   const { t } = useTranslation('pages');
+  const { t: tDashboard } = useTranslation('dashboard');
   const { user } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -165,6 +168,8 @@ export default function LeaderboardPage() {
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loadingAchievements, setLoadingAchievements] = useState(true);
+  const [selectedCommunity, setSelectedCommunity] = useState<CommunityType>('loretta');
+  const [userGamification, setUserGamification] = useState<{ xp: number; level: number; currentStreak: number } | null>(null);
   const [darkMode, setDarkMode] = useState(() => {
     return document.documentElement.classList.contains('dark');
   });
@@ -173,8 +178,28 @@ export default function LeaderboardPage() {
     if (user) {
       fetchTeams();
       fetchAchievements();
+      fetchUserGamification();
     }
   }, [user]);
+
+  const fetchUserGamification = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(`/api/gamification/${user.id}`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUserGamification({
+          xp: data.xp || 0,
+          level: data.level || 1,
+          currentStreak: data.currentStreak || 0,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch user gamification:', err);
+    }
+  };
 
   const alwaysHighlightedIds = ['first-steps', 'week-warrior', 'community-star', 'wellness-warrior', 'streak-legend'];
 
@@ -329,12 +354,19 @@ export default function LeaderboardPage() {
 
           <TabsContent value="leaderboard">
             <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <Trophy className="w-6 h-6 text-chart-3" />
-                  <h3 className="text-2xl font-black text-foreground">{t('leaderboard.teamRankings')}</h3>
+              <div className="flex flex-col gap-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="w-6 h-6 text-chart-3" />
+                    <h3 className="text-2xl font-black text-foreground">{t('leaderboard.teamRankings')}</h3>
+                  </div>
                 </div>
-                {teams.length > 0 && (
+                <CommunitySelector 
+                  value={selectedCommunity} 
+                  onChange={setSelectedCommunity}
+                  friendsCount={1}
+                />
+                {selectedCommunity === 'loretta' && teams.length > 0 && (
                   <div className="flex gap-2 flex-wrap">
                     {teams.map(team => (
                       <Button
@@ -351,7 +383,61 @@ export default function LeaderboardPage() {
                 )}
               </div>
 
-              {loadingTeams ? (
+              {selectedCommunity === 'friends' ? (
+                <div className="space-y-3">
+                  {user && userGamification && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border-2 border-primary shadow-md"
+                      data-testid="leaderboard-entry-1"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center font-black text-lg text-chart-3">
+                        #1
+                      </div>
+                      
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-chart-2 text-white font-bold">
+                          {user.username.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1">
+                        <p className="font-bold flex items-center gap-2 text-primary">
+                          {user.username}
+                          <Crown className="w-4 h-4 text-chart-3" />
+                          <Badge variant="secondary" className="text-xs">{t('leaderboard.you')}</Badge>
+                        </p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-3">
+                          <span>{userGamification.xp.toLocaleString()} XP</span>
+                          <span className="flex items-center gap-1">
+                            <Flame className="w-3 h-3 text-chart-3" />
+                            {t('leaderboard.dayStreak', { count: userGamification.currentStreak })}
+                          </span>
+                        </p>
+                      </div>
+                      
+                      <Badge className="bg-primary/20 text-primary">
+                        {t('leaderboard.lvl', { level: userGamification.level })}
+                      </Badge>
+                    </motion.div>
+                  )}
+                  
+                  <div className="text-center py-8 border-t border-border mt-4">
+                    <UserPlus className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+                    <h4 className="text-md font-bold mb-2">{t('leaderboard.noFriends.title')}</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {t('leaderboard.noFriends.message')}
+                    </p>
+                    <Link href="/invite">
+                      <Button size="sm">
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        {t('leaderboard.noFriends.inviteFriends')}
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ) : loadingTeams ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>

@@ -95,6 +95,11 @@
       "message": "Erstelle ein Team und lade Freunde oder Familie ein, um Fortschritte zu vergleichen!",
       "createTeam": "Team erstellen"
     },
+    "noFriends": {
+      "title": "Freunde hinzufügen",
+      "message": "Lade Freunde ein, um Fortschritte zu vergleichen und euch gegenseitig zu motivieren!",
+      "inviteFriends": "Freunde einladen"
+    },
     "waitingMembers": {
       "title": "Warten auf Mitglieder",
       "message": "Teammitglieder erscheinen hier, sobald sie die Einladung annehmen und zustimmen, ihre Statistiken zu teilen."
