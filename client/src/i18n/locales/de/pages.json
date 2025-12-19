@@ -100,6 +100,11 @@
       "message": "Lade Freunde ein, um Fortschritte zu vergleichen und euch gegenseitig zu motivieren!",
       "inviteFriends": "Freunde einladen"
     },
+    "inviteFriends": {
+      "title": "Freunde einladen",
+      "message": "Teile deinen einzigartigen Link mit Freunden, um sie zu deiner Bestenliste hinzuzufügen!",
+      "copy": "Kopieren"
+    },
     "waitingMembers": {
       "title": "Warten auf Mitglieder",
       "message": "Teammitglieder erscheinen hier, sobald sie die Einladung annehmen und zustimmen, ihre Statistiken zu teilen."
@@ -425,5 +430,25 @@
   },
   "invite": {
     "communityTipContent": "Lade Freunde und Familie ein, deinem Team beizutreten. Vergleicht Fortschritte in der Bestenliste und motiviert euch gegenseitig!"
+  },
+  "joinFriend": {
+    "loading": {
+      "title": "Freund hinzufügen...",
+      "message": "Bitte warten, während wir dich mit deinem Freund verbinden."
+    },
+    "success": {
+      "title": "Freund hinzugefügt!",
+      "message": "Du bist jetzt mit {{username}} befreundet. Du kannst den Fortschritt auf deiner Bestenliste sehen!",
+      "viewLeaderboard": "Bestenliste ansehen"
+    },
+    "alreadyFriends": {
+      "title": "Bereits befreundet",
+      "message": "Du bist bereits mit diesem Benutzer befreundet.",
+      "viewLeaderboard": "Bestenliste ansehen"
+    },
+    "error": {
+      "title": "Hoppla!",
+      "goBack": "Zur Bestenliste"
+    }
   }
 }

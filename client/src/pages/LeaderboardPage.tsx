@@ -61,6 +61,14 @@ interface LeaderboardEntry {
   isOwner?: boolean;
 }
 
+interface Friend {
+  id: string;
+  username: string;
+  xp: number;
+  level: number;
+  currentStreak: number;
+}
+
 interface Achievement {
   id: string;
   title: string;
@@ -170,6 +178,9 @@ export default function LeaderboardPage() {
   const [loadingAchievements, setLoadingAchievements] = useState(true);
   const [selectedCommunity, setSelectedCommunity] = useState<CommunityType>('loretta');
   const [userGamification, setUserGamification] = useState<{ xp: number; level: number; currentStreak: number } | null>(null);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [loadingFriends, setLoadingFriends] = useState(false);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(() => {
     return document.documentElement.classList.contains('dark');
   });
@@ -179,6 +190,8 @@ export default function LeaderboardPage() {
       fetchTeams();
       fetchAchievements();
       fetchUserGamification();
+      fetchFriends();
+      fetchInviteCode();
     }
   }, [user]);
 
@@ -198,6 +211,37 @@ export default function LeaderboardPage() {
       }
     } catch (err) {
       console.error('Failed to fetch user gamification:', err);
+    }
+  };
+
+  const fetchFriends = async () => {
+    setLoadingFriends(true);
+    try {
+      const response = await fetch('/api/friends', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data: Friend[] = await response.json();
+        setFriends(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch friends:', err);
+    } finally {
+      setLoadingFriends(false);
+    }
+  };
+
+  const fetchInviteCode = async () => {
+    try {
+      const response = await fetch('/api/friends/invite-code', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setInviteCode(data.inviteCode);
+      }
+    } catch (err) {
+      console.error('Failed to fetch invite code:', err);
     }
   };
 
@@ -363,7 +407,7 @@ export default function LeaderboardPage() {
                   <CommunitySelector 
                     value={selectedCommunity} 
                     onChange={setSelectedCommunity}
-                    friendsCount={1}
+                    friendsCount={friends.length + 1}
                     className="w-auto min-w-[180px]"
                   />
                 </div>
@@ -386,61 +430,94 @@ export default function LeaderboardPage() {
 
               {selectedCommunity === 'friends' ? (
                 <div className="space-y-3">
-                  {user && !userGamification ? (
+                  {loadingFriends || !userGamification ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="w-6 h-6 animate-spin text-primary" />
                     </div>
-                  ) : user && userGamification ? (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center gap-3 p-4 rounded-lg bg-primary/10 border-2 border-primary shadow-md"
-                      data-testid="leaderboard-entry-1"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center font-black text-lg text-chart-3">
-                        #1
-                      </div>
+                  ) : (
+                    <>
+                      {(() => {
+                        const allParticipants = [
+                          ...(user && userGamification ? [{
+                            id: user.id,
+                            username: user.username,
+                            xp: userGamification.xp,
+                            level: userGamification.level,
+                            currentStreak: userGamification.currentStreak,
+                            isCurrentUser: true,
+                          }] : []),
+                          ...friends.map(f => ({ ...f, isCurrentUser: false })),
+                        ].sort((a, b) => b.xp - a.xp);
+                        
+                        return allParticipants.map((participant, index) => (
+                          <motion.div
+                            key={participant.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className={`flex items-center gap-3 p-4 rounded-lg transition-all ${
+                              participant.isCurrentUser
+                                ? 'bg-primary/10 border-2 border-primary shadow-md'
+                                : 'bg-muted/30 hover:bg-muted/50'
+                            } ${index < 3 ? 'shadow-md' : ''}`}
+                            data-testid={`leaderboard-entry-${index + 1}`}
+                          >
+                            <div className={`w-12 h-12 rounded-full bg-card flex items-center justify-center font-black text-lg ${getRankColor(index + 1)}`}>
+                              #{index + 1}
+                            </div>
+                            
+                            <Avatar className="w-10 h-10">
+                              <AvatarFallback className="bg-gradient-to-br from-primary to-chart-2 text-white font-bold">
+                                {participant.username.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            
+                            <div className="flex-1">
+                              <p className={`font-bold flex items-center gap-2 ${participant.isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
+                                {participant.username}
+                                {index === 0 && <Crown className="w-4 h-4 text-chart-3" />}
+                                {participant.isCurrentUser && <Badge variant="secondary" className="text-xs">{t('leaderboard.you')}</Badge>}
+                              </p>
+                              <p className="text-sm text-muted-foreground flex items-center gap-3">
+                                <span>{participant.xp.toLocaleString()} XP</span>
+                                <span className="flex items-center gap-1">
+                                  <Flame className="w-3 h-3 text-chart-3" />
+                                  {t('leaderboard.dayStreak', { count: participant.currentStreak })}
+                                </span>
+                              </p>
+                            </div>
+                            
+                            <Badge className="bg-primary/20 text-primary">
+                              {t('leaderboard.lvl', { level: participant.level })}
+                            </Badge>
+                          </motion.div>
+                        ));
+                      })()}
                       
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-chart-2 text-white font-bold">
-                          {user.username.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1">
-                        <p className="font-bold flex items-center gap-2 text-primary">
-                          {user.username}
-                          <Crown className="w-4 h-4 text-chart-3" />
-                          <Badge variant="secondary" className="text-xs">{t('leaderboard.you')}</Badge>
+                      <div className="text-center py-6 border-t border-border mt-4">
+                        <h4 className="text-md font-bold mb-2">{t('leaderboard.inviteFriends.title')}</h4>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {t('leaderboard.inviteFriends.message')}
                         </p>
-                        <p className="text-sm text-muted-foreground flex items-center gap-3">
-                          <span>{userGamification.xp.toLocaleString()} XP</span>
-                          <span className="flex items-center gap-1">
-                            <Flame className="w-3 h-3 text-chart-3" />
-                            {t('leaderboard.dayStreak', { count: userGamification.currentStreak })}
-                          </span>
-                        </p>
+                        {inviteCode && (
+                          <div className="flex items-center justify-center gap-2 mb-4">
+                            <code className="px-3 py-2 bg-muted rounded-lg font-mono text-sm">
+                              {window.location.origin}/join/{inviteCode}
+                            </code>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/join/${inviteCode}`);
+                              }}
+                            >
+                              {t('leaderboard.inviteFriends.copy')}
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                      
-                      <Badge className="bg-primary/20 text-primary">
-                        {t('leaderboard.lvl', { level: userGamification.level })}
-                      </Badge>
-                    </motion.div>
-                  ) : null}
-                  
-                  <div className="text-center py-8 border-t border-border mt-4">
-                    <UserPlus className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
-                    <h4 className="text-md font-bold mb-2">{t('leaderboard.noFriends.title')}</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {t('leaderboard.noFriends.message')}
-                    </p>
-                    <Link href="/invite">
-                      <Button size="sm">
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        {t('leaderboard.noFriends.inviteFriends')}
-                      </Button>
-                    </Link>
-                  </div>
+                    </>
+                  )}
                 </div>
               ) : loadingTeams ? (
                 <div className="flex items-center justify-center py-12">
