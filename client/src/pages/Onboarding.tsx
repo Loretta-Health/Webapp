@@ -1296,12 +1296,10 @@ export default function Onboarding() {
     enabled: !!userId,
   });
 
-  const { data: preferencesData, isLoading: prefsLoading } = useQuery<{ consentGiven?: boolean } | null>({
+  const { data: preferencesData, isLoading: prefsLoading } = useQuery<{ consentAccepted?: boolean } | null>({
     queryKey: ['/api/preferences'],
     enabled: !!userId,
   });
-
-  const legacyConsentComplete = preferencesData?.consentGiven === true || localStorage.getItem('loretta_consent') === 'accepted';
   const profileComplete = !!(profileData?.firstName && profileData?.lastName && profileData?.email) || !!(user?.firstName && user?.lastName && user?.email);
   
   // Get core question IDs for completion check (exclude follow-up questions)
@@ -1321,7 +1319,7 @@ export default function Onboarding() {
   
   const allLoading = progressLoading || questLoading || profileLoading || prefsLoading;
   const effectiveQuestionnaireComplete = isQuestionnaireComplete || legacyQuestionnaireComplete;
-  const effectiveConsentComplete = isConsentComplete || legacyConsentComplete;
+  const effectiveConsentComplete = isConsentComplete || preferencesData?.consentAccepted === true;
   const effectiveOnboardingComplete = isOnboardingComplete || effectiveQuestionnaireComplete;
   
   useEffect(() => {
@@ -1665,13 +1663,12 @@ export default function Onboarding() {
   };
 
   const handleConsentAccept = async () => {
-    localStorage.setItem('loretta_consent', 'accepted');
-    localStorage.setItem('loretta_newsletter', newsletterOptIn ? 'subscribed' : 'not_subscribed');
-    savePreferencesMutation.mutate({
+    await savePreferencesMutation.mutateAsync({
       consentAccepted: true,
       newsletterSubscribed: newsletterOptIn,
     });
     await markConsentComplete();
+    queryClient.invalidateQueries({ queryKey: ['/api/preferences'] });
     setStep('questionnaire');
   };
 

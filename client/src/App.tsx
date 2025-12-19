@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { WeatherSimulationProvider } from "@/contexts/WeatherSimulationContext";
+import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
 import Dashboard from "@/pages/Dashboard";
 import MyDashboard from "@/pages/MyDashboard";
 import Welcome from "@/pages/Welcome";
@@ -32,8 +33,28 @@ import JoinFriend from "@/pages/JoinFriend";
 import NotFound from "@/pages/not-found";
 
 function ConsentGuard({ children }: { children: React.ReactNode }) {
-  const consent = localStorage.getItem('loretta_consent');
-  if (consent !== 'accepted') {
+  const { isConsentComplete, isLoading } = useOnboardingProgress();
+  const { user } = useAuth();
+  
+  const { data: preferencesData, isLoading: prefsLoading } = useQuery<{ consentAccepted?: boolean } | null>({
+    queryKey: ['/api/preferences'],
+    enabled: !!user?.id,
+  });
+  
+  const effectiveConsentComplete = isConsentComplete || preferencesData?.consentAccepted === true;
+  
+  if (isLoading || prefsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!effectiveConsentComplete) {
     return <Redirect to="/welcome" />;
   }
   return <>{children}</>;
