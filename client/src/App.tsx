@@ -30,6 +30,7 @@ import AlternativeMissionDetails from "@/pages/AlternativeMissionDetails";
 import AuthPage from "@/pages/auth-page";
 import TeamInvite from "@/pages/TeamInvite";
 import JoinFriend from "@/pages/JoinFriend";
+import UIMockup from "@/pages/UIMockup";
 import NotFound from "@/pages/not-found";
 
 function ConsentGuard({ children }: { children: React.ReactNode }) {
@@ -132,6 +133,7 @@ function Router() {
         <ConsentGuard><RiskScoreDetails /></ConsentGuard>
       )} />
       <Route path="/declined" component={Declined} />
+      <Route path="/mockup" component={UIMockup} />
       <ProtectedRoute path="/team-invite" component={() => (
         <ConsentGuard><TeamInvite /></ConsentGuard>
       )} />
