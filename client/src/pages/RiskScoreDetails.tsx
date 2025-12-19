@@ -135,10 +135,10 @@ export default function RiskScoreDetails() {
   };
 
   const getScoreLabel = () => {
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Good';
-    if (score >= 40) return 'Fair';
-    return 'Needs Attention';
+    if (score <= 20) return 'Excellent';
+    if (score <= 40) return 'Great';
+    if (score <= 60) return 'Getting There';
+    return 'Room to Improve';
   };
 
   const getFactorStyles = (type: 'negative' | 'warning' | 'positive', points: number, maxPoints: number) => {
@@ -462,7 +462,7 @@ export default function RiskScoreDetails() {
               <MessageCircle className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-foreground">Want to improve your score?</h3>
+              <h3 className="font-bold text-foreground">Want to lower your risk?</h3>
               <p className="text-sm text-muted-foreground">Chat with Loretta for personalized recommendations</p>
             </div>
           </div>

@@ -2971,7 +2971,7 @@ export default function Onboarding() {
                     : "We've identified areas where we can help you improve."}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Complete daily quests and track your progress to boost your score!
+                  Complete daily quests and healthy habits to lower your risk score!
                 </p>
               </div>
             </div>
