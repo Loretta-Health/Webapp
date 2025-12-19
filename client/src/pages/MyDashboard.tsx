@@ -906,6 +906,7 @@ export default function MyDashboard() {
                     </div>
                   </CollapsibleSection>
                   
+                  {/* Today's Activity section - hidden until ready
                   <CollapsibleSection
                     title={t('activity.title')}
                     icon={<Activity className="w-5 h-5 text-chart-2" />}
@@ -962,6 +963,7 @@ export default function MyDashboard() {
                       />
                     </div>
                   </CollapsibleSection>
+                  */}
                 </div>
                 
                 <CollapsibleSection
