@@ -116,10 +116,10 @@ export default function UIMockup2() {
           
           <GlassCard className="p-5 text-center" glow>
             <div className="relative inline-block mb-4">
-              <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-2xl shadow-[#013DC4]/30 rotate-3 hover:rotate-0 transition-transform">
+              <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-2xl shadow-[#013DC4]/30">
                 <User className="w-10 h-10 lg:w-12 lg:h-12 text-white" />
               </div>
-              <div className="absolute -bottom-2 -right-2 w-9 h-9 bg-gradient-to-br from-[#CDB6EF] to-purple-400 rounded-xl flex items-center justify-center border-3 border-white shadow-lg -rotate-6">
+              <div className="absolute -bottom-2 -right-2 w-9 h-9 bg-gradient-to-br from-[#CDB6EF] to-purple-400 rounded-xl flex items-center justify-center border-3 border-white shadow-lg">
                 <img src={logomarkViolet} alt="" className="w-5 h-5 brightness-0 invert" />
               </div>
             </div>
@@ -296,7 +296,7 @@ export default function UIMockup2() {
                   </h1>
                   <p className="text-white/80 text-lg font-medium">Ready to continue your health journey?</p>
                 </div>
-                <div className="hidden sm:flex w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl items-center justify-center shadow-2xl rotate-6 hover:rotate-0 transition-transform">
+                <div className="hidden sm:flex w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl items-center justify-center shadow-2xl">
                   <img src={logomarkViolet} alt="Loretta mascot" className="w-12 h-12 object-contain brightness-0 invert" />
                 </div>
               </div>
