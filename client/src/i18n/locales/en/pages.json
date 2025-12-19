@@ -89,7 +89,7 @@
     "dayStreak": "{{count}} day streak",
     "you": "You",
     "noData": "No leaderboard data available",
-    "teamRankings": "Team Rankings",
+    "teamRankings": "Leaderboard",
     "noTeams": {
       "title": "No Teams Yet",
       "message": "Create a team and invite friends or family to compare progress!",

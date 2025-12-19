@@ -386,7 +386,7 @@ export default function LeaderboardPage() {
 
               {selectedCommunity === 'friends' ? (
                 <div className="space-y-3">
-                  {user && userGamification && (
+                  {user && (
                     <motion.div
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -410,16 +410,16 @@ export default function LeaderboardPage() {
                           <Badge variant="secondary" className="text-xs">{t('leaderboard.you')}</Badge>
                         </p>
                         <p className="text-sm text-muted-foreground flex items-center gap-3">
-                          <span>{userGamification.xp.toLocaleString()} XP</span>
+                          <span>{(userGamification?.xp || 0).toLocaleString()} XP</span>
                           <span className="flex items-center gap-1">
                             <Flame className="w-3 h-3 text-chart-3" />
-                            {t('leaderboard.dayStreak', { count: userGamification.currentStreak })}
+                            {t('leaderboard.dayStreak', { count: userGamification?.currentStreak || 0 })}
                           </span>
                         </p>
                       </div>
                       
                       <Badge className="bg-primary/20 text-primary">
-                        {t('leaderboard.lvl', { level: userGamification.level })}
+                        {t('leaderboard.lvl', { level: userGamification?.level || 1 })}
                       </Badge>
                     </motion.div>
                   )}
