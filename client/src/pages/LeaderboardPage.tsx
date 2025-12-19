@@ -355,18 +355,19 @@ export default function LeaderboardPage() {
           <TabsContent value="leaderboard">
             <Card className="p-6">
               <div className="flex flex-col gap-4 mb-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2">
                     <Trophy className="w-6 h-6 text-chart-3" />
                     <h3 className="text-2xl font-black text-foreground">{t('leaderboard.teamRankings')}</h3>
                   </div>
+                  <CommunitySelector 
+                    value={selectedCommunity} 
+                    onChange={setSelectedCommunity}
+                    friendsCount={1}
+                    className="w-auto min-w-[180px]"
+                  />
                 </div>
-                <CommunitySelector 
-                  value={selectedCommunity} 
-                  onChange={setSelectedCommunity}
-                  friendsCount={1}
-                />
-                {selectedCommunity === 'loretta' && teams.length > 0 && (
+                {selectedCommunity === 'loretta' && teams.length > 1 && (
                   <div className="flex gap-2 flex-wrap">
                     {teams.map(team => (
                       <Button
