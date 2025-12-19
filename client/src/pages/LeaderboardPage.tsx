@@ -399,16 +399,16 @@ export default function LeaderboardPage() {
           <TabsContent value="leaderboard">
             <Card className="p-6">
               <div className="flex flex-col gap-4 mb-6">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <Trophy className="w-6 h-6 text-chart-3" />
-                    <h3 className="text-2xl font-black text-foreground">{t('leaderboard.teamRankings')}</h3>
+                    <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-chart-3" />
+                    <h3 className="text-xl sm:text-2xl font-black text-foreground">{t('leaderboard.teamRankings')}</h3>
                   </div>
                   <CommunitySelector 
                     value={selectedCommunity} 
                     onChange={setSelectedCommunity}
                     friendsCount={friends.length + 1}
-                    className="w-auto min-w-[180px]"
+                    className="w-full sm:w-auto sm:min-w-[180px]"
                   />
                 </div>
                 {selectedCommunity === 'loretta' && teams.length > 1 && (
@@ -500,13 +500,14 @@ export default function LeaderboardPage() {
                           {t('leaderboard.inviteFriends.message')}
                         </p>
                         {inviteCode && (
-                          <div className="flex items-center justify-center gap-2 mb-4">
-                            <code className="px-3 py-2 bg-muted rounded-lg font-mono text-sm">
+                          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-4">
+                            <code className="px-3 py-2 bg-muted rounded-lg font-mono text-xs sm:text-sm break-all max-w-full overflow-hidden">
                               {window.location.origin}/join/{inviteCode}
                             </code>
                             <Button
                               size="sm"
                               variant="outline"
+                              className="w-full sm:w-auto mt-2 sm:mt-0"
                               onClick={() => {
                                 navigator.clipboard.writeText(`${window.location.origin}/join/${inviteCode}`);
                               }}

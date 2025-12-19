@@ -948,29 +948,30 @@ export default function MissionDetails() {
           animate={{ opacity: 1, y: 0 }}
         >
           <Card className={`p-6 ${colors.card}`}>
-            <div className="flex items-start gap-4 mb-6">
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${colors.iconBg}`}>
-                <MissionIcon className="w-8 h-8 text-white" />
-              </div>
-              
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-2xl font-black text-foreground" data-testid="mission-title">
+            <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
+              <div className="flex items-start gap-4 flex-1">
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0 ${colors.iconBg}`}>
+                  <MissionIcon className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl sm:text-2xl font-black text-foreground mb-1" data-testid="mission-title">
                     {missionData.title}
                   </h2>
+                  <Badge className={colors.badge} data-testid="mission-frequency">
+                    {missionData.frequency}
+                  </Badge>
+                  <p className="text-sm sm:text-base text-muted-foreground mt-2" data-testid="mission-description">
+                    {missionData.description}
+                  </p>
                 </div>
-                <Badge className={colors.badge} data-testid="mission-frequency">
-                  {missionData.frequency}
-                </Badge>
-                <p className="text-muted-foreground mt-2" data-testid="mission-description">
-                  {missionData.description}
-                </p>
               </div>
               
               <MascotCharacter 
                 size="sm" 
                 pose={isComplete ? 'celebrate' : 'encourage'}
                 speech={isComplete ? "Amazing!" : "You can do it!"}
+                className="hidden sm:block"
               />
             </div>
             
@@ -994,38 +995,38 @@ export default function MissionDetails() {
                 </div>
               </div>
               
-              <div className="flex justify-between">
+              <div className="flex flex-wrap gap-1 sm:gap-0 sm:justify-between">
                 {steps.map((step, index) => (
                   <motion.div
                     key={step.id}
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${
                       step.completed
                         ? colors.stepComplete
                         : 'bg-muted/50 text-muted-foreground border-2 border-dashed border-muted-foreground/30'
                     }`}
                     data-testid={`step-indicator-${index}`}
                   >
-                    {step.completed ? <Check className="w-4 h-4" /> : index + 1}
+                    {step.completed ? <Check className="w-3 h-3 sm:w-4 sm:h-4" /> : index + 1}
                   </motion.div>
                 ))}
               </div>
             </div>
             
             <div className="mt-6 space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Zap className="w-5 h-5 text-primary fill-primary" />
-                  <span className="font-black text-primary" data-testid="mission-xp">
+                  <span className="font-black text-primary text-sm sm:text-base" data-testid="mission-xp">
                     +{missionData.xpReward} XP per step
                   </span>
                 </div>
                 
                 <Button
                   size="lg"
-                  className={`font-black ${isComplete ? '' : 'animate-pulse-glow'}`}
+                  className={`w-full sm:w-auto font-black ${isComplete ? '' : 'animate-pulse-glow'}`}
                   disabled={isComplete || !existingMission?.isActive}
                   onClick={handleLogCompletion}
                   data-testid="button-log-completion"

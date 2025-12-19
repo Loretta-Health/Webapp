@@ -231,15 +231,15 @@ export default function MedicationDetails() {
           animate={{ opacity: 1, y: 0 }}
           className={`${colorClasses.primary.card} rounded-xl p-6 border`}
         >
-          <div className="flex items-start gap-4 mb-6">
-            <div className={`${colorClasses.primary.iconBg} w-16 h-16 rounded-full flex items-center justify-center`}>
-              <Pill className="w-8 h-8 text-white" />
+          <div className="flex items-start gap-3 sm:gap-4 mb-6">
+            <div className={`${colorClasses.primary.iconBg} w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center flex-shrink-0`}>
+              <Pill className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-black text-foreground mb-1" data-testid="medication-name">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl sm:text-2xl font-black text-foreground mb-1" data-testid="medication-name">
                 {medication.name}
               </h2>
-              <p className="text-muted-foreground mb-2">{medication.dosage}</p>
+              <p className="text-sm sm:text-base text-muted-foreground mb-2">{medication.dosage}</p>
               <div className="flex flex-wrap gap-2">
                 <Badge className={colorClasses.primary.badge}>
                   <Clock className="w-3 h-3 mr-1" />
