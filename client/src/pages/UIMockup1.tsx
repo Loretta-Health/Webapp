@@ -4,6 +4,7 @@ import {
   Menu, X, User, MessageCircle, LogOut, Shield, Accessibility, Sun, Moon,
   MapPin, CloudRain, Smile, Pill, BookOpen, Check, Sparkles, ChevronDown, ChevronUp
 } from 'lucide-react';
+import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
 
 function CollapsibleSection({ 
   title, 
@@ -69,8 +70,8 @@ export default function UIMockup1() {
         <div className="p-4 lg:p-6 space-y-4 lg:space-y-5">
           <div className="flex items-center justify-between lg:hidden">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#013DC4] flex items-center justify-center">
-                <Heart className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-lg bg-[#013DC4] flex items-center justify-center p-1.5">
+                <img src={logomarkViolet} alt="Loretta" className="w-full h-full object-contain brightness-0 invert" />
               </div>
               <span className="text-lg font-bold text-[#013DC4]">loretta</span>
             </div>
@@ -81,8 +82,8 @@ export default function UIMockup1() {
           
           <div className="hidden lg:flex justify-center">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-[#013DC4] flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-[#013DC4] flex items-center justify-center p-2">
+                <img src={logomarkViolet} alt="Loretta" className="w-full h-full object-contain brightness-0 invert" />
               </div>
               <span className="text-xl font-bold text-[#013DC4]">loretta</span>
             </div>
@@ -273,8 +274,8 @@ export default function UIMockup1() {
                   </h1>
                   <p className="text-gray-600">Ready to continue your health journey?</p>
                 </div>
-                <div className="hidden sm:block w-16 h-16 bg-[#CDB6EF]/30 rounded-full flex items-center justify-center">
-                  <span className="text-3xl">💜</span>
+                <div className="hidden sm:flex w-16 h-16 bg-[#CDB6EF]/30 rounded-full items-center justify-center p-3">
+                  <img src={logomarkViolet} alt="Loretta mascot" className="w-full h-full object-contain" />
                 </div>
               </div>
             </div>
