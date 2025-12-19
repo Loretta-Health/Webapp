@@ -478,25 +478,25 @@ export default function MyDashboard() {
       </aside>
       
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-gradient-to-r from-primary via-primary to-chart-2 text-white p-3 lg:p-4 flex items-center justify-between gap-2 lg:gap-4 shadow-lg">
-          <div className="flex items-center gap-2 lg:gap-4">
+        <header className="bg-gradient-to-r from-primary via-primary to-chart-2 text-white p-2 sm:p-3 lg:p-4 flex items-center justify-between gap-1 sm:gap-2 lg:gap-4 shadow-lg">
+          <div className="flex items-center gap-1 sm:gap-2 lg:gap-4">
             <Button 
               size="icon" 
               variant="ghost"
-              className="lg:hidden"
+              className="lg:hidden w-8 h-8 sm:w-10 sm:h-10"
               onClick={() => setSidebarOpen(true)}
               data-testid="button-open-sidebar"
             >
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
             
             <TreasureChest canOpen={!isNewUser} />
-            <EnergyBar current={isNewUser ? 100 : 85} max={100} className="flex-1 max-w-[120px] lg:max-w-xs" />
+            <EnergyBar current={isNewUser ? 100 : 85} max={100} className="flex-1 max-w-[80px] sm:max-w-[120px] lg:max-w-xs" />
           </div>
           
-          <div className="flex items-center gap-2 lg:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
             {!isNewUser && (
-              <Badge variant="secondary" className="font-bold text-xs lg:text-sm" data-testid="user-rank">
+              <Badge variant="secondary" className="font-bold text-[10px] sm:text-xs lg:text-sm px-1.5 sm:px-2" data-testid="user-rank">
                 {t('stats.level', { level })}
               </Badge>
             )}
@@ -510,14 +510,14 @@ export default function MyDashboard() {
                     onClick={toggleLocationEnabled}
                     disabled={locationLoading}
                     data-testid="button-location-toggle"
-                    className={locationEnabled && !usingDefault ? 'text-white' : 'text-white/60'}
+                    className={`w-8 h-8 sm:w-10 sm:h-10 ${locationEnabled && !usingDefault ? 'text-white' : 'text-white/60'}`}
                   >
                     {locationLoading ? (
-                      <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 animate-spin" />
+                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                     ) : locationEnabled && !usingDefault ? (
-                      <MapPin className="w-4 h-4 lg:w-5 lg:h-5" />
+                      <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : (
-                      <MapPinOff className="w-4 h-4 lg:w-5 lg:h-5" />
+                      <MapPinOff className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </Button>
                 </TooltipTrigger>
@@ -527,14 +527,14 @@ export default function MyDashboard() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-white/10">
-              <CloudRain className={`w-4 h-4 ${simulateBadWeather ? 'text-amber-400' : 'text-white/60'}`} />
-              <span className="text-xs text-white/80 hidden sm:inline">{t('weather.simulateBadWeather', 'Simulate Bad Weather')}</span>
+            <div className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 py-1 rounded-lg bg-white/10">
+              <CloudRain className={`w-3 h-3 sm:w-4 sm:h-4 ${simulateBadWeather ? 'text-amber-400' : 'text-white/60'}`} />
+              <span className="text-[10px] sm:text-xs text-white/80 hidden sm:inline">{t('weather.simulateBadWeather', 'Simulate Bad Weather')}</span>
               <Switch
                 checked={simulateBadWeather}
                 onCheckedChange={setSimulateBadWeather}
                 data-testid="switch-weather-simulation"
-                className="data-[state=checked]:bg-amber-500"
+                className="data-[state=checked]:bg-amber-500 scale-75 sm:scale-100"
               />
             </div>
             <Button 
@@ -542,8 +542,9 @@ export default function MyDashboard() {
               variant="ghost"
               onClick={toggleDarkMode}
               data-testid="button-theme-toggle"
+              className="w-8 h-8 sm:w-10 sm:h-10"
             >
-              {darkMode ? <Sun className="w-4 h-4 lg:w-5 lg:h-5" /> : <Moon className="w-4 h-4 lg:w-5 lg:h-5" />}
+              {darkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
             </Button>
           </div>
         </header>
@@ -1037,27 +1038,6 @@ export default function MyDashboard() {
                 )}
               </>
             )}
-            
-            <div className="flex justify-center gap-3 lg:gap-4 py-4">
-              <Button
-                variant={showLeaderboard ? "default" : "outline"}
-                onClick={() => setShowLeaderboard(true)}
-                className="flex items-center gap-2"
-                data-testid="button-show-leaderboard"
-              >
-                <Users className="w-4 h-4" />
-                {t('sidebar.leaderboard')}
-              </Button>
-              <Button
-                variant={!showLeaderboard ? "default" : "outline"}
-                onClick={() => setShowLeaderboard(false)}
-                className="flex items-center gap-2"
-                data-testid="button-show-dashboard"
-              >
-                <Heart className="w-4 h-4" />
-                {t('sidebar.navigation')}
-              </Button>
-            </div>
             
             <p className="text-xs text-muted-foreground text-center pb-4 italic">
               {t('disclaimer')}
