@@ -36,6 +36,13 @@ Preferred communication style: Simple, everyday language.
 - **Data Sync**: Bidirectional synchronization between profile and questionnaire for shared fields (age, height, weight, ethnicity). Changes to either automatically update the other.
 - **Auto-Recalculation**: Risk scores automatically recalculate when profile health data or questionnaire answers are updated.
 
+### Friend System
+- **Unique Invite Codes**: Each user has a unique 8-character invite code stored in `user_invite_codes` table
+- **Invitation Links**: Users share their unique link (e.g., `/join/abc12345`) to add friends
+- **Bidirectional Friendships**: When accepting an invite, friendships are created in both directions in the `friendships` table
+- **Friend Leaderboard**: "My Friends" tab in the leaderboard shows the user and all their friends ranked by XP
+- **Security**: Cannot add yourself as a friend, duplicate friendship attempts are prevented
+
 ### Internationalization (i18n)
 - Implemented with `react-i18next` and `i18next-browser-languagedetector`.
 - Supports English (en) and German (de).
