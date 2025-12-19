@@ -520,3 +520,37 @@ export const updateMedicationAdherenceSchema = z.object({
 export type InsertMedicationAdherence = z.infer<typeof insertMedicationAdherenceSchema>;
 export type UpdateMedicationAdherence = z.infer<typeof updateMedicationAdherenceSchema>;
 export type MedicationAdherence = typeof medicationAdherence.$inferSelect;
+
+// User invite codes - unique invitation codes for friend system
+export const userInviteCodes = pgTable("user_invite_codes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull().unique(),
+  inviteCode: text("invite_code").notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserInviteCodeSchema = createInsertSchema(userInviteCodes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertUserInviteCode = z.infer<typeof insertUserInviteCodeSchema>;
+export type UserInviteCode = typeof userInviteCodes.$inferSelect;
+
+// Friendships - stores friend relationships between users
+export const friendships = pgTable("friendships", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  friendId: text("friend_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  unique("unique_friendship").on(table.userId, table.friendId),
+]);
+
+export const insertFriendshipSchema = createInsertSchema(friendships).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
+export type Friendship = typeof friendships.$inferSelect;
