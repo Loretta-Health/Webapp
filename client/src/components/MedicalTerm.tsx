@@ -38,7 +38,7 @@ const medicalDictionary: Record<string, { explanation: string; simpleExplanation
   },
   'Risk Score': {
     explanation: 'A calculated health assessment based on various factors like lifestyle, vital signs, and medical history to predict potential health risks.',
-    simpleExplanation: 'A number that shows your overall health status. Higher scores mean better health!',
+    simpleExplanation: 'A number that shows your health risk level. Lower scores mean better health!',
     category: 'metric'
   },
   'Blood Pressure': {

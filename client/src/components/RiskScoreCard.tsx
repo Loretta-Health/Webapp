@@ -27,10 +27,10 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
   };
   
   const getScoreLabel = () => {
-    if (score >= 80) return 'Excellent!';
-    if (score >= 60) return 'Good Progress';
-    if (score >= 40) return 'Keep Going';
-    return 'Needs Attention';
+    if (score <= 20) return 'Excellent!';
+    if (score <= 40) return 'Great Progress';
+    if (score <= 60) return 'Getting There';
+    return 'Room to Improve';
   };
   
   return (
@@ -45,14 +45,14 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
                 <MedicalTerm
                   term="Risk Score"
                   explanation="A calculated health assessment based on various factors like lifestyle, vital signs, and medical history to predict potential health risks."
-                  simpleExplanation="A number that shows your overall health status. Higher scores mean better health!"
+                  simpleExplanation="A number that shows your health risk level. Lower scores mean better health!"
                   category="metric"
                 />
                 <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </h3>
               <div className="flex items-center gap-2">
-                {trend === 'up' && <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-primary" data-testid="trend-up" />}
-                {trend === 'down' && <TrendingDown className="w-4 h-4 lg:w-5 lg:h-5 text-destructive" data-testid="trend-down" />}
+                {trend === 'down' && <TrendingDown className="w-4 h-4 lg:w-5 lg:h-5 text-primary" data-testid="trend-down" />}
+                {trend === 'up' && <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-destructive" data-testid="trend-up" />}
                 <span className="text-xs lg:text-sm font-semibold text-muted-foreground">{getScoreLabel()}</span>
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
                 <p className="text-xs font-bold text-chart-3 uppercase mb-1">Why this matters</p>
                 <p className="text-xs lg:text-sm text-foreground leading-relaxed">
                   Your risk score combines multiple factors to give you one easy number to track. 
-                  Improving any single factor can boost your overall score!
+                  Healthy habits help lower your score - aim for the lowest number possible!
                 </p>
               </div>
             </div>
@@ -130,7 +130,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
               <div>
                 <p className="text-xs font-bold text-chart-2 uppercase mb-1">{t('community.communityTip')}</p>
                 <p className="text-xs lg:text-sm text-foreground leading-relaxed italic">
-                  "Focus on small, consistent improvements. Even adding a 10-minute walk can improve your score over time."
+                  "Focus on small, consistent habits. Even adding a 10-minute walk can help lower your risk over time."
                 </p>
               </div>
             </div>
