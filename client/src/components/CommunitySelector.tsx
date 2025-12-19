@@ -10,15 +10,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTranslation } from 'react-i18next';
 
-export type CommunityType = 'loretta' | 'family';
+export type CommunityType = 'loretta' | 'friends';
 
 interface CommunitySelectorProps {
   value: CommunityType;
   onChange: (value: CommunityType) => void;
   className?: string;
+  friendsCount?: number;
 }
 
-export default function CommunitySelector({ value, onChange, className = '' }: CommunitySelectorProps) {
+export default function CommunitySelector({ value, onChange, className = '', friendsCount = 1 }: CommunitySelectorProps) {
   const { t } = useTranslation('dashboard');
   
   const communities = [
@@ -30,11 +31,11 @@ export default function CommunitySelector({ value, onChange, className = '' }: C
       memberCount: t('community.lorettaMembers', { count: 2847 })
     },
     {
-      id: 'family' as CommunityType,
-      name: t('community.myFamily'),
-      description: t('community.familyDescription'),
+      id: 'friends' as CommunityType,
+      name: t('community.myFriends'),
+      description: t('community.friendsDescription'),
       icon: Home,
-      memberCount: t('community.familyMembers', { count: 5 })
+      memberCount: t('community.friendsMembers', { count: friendsCount })
     }
   ];
 

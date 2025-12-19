@@ -153,11 +153,11 @@
     "lorettaCommunity": "Loretta Community",
     "lorettaDescription": "Vergleiche dich mit allen Loretta-Mitgliedern",
     "lorettaMembers": "{{count}} Mitglieder",
-    "myFamily": "Meine Familie",
-    "familyDescription": "Nur du und deine Familienmitglieder",
-    "familyMembers": "{{count}} Mitglieder",
+    "myFriends": "Meine Freunde",
+    "friendsDescription": "Nur du und deine Freunde",
+    "friendsMembers": "{{count}} Mitglieder",
     "communityTip": "Community-Tipp",
-    "family": "Familie"
+    "friends": "Freunde"
   },
   "missionData": {
     "drinkWater": {
