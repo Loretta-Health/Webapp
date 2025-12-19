@@ -489,9 +489,6 @@ export default function MyDashboard() {
             >
               <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
-            
-            <TreasureChest canOpen={!isNewUser} />
-            <EnergyBar current={isNewUser ? 100 : 85} max={100} className="flex-1 max-w-[80px] sm:max-w-[120px] lg:max-w-xs" />
           </div>
           
           <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
