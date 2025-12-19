@@ -61,6 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (user: SelectUser) => {
       queryClient.clear();
+      // Clear any stale consent/onboarding data for new users
+      localStorage.removeItem('loretta_consent');
+      localStorage.removeItem('loretta_newsletter');
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Account created!",
