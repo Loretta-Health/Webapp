@@ -16,7 +16,6 @@ import {
   Pill,
   Wine,
   Info,
-  Target,
   Sparkles,
   Loader2,
   Scale,
@@ -28,7 +27,8 @@ import {
   Smile,
   User,
   Armchair,
-  Footprints
+  Footprints,
+  MessageCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
@@ -455,48 +455,24 @@ export default function RiskScoreDetails() {
           </Card>
         )}
 
-        {/* Improvement Tips */}
+        {/* Get Personalized Recommendations */}
         <Card className="p-5 mb-8 border-0 shadow-lg bg-gradient-to-br from-primary/5 to-chart-2/5">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-              <Target className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-white" />
             </div>
-            <h3 className="font-bold text-foreground">Quick Wins</h3>
-            <Sparkles className="w-4 h-4 text-chart-3 ml-auto" />
+            <div className="flex-1">
+              <h3 className="font-bold text-foreground">Want to improve your score?</h3>
+              <p className="text-sm text-muted-foreground">Chat with Loretta for personalized recommendations</p>
+            </div>
           </div>
           
-          <div className="space-y-3">
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60">
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                1
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">Add a 15-min daily walk</p>
-                <p className="text-xs text-muted-foreground">Could improve your score by +5 points</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60">
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                2
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">Include one vegetable serving per meal</p>
-                <p className="text-xs text-muted-foreground">Could improve your score by +3 points</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 rounded-xl bg-background/60">
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                3
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">Reduce smoking by 2 cigarettes daily</p>
-                <p className="text-xs text-muted-foreground">Could improve your score by +4 points</p>
-              </div>
-            </div>
-          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Our AI health assistant can analyze your risk factors and suggest practical steps tailored to your lifestyle and goals.
+          </p>
 
           <Link href="/chat">
-            <Button className="w-full mt-4 bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+            <Button className="w-full bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
               <Sparkles className="w-4 h-4 mr-2" />
               Get Personalized Tips
             </Button>
