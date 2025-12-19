@@ -347,17 +347,17 @@ export default function MyDashboard() {
               </div>
             </div>
             <h2 className="text-lg lg:text-xl font-black text-sidebar-foreground">{user.username}</h2>
-            <p className="text-xs lg:text-sm text-muted-foreground">
+            <p className="text-xs lg:text-sm text-muted-foreground mb-2">
               {isNewUser ? t('sidebar.newMember') : t('sidebar.healthExplorer', { level })}
             </p>
+            <div className="flex justify-center">
+              <StreakCounter days={streak} size="md" showLabel={true} />
+            </div>
           </div>
           
           <Separator />
           
-          <div className="flex items-center justify-between gap-3">
-            <XPProgress currentXP={xp % nextLevelXP} nextLevelXP={nextLevelXP} level={level} />
-            <StreakCounter days={streak} size="md" showLabel={false} />
-          </div>
+          <XPProgress currentXP={xp % nextLevelXP} nextLevelXP={nextLevelXP} level={level} />
           
           <Separator />
           
