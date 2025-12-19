@@ -21,7 +21,6 @@ import MascotCharacter from '@/components/MascotCharacter';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import XPProgress from '@/components/XPProgress';
 import StreakCounter from '@/components/StreakCounter';
-import LivesIndicator from '@/components/LivesIndicator';
 import RiskScoreCard from '@/components/RiskScoreCard';
 import QuestCard from '@/components/QuestCard';
 import DailyCheckIn from '@/components/DailyCheckIn';
@@ -355,13 +354,9 @@ export default function MyDashboard() {
           
           <Separator />
           
-          <XPProgress currentXP={xp % nextLevelXP} nextLevelXP={nextLevelXP} level={level} />
-          
-          <Separator />
-          
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between gap-3">
+            <XPProgress currentXP={xp % nextLevelXP} nextLevelXP={nextLevelXP} level={level} />
             <StreakCounter days={streak} size="md" showLabel={false} />
-            <LivesIndicator current={lives} max={5} size="md" />
           </div>
           
           <Separator />
