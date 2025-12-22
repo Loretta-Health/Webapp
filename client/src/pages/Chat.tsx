@@ -268,9 +268,9 @@ export default function Chat() {
             <div className="p-4 border-t border-border">
               <Collapsible open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
                 <CollapsibleTrigger asChild>
-                  <button className="flex items-center justify-between w-full text-left py-1 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors">
-                    <p className="text-xs text-muted-foreground">{t('chat.suggestionsTitle')}</p>
-                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${suggestionsOpen ? 'rotate-180' : ''}`} />
+                  <button className="flex items-center justify-between w-full text-left py-2 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors gap-2">
+                    <span className="text-xs text-muted-foreground leading-tight">{t('chat.suggestionsHint', 'Need inspiration? Tap here for conversation starters')}</span>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform flex-shrink-0 ${suggestionsOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
