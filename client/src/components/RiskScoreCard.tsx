@@ -182,20 +182,12 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
                         <span className="text-xs font-bold text-white">2</span>
                       </div>
                       <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">
-                        <strong>Risk Stratification:</strong> Based on the Framingham Risk Score methodology, which has been validated in multiple large-scale population studies.
-                      </p>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs font-bold text-white">3</span>
-                      </div>
-                      <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">
                         <strong>Lifestyle Impact:</strong> Research shows that lifestyle modifications can reduce cardiovascular risk by 30-50% in high-risk individuals.
                       </p>
                     </li>
                     <li className="flex items-start gap-2">
                       <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <span className="text-xs font-bold text-white">4</span>
+                        <span className="text-xs font-bold text-white">3</span>
                       </div>
                       <p className="text-xs lg:text-sm text-muted-foreground leading-relaxed">
                         <strong>Continuous Monitoring:</strong> Regular tracking helps identify trends early, enabling proactive health management before issues become serious.
