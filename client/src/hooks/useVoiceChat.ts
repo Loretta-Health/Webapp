@@ -48,7 +48,7 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}): UseVoiceChatRet
     if (!SpeechRecognitionClass) return;
 
     const recognition = new SpeechRecognitionClass();
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = getLanguageCode();
 
