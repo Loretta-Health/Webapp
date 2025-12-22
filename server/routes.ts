@@ -239,8 +239,86 @@ ${!isGoodForOutdoor ? `IMPORTANT: The weather is currently BAD for outdoor activ
 === END WEATHER CONTEXT ===`;
       }
 
+      // Check if user is asking about their risk score or health data
+      let healthProfileContext = '';
+      const riskKeywords = ['risk', 'score', 'health score', 'my score', 'risk score', 'diabetes', 'heart', 'stroke', 'my health', 'my results', 'my data', 'assessment'];
+      const isAskingAboutRisk = riskKeywords.some(keyword => userText.toLowerCase().includes(keyword));
+      
+      if (isAskingAboutRisk && req.isAuthenticated()) {
+        const userId = (req.user as any).id;
+        try {
+          // Fetch user's questionnaire answers
+          const allAnswers = await storage.getAllQuestionnaireAnswers(userId);
+          const mergedAnswers: Record<string, string> = {};
+          allAnswers.forEach(a => {
+            Object.assign(mergedAnswers, a.answers);
+          });
+          
+          // Fetch user's profile
+          const profile = await storage.getUserProfile(userId);
+          
+          // Fetch latest risk score
+          const latestRiskScore = await storage.getLatestRiskScore(userId);
+          
+          // Build a human-readable summary of their health data
+          const age = mergedAnswers.age || profile?.age || 'Not provided';
+          const height = mergedAnswers.height || profile?.height || 'Not provided';
+          const weight = mergedAnswers.weight_current || profile?.weight || 'Not provided';
+          const hasHighBP = mergedAnswers.high_blood_pressure === 'yes' ? 'Yes' : mergedAnswers.high_blood_pressure === 'no' ? 'No' : 'Not provided';
+          const hasHighCholesterol = mergedAnswers.high_cholesterol === 'yes' ? 'Yes' : mergedAnswers.high_cholesterol === 'no' ? 'No' : 'Not provided';
+          const hasPrediabetes = mergedAnswers.prediabetes === 'yes' ? 'Yes' : mergedAnswers.prediabetes === 'no' ? 'No' : 'Not provided';
+          const generalHealth = mergedAnswers.general_health || 'Not provided';
+          const weekdaySleep = mergedAnswers.weekday_sleep || 'Not provided';
+          const weekendSleep = mergedAnswers.weekend_sleep || 'Not provided';
+          const moderateActivity = mergedAnswers.moderate_activity || 'Not provided';
+          const sedentaryHours = mergedAnswers.sedentary_hours || 'Not provided';
+          const takesAspirin = mergedAnswers.daily_aspirin === 'yes' ? 'Yes' : mergedAnswers.daily_aspirin === 'no' ? 'No' : 'Not provided';
+          const bloodTest = mergedAnswers.blood_test_3_years === 'yes' ? 'Yes' : mergedAnswers.blood_test_3_years === 'no' ? 'No' : 'Not provided';
+          
+          healthProfileContext = `\n\n=== USER'S HEALTH PROFILE (from their questionnaire) ===
+This is the user's actual health data they provided during onboarding:
+
+BIOMETRICS:
+- Age: ${age}${age !== 'Not provided' ? ' years' : ''}
+- Height: ${height}${height !== 'Not provided' ? ' cm' : ''}
+- Weight: ${weight}${weight !== 'Not provided' ? ' kg' : ''}
+
+MEDICAL CONDITIONS:
+- High blood pressure: ${hasHighBP}
+- High cholesterol: ${hasHighCholesterol}
+- Prediabetes or borderline diabetes: ${hasPrediabetes}
+- Takes daily aspirin: ${takesAspirin}
+- Had blood test in last 3 years: ${bloodTest}
+
+LIFESTYLE:
+- Self-rated general health: ${generalHealth}
+- Average weekday sleep: ${weekdaySleep}${weekdaySleep !== 'Not provided' ? ' hours' : ''}
+- Average weekend sleep: ${weekendSleep}${weekendSleep !== 'Not provided' ? ' hours' : ''}
+- Moderate physical activity: ${moderateActivity}${moderateActivity !== 'Not provided' ? ' hours/week' : ''}
+- Sedentary time: ${sedentaryHours}${sedentaryHours !== 'Not provided' ? ' hours/day' : ''}
+
+${latestRiskScore ? `CURRENT RISK SCORES (lower is healthier, 0-100 scale):
+- Overall Health Risk: ${latestRiskScore.overallScore}/100
+- Diabetes Risk: ${latestRiskScore.diabetesRisk}/100
+- Heart Disease Risk: ${latestRiskScore.heartRisk}/100
+- Stroke Risk: ${latestRiskScore.strokeRisk}/100` : 'RISK SCORES: Not yet calculated'}
+
+IMPORTANT: When discussing risk scores, remember:
+- LOWER scores mean BETTER health (0 = lowest risk, 100 = highest risk)
+- Be encouraging and focus on positive actions they can take
+- Reference their specific data when explaining factors
+- If they have high scores, emphasize that these are estimates and encourage consulting healthcare providers
+=== END HEALTH PROFILE ===`;
+          
+          console.log("[Chat] Added health profile context for risk-related query");
+        } catch (error) {
+          console.error("[Chat] Failed to fetch health profile context:", error);
+          // Continue without the context if fetch fails
+        }
+      }
+
       const chatMessages: ChatMessage[] = [
-        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + activeMissionsContext + dynamicContext },
+        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + activeMissionsContext + dynamicContext + healthProfileContext },
         ...messages.map((msg: { role: string; content: string }) => ({
           role: msg.role as "user" | "assistant",
           content: msg.content,
