@@ -99,9 +99,9 @@ export default function Dashboard() {
   const totalCount = demoMissions.length;
   
   const demoMedications = [
-    { id: 'med-1', name: 'Metformin', dosage: '500mg', timing: 'With breakfast', frequency: 'daily', explanation: 'Helps control blood sugar levels', simpleExplanation: 'Keeps blood sugar stable' },
-    { id: 'med-2', name: 'Lisinopril', dosage: '10mg', timing: 'Every morning', frequency: 'daily', explanation: 'ACE inhibitor for blood pressure control', simpleExplanation: 'Maintains healthy blood pressure' },
-    { id: 'med-3', name: 'Atorvastatin', dosage: '20mg', timing: 'At bedtime', frequency: 'daily', explanation: 'Statin medication to lower cholesterol', simpleExplanation: 'Helps keep cholesterol low' },
+    { id: 'med-1', name: 'Metformin', dosage: '500mg', scheduledTimes: ['08:00'], notes: 'With breakfast', frequency: 'daily', explanation: 'Helps control blood sugar levels', simpleExplanation: 'Keeps blood sugar stable' },
+    { id: 'med-2', name: 'Lisinopril', dosage: '10mg', scheduledTimes: ['08:00'], notes: 'Every morning', frequency: 'daily', explanation: 'ACE inhibitor for blood pressure control', simpleExplanation: 'Maintains healthy blood pressure' },
+    { id: 'med-3', name: 'Atorvastatin', dosage: '20mg', scheduledTimes: ['22:00'], notes: 'At bedtime', frequency: 'daily', explanation: 'Statin medication to lower cholesterol', simpleExplanation: 'Helps keep cholesterol low' },
   ];
   const medications = demoMedications;
   const medicationProgress = { taken: 2, total: 3, percentage: 67 };
@@ -617,7 +617,8 @@ export default function Dashboard() {
                         medicationId={med.id}
                         name={med.name}
                         dosage={med.dosage}
-                        timing={med.timing}
+                        scheduledTimes={med.scheduledTimes}
+                        notes={med.notes}
                         frequency={med.frequency}
                         explanation={med.explanation}
                         simpleExplanation={med.simpleExplanation}
