@@ -155,7 +155,13 @@
       "activated": "Activated!"
     },
     "missionActivated": "Mission Activated!",
-    "activationFailed": "Failed to activate mission. Please try again."
+    "activationFailed": "Failed to activate mission. Please try again.",
+    "voice": {
+      "startListening": "Start voice input",
+      "stopListening": "Stop voice input",
+      "speakMessage": "Read aloud",
+      "stopSpeaking": "Stop reading"
+    }
   },
   "calendar": {
     "title": "Health Calendar",
