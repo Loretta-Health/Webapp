@@ -9,13 +9,15 @@ interface UseVoiceChatOptions {
 interface UseVoiceChatReturn {
   isListening: boolean;
   isSpeaking: boolean;
-  isSupported: boolean;
+  isRecognitionSupported: boolean;
+  isSynthesisSupported: boolean;
   startListening: () => void;
   stopListening: () => void;
   speak: (text: string) => void;
   stopSpeaking: () => void;
   transcript: string;
   error: string | null;
+  clearError: () => void;
 }
 
 export function useVoiceChat(options: UseVoiceChatOptions = {}): UseVoiceChatReturn {
@@ -33,10 +35,8 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}): UseVoiceChatRet
     return (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
   };
 
-  const isSupported = typeof window !== 'undefined' && (
-    !!getSpeechRecognition() && 
-    'speechSynthesis' in window
-  );
+  const isRecognitionSupported = typeof window !== 'undefined' && !!getSpeechRecognition();
+  const isSynthesisSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
 
   const getLanguageCode = useCallback(() => {
     const lang = options.language || i18n.language;
@@ -190,15 +190,21 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}): UseVoiceChatRet
     setIsSpeaking(false);
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     isListening,
     isSpeaking,
-    isSupported,
+    isRecognitionSupported,
+    isSynthesisSupported,
     startListening,
     stopListening,
     speak,
     stopSpeaking,
     transcript,
     error,
+    clearError,
   };
 }

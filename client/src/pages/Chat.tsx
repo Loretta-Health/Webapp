@@ -75,13 +75,15 @@ export default function Chat() {
   const {
     isListening,
     isSpeaking,
-    isSupported: isVoiceSupported,
+    isRecognitionSupported,
+    isSynthesisSupported,
     startListening,
     stopListening,
     speak,
     stopSpeaking,
     transcript,
     error: voiceError,
+    clearError: clearVoiceError,
   } = useVoiceChat({
     onTranscript: (text) => {
       setInputText(text);
@@ -255,7 +257,7 @@ export default function Chat() {
                             <p className="text-xs text-muted-foreground">
                               {formatTime(message.timestamp)}
                             </p>
-                            {message.role === 'assistant' && isVoiceSupported && (
+                            {message.role === 'assistant' && isSynthesisSupported && (
                               <Button
                                 size="icon"
                                 variant="ghost"
@@ -398,7 +400,7 @@ export default function Chat() {
               >
                 <Upload className="w-4 h-4" />
               </Button>
-              {isVoiceSupported && (
+              {isRecognitionSupported && (
                 <Button
                   type="button"
                   size="icon"
@@ -429,6 +431,19 @@ export default function Chat() {
                 <Send className="w-4 h-4" />
               </Button>
             </form>
+            {voiceError && (
+              <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center justify-between">
+                <p className="text-xs text-destructive">{voiceError}</p>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-5 w-5 p-0"
+                  onClick={clearVoiceError}
+                >
+                  <X className="w-3 h-3 text-destructive" />
+                </Button>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground mt-2 text-center">
               {t('chat.uploadHint')}
             </p>
