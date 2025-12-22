@@ -155,13 +155,7 @@
       "activated": "Aktiviert!"
     },
     "missionActivated": "Mission aktiviert!",
-    "activationFailed": "Mission konnte nicht aktiviert werden. Bitte versuche es erneut.",
-    "voice": {
-      "startListening": "Spracheingabe starten",
-      "stopListening": "Spracheingabe stoppen",
-      "speakMessage": "Vorlesen",
-      "stopSpeaking": "Vorlesen stoppen"
-    }
+    "activationFailed": "Mission konnte nicht aktiviert werden. Bitte versuche es erneut."
   },
   "calendar": {
     "title": "Gesundheitskalender",
