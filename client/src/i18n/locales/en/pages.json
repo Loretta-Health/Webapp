@@ -302,7 +302,7 @@
       "preventsComplications": "Prevents complications",
       "keepsWell": "Keeps you feeling well"
     },
-    "communityTipContent": "Set a daily alarm or use a pill organizer to help you remember to take your medications at the same time each day. Consistency is key!",
+    "communityTipContent": "Set a daily alarm or use a pill organizer for consistency.",
     "medicalDisclaimer": "Medical Disclaimer",
     "disclaimerText": "Loretta is not a diagnostic tool and does not provide medical advice. Always consult your healthcare provider about your medications. Never change your medication regimen without professional guidance."
   },
@@ -312,7 +312,7 @@
     "trackRoutine": "Track your daily medication routine",
     "completed": "Completed",
     "dailyBonus": "Daily Bonus",
-    "communityTipContent": "Taking medications at the same time each day helps build a healthy routine and improves effectiveness."
+    "communityTipContent": "Same time each day builds routine and improves effectiveness."
   },
   "missionDetails": {
     "title": "Mission Details",
@@ -370,7 +370,7 @@
   "activityDetails": {
     "title": "Health Literacy Navigator",
     "subtitle": "Personalized health guidance",
-    "communityTipContent": "Small consistent efforts add up! Even a short 5-minute walk can make a big difference in your daily activity goals."
+    "communityTipContent": "Small consistent efforts add up - even a 5-minute walk helps!"
   },
   "calendar": {
     "title": "Calendar",
@@ -411,7 +411,7 @@
     "maintainStreak": "Maintain a {{days}}-day streak",
     "xpReward": "XP Reward",
     "keepGoing": "Keep Going!",
-    "communityTipContent": "Consistency is key to building healthy habits. You're doing amazing - don't break your streak!",
+    "communityTipContent": "Consistency builds healthy habits - keep your streak going!",
     "weekDays": {
       "mon": "Mon",
       "tue": "Tue",
@@ -429,7 +429,7 @@
     }
   },
   "invite": {
-    "communityTipContent": "Invite friends and family to join your team. Compare progress on the leaderboard and motivate each other!"
+    "communityTipContent": "Invite friends to compare progress and motivate each other!"
   },
   "joinFriend": {
     "loading": {

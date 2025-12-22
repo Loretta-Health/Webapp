@@ -164,28 +164,28 @@
       "title": "Drink a cup of water",
       "description": "Stay hydrated by drinking at least one cup of water to start your day right.",
       "details": "This mission helps you maintain proper hydration levels throughout the day. Drinking water is essential for maintaining bodily functions and overall health.",
-      "communityTip": "Try keeping a water bottle at your desk as a visual reminder to stay hydrated throughout the day.",
+      "communityTip": "Keep a water bottle visible as a reminder.",
       "stepLabel": "Glass"
     },
     "jumpingJacks": {
       "title": "Complete 10 jumping jacks",
       "description": "Get your blood flowing and heart rate up by doing 10 jumping jacks.",
       "details": "Jumping jacks are a full-body cardiovascular exercise that increases your heart rate, improves circulation, and helps wake up your muscles.",
-      "communityTip": "Start with a smaller number if you're just beginning and gradually increase over time.",
+      "communityTip": "Start small and gradually increase over time.",
       "stepLabel": "Set"
     },
     "walkSteps": {
       "title": "Walk 5,000 steps",
       "description": "Get moving and reach your daily step goal.",
       "details": "Walking is a simple yet effective exercise that improves cardiovascular health and overall wellbeing.",
-      "communityTip": "Try taking short walks during breaks to accumulate steps throughout the day.",
+      "communityTip": "Short walks during breaks add up quickly.",
       "stepLabel": "Steps"
     },
     "deepBreathing": {
       "title": "Practice deep breathing",
       "description": "Take a moment to relax with deep breathing exercises.",
       "details": "Deep breathing helps reduce stress and promotes relaxation.",
-      "communityTip": "Try the 4-7-8 technique: inhale for 4 seconds, hold for 7, exhale for 8.",
+      "communityTip": "Try 4-7-8: inhale 4s, hold 7s, exhale 8s.",
       "stepLabel": "Session"
     },
     "benefits": {
