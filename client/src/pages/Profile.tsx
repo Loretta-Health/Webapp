@@ -842,10 +842,10 @@ export default function Profile() {
       backendAnswers.forEach((item) => {
         Object.assign(mergedAnswers, item.answers);
       });
-      const localAnswers = localStorage.getItem('loretta_questionnaire_answers');
-      const localParsed = localAnswers ? JSON.parse(localAnswers) : {};
-      const combined = { ...mergedAnswers, ...localParsed };
-      setQuestionnaireAnswers(combined);
+      // Backend is the source of truth - update state and sync to localStorage
+      setQuestionnaireAnswers(mergedAnswers);
+      localStorage.setItem('loretta_questionnaire_answers', JSON.stringify(mergedAnswers));
+      console.log('[Profile] Loaded questionnaire answers from backend:', Object.keys(mergedAnswers).length, 'answers');
     }
   }, [backendAnswers]);
 
