@@ -1017,9 +1017,10 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   
   // === MEDICAL HISTORY ===
   
-  // Diabetes/prediabetes
-  const hasDiabetes = getAnswerValue(answers, 'diabetes') === 'yes';
-  const hasPrediabetes = getAnswerValue(answers, 'prediabetes') === 'yes';
+  // Diabetes/prediabetes - use actual question IDs from the questionnaire
+  const hasDiabetes = getAnswerValue(answers, 'diabetes_followup') === 'yes';
+  const hasPrediabetes = getAnswerValue(answers, 'prediabetes') === 'yes' || 
+                         getAnswerValue(answers, 'prediabetes_followup') === 'yes';
   if (hasDiabetes) {
     diabetesRisk += 40;
     heartRisk += 15;
@@ -1046,20 +1047,18 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
     strokeRisk += 12;
   }
   
-  // Cardiovascular history
+  // Cardiovascular history - use actual question IDs
   const hadHeartAttack = getAnswerValue(answers, 'heart_attack') === 'yes';
   const hasHeartFailure = getAnswerValue(answers, 'heart_failure') === 'yes';
   const hasCoronaryDisease = getAnswerValue(answers, 'coronary_disease') === 'yes';
-  const hadStroke = getAnswerValue(answers, 'stroke_history') === 'yes';
   
   if (hadHeartAttack) { heartRisk += 25; strokeRisk += 10; }
   if (hasHeartFailure) { heartRisk += 30; strokeRisk += 15; }
   if (hasCoronaryDisease) { heartRisk += 20; strokeRisk += 10; }
-  if (hadStroke) { strokeRisk += 30; heartRisk += 10; }
   
-  // Kidney disease
-  const hasKidneyDisease = getAnswerValue(answers, 'kidney_disease') === 'yes';
-  if (hasKidneyDisease) {
+  // Kidney problems - use correct question ID
+  const hasKidneyProblems = getAnswerValue(answers, 'kidney_problems') === 'yes';
+  if (hasKidneyProblems) {
     diabetesRisk += 12;
     heartRisk += 15;
     strokeRisk += 10;
@@ -1086,9 +1085,9 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   heartRisk += activityRiskPoints;
   strokeRisk += Math.round(activityRiskPoints * 0.7);
   
-  // Sleep patterns
-  const weekdaySleep = parseNumericAnswer(getAnswerValue(answers, 'sleep_hours_weekday'), 7);
-  const weekendSleep = parseNumericAnswer(getAnswerValue(answers, 'sleep_hours_weekend'), 7);
+  // Sleep patterns - use correct question IDs from questionnaire
+  const weekdaySleep = parseNumericAnswer(getAnswerValue(answers, 'weekday_sleep'), 7);
+  const weekendSleep = parseNumericAnswer(getAnswerValue(answers, 'weekend_sleep'), 7);
   const avgSleep = (weekdaySleep + weekendSleep) / 2;
   const hasSleepTrouble = getAnswerValue(answers, 'sleep_trouble') === 'yes';
   
@@ -1113,10 +1112,10 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
     strokeRisk += 8;
   }
   
-  // === BALANCE AND FALLS ===
-  const hasBalanceIssues = getAnswerValue(answers, 'balance_issues') === 'yes';
+  // === BALANCE AND FALLS - use correct question IDs ===
+  const hasUnsteadiness = getAnswerValue(answers, 'unsteadiness') === 'yes';
   const hasFalls = getAnswerValue(answers, 'falls') === 'yes';
-  if (hasBalanceIssues || hasFalls) {
+  if (hasUnsteadiness || hasFalls) {
     strokeRisk += 8;
   }
   
@@ -1130,6 +1129,25 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
     diabetesRisk -= 5;
     heartRisk -= 5;
     strokeRisk -= 5;
+  }
+  
+  // === ORAL HEALTH (correlates with cardiovascular health) ===
+  const dentalHealth = getAnswerValue(answers, 'dental_health');
+  const hasMouthAching = getAnswerValue(answers, 'mouth_aching') === 'yes';
+  const hasMouthEatingProblems = getAnswerValue(answers, 'mouth_eating_problems') === 'yes';
+  
+  const oralHealthIssues = [
+    dentalHealth === 'fair' || dentalHealth === 'poor',
+    hasMouthAching,
+    hasMouthEatingProblems
+  ].filter(Boolean).length;
+  
+  if (oralHealthIssues >= 2) {
+    heartRisk += 10;
+    diabetesRisk += 8;
+  } else if (oralHealthIssues >= 1) {
+    heartRisk += 5;
+    diabetesRisk += 4;
   }
   
   // === NORMALIZE SCORES ===
