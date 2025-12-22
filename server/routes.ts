@@ -297,11 +297,8 @@ LIFESTYLE:
 - Moderate physical activity: ${moderateActivity}${moderateActivity !== 'Not provided' ? ' hours/week' : ''}
 - Sedentary time: ${sedentaryHours}${sedentaryHours !== 'Not provided' ? ' hours/day' : ''}
 
-${latestRiskScore ? `CURRENT RISK SCORES (lower is healthier, 0-100 scale):
-- Overall Health Risk: ${latestRiskScore.overallScore}/100
-- Diabetes Risk: ${latestRiskScore.diabetesRisk}/100
-- Heart Disease Risk: ${latestRiskScore.heartRisk}/100
-- Stroke Risk: ${latestRiskScore.strokeRisk}/100` : 'RISK SCORES: Not yet calculated'}
+${latestRiskScore ? `CURRENT RISK SCORE (lower is healthier, 0-100 scale):
+- Overall Health Risk: ${latestRiskScore.overallScore}/100` : 'RISK SCORE: Not yet calculated'}
 
 IMPORTANT: When discussing risk scores, remember:
 - LOWER scores mean BETTER health (0 = lowest risk, 100 = highest risk)
