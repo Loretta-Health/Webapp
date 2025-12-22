@@ -140,6 +140,7 @@
     "error": "Entschuldigung, ich konnte deine Anfrage nicht verarbeiten. Bitte versuche es erneut.",
     "back": "Zurück",
     "suggestionsTitle": "Frage zu deinen medizinischen Dokumenten:",
+    "suggestionsHint": "Brauchst du Inspiration? Tippe hier für Gesprächsideen",
     "uploadHint": "Lade medizinische Dokumente (PDF, Bilder) hoch oder stelle Fragen zu deiner Gesundheit",
     "disclaimer": "Hinweis: Loretta ist kein Diagnosewerkzeug und bietet keine medizinische Beratung.",
     "suggestions": {
