@@ -327,17 +327,17 @@ export default function Chat() {
           {messages.length === 1 && (
             <div className="p-4 border-t border-border">
               <p className="text-xs text-muted-foreground mb-3">{t('chat.suggestionsTitle')}</p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {suggestedQuestions.map((q, index) => (
                   <Button
                     key={index}
                     variant="outline"
-                    className="justify-start text-left h-auto py-3 hover-elevate"
+                    className="justify-start text-left h-auto py-3 px-3 hover-elevate whitespace-normal"
                     onClick={() => handleSend(q.text)}
                     data-testid={`button-suggestion-${index}`}
                   >
                     <q.icon className="w-4 h-4 mr-2 flex-shrink-0 text-primary" />
-                    <span className="text-xs">{q.text}</span>
+                    <span className="text-xs leading-tight">{q.text}</span>
                   </Button>
                 ))}
               </div>
