@@ -14,11 +14,7 @@ import {
   Activity,
   Upload,
   X,
-  File,
-  Mic,
-  MicOff,
-  Volume2,
-  VolumeX
+  File
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useSearch } from 'wouter';
@@ -27,7 +23,6 @@ import mascotImage from '@assets/generated_images/transparent_heart_mascot_chara
 import { MissionCardView, CheckInConfirmationBanner, MetricCard } from '@/components/chat';
 import type { MetricData } from '@/components/chat';
 import { useChatLogic, type ChatMessage } from '@/hooks/useChatLogic';
-import { useVoiceChat } from '@/hooks/useVoiceChat';
 
 export default function Chat() {
   const { t } = useTranslation('pages');
@@ -71,46 +66,6 @@ export default function Chat() {
     handleDenyEmotion,
     setActivityContext,
   } = useChatLogic({ messages, setMessages });
-
-  const {
-    isListening,
-    isSpeaking,
-    isRecognitionSupported,
-    isSynthesisSupported,
-    startListening,
-    stopListening,
-    speak,
-    stopSpeaking,
-    transcript,
-    error: voiceError,
-    clearError: clearVoiceError,
-  } = useVoiceChat({
-    onTranscript: (text) => {
-      setInputText(text);
-    },
-  });
-
-  useEffect(() => {
-    if (transcript && isListening) {
-      setInputText(transcript);
-    }
-  }, [transcript, isListening, setInputText]);
-
-  const handleMicClick = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
-  };
-
-  const handleSpeakMessage = (text: string) => {
-    if (isSpeaking) {
-      stopSpeaking();
-    } else {
-      speak(text);
-    }
-  };
 
   useEffect(() => {
     if (searchParams) {
@@ -253,27 +208,9 @@ export default function Chat() {
                           }`}>
                             <p className="text-sm whitespace-pre-line">{message.content}</p>
                           </div>
-                          <div className={`flex items-center gap-2 mt-1 ${message.role === 'user' ? 'justify-end' : ''}`}>
-                            <p className="text-xs text-muted-foreground">
-                              {formatTime(message.timestamp)}
-                            </p>
-                            {message.role === 'assistant' && isSynthesisSupported && (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-6 w-6 p-0"
-                                onClick={() => handleSpeakMessage(message.content)}
-                                data-testid={`button-speak-${message.id}`}
-                                title={isSpeaking ? t('chat.voice.stopSpeaking') : t('chat.voice.speakMessage')}
-                              >
-                                {isSpeaking ? (
-                                  <VolumeX className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
-                                ) : (
-                                  <Volume2 className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
-                                )}
-                              </Button>
-                            )}
-                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {formatTime(message.timestamp)}
+                          </p>
                         </div>
                       </motion.div>
                     )}
@@ -327,17 +264,17 @@ export default function Chat() {
           {messages.length === 1 && (
             <div className="p-4 border-t border-border">
               <p className="text-xs text-muted-foreground mb-3">{t('chat.suggestionsTitle')}</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {suggestedQuestions.map((q, index) => (
                   <Button
                     key={index}
                     variant="outline"
-                    className="justify-start text-left h-auto py-3 px-3 hover-elevate whitespace-normal"
+                    className="justify-start text-left h-auto py-3 hover-elevate"
                     onClick={() => handleSend(q.text)}
                     data-testid={`button-suggestion-${index}`}
                   >
                     <q.icon className="w-4 h-4 mr-2 flex-shrink-0 text-primary" />
-                    <span className="text-xs leading-tight">{q.text}</span>
+                    <span className="text-xs">{q.text}</span>
                   </Button>
                 ))}
               </div>
@@ -400,20 +337,6 @@ export default function Chat() {
               >
                 <Upload className="w-4 h-4" />
               </Button>
-              {isRecognitionSupported && (
-                <Button
-                  type="button"
-                  size="icon"
-                  variant={isListening ? "default" : "outline"}
-                  onClick={handleMicClick}
-                  disabled={loading}
-                  className={`flex-shrink-0 transition-all ${isListening ? 'bg-destructive hover:bg-destructive/90 animate-pulse' : ''}`}
-                  data-testid="button-voice-input"
-                  title={isListening ? t('chat.voice.stopListening') : t('chat.voice.startListening')}
-                >
-                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                </Button>
-              )}
               <Input
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
@@ -431,19 +354,6 @@ export default function Chat() {
                 <Send className="w-4 h-4" />
               </Button>
             </form>
-            {voiceError && (
-              <div className="mt-2 p-2 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center justify-between">
-                <p className="text-xs text-destructive">{voiceError}</p>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-5 w-5 p-0"
-                  onClick={clearVoiceError}
-                >
-                  <X className="w-3 h-3 text-destructive" />
-                </Button>
-              </div>
-            )}
             <p className="text-xs text-muted-foreground mt-2 text-center">
               {t('chat.uploadHint')}
             </p>
