@@ -81,7 +81,7 @@ export default function UIMockup3() {
       <aside className={`
         fixed lg:relative inset-y-0 left-0 z-50
         w-[280px] lg:w-80
-        bg-gradient-to-b from-white via-white to-[#D2EDFF]/30
+        bg-white
         border-r border-[#D2EDFF]
         flex flex-col overflow-y-auto
         transform transition-transform duration-300
