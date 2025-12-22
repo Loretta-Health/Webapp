@@ -26,6 +26,48 @@ import { MissionCardView, CheckInConfirmationBanner, MetricCard } from '@/compon
 import type { MetricData } from '@/components/chat';
 import { useChatLogic, type ChatMessage } from '@/hooks/useChatLogic';
 
+function formatMarkdown(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  let remaining = text;
+  let key = 0;
+  
+  while (remaining.length > 0) {
+    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+    const italicMatch = remaining.match(/(?<!\*)\*([^*]+?)\*(?!\*)/);
+    
+    let firstMatch: { index: number; length: number; content: string; type: 'bold' | 'italic' } | null = null;
+    
+    if (boldMatch && boldMatch.index !== undefined) {
+      firstMatch = { index: boldMatch.index, length: boldMatch[0].length, content: boldMatch[1], type: 'bold' };
+    }
+    
+    if (italicMatch && italicMatch.index !== undefined) {
+      if (!firstMatch || italicMatch.index < firstMatch.index) {
+        firstMatch = { index: italicMatch.index, length: italicMatch[0].length, content: italicMatch[1], type: 'italic' };
+      }
+    }
+    
+    if (firstMatch) {
+      if (firstMatch.index > 0) {
+        parts.push(<span key={key++}>{remaining.slice(0, firstMatch.index)}</span>);
+      }
+      
+      if (firstMatch.type === 'bold') {
+        parts.push(<strong key={key++} className="font-bold">{firstMatch.content}</strong>);
+      } else {
+        parts.push(<em key={key++} className="italic">{firstMatch.content}</em>);
+      }
+      
+      remaining = remaining.slice(firstMatch.index + firstMatch.length);
+    } else {
+      parts.push(<span key={key++}>{remaining}</span>);
+      break;
+    }
+  }
+  
+  return parts;
+}
+
 export default function Chat() {
   const { t } = useTranslation('pages');
   
@@ -209,7 +251,12 @@ export default function Chat() {
                               ? 'bg-gradient-to-r from-primary to-chart-2 text-white rounded-tr-none'
                               : 'bg-muted/50 text-foreground rounded-tl-none'
                           }`}>
-                            <p className="text-sm whitespace-pre-line">{message.content}</p>
+                            <div className="text-sm whitespace-pre-line">
+                              {message.role === 'assistant' 
+                                ? formatMarkdown(message.content)
+                                : message.content
+                              }
+                            </div>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
                             {formatTime(message.timestamp)}
