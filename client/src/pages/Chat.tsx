@@ -12,7 +12,7 @@ import {
   ChevronDown,
   FileText,
   Heart,
-  Pill,
+  Target,
   Activity,
   Upload,
   X,
@@ -32,7 +32,7 @@ export default function Chat() {
   
   const suggestedQuestions = [
     { icon: FileText, text: t('chat.suggestions.labResults') },
-    { icon: Pill, text: t('chat.suggestions.sideEffects') },
+    { icon: Target, text: t('chat.suggestions.suggestMission') },
     { icon: Heart, text: t('chat.suggestions.heartHealth') },
     { icon: Activity, text: t('chat.suggestions.riskScore') },
   ];

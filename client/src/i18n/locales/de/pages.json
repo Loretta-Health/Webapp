@@ -145,7 +145,7 @@
     "disclaimer": "Hinweis: Loretta ist kein Diagnosewerkzeug und bietet keine medizinische Beratung.",
     "suggestions": {
       "labResults": "Erkläre meine Laborergebnisse",
-      "sideEffects": "Was sind die Nebenwirkungen meiner Medikamente?",
+      "suggestMission": "Gib mir eine Gesundheitsmission",
       "heartHealth": "Wie kann ich meine Herzgesundheit verbessern?",
       "riskScore": "Was bedeutet mein Risikoscore?"
     },
