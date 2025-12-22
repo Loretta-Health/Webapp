@@ -3,11 +3,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Send, 
   User, 
   Sparkles,
   ChevronRight,
+  ChevronDown,
   FileText,
   Heart,
   Pill,
@@ -45,6 +47,7 @@ export default function Chat() {
 
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const searchParams = useSearch();
@@ -263,21 +266,30 @@ export default function Chat() {
 
           {messages.length === 1 && (
             <div className="p-4 border-t border-border">
-              <p className="text-xs text-muted-foreground mb-3">{t('chat.suggestionsTitle')}</p>
-              <div className="grid grid-cols-2 gap-2">
-                {suggestedQuestions.map((q, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className="justify-start text-left h-auto py-3 hover-elevate"
-                    onClick={() => handleSend(q.text)}
-                    data-testid={`button-suggestion-${index}`}
-                  >
-                    <q.icon className="w-4 h-4 mr-2 flex-shrink-0 text-primary" />
-                    <span className="text-xs">{q.text}</span>
-                  </Button>
-                ))}
-              </div>
+              <Collapsible open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
+                <CollapsibleTrigger asChild>
+                  <button className="flex items-center justify-between w-full text-left py-1 hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors">
+                    <p className="text-xs text-muted-foreground">{t('chat.suggestionsTitle')}</p>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${suggestionsOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {suggestedQuestions.map((q, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        className="justify-start text-left h-auto py-3 hover-elevate overflow-hidden"
+                        onClick={() => handleSend(q.text)}
+                        data-testid={`button-suggestion-${index}`}
+                      >
+                        <q.icon className="w-4 h-4 mr-2 flex-shrink-0 text-primary" />
+                        <span className="text-xs truncate">{q.text}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
             </div>
           )}
 
