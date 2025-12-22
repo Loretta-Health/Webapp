@@ -302,7 +302,7 @@
       "preventsComplications": "Verhindert Komplikationen",
       "keepsWell": "Hält dich wohlauf"
     },
-    "communityTipContent": "Stelle einen täglichen Alarm oder benutze einen Pillenorganizer, um dich zu erinnern, deine Medikamente jeden Tag zur gleichen Zeit einzunehmen. Beständigkeit ist der Schlüssel!",
+    "communityTipContent": "Täglicher Alarm oder Pillenorganizer für Regelmäßigkeit.",
     "medicalDisclaimer": "Medizinischer Haftungsausschluss",
     "disclaimerText": "Loretta ist kein Diagnosewerkzeug und gibt keine medizinischen Ratschläge. Konsultiere immer deinen Arzt bezüglich deiner Medikamente. Ändere niemals deine Medikation ohne professionelle Anleitung."
   },
@@ -312,7 +312,7 @@
     "trackRoutine": "Verfolge deine tägliche Medikamentenroutine",
     "completed": "Erledigt",
     "dailyBonus": "Tagesbonus",
-    "communityTipContent": "Die Einnahme von Medikamenten zur gleichen Zeit jeden Tag hilft, eine gesunde Routine aufzubauen und verbessert die Wirksamkeit."
+    "communityTipContent": "Gleiche Zeit jeden Tag = bessere Routine und Wirksamkeit."
   },
   "missionDetails": {
     "title": "Missionsdetails",
@@ -370,7 +370,7 @@
   "activityDetails": {
     "title": "Gesundheitskompetenz-Navigator",
     "subtitle": "Personalisierte Gesundheitsberatung",
-    "communityTipContent": "Kleine beständige Anstrengungen summieren sich! Selbst ein kurzer 5-Minuten-Spaziergang kann einen großen Unterschied bei deinen täglichen Aktivitätszielen machen."
+    "communityTipContent": "Kleine Schritte zählen - schon 5 Minuten Gehen hilft!"
   },
   "calendar": {
     "title": "Kalender",
@@ -411,7 +411,7 @@
     "maintainStreak": "Halte eine {{days}}-Tage-Serie",
     "xpReward": "XP-Belohnung",
     "keepGoing": "Weiter so!",
-    "communityTipContent": "Beständigkeit ist der Schlüssel zum Aufbau gesunder Gewohnheiten. Du machst das toll - brich deine Serie nicht ab!",
+    "communityTipContent": "Beständigkeit formt Gewohnheiten - halte deine Serie!",
     "weekDays": {
       "mon": "Mo",
       "tue": "Di",
@@ -429,7 +429,7 @@
     }
   },
   "invite": {
-    "communityTipContent": "Lade Freunde und Familie ein, deinem Team beizutreten. Vergleicht Fortschritte in der Bestenliste und motiviert euch gegenseitig!"
+    "communityTipContent": "Lade Freunde ein, um Fortschritte zu vergleichen!"
   },
   "joinFriend": {
     "loading": {

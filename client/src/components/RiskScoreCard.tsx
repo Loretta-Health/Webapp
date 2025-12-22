@@ -117,8 +117,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
               <div>
                 <p className="text-xs font-bold text-chart-3 uppercase mb-1">Why this matters</p>
                 <p className="text-xs lg:text-sm text-foreground leading-relaxed">
-                  Your risk score combines multiple factors to give you one easy number to track. 
-                  Healthy habits help lower your score - aim for the lowest number possible!
+                  Lower score = healthier you. Build habits to bring it down!
                 </p>
               </div>
             </div>
@@ -130,7 +129,7 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
               <div>
                 <p className="text-xs font-bold text-chart-2 uppercase mb-1">{t('community.communityTip')}</p>
                 <p className="text-xs lg:text-sm text-foreground leading-relaxed italic">
-                  "Focus on small, consistent habits. Even adding a 10-minute walk can help lower your risk over time."
+                  "Small daily habits add up - even a 10-minute walk helps!"
                 </p>
               </div>
             </div>
