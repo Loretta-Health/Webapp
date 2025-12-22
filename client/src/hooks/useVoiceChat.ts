@@ -95,6 +95,9 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}): UseVoiceChatRet
         case 'network':
           errorMessage = 'Network error. Please check your connection.';
           break;
+        case 'aborted':
+          setIsListening(false);
+          return;
         default:
           errorMessage = `Voice error: ${event.error}`;
       }
