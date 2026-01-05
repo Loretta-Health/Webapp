@@ -1044,24 +1044,26 @@ export default function MyDashboard() {
                       ) : (
                         <>
                           {activeMissions.slice(0, 3).map((mission: any) => (
-                            <div key={mission.id} className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all">
-                              <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
-                                <div className="min-w-0 flex-1">
-                                  <span className="text-[10px] sm:text-xs text-[#013DC4] font-bold uppercase tracking-wider">{mission.category}</span>
-                                  <h4 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{mission.title}</h4>
-                                  <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">{mission.description}</p>
+                            <Link key={mission.id} href={`/mission-details?id=${mission.missionKey}`}>
+                              <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all cursor-pointer">
+                                <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
+                                  <div className="min-w-0 flex-1">
+                                    <span className="text-[10px] sm:text-xs text-[#013DC4] font-bold uppercase tracking-wider">{mission.category}</span>
+                                    <h4 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{mission.title}</h4>
+                                    <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">{mission.description}</p>
+                                  </div>
+                                  <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-[10px] sm:text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">
+                                    +{mission.xpReward} XP
+                                  </span>
                                 </div>
-                                <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-[10px] sm:text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">
-                                  +{mission.xpReward} XP
-                                </span>
+                                <div className="h-1.5 sm:h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                  <div 
+                                    className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all"
+                                    style={{ width: `${(mission.progress / mission.maxProgress) * 100}%` }}
+                                  />
+                                </div>
                               </div>
-                              <div className="h-1.5 sm:h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all"
-                                  style={{ width: `${(mission.progress / mission.maxProgress) * 100}%` }}
-                                />
-                              </div>
-                            </div>
+                            </Link>
                           ))}
                         </>
                       )}
@@ -1099,37 +1101,39 @@ export default function MyDashboard() {
                     <div className="space-y-3 sm:space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         {medications.slice(0, 4).map((med: any) => (
-                          <div key={med.id} className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all">
-                            <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
-                              <div className="min-w-0 flex-1">
-                                <h4 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{med.name}</h4>
-                                <p className="text-xs sm:text-sm text-gray-500">{med.dosage}</p>
-                              </div>
-                              <div className={`px-2 sm:px-3 py-1 rounded-full font-bold text-xs sm:text-sm flex-shrink-0 ${
-                                (med.adherencePercent ?? 100) >= 90 
-                                  ? 'bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/20 text-green-600' 
-                                  : 'bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/20 text-amber-600'
-                              }`}>
-                                {med.adherencePercent ?? 100}%
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                              {groupMedicationTimes(med.scheduledTimes || []).map((group, j) => (
-                                <div key={j} className="flex items-center gap-1">
-                                  {group.label !== 'Daily' && (
-                                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#013DC4] text-white text-[10px] sm:text-xs font-bold rounded-md">
-                                      {group.label}
-                                    </span>
-                                  )}
-                                  {group.times.map((time, k) => (
-                                    <span key={k} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl">
-                                      {time}
-                                    </span>
-                                  ))}
+                          <Link key={med.id} href={`/medication-details?id=${med.id}`}>
+                            <div className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all cursor-pointer">
+                              <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{med.name}</h4>
+                                  <p className="text-xs sm:text-sm text-gray-500">{med.dosage}</p>
                                 </div>
-                              ))}
+                                <div className={`px-2 sm:px-3 py-1 rounded-full font-bold text-xs sm:text-sm flex-shrink-0 ${
+                                  (med.adherencePercent ?? 100) >= 90 
+                                    ? 'bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/20 text-green-600' 
+                                    : 'bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/20 text-amber-600'
+                                }`}>
+                                  {med.adherencePercent ?? 100}%
+                                </div>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                                {groupMedicationTimes(med.scheduledTimes || []).map((group, j) => (
+                                  <div key={j} className="flex items-center gap-1">
+                                    {group.label !== 'Daily' && (
+                                      <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#013DC4] text-white text-[10px] sm:text-xs font-bold rounded-md">
+                                        {group.label}
+                                      </span>
+                                    )}
+                                    {group.times.map((time, k) => (
+                                      <span key={k} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl">
+                                        {time}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </div>
                       <button 
