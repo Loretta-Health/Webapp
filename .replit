@@ -43,3 +43,4 @@ waitForPort = 5000
 
 [userenv.shared]
 SCALEWAY_API_KEY = "a3501cc3-1561-41e9-800a-17370f9b62f2"
+VITE_CLARITY_PROJECT_ID = "uwqkwf3ff1"
