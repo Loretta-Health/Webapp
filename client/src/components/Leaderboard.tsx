@@ -44,23 +44,25 @@ export default function Leaderboard({
   
   return (
     <Card className={className} data-testid="leaderboard">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-chart-3" />
-            <h3 className="text-2xl font-black text-foreground">Leaderboard</h3>
+      <div className="p-4 sm:p-6">
+        <div className="flex items-center justify-between gap-2 mb-4 sm:mb-6 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-chart-3 flex-shrink-0" />
+            <h3 className="text-lg sm:text-2xl font-black text-foreground truncate">Leaderboard</h3>
           </div>
-          <Badge variant="outline" className="flex items-center gap-1">
-            {communityType === 'friends' ? <Home className="w-3 h-3" /> : <Users className="w-3 h-3" />}
-            {communityType === 'friends' ? t('community.friends') : t('community.lorettaCommunity')}
+          <Badge variant="outline" className="flex items-center gap-1 max-w-[140px] sm:max-w-none flex-shrink-0">
+            {communityType === 'friends' ? <Home className="w-3 h-3 flex-shrink-0" /> : <Users className="w-3 h-3 flex-shrink-0" />}
+            <span className="truncate text-xs sm:text-sm">
+              {communityType === 'friends' ? t('community.friends') : t('community.lorettaCommunity')}
+            </span>
           </Badge>
         </div>
         
         <Tabs defaultValue="weekly" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="weekly" data-testid="tab-weekly">Weekly</TabsTrigger>
-            <TabsTrigger value="monthly" data-testid="tab-monthly">Monthly</TabsTrigger>
-            <TabsTrigger value="alltime" data-testid="tab-alltime">All Time</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 mb-4 h-auto">
+            <TabsTrigger value="weekly" className="text-xs sm:text-sm py-2" data-testid="tab-weekly">Weekly</TabsTrigger>
+            <TabsTrigger value="monthly" className="text-xs sm:text-sm py-2" data-testid="tab-monthly">Monthly</TabsTrigger>
+            <TabsTrigger value="alltime" className="text-xs sm:text-sm py-2" data-testid="tab-alltime">All Time</TabsTrigger>
           </TabsList>
           
           <TabsContent value="weekly" className="space-y-2">
@@ -74,40 +76,40 @@ export default function Leaderboard({
               displayEntries.map((entry) => (
                 <div
                   key={entry.rank}
-                  className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
+                  className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg transition-all ${
                     entry.isCurrentUser
                       ? 'bg-primary/10 border-2 border-primary'
                       : 'bg-muted/30 hover-elevate'
                   } ${entry.rank <= 3 ? 'shadow-md' : ''}`}
                   data-testid={`leaderboard-entry-${entry.rank}`}
                 >
-                  <div className={`w-12 h-12 rounded-full bg-card flex items-center justify-center font-black text-lg ${getRankColor(entry.rank)}`}>
+                  <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-card flex items-center justify-center font-black text-sm sm:text-lg flex-shrink-0 ${getRankColor(entry.rank)}`}>
                     {getRankBadge(entry.rank)}
                   </div>
                   
-                  <Avatar className="w-10 h-10">
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-chart-2 text-white font-bold">
+                  <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-chart-2 text-white font-bold text-xs sm:text-sm">
                       {entry.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   
-                  <div className="flex-1">
-                    <p className={`font-bold ${entry.isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
+                  <div className="flex-1 min-w-0">
+                    <p className={`font-bold text-sm sm:text-base truncate ${entry.isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
                       {entry.name}
                       {entry.isCurrentUser && (
-                        <Badge variant="secondary" className="ml-2 text-xs">You</Badge>
+                        <Badge variant="secondary" className="ml-1 sm:ml-2 text-[10px] sm:text-xs">You</Badge>
                       )}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {entry.xp.toLocaleString()} XP
                     </p>
                   </div>
                   
                   {entry.change !== undefined && (
-                    <div className={`flex items-center gap-1 text-sm font-bold ${
+                    <div className={`flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm font-bold flex-shrink-0 ${
                       entry.change > 0 ? 'text-primary' : entry.change < 0 ? 'text-destructive' : 'text-muted-foreground'
                     }`} data-testid={`rank-change-${entry.rank}`}>
-                      {entry.change > 0 ? <TrendingUp className="w-4 h-4" /> : entry.change < 0 ? <TrendingDown className="w-4 h-4" /> : null}
+                      {entry.change > 0 ? <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" /> : entry.change < 0 ? <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4" /> : null}
                       <span>{Math.abs(entry.change)}</span>
                     </div>
                   )}
