@@ -333,6 +333,77 @@ export default function MyDashboard() {
     };
   };
 
+  const formatMedicationTime = (timeStr: string): { day?: string; time: string } => {
+    const dayAbbreviations: Record<string, string> = {
+      monday: 'Mon',
+      tuesday: 'Tue',
+      wednesday: 'Wed',
+      thursday: 'Thu',
+      friday: 'Fri',
+      saturday: 'Sat',
+      sunday: 'Sun',
+    };
+    
+    const formatTime12h = (time24: string): string => {
+      const match = time24.match(/^(\d{1,2}):(\d{2})$/);
+      if (!match) return time24;
+      const hours = parseInt(match[1], 10);
+      const minutes = match[2];
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const hours12 = hours % 12 || 12;
+      return `${hours12}:${minutes} ${period}`;
+    };
+    
+    const dayMatch = timeStr.match(/^([a-zA-Z]+):(\d{1,2}:\d{2})$/);
+    if (dayMatch) {
+      const day = dayMatch[1].toLowerCase();
+      const time = dayMatch[2];
+      return {
+        day: dayAbbreviations[day] || day.charAt(0).toUpperCase() + day.slice(1, 2),
+        time: formatTime12h(time),
+      };
+    }
+    
+    const timeOnlyMatch = timeStr.match(/^(\d{1,2}:\d{2})$/);
+    if (timeOnlyMatch) {
+      return { time: formatTime12h(timeOnlyMatch[1]) };
+    }
+    
+    return { time: timeStr };
+  };
+
+  const groupMedicationTimes = (times: string[]): { label: string; times: string[] }[] => {
+    const grouped: Record<string, string[]> = {};
+    const dailyTimes: string[] = [];
+    
+    times.forEach(timeStr => {
+      const formatted = formatMedicationTime(timeStr);
+      if (formatted.day) {
+        if (!grouped[formatted.day]) {
+          grouped[formatted.day] = [];
+        }
+        grouped[formatted.day].push(formatted.time);
+      } else {
+        dailyTimes.push(formatted.time);
+      }
+    });
+    
+    const result: { label: string; times: string[] }[] = [];
+    
+    if (dailyTimes.length > 0) {
+      result.push({ label: 'Daily', times: dailyTimes });
+    }
+    
+    const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    dayOrder.forEach(day => {
+      if (grouped[day]) {
+        result.push({ label: day, times: grouped[day] });
+      }
+    });
+    
+    return result;
+  };
+
   const riskScore = riskScoreData?.overallScore ?? 50;
   const riskLevel = riskScore <= 30 ? 'Low Risk' : riskScore <= 60 ? 'Medium Risk' : 'High Risk';
   const riskColor = riskScore <= 30 ? 'text-green-600' : riskScore <= 60 ? 'text-amber-600' : 'text-red-600';
@@ -1054,10 +1125,19 @@ export default function MyDashboard() {
                               </div>
                             </div>
                             <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                              {(med.scheduledTimes || []).map((time: string, j: number) => (
-                                <span key={j} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl">
-                                  {time}
-                                </span>
+                              {groupMedicationTimes(med.scheduledTimes || []).map((group, j) => (
+                                <div key={j} className="flex items-center gap-1">
+                                  {group.label !== 'Daily' && (
+                                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#013DC4] text-white text-[10px] sm:text-xs font-bold rounded-md">
+                                      {group.label}
+                                    </span>
+                                  )}
+                                  {group.times.map((time, k) => (
+                                    <span key={k} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl">
+                                      {time}
+                                    </span>
+                                  ))}
+                                </div>
                               ))}
                             </div>
                           </div>
