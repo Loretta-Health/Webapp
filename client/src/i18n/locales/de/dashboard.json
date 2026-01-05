@@ -80,6 +80,7 @@
   "checkin": {
     "title": "Täglicher Check-In",
     "subtitle": "Emotionale Check-ins",
+    "startButton": "Check-In starten",
     "happy": "Glücklich",
     "sad": "Traurig",
     "anxious": "Ängstlich",
@@ -147,7 +148,10 @@
     "defaultSimpleExplanation": "Wie verschrieben einnehmen",
     "todaysProgress": "Heutiger Fortschritt",
     "allDosesTaken": "Alle Dosen heute eingenommen!",
-    "daysStreak": "{{count}} Tage"
+    "daysStreak": "{{count}} Tage",
+    "addMedication": "Medikament hinzufügen",
+    "noMedications": "Noch keine Medikamente erfasst",
+    "addFirstMedication": "Erstes Medikament hinzufügen"
   },
   "community": {
     "lorettaCommunity": "Loretta Community",
@@ -157,7 +161,9 @@
     "friendsDescription": "Nur du und deine Freunde",
     "friendsMembers": "{{count}} Mitglieder",
     "communityTip": "Community-Tipp",
-    "friends": "Freunde"
+    "friends": "Freunde",
+    "loretta": "Loretta Community",
+    "team": "Mein Team"
   },
   "missionData": {
     "drinkWater": {
@@ -212,7 +218,25 @@
     "privacyPolicy": "Datenschutzrichtlinie",
     "privacyDescription": "Deine Privatsphäre ist uns wichtig. Erfahre, wie wir deine Daten behandeln.",
     "privacyContent1": "Wir erfassen Gesundheitsdaten, um personalisierte Einblicke zu bieten und deine Wellness-Reise zu verbessern.",
-    "privacyContent2": "Deine Daten sind verschlüsselt und werden niemals ohne deine ausdrückliche Zustimmung an Dritte weitergegeben."
+    "privacyContent2": "Deine Daten sind verschlüsselt und werden niemals ohne deine ausdrückliche Zustimmung an Dritte weitergegeben.",
+    "accessibilityPolicy": "Inklusions- & Barrierefreiheits-Erklärung",
+    "accessibilityDescription": "Unser Engagement, Loretta für alle zugänglich zu machen.",
+    "accessibilityContent1": "Loretta wurde mit Barrierefreiheit im Sinn entwickelt und unterstützt Screenreader und Tastaturnavigation.",
+    "accessibilityContent2": "Wir arbeiten kontinuierlich daran, unsere Barrierefreiheitsstandards zu verbessern."
+  },
+  "chat": {
+    "speakToLoretta": "Mit Loretta sprechen",
+    "speakToLorettaSubtitle": "Erhalte personalisierte Gesundheitsberatung und Unterstützung"
+  },
+  "healthScience": {
+    "title": "Gesundheitswissen"
+  },
+  "location": {
+    "usingYours": "Dein Standort wird verwendet",
+    "usingDefault": "Standard-Standort (Berlin)",
+    "clickTo": "Klicken zum",
+    "disable": "Deaktivieren",
+    "enable": "Aktivieren"
   },
   "disclaimer": "Loretta ist kein Diagnosewerkzeug. Konsultiere immer medizinische Fachleute für medizinische Beratung.",
   "weather": {

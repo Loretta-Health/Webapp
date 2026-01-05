@@ -1,38 +1,25 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Progress } from '@/components/ui/progress';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, QrCode, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Activity, Trophy, BookOpen, Pill, Smile, ChevronRight, MapPin, MapPinOff } from 'lucide-react';
-import { Footprints, Moon as MoonIcon, Heart, Flame } from 'lucide-react';
-import CollapsibleSection from '@/components/CollapsibleSection';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Trophy, BookOpen, Pill, Smile, ChevronRight, MapPin, MapPinOff, ChevronDown, Star, TrendingUp, Zap, Target } from 'lucide-react';
+import { Heart, Flame } from 'lucide-react';
 import { Link, useLocation, Redirect } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
-import lorettaLogo from '@assets/logos/loretta_logo.png';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
+import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
+import logoHorizontalBlue from '@assets/Logo_horizontal_blue@2x_(1)_1766161586795.png';
 
-import MascotCharacter from '@/components/MascotCharacter';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import XPProgress from '@/components/XPProgress';
-import StreakCounter from '@/components/StreakCounter';
-import RiskScoreCard from '@/components/RiskScoreCard';
 import QuestCard from '@/components/QuestCard';
-import DailyCheckIn from '@/components/DailyCheckIn';
 import MedicationTracker from '@/components/MedicationTracker';
-import ActivityMetric from '@/components/ActivityMetric';
-import TreasureChest from '@/components/TreasureChest';
 import Leaderboard from '@/components/Leaderboard';
 import AchievementBadge from '@/components/AchievementBadge';
 import LevelUpModal from '@/components/LevelUpModal';
-import EnergyBar from '@/components/EnergyBar';
 import HealthScienceSection from '@/components/HealthScienceSection';
-import CommunitySelector, { type CommunityType } from '@/components/CommunitySelector';
+import { type CommunityType } from '@/components/CommunitySelector';
 import EmotionalCheckInModal from '@/components/EmotionalCheckInModal';
 import AddMedicationModal from '@/components/AddMedicationModal';
 import { useGeolocation } from '@/hooks/useGeolocation';
@@ -101,6 +88,73 @@ interface UserAchievement {
   unlockedAt: string | null;
 }
 
+function GlassCard({ 
+  children, 
+  className = '',
+  glow = false 
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+  glow?: boolean;
+}) {
+  return (
+    <div className={`
+      backdrop-blur-xl bg-white/70 dark:bg-gray-900/70
+      border border-white/50 dark:border-white/10
+      rounded-3xl shadow-xl
+      ${glow ? 'shadow-[#013DC4]/20' : ''}
+      ${className}
+    `}>
+      {children}
+    </div>
+  );
+}
+
+function CollapsibleSectionNew({ 
+  title, 
+  icon, 
+  badge, 
+  children, 
+  defaultOpen = true,
+  gradient = false,
+  className = ''
+}: { 
+  title: string; 
+  icon: React.ReactNode; 
+  badge?: React.ReactNode;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  gradient?: boolean;
+  className?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  
+  return (
+    <GlassCard className={`overflow-hidden ${className}`}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full p-5 flex items-center justify-between transition-colors ${
+          gradient ? 'bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10' : 'hover:bg-white/50 dark:hover:bg-gray-800/50'
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg">
+            {icon}
+          </div>
+          <h3 className="font-bold text-gray-900 dark:text-white text-lg">{title}</h3>
+          {badge}
+        </div>
+        <div className={`w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+          <ChevronDown className="w-4 h-4 text-gray-500" />
+        </div>
+      </button>
+      <div className={`overflow-hidden transition-all ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="px-5 pb-5">{children}</div>
+      </div>
+    </GlassCard>
+  );
+}
+
 export default function MyDashboard() {
   const { t } = useTranslation('dashboard');
   const [, navigate] = useLocation();
@@ -162,13 +216,11 @@ export default function MyDashboard() {
     enabled: !!user,
   });
 
-  // Core question IDs that must be answered for questionnaire to be complete (must match Onboarding.tsx baseQuestions)
   const coreQuestionIds = [
     'blood_test_3_years', 'prescription_medicine', 'high_blood_pressure', 'general_health',
     'age', 'weight_current', 'height', 'high_cholesterol', 'daily_aspirin', 'prediabetes'
   ];
   
-  // Check if all core questions have been answered
   const getSavedAnswerIds = (): string[] => {
     if (!Array.isArray(questionnaireData) || questionnaireData.length === 0) return [];
     const healthRecord = questionnaireData.find(r => r.category === 'health_risk_assessment');
@@ -185,10 +237,10 @@ export default function MyDashboard() {
   const firstCheckInComplete = Array.isArray(allEmotionalCheckins) && allEmotionalCheckins.length > 0;
   
   const setupSteps = [
-    { id: 'consent', complete: consentComplete },
-    { id: 'profile', complete: profileComplete },
-    { id: 'questionnaire', complete: questionnaireComplete },
-    { id: 'checkin', complete: firstCheckInComplete },
+    { id: 'consent', complete: consentComplete, label: t('setup.consent'), xp: 10 },
+    { id: 'profile', complete: profileComplete, label: t('setup.profile'), xp: 25 },
+    { id: 'questionnaire', complete: questionnaireComplete, label: t('setup.questionnaire'), xp: 50 },
+    { id: 'checkin', complete: firstCheckInComplete, label: t('setup.checkin'), xp: 15 },
   ];
   const completedStepsCount = setupSteps.filter(s => s.complete).length;
   const setupProgress = (completedStepsCount / setupSteps.length) * 100;
@@ -217,6 +269,7 @@ export default function MyDashboard() {
   const streak = gamificationData?.currentStreak ?? 0;
   const lives = gamificationData?.lives ?? 5;
   const nextLevelXP = level * 100 + 200;
+  const xpProgress = ((xp % nextLevelXP) / nextLevelXP) * 100;
   
   const isNewUser = !allSetupComplete;
   const showSetupChecklist = !allSetupComplete;
@@ -280,12 +333,16 @@ export default function MyDashboard() {
     };
   };
 
+  const riskScore = riskScoreData?.overallScore ?? 50;
+  const riskLevel = riskScore <= 30 ? 'Low Risk' : riskScore <= 60 ? 'Medium Risk' : 'High Risk';
+  const riskColor = riskScore <= 30 ? 'text-green-600' : riskScore <= 60 ? 'text-amber-600' : 'text-red-600';
+
   if (isAuthLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">{t('common.loading')}</p>
+          <Loader2 className="w-8 h-8 animate-spin text-[#013DC4]" />
+          <p className="text-gray-500">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -296,10 +353,10 @@ export default function MyDashboard() {
   }
   
   return (
-    <div className="flex h-screen bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -307,211 +364,234 @@ export default function MyDashboard() {
       <aside 
         className={`
           fixed lg:relative inset-y-0 left-0 z-50
-          w-72 lg:w-80 
-          bg-sidebar
-          border-r border-sidebar-border 
+          w-80 lg:w-[340px]
+          bg-gradient-to-b from-white/90 to-white/70 dark:from-gray-900/90 dark:to-gray-900/70 backdrop-blur-2xl
+          border-r border-white/50 dark:border-white/10
           flex flex-col overflow-y-auto
-          transform transition-transform duration-300 ease-in-out
+          transform transition-transform duration-500 ease-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          shadow-2xl shadow-[#013DC4]/5
         `}
         data-testid="sidebar"
       >
-        <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
+        <div className="p-5 lg:p-7 space-y-5 lg:space-y-6">
           <div className="flex items-center justify-between lg:hidden">
-            <img src={lorettaLogo} alt="Loretta" className="h-8 object-contain" data-testid="logo-loretta-mobile" />
-            <Button 
-              size="icon" 
-              variant="ghost"
-              onClick={() => setSidebarOpen(false)}
+            <img src={logoHorizontalBlue} alt="Loretta" className="h-9 object-contain" data-testid="logo-loretta-mobile" />
+            <button 
+              onClick={() => setSidebarOpen(false)} 
+              className="p-2.5 hover:bg-white/50 rounded-2xl transition-colors"
               data-testid="button-close-sidebar"
             >
-              <X className="w-5 h-5" />
-            </Button>
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
           </div>
           
-          <div className="hidden lg:flex justify-center mb-4">
-            <img src={lorettaLogo} alt="Loretta" className="h-10 object-contain" data-testid="logo-loretta" />
+          <div className="hidden lg:flex justify-center py-2">
+            <img src={logoHorizontalBlue} alt="Loretta" className="h-12 object-contain" data-testid="logo-loretta" />
           </div>
           
-          <div className="text-center">
-            <div className="relative inline-block mb-3">
-              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-4 border-primary shadow-lg bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center">
-                <User className="w-8 h-8 lg:w-10 lg:h-10 text-white" />
+          <GlassCard className="p-5 text-center" glow>
+            <div className="relative inline-block mb-4">
+              <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-2xl shadow-[#013DC4]/30">
+                <User className="w-10 h-10 lg:w-12 lg:h-12 text-white" />
               </div>
-              <div className="absolute -bottom-0 -right-0 w-6 h-6 lg:w-8 lg:h-8">
-                <img 
-                  src={mascotImage} 
-                  alt="Health Mascot" 
-                  className="w-full h-full object-contain drop-shadow-md"
+              <div className="absolute -bottom-2 -right-2 w-9 h-9 bg-gradient-to-br from-[#CDB6EF] to-purple-400 rounded-xl flex items-center justify-center border-2 border-white shadow-lg">
+                <img src={logomarkViolet} alt="" className="w-5 h-5 brightness-0 invert" />
+              </div>
+            </div>
+            <h2 className="text-xl lg:text-2xl font-black text-gray-900 dark:text-white">{user.username}</h2>
+            <p className="text-sm text-gray-500 font-medium">
+              {isNewUser ? t('sidebar.newMember') : t('sidebar.healthExplorer', { level })}
+            </p>
+            
+            <div className="mt-4 p-3 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 rounded-2xl">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center">
+                    <Star className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span className="font-bold text-gray-700 dark:text-gray-300">{t('stats.level', { level })}</span>
+                </div>
+                <span className="text-gray-500 font-medium">{(xp % nextLevelXP).toLocaleString()} / {nextLevelXP.toLocaleString()}</span>
+              </div>
+              <div className="h-3 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg"
+                  style={{ width: `${xpProgress}%` }}
                 />
               </div>
             </div>
-            <h2 className="text-lg lg:text-xl font-black text-sidebar-foreground">{user.username}</h2>
-            <p className="text-xs lg:text-sm text-muted-foreground">
-              {isNewUser ? t('sidebar.newMember') : t('sidebar.healthExplorer', { level })}
-            </p>
-          </div>
+          </GlassCard>
           
-          <Separator />
-          
-          <XPProgress currentXP={xp % nextLevelXP} nextLevelXP={nextLevelXP} level={level} />
-          
-          <Separator />
-          
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase">{t('sidebar.todaysProgress')}</h3>
-              <StreakCounter days={streak} size="sm" showLabel={false} />
-            </div>
-            <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('sidebar.xpEarned')}</span>
-                <span className="font-bold text-sidebar-foreground">+{xp}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('sidebar.quests')}</span>
-                <span className="font-bold text-sidebar-foreground">{completedCount}/{totalCount} {t('sidebar.done')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">{t('sidebar.achievements')}</span>
-                <span className="font-bold text-sidebar-foreground">{userAchievements?.filter(a => a.unlocked).length || 0} {t('sidebar.total')}</span>
+          <GlassCard className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider">{t('sidebar.todaysProgress')}</h3>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-red-400 rounded-full shadow-lg">
+                <Flame className="w-4 h-4 text-white" />
+                <span className="text-sm font-bold text-white">{streak}</span>
               </div>
             </div>
-          </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: t('sidebar.xpEarned'), value: `+${xp}`, color: 'from-[#013DC4] to-[#0150FF]' },
+                { label: t('sidebar.quests'), value: `${completedCount}/${totalCount}`, color: 'from-[#CDB6EF] to-purple-400' },
+                { label: t('sidebar.achievements'), value: `${userAchievements?.filter(a => a.unlocked).length || 0}`, color: 'from-amber-400 to-orange-400' },
+              ].map((stat) => (
+                <div key={stat.label} className="text-center p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50">
+                  <div className={`text-lg font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
+                    {stat.value}
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
           
-          <Separator />
+          <GlassCard className="p-4">
+            <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">{t('sidebar.myCommunity')}</h3>
+            <div className="space-y-2">
+              {[
+                { id: 'loretta' as CommunityType, label: t('community.loretta', 'Loretta Community'), icon: Users, gradient: 'from-[#013DC4] to-[#0150FF]' },
+                { id: 'friends' as CommunityType, label: t('community.friends', 'My Friends'), icon: Heart, gradient: 'from-[#CDB6EF] to-purple-400' },
+                { id: 'team' as CommunityType, label: t('community.team', 'My Team'), icon: Target, gradient: 'from-amber-400 to-orange-400' },
+              ].map((option) => (
+                <button 
+                  key={option.id}
+                  onClick={() => setCommunityType(option.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${
+                    communityType === option.id 
+                      ? 'bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 shadow-lg' 
+                      : 'hover:bg-white/50 dark:hover:bg-gray-800/50'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${option.gradient} flex items-center justify-center shadow-lg`}>
+                    <option.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className={`font-semibold ${communityType === option.id ? 'text-[#013DC4]' : 'text-gray-700 dark:text-gray-300'}`}>
+                    {option.label}
+                  </span>
+                  {communityType === option.id && (
+                    <div className="ml-auto w-2 h-2 rounded-full bg-gradient-to-r from-[#013DC4] to-[#CDB6EF]" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </GlassCard>
           
           <div className="space-y-2">
-            <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase mb-2 lg:mb-3">{t('sidebar.myCommunity')}</h3>
-            <CommunitySelector value={communityType} onChange={setCommunityType} />
-          </div>
-          
-          <Separator />
-          
-          <div className="flex flex-col gap-3">
-            <h3 className="text-xs lg:text-sm font-bold text-sidebar-foreground uppercase">{t('sidebar.navigation')}</h3>
+            <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider px-1">{t('sidebar.navigation')}</h3>
             <Link href="/profile">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-sm bg-gradient-to-r from-primary/10 to-primary/5 border-primary/30 hover:border-primary/50"
+              <button 
+                className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10"
                 data-testid="button-profile"
               >
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center mr-2">
-                  <User className="w-3 h-3 text-white" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg">
+                  <User className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold">{t('sidebar.myProfile')}</span>
-              </Button>
+                <span className="font-semibold text-[#013DC4]">{t('sidebar.myProfile')}</span>
+              </button>
             </Link>
             <Link href="/chat">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-sm bg-gradient-to-r from-chart-2/10 to-chart-2/5 border-chart-2/30 hover:border-chart-2/50"
+              <button 
+                className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all hover:bg-white/50 dark:hover:bg-gray-800/50"
                 data-testid="button-chat"
               >
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center mr-2">
-                  <MessageCircle className="w-3 h-3 text-white" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center shadow-lg">
+                  <MessageCircle className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold">{t('sidebar.healthNavigator')}</span>
-              </Button>
+                <span className="font-semibold text-gray-700 dark:text-gray-300">{t('sidebar.healthNavigator')}</span>
+              </button>
             </Link>
             <Link href="/leaderboard">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start text-sm bg-gradient-to-r from-chart-3/10 to-chart-3/5 border-chart-3/30 hover:border-chart-3/50"
+              <button 
+                className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all hover:bg-white/50 dark:hover:bg-gray-800/50"
                 data-testid="button-leaderboard"
               >
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-chart-3 to-yellow-500 flex items-center justify-center mr-2">
-                  <Users className="w-3 h-3 text-white" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-lg">
+                  <Users className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold">{t('sidebar.leaderboard')}</span>
-              </Button>
+                <span className="font-semibold text-gray-700 dark:text-gray-300">{t('sidebar.leaderboard')}</span>
+              </button>
             </Link>
-            
-            <Button 
-              variant="outline" 
-              className="w-full justify-start text-sm bg-gradient-to-r from-muted/50 to-muted/30 border-muted-foreground/30 hover:border-muted-foreground/50"
+            <button 
+              className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all hover:bg-white/50 dark:hover:bg-gray-800/50"
               onClick={() => logoutMutation.mutate()}
               disabled={logoutMutation.isPending}
               data-testid="button-logout"
             >
               {logoutMutation.isPending ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-10 h-10 animate-spin" />
               ) : (
-                <div className="w-6 h-6 rounded-full bg-muted-foreground/20 flex items-center justify-center mr-2">
-                  <LogOut className="w-3 h-3 text-muted-foreground" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center shadow-lg">
+                  <LogOut className="w-5 h-5 text-white" />
                 </div>
               )}
-              <span className="font-bold text-muted-foreground">{t('sidebar.signOut')}</span>
-            </Button>
+              <span className="font-semibold text-gray-700 dark:text-gray-300">{t('sidebar.signOut')}</span>
+            </button>
           </div>
           
-          <Separator />
-          
-          <div className="flex flex-col gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-xs text-muted-foreground hover:text-foreground justify-start p-0 h-auto"
+          <div className="flex gap-4 px-1 pt-2">
+            <button 
               onClick={() => setShowPrivacyPolicy(true)}
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#013DC4] transition-colors font-medium"
               data-testid="button-privacy-policy"
             >
-              <Shield className="w-3 h-3 mr-1" />
+              <Shield className="w-3.5 h-3.5" />
               {t('sidebar.privacyPolicy')}
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-xs text-muted-foreground hover:text-foreground justify-start p-0 h-auto"
+            </button>
+            <button 
               onClick={() => setShowAccessibilityPolicy(true)}
+              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#013DC4] transition-colors font-medium"
               data-testid="button-accessibility"
             >
-              <Accessibility className="w-3 h-3 mr-1" />
+              <Accessibility className="w-3.5 h-3.5" />
               {t('sidebar.accessibility')}
-            </Button>
+            </button>
           </div>
         </div>
       </aside>
       
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-gradient-to-r from-primary via-primary to-chart-2 text-white p-2 sm:p-3 lg:p-4 flex items-center justify-between gap-1 sm:gap-2 lg:gap-4 shadow-lg">
-          <div className="flex items-center gap-1 sm:gap-2 lg:gap-4">
-            <Button 
-              size="icon" 
-              variant="ghost"
-              className="lg:hidden w-8 h-8 sm:w-10 sm:h-10"
-              onClick={() => setSidebarOpen(true)}
-              data-testid="button-open-sidebar"
-            >
-              <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-          </div>
+        <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-4 py-3 flex items-center justify-between shadow-2xl shadow-[#013DC4]/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30" />
           
-          <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
+          <button 
+            className="lg:hidden p-2.5 hover:bg-white/10 rounded-xl transition-colors relative z-10"
+            onClick={() => setSidebarOpen(true)}
+            data-testid="button-open-sidebar"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          
+          <div className="flex items-center gap-3 relative z-10">
             {!isNewUser && (
-              <Badge variant="secondary" className="font-bold text-[10px] sm:text-xs lg:text-sm px-1.5 sm:px-2" data-testid="user-rank">
-                {t('stats.level', { level })}
-              </Badge>
+              <div className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-xl flex items-center gap-2 shadow-lg">
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-300 to-amber-500 flex items-center justify-center">
+                  <Star className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-sm font-bold">{t('stats.level', { level })}</span>
+              </div>
             )}
+            
             <LanguageSwitcher />
+            
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    size="icon" 
-                    variant="ghost"
+                  <button 
                     onClick={toggleLocationEnabled}
                     disabled={locationLoading}
                     data-testid="button-location-toggle"
-                    className={`w-8 h-8 sm:w-10 sm:h-10 ${locationEnabled && !usingDefault ? 'text-white' : 'text-white/60'}`}
+                    className={`p-2.5 hover:bg-white/10 rounded-xl transition-colors ${locationEnabled && !usingDefault ? 'text-white' : 'text-white/60'}`}
                   >
                     {locationLoading ? (
-                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : locationEnabled && !usingDefault ? (
-                      <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <MapPin className="w-5 h-5" />
                     ) : (
-                      <MapPinOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <MapPinOff className="w-5 h-5" />
                     )}
-                  </Button>
+                  </button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>{locationEnabled && !usingDefault ? t('location.usingYours', 'Using your location') : t('location.usingDefault', 'Using default location (Berlin)')}</p>
@@ -519,219 +599,220 @@ export default function MyDashboard() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <div className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 py-1 rounded-lg bg-white/10">
-              <CloudRain className={`w-3 h-3 sm:w-4 sm:h-4 ${simulateBadWeather ? 'text-amber-400' : 'text-white/60'}`} />
-              <span className="text-[10px] sm:text-xs text-white/80 hidden sm:inline">{t('weather.simulateBadWeather', 'Simulate Bad Weather')}</span>
+            
+            <div className="flex items-center gap-2 px-3 py-2 bg-white/10 backdrop-blur-sm rounded-xl">
+              <CloudRain className={`w-5 h-5 ${simulateBadWeather ? 'text-amber-400' : 'text-white/70'}`} />
+              <span className="text-sm text-white/80 hidden sm:inline font-medium">{t('weather.simulateBadWeather', 'Weather')}</span>
               <Switch
                 checked={simulateBadWeather}
                 onCheckedChange={setSimulateBadWeather}
                 data-testid="switch-weather-simulation"
-                className="data-[state=checked]:bg-amber-500 scale-75 sm:scale-100"
+                className="data-[state=checked]:bg-amber-500"
               />
             </div>
-            <Button 
-              size="icon" 
-              variant="ghost"
+            
+            <button 
+              className="p-2.5 hover:bg-white/10 rounded-xl transition-colors"
               onClick={toggleDarkMode}
               data-testid="button-theme-toggle"
-              className="w-8 h-8 sm:w-10 sm:h-10"
             >
-              {darkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
-            </Button>
+              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
           </div>
         </header>
         
-        <div className="flex-1 overflow-y-auto p-3 lg:p-6">
-          <div className="max-w-7xl mx-auto space-y-4 lg:space-y-6">
-            <div className="bg-gradient-to-r from-primary/10 via-secondary/5 to-primary/5 rounded-xl p-4 lg:p-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
+        <div className="flex-1 overflow-y-auto p-5 lg:p-8">
+          <div className="max-w-6xl mx-auto space-y-5 lg:space-y-7">
+            <div className="relative overflow-hidden rounded-[2rem] p-6 lg:p-8 bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] shadow-2xl shadow-[#013DC4]/30">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
+              
+              <div className="flex items-center justify-between relative z-10">
                 <div>
-                  <h1 className="text-2xl lg:text-4xl font-black text-foreground mb-1">
+                  <h1 className="text-3xl lg:text-4xl font-black text-white mb-2">
                     {isNewUser 
                       ? t('welcome.newUser', { name: displayName }) 
                       : t('welcome.returningUser', { name: displayName })}
                   </h1>
-                  <p className="text-sm lg:text-lg text-muted-foreground">
+                  <p className="text-white/80 text-lg font-medium">
                     {isNewUser ? t('welcome.newUserSubtitle') : t('welcome.returningUserSubtitle')}
                   </p>
                 </div>
-                <MascotCharacter size="sm" pose={isNewUser ? "encourage" : "celebrate"} className="hidden sm:block" />
+                <div className="hidden sm:flex w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl items-center justify-center shadow-2xl">
+                  <img src={logomarkViolet} alt="Loretta mascot" className="w-12 h-12 object-contain brightness-0 invert" />
+                </div>
               </div>
             </div>
             
-            {/* Speak to Loretta Button */}
             <Link href="/chat">
-              <Card className="bg-gradient-to-r from-chart-2/20 via-emerald-500/10 to-primary/20 border-chart-2/30 hover:border-chart-2/50 transition-all hover:shadow-lg cursor-pointer group">
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center shadow-lg">
-                      <MessageCircle className="w-6 h-6 text-white" />
+              <button className="w-full group">
+                <GlassCard className="p-5 hover:shadow-2xl hover:shadow-[#CDB6EF]/20 transition-all" glow>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-5">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#CDB6EF] via-purple-400 to-[#013DC4] flex items-center justify-center shadow-2xl shadow-[#CDB6EF]/30 group-hover:scale-110 transition-transform">
+                        <MessageCircle className="w-8 h-8 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <h3 className="font-black text-xl text-gray-900 dark:text-white group-hover:text-[#013DC4] transition-colors">
+                          {t('chat.speakToLoretta', 'Speak to Loretta')}
+                        </h3>
+                        <p className="text-gray-500 font-medium">
+                          {t('chat.speakToLorettaSubtitle', 'Get personalized health guidance and support')}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-bold text-lg text-foreground group-hover:text-chart-2 transition-colors">
-                        {t('chat.speakToLoretta', 'Speak to Loretta')}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t('chat.speakToLorettaSubtitle', 'Get personalized health guidance and support')}
-                      </p>
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 flex items-center justify-center group-hover:bg-[#013DC4] transition-all">
+                      <ChevronRight className="w-6 h-6 text-[#013DC4] group-hover:text-white transition-colors" />
                     </div>
                   </div>
-                  <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-chart-2 transition-colors" />
-                </div>
-              </Card>
+                </GlassCard>
+              </button>
             </Link>
             
             {showSetupChecklist && (
-              <CollapsibleSection
+              <CollapsibleSectionNew
                 title={t('setup.title')}
-                icon={<Sparkles className="w-5 h-5 text-primary" />}
-                defaultOpen={true}
+                icon={<Sparkles className="w-5 h-5" />}
                 badge={
-                  <Badge variant="secondary" className="ml-2 font-bold text-xs">
-                    {t('setup.progress', { completed: completedStepsCount, total: setupSteps.length })}
-                  </Badge>
+                  <span className="ml-2 px-3 py-1 bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white text-xs font-bold rounded-full shadow-lg">
+                    {completedStepsCount}/{setupSteps.length}
+                  </span>
                 }
+                gradient
               >
                 <div className="space-y-4">
-                  <div>
-                    <Progress value={setupProgress} className="h-2" />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {setupProgress === 100 ? t('setup.allDone') : t('setup.stepsToUnlock')}
-                    </p>
+                  <div className="h-3 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+                    <div 
+                      className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full shadow-lg transition-all"
+                      style={{ width: `${setupProgress}%` }}
+                    />
                   </div>
-                      
-                  <div className="space-y-3">
-                        <Link href="/onboarding">
-                          <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                            consentComplete 
-                              ? 'bg-chart-2/10 border-chart-2/30' 
-                              : 'bg-card border-border hover:border-primary/50'
-                          }`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              consentComplete ? 'bg-chart-2 text-white' : 'bg-chart-2/20'
-                            }`}>
-                              {consentComplete ? <Check className="w-4 h-4" /> : <Shield className="w-4 h-4 text-chart-2" />}
-                            </div>
-                            <div className="flex-1">
-                              <p className={`font-bold text-sm ${consentComplete ? 'line-through text-muted-foreground' : ''}`}>
-                                {t('setup.consent')}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {consentComplete ? t('setup.consentComplete') : t('setup.consentPending')}
-                              </p>
-                            </div>
-                            {consentComplete ? (
-                              <Badge className="bg-chart-2 text-white border-0">{t('setup.done')}</Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-chart-2 border-chart-2">+10 XP</Badge>
-                            )}
-                          </div>
-                        </Link>
-                        
-                        <Link href="/profile">
-                          <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                            profileComplete 
-                              ? 'bg-chart-3/10 border-chart-3/30' 
-                              : 'bg-card border-border hover:border-primary/50'
-                          }`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              profileComplete ? 'bg-chart-3 text-white' : 'bg-chart-3/20'
-                            }`}>
-                              {profileComplete ? <Check className="w-4 h-4" /> : <User className="w-4 h-4 text-chart-3" />}
-                            </div>
-                            <div className="flex-1">
-                              <p className={`font-bold text-sm ${profileComplete ? 'line-through text-muted-foreground' : ''}`}>
-                                {t('setup.profile')}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {profileComplete ? t('setup.profileComplete') : t('setup.profilePending')}
-                              </p>
-                            </div>
-                            {profileComplete ? (
-                              <Badge className="bg-chart-3 text-white border-0">{t('setup.done')}</Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-chart-3 border-chart-3">+25 XP</Badge>
-                            )}
-                          </div>
-                        </Link>
-                        
-                        <Link href="/onboarding">
-                          <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                            questionnaireComplete 
-                              ? 'bg-primary/10 border-primary/30' 
-                              : 'bg-card border-border hover:border-primary/50'
-                          }`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              questionnaireComplete ? 'bg-primary text-white' : 'bg-primary/20'
-                            }`}>
-                              {questionnaireComplete ? <Check className="w-4 h-4" /> : <ClipboardList className="w-4 h-4 text-primary" />}
-                            </div>
-                            <div className="flex-1">
-                              <p className={`font-bold text-sm ${questionnaireComplete ? 'line-through text-muted-foreground' : ''}`}>
-                                {t('setup.questionnaire')}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {questionnaireComplete ? t('setup.questionnaireComplete') : t('setup.questionnairePending')}
-                              </p>
-                            </div>
-                            {questionnaireComplete ? (
-                              <Badge className="bg-primary text-white border-0">{t('setup.done')}</Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-primary border-primary">+50 XP</Badge>
-                            )}
-                          </div>
-                        </Link>
-                        
-                        <div 
-                          className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                            firstCheckInComplete 
-                              ? 'bg-destructive/10 border-destructive/30' 
-                              : 'bg-card border-border hover:border-primary/50'
-                          }`}
-                          onClick={() => !firstCheckInComplete && setShowCheckInModal(true)}
-                        >
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            firstCheckInComplete ? 'bg-destructive text-white' : 'bg-destructive/20'
-                          }`}>
-                            {firstCheckInComplete ? <Check className="w-4 h-4" /> : <Heart className="w-4 h-4 text-destructive" />}
-                          </div>
-                          <div className="flex-1">
-                            <p className={`font-bold text-sm ${firstCheckInComplete ? 'line-through text-muted-foreground' : ''}`}>
-                              {t('setup.checkin')}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {firstCheckInComplete ? t('setup.checkinComplete') : t('setup.checkinPending')}
-                            </p>
-                          </div>
-                          {firstCheckInComplete ? (
-                            <Badge className="bg-destructive text-white border-0">{t('setup.done')}</Badge>
-                          ) : (
-                            <Badge variant="outline" className="text-destructive border-destructive">+15 XP</Badge>
-                          )}
-                        </div>
-                  </div>
-                      
-                  <p className="text-xs text-muted-foreground italic">
-                    {allSetupComplete 
-                      ? t('setup.completedAll') 
-                      : t('setup.unlockLeaderboard')}
+                  <p className="text-sm text-gray-500 font-medium">
+                    {setupProgress === 100 ? t('setup.allDone') : t('setup.stepsToUnlock')}
                   </p>
+                  
+                  <div className="space-y-3">
+                    <Link href="/onboarding">
+                      <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                        consentComplete 
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
+                          : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
+                      }`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                          consentComplete 
+                            ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+                            : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
+                        }`}>
+                          {consentComplete ? <Check className="w-5 h-5 text-white" /> : <Shield className="w-5 h-5 text-white" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-semibold ${consentComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                            {t('setup.consent')}
+                          </p>
+                        </div>
+                        {consentComplete ? (
+                          <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
+                        ) : (
+                          <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+10 XP</span>
+                        )}
+                      </div>
+                    </Link>
+                    
+                    <Link href="/profile">
+                      <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                        profileComplete 
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
+                          : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
+                      }`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                          profileComplete 
+                            ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+                            : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
+                        }`}>
+                          {profileComplete ? <Check className="w-5 h-5 text-white" /> : <User className="w-5 h-5 text-white" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-semibold ${profileComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                            {t('setup.profile')}
+                          </p>
+                        </div>
+                        {profileComplete ? (
+                          <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
+                        ) : (
+                          <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+25 XP</span>
+                        )}
+                      </div>
+                    </Link>
+                    
+                    <Link href="/onboarding">
+                      <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                        questionnaireComplete 
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
+                          : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
+                      }`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                          questionnaireComplete 
+                            ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+                            : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
+                        }`}>
+                          {questionnaireComplete ? <Check className="w-5 h-5 text-white" /> : <ClipboardList className="w-5 h-5 text-white" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-semibold ${questionnaireComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                            {t('setup.questionnaire')}
+                          </p>
+                        </div>
+                        {questionnaireComplete ? (
+                          <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
+                        ) : (
+                          <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+50 XP</span>
+                        )}
+                      </div>
+                    </Link>
+                    
+                    <div 
+                      className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                        firstCheckInComplete 
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
+                          : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
+                      }`}
+                      onClick={() => !firstCheckInComplete && setShowCheckInModal(true)}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                        firstCheckInComplete 
+                          ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+                          : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
+                      }`}>
+                        {firstCheckInComplete ? <Check className="w-5 h-5 text-white" /> : <Heart className="w-5 h-5 text-white" />}
+                      </div>
+                      <div className="flex-1">
+                        <p className={`font-semibold ${firstCheckInComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                          {t('setup.checkin')}
+                        </p>
+                      </div>
+                      {firstCheckInComplete ? (
+                        <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
+                      ) : (
+                        <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+15 XP</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </CollapsibleSection>
+              </CollapsibleSectionNew>
             )}
             
             {showLeaderboard ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                <CollapsibleSection
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7">
+                <CollapsibleSectionNew
                   title={t('sidebar.leaderboard')}
-                  icon={<Users className="w-5 h-5 text-chart-3" />}
+                  icon={<Users className="w-5 h-5" />}
                   defaultOpen={true}
                 >
                   <Leaderboard communityType={communityType} />
-                </CollapsibleSection>
-                <CollapsibleSection
+                </CollapsibleSectionNew>
+                <CollapsibleSectionNew
                   title={t('achievements.title')}
-                  icon={<Trophy className="w-5 h-5 text-yellow-500" />}
+                  icon={<Trophy className="w-5 h-5" />}
                   defaultOpen={true}
                 >
                   <div className="grid grid-cols-1 gap-3 lg:gap-4">
@@ -781,257 +862,247 @@ export default function MyDashboard() {
                       </>
                     )}
                   </div>
-                </CollapsibleSection>
+                </CollapsibleSectionNew>
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-                  <CollapsibleSection
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7">
+                  <CollapsibleSectionNew
                     title={t('riskScore.title')}
-                    icon={<Heart className="w-5 h-5 text-destructive" />}
+                    icon={<Heart className="w-5 h-5" />}
                     defaultOpen={true}
                   >
-                    <RiskScoreCard
-                      score={riskScoreData?.overallScore ?? 50}
-                      trend="stable"
-                      message={riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
-                    />
-                  </CollapsibleSection>
+                    <div className="flex items-center gap-6">
+                      <div className="relative w-32 h-32">
+                        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="10" className="text-gray-100 dark:text-gray-800" />
+                          <circle
+                            cx="50" cy="50" r="40" fill="none"
+                            stroke="url(#scoreGradient)"
+                            strokeWidth="10"
+                            strokeLinecap="round"
+                            strokeDasharray={`${(100 - riskScore) * 2.51} 251`}
+                          />
+                          <defs>
+                            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                              <stop offset="0%" stopColor={riskScore <= 30 ? "#22C55E" : riskScore <= 60 ? "#F59E0B" : "#EF4444"} />
+                              <stop offset="100%" stopColor={riskScore <= 30 ? "#10B981" : riskScore <= 60 ? "#D97706" : "#DC2626"} />
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-4xl font-black text-gray-900 dark:text-white">{riskScore}</span>
+                          <span className={`text-sm font-bold ${riskColor}`}>{riskLevel}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-1 space-y-3">
+                        <p className="text-gray-600 dark:text-gray-400 font-medium">
+                          {riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+                            <TrendingUp className="w-4 h-4 text-white" />
+                          </div>
+                          <span className="text-green-600 font-bold">{t('riskScore.stable', 'Stable')}</span>
+                        </div>
+                        <Link href="/risk-score">
+                          <button className="text-sm text-[#013DC4] font-bold hover:underline flex items-center gap-1">
+                            {t('riskScore.viewDetails', 'View Details')} <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </Link>
+                      </div>
+                    </div>
+                  </CollapsibleSectionNew>
                   
-                  <CollapsibleSection
+                  <CollapsibleSectionNew
                     title={t('checkin.title', 'Daily Check-In')}
-                    icon={<Smile className="w-5 h-5 text-chart-2" />}
+                    icon={<Smile className="w-5 h-5" />}
                     defaultOpen={true}
                     badge={
                       allEmotionalCheckins && allEmotionalCheckins.length > 0 ? (
-                        <Badge variant="secondary" className="ml-2 font-bold text-xs">
+                        <span className="ml-2 px-3 py-1 bg-gradient-to-r from-[#CDB6EF] to-purple-400 text-white text-xs font-bold rounded-full shadow-lg">
                           {allEmotionalCheckins.length}
-                        </Badge>
+                        </span>
                       ) : null
                     }
                   >
-                    <div className="space-y-3 lg:space-y-4">
-                      <DailyCheckIn
-                        streak={streak}
-                        dayNumber={streak}
-                        xpReward={50}
-                        onStart={() => setShowCheckInModal(true)}
-                      />
+                    <div className="space-y-4">
+                      <button 
+                        onClick={() => setShowCheckInModal(true)}
+                        className="w-full py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white rounded-2xl font-bold text-lg hover:shadow-2xl hover:shadow-[#013DC4]/30 transition-all hover:scale-[1.02]"
+                      >
+                        {t('checkin.startButton', 'Start Check-in')} (+15 XP)
+                      </button>
                       
                       {allEmotionalCheckins && allEmotionalCheckins.length > 0 && (
-                        <Card className="bg-gradient-to-br from-chart-2/20 via-primary/10 to-secondary/20 border-0 shadow-lg overflow-hidden">
-                          <div className="p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                                <Heart className="w-3 h-3" />
-                                {t('checkin.subtitle')}
-                              </p>
-                              <span className="text-xs text-muted-foreground">{allEmotionalCheckins.length}</span>
-                            </div>
-                            <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
-                              {allEmotionalCheckins.slice(0, 3).map((checkin) => {
-                                const data = formatCheckinData(checkin);
-                                return (
-                                  <div key={data.id} className="flex items-center gap-2 p-2 rounded-lg bg-background/50 hover:bg-background/80 transition-colors">
-                                    <span className="text-lg">{data.emoji}</span>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate">{data.emotion}</p>
-                                      <p className="text-xs text-muted-foreground">{data.dateStr}</p>
-                                    </div>
+                        <div className="bg-gradient-to-br from-[#CDB6EF]/10 to-[#D2EDFF]/10 rounded-2xl p-4">
+                          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">{t('checkin.subtitle')}</p>
+                          <div className="space-y-2">
+                            {allEmotionalCheckins.slice(0, 3).map((checkin) => {
+                              const data = formatCheckinData(checkin);
+                              return (
+                                <div key={data.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all">
+                                  <span className="text-2xl">{data.emoji}</span>
+                                  <div className="flex-1">
+                                    <p className="font-semibold text-gray-900 dark:text-white">{data.emotion}</p>
+                                    <p className="text-xs text-gray-500">{data.dateStr}</p>
                                   </div>
-                                );
-                              })}
-                            </div>
+                                </div>
+                              );
+                            })}
                           </div>
-                        </Card>
+                        </div>
                       )}
                     </div>
-                  </CollapsibleSection>
+                  </CollapsibleSectionNew>
                 </div>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mt-6">
-                  <CollapsibleSection
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7">
+                  <CollapsibleSectionNew
                     title={t('missions.title')}
-                    icon={<Flame className="w-5 h-5 text-primary" />}
+                    icon={<Flame className="w-5 h-5" />}
                     defaultOpen={true}
                     badge={
                       activeMissions.length > 0 ? (
-                        <Badge variant="secondary" className="ml-2 font-bold text-xs">
+                        <span className="ml-2 px-3 py-1 bg-gradient-to-r from-orange-400 to-red-400 text-white text-xs font-bold rounded-full shadow-lg">
                           {activeMissions.length}
-                        </Badge>
+                        </span>
                       ) : null
                     }
                   >
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {activeMissions.length === 0 ? (
-                        <Card className="p-6 text-center border-dashed">
-                          <p className="text-muted-foreground mb-3">{t('missions.noActive')}</p>
+                        <div className="p-6 text-center rounded-2xl bg-white/50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700">
+                          <p className="text-gray-500 mb-3">{t('missions.noActive')}</p>
                           <Link href="/mission-details">
-                            <Button variant="outline" size="sm">
+                            <button className="px-4 py-2 border-2 border-[#013DC4] text-[#013DC4] rounded-xl font-bold hover:bg-[#013DC4] hover:text-white transition-all">
                               {t('missions.activate')}
-                            </Button>
+                            </button>
                           </Link>
-                        </Card>
+                        </div>
                       ) : (
                         <>
                           {activeMissions.slice(0, 3).map((mission: any) => (
-                            <QuestCard
-                              key={mission.id}
-                              title={mission.title}
-                              description={mission.description}
-                              category={mission.category}
-                              xpReward={mission.xpReward}
-                              progress={mission.progress}
-                              maxProgress={mission.maxProgress}
-                              completed={mission.completed}
-                              legendary={mission.legendary}
-                              href={mission.href}
-                              onComplete={() => handleCompleteQuest(mission.id, mission.xpReward)}
-                            />
+                            <div key={mission.id} className="p-4 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all">
+                              <div className="flex items-start justify-between mb-3">
+                                <div>
+                                  <span className="text-xs text-[#013DC4] font-bold uppercase tracking-wider">{mission.category}</span>
+                                  <h4 className="font-bold text-gray-900 dark:text-white text-lg">{mission.title}</h4>
+                                  <p className="text-sm text-gray-500">{mission.description}</p>
+                                </div>
+                                <span className="px-3 py-1 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-xs font-bold rounded-full">
+                                  +{mission.xpReward} XP
+                                </span>
+                              </div>
+                              <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all"
+                                  style={{ width: `${(mission.progress / mission.maxProgress) * 100}%` }}
+                                />
+                              </div>
+                            </div>
                           ))}
                         </>
                       )}
+                      
                       <Link href="/mission-details">
-                        <Button variant="outline" className="w-full" data-testid="button-view-all-quests">
+                        <button className="w-full py-3 border-2 border-[#013DC4] text-[#013DC4] rounded-2xl font-bold hover:bg-gradient-to-r hover:from-[#013DC4] hover:to-[#0150FF] hover:text-white hover:border-transparent transition-all" data-testid="button-view-all-quests">
                           {t('missions.viewAll')}
-                        </Button>
+                        </button>
                       </Link>
                     </div>
-                  </CollapsibleSection>
+                  </CollapsibleSectionNew>
                   
-                  {/* Today's Activity section - hidden until ready
-                  <CollapsibleSection
-                    title={t('activity.title')}
-                    icon={<Activity className="w-5 h-5 text-chart-2" />}
+                  <CollapsibleSectionNew
+                    title={t('sidebar.leaderboard')}
+                    icon={<Users className="w-5 h-5" />}
                     defaultOpen={true}
                   >
-                    <div className="grid grid-cols-2 gap-2 lg:gap-3">
-                      <ActivityMetric
-                        title={t('activityMetrics.steps.title')}
-                        value={activityData?.steps ?? 0}
-                        goal={(activityData?.stepsGoal ?? 10000).toLocaleString()}
-                        unit={t('activity.steps').toLowerCase()}
-                        icon={Footprints}
-                        progress={Math.min(100, Math.round(((activityData?.steps ?? 0) / (activityData?.stepsGoal ?? 10000)) * 100))}
-                        color="text-chart-1"
-                        explanation={t('activityMetrics.steps.explanation')}
-                        simpleExplanation={t('activityMetrics.steps.explanation')}
-                        href="/activity?type=steps"
-                      />
-                      <ActivityMetric
-                        title={t('activityMetrics.sleep.title')}
-                        value={activityData?.sleepHours ?? 0}
-                        goal={`${activityData?.sleepGoal ?? 8}h`}
-                        unit={t('activity.sleep').toLowerCase()}
-                        icon={MoonIcon}
-                        progress={Math.min(100, Math.round(((activityData?.sleepHours ?? 0) / (activityData?.sleepGoal ?? 8)) * 100))}
-                        color="text-chart-2"
-                        explanation={t('activityMetrics.sleep.explanation')}
-                        simpleExplanation={t('activityMetrics.sleep.simpleExplanation')}
-                        href="/activity?type=sleep"
-                      />
-                      <ActivityMetric
-                        title={t('activityMetrics.heartRate.title')}
-                        value={activityData?.heartRate ?? 0}
-                        goal="60-100"
-                        unit="bpm"
-                        icon={Heart}
-                        progress={activityData?.heartRate ? (activityData.heartRate >= 60 && activityData.heartRate <= 100 ? 100 : 50) : 0}
-                        color="text-destructive"
-                        explanation={t('activityMetrics.heartRate.explanation')}
-                        simpleExplanation={t('activityMetrics.heartRate.simpleExplanation')}
-                        href="/activity?type=heartRate"
-                      />
-                      <ActivityMetric
-                        title={t('activityMetrics.calories.title')}
-                        value={activityData?.calories ?? 0}
-                        goal={(activityData?.caloriesGoal ?? 2000).toLocaleString()}
-                        unit="cal"
-                        icon={Flame}
-                        progress={Math.min(100, Math.round(((activityData?.calories ?? 0) / (activityData?.caloriesGoal ?? 2000)) * 100))}
-                        color="text-chart-3"
-                        explanation={t('activityMetrics.calories.explanation')}
-                        simpleExplanation={t('activityMetrics.calories.explanation')}
-                        href="/activity?type=calories"
-                      />
-                    </div>
-                  </CollapsibleSection>
-                  */}
+                    <Leaderboard communityType={communityType} />
+                  </CollapsibleSectionNew>
                 </div>
                 
-                <CollapsibleSection
+                <CollapsibleSectionNew
                   title={t('medications.title')}
-                  icon={<Pill className="w-5 h-5 text-primary" />}
+                  icon={<Pill className="w-5 h-5" />}
                   defaultOpen={true}
-                  className="mt-6"
                   badge={
                     medications.length > 0 ? (
-                      <Badge variant="secondary" className="ml-2 font-bold text-xs">
+                      <span className="ml-2 px-3 py-1 bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white text-xs font-bold rounded-full shadow-lg">
                         {medications.length}
-                      </Badge>
+                      </span>
                     ) : null
                   }
                 >
                   {medications.length > 0 ? (
                     <div className="space-y-4">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {medications.slice(0, 4).map((med: any) => (
-                          <MedicationTracker
-                            key={med.id}
-                            medicationId={med.id}
-                            name={med.name}
-                            dosage={med.dosage}
-                            scheduledTimes={med.scheduledTimes || []}
-                            notes={med.notes}
-                            frequency={med.frequency}
-                            adherencePercent={med.adherencePercent ?? 100}
-                            explanation={med.explanation || t('medications.defaultExplanation')}
-                            simpleExplanation={med.simpleExplanation || t('medications.defaultSimpleExplanation')}
-                          />
+                          <div key={med.id} className="p-5 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h4 className="font-bold text-gray-900 dark:text-white text-lg">{med.name}</h4>
+                                <p className="text-sm text-gray-500">{med.dosage}</p>
+                              </div>
+                              <div className={`px-3 py-1 rounded-full font-bold text-sm ${
+                                (med.adherencePercent ?? 100) >= 90 
+                                  ? 'bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/20 text-green-600' 
+                                  : 'bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/20 text-amber-600'
+                              }`}>
+                                {med.adherencePercent ?? 100}%
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {(med.scheduledTimes || []).map((time: string, j: number) => (
+                                <span key={j} className="px-3 py-1.5 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-sm font-semibold rounded-xl">
+                                  {time}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
                         ))}
                       </div>
-                      <Button
-                        variant="outline"
+                      <button 
                         onClick={() => setShowAddMedicationModal(true)}
-                        className="w-full"
+                        className="w-full py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 rounded-2xl font-bold hover:border-[#013DC4] hover:text-[#013DC4] hover:bg-[#013DC4]/5 transition-all flex items-center justify-center gap-2"
                         data-testid="button-add-medication"
                       >
-                        <Pill className="w-4 h-4 mr-2" />
+                        <Pill className="w-5 h-5" />
                         {t('medications.addMedication', 'Add Medication')}
-                      </Button>
+                      </button>
                     </div>
                   ) : (
-                    <Card className="p-6 text-center bg-muted/30 border-dashed">
-                      <Pill className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                      <p className="text-muted-foreground mb-4">
+                    <div className="p-6 text-center rounded-2xl bg-white/50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700">
+                      <Pill className="w-10 h-10 mx-auto text-gray-400 mb-3" />
+                      <p className="text-gray-500 mb-4">
                         {t('medications.noMedications', 'No medications tracked yet')}
                       </p>
-                      <Button
+                      <button
                         onClick={() => setShowAddMedicationModal(true)}
-                        className="bg-gradient-to-r from-primary to-chart-2 font-bold"
+                        className="px-6 py-3 bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white rounded-xl font-bold hover:shadow-lg transition-all"
                         data-testid="button-add-first-medication"
                       >
-                        <Pill className="w-4 h-4 mr-2" />
+                        <Pill className="w-4 h-4 inline mr-2" />
                         {t('medications.addFirstMedication', 'Add Your First Medication')}
-                      </Button>
-                    </Card>
+                      </button>
+                    </div>
                   )}
-                </CollapsibleSection>
+                </CollapsibleSectionNew>
                 
                 {!isNewUser && (
-                  <CollapsibleSection
+                  <CollapsibleSectionNew
                     title={t('healthScience.title', 'Health Science')}
-                    icon={<BookOpen className="w-5 h-5 text-chart-3" />}
+                    icon={<BookOpen className="w-5 h-5" />}
                     defaultOpen={false}
-                    className="mt-6"
                   >
                     <HealthScienceSection category="activity" />
-                  </CollapsibleSection>
+                  </CollapsibleSectionNew>
                 )}
               </>
             )}
             
-            <p className="text-xs text-muted-foreground text-center pb-4 italic">
+            <p className="text-sm text-gray-400 text-center pb-6 font-medium">
               {t('disclaimer')}
             </p>
           </div>
@@ -1079,15 +1150,15 @@ export default function MyDashboard() {
       <Dialog open={showAccessibilityPolicy} onOpenChange={setShowAccessibilityPolicy}>
         <DialogContent className="max-w-4xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Inclusion & Accessibility Statement</DialogTitle>
+            <DialogTitle className="text-2xl font-black">{t('dialogs.accessibilityPolicy')}</DialogTitle>
             <DialogDescription>
-              Our commitment to making Loretta accessible to everyone.
+              {t('dialogs.accessibilityDescription')}
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[60vh] pr-4">
             <div className="space-y-4 text-sm text-muted-foreground">
-              <p>Loretta is designed with accessibility in mind, supporting screen readers and keyboard navigation.</p>
-              <p>We continuously work to improve our accessibility standards.</p>
+              <p>{t('dialogs.accessibilityContent1')}</p>
+              <p>{t('dialogs.accessibilityContent2')}</p>
             </div>
           </ScrollArea>
         </DialogContent>
