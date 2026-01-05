@@ -7,6 +7,7 @@ import {
 import { User as SelectUser, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { trackAuth, identifyUser } from "@/lib/clarity";
 
 type AuthContextType = {
   user: SelectUser | null;
@@ -40,6 +41,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: SelectUser) => {
       queryClient.clear();
       queryClient.setQueryData(["/api/user"], user);
+      trackAuth('login');
+      identifyUser(String(user.id), { username: user.username });
       toast({
         title: "Welcome back!",
         description: `You're now logged in as ${user.username}`,
@@ -62,6 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: SelectUser) => {
       queryClient.clear();
       queryClient.setQueryData(["/api/user"], user);
+      trackAuth('signup');
+      identifyUser(String(user.id), { username: user.username });
       toast({
         title: "Account created!",
         description: `Welcome to Loretta, ${user.username}!`,
@@ -82,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.clear();
+      trackAuth('logout');
       toast({
         title: "Signed out",
         description: "You've been logged out successfully",

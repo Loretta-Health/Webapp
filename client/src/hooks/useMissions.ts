@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './use-auth';
 import { apiRequest } from '../lib/queryClient';
+import { trackMission, trackGamification } from '../lib/clarity';
 
 export interface CatalogMission {
   id: string;
@@ -138,8 +139,15 @@ export function useMissions() {
       const response = await apiRequest('PATCH', `/api/missions/${id}`, data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      if (variables.data.completed) {
+        const mission = missions.find(m => m.id === variables.id);
+        if (mission) {
+          trackMission('completed', mission.title, mission.xpReward);
+          trackGamification('xp_earned', { amount: mission.xpReward, source: 'mission' });
+        }
+      }
     },
   });
 
@@ -250,11 +258,15 @@ export function useMissions() {
   }, [resetMissionsMutation]);
 
   const activateMission = useCallback((missionId: string) => {
+    const mission = missions.find(m => m.id === missionId);
+    if (mission) {
+      trackMission('started', mission.title);
+    }
     updateMissionMutation.mutate({
       id: missionId,
       data: { isActive: true },
     });
-  }, [updateMissionMutation]);
+  }, [missions, updateMissionMutation]);
 
   const deactivateMission = useCallback((missionId: string) => {
     updateMissionMutation.mutate({

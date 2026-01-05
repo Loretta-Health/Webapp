@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -11,6 +11,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'wouter';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
+import { trackQuestionnaire, trackPageView } from '@/lib/clarity';
 
 interface Question {
   id: number;
@@ -71,15 +72,22 @@ export default function Questionnaire() {
   const [completed, setCompleted] = useState(false);
   const [, setLocation] = useLocation();
 
+  useEffect(() => {
+    trackPageView('questionnaire');
+    trackQuestionnaire('started');
+  }, []);
+
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const question = questions[currentQuestion];
 
   const handleAnswer = (answer: string) => {
     setAnswers(prev => ({ ...prev, [question.id]: answer }));
+    trackQuestionnaire('step_completed', currentQuestion + 1, questions.length);
     
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
     } else {
+      trackQuestionnaire('completed');
       setCompleted(true);
     }
   };

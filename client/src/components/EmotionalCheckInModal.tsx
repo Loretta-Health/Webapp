@@ -14,6 +14,7 @@ import {
   getEmotionEmoji,
   type EmotionCategory 
 } from '../../../shared/emotions';
+import { trackCheckin, trackModal } from '@/lib/clarity';
 
 interface EmotionalCheckInModalProps {
   open: boolean;
@@ -56,6 +57,7 @@ export default function EmotionalCheckInModal({
 
   useEffect(() => {
     if (open) {
+      trackModal('opened', 'emotional_checkin');
       setStep('asking');
       setMessages([{ id: '1', role: 'assistant', content: "How are you doing today?" }]);
       setInputText('');
@@ -134,6 +136,8 @@ export default function EmotionalCheckInModal({
           // Invalidate weekly stats so they refresh
           queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins/weekly-stats'] });
           queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
+          
+          trackCheckin('emotional', { emotion: detectedEmotion });
           
           toast({
             title: 'Check-in Complete! +10 XP',

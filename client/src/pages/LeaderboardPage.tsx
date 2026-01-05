@@ -31,6 +31,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
 import CommunitySelector, { CommunityType } from '@/components/CommunitySelector';
+import { trackEvent, trackPageView, ClarityEvents } from '@/lib/clarity';
 
 interface Team {
   id: string;
@@ -171,6 +172,11 @@ export default function LeaderboardPage() {
   const { user } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    trackPageView('leaderboard');
+    trackEvent(ClarityEvents.LEADERBOARD_VIEWED);
+  }, []);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(true);
   const [loadingMembers, setLoadingMembers] = useState(false);

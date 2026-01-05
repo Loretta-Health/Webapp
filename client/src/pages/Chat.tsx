@@ -26,9 +26,15 @@ import { MissionCardView, CheckInConfirmationBanner, MetricCard } from '@/compon
 import type { MetricData } from '@/components/chat';
 import { useChatLogic, type ChatMessage } from '@/hooks/useChatLogic';
 import ReactMarkdown from 'react-markdown';
+import { trackAIChat, trackPageView } from '@/lib/clarity';
 
 export default function Chat() {
   const { t } = useTranslation('pages');
+  
+  useEffect(() => {
+    trackAIChat('opened');
+    trackPageView('ai_chat');
+  }, []);
   
   const suggestedQuestions = [
     { icon: FileText, text: t('chat.suggestions.labResults') },
@@ -134,6 +140,8 @@ export default function Chat() {
     const fileName = uploadedFile?.name || '';
     
     if (!messageText.trim() && !hasFile) return;
+
+    trackAIChat('message_sent', { hasFile });
 
     const fileInfo = hasFile ? `[Uploaded: ${fileName}]` : '';
     const displayContent = messageText.trim() 
