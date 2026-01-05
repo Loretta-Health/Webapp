@@ -80,6 +80,7 @@
   "checkin": {
     "title": "Daily Check-In",
     "subtitle": "Emotional check-ins",
+    "startButton": "Start Check-in",
     "happy": "Happy",
     "sad": "Sad",
     "anxious": "Anxious",
@@ -147,7 +148,10 @@
     "defaultSimpleExplanation": "Take as prescribed",
     "todaysProgress": "Today's progress",
     "allDosesTaken": "All doses taken today!",
-    "daysStreak": "{{count}} days"
+    "daysStreak": "{{count}} days",
+    "addMedication": "Add Medication",
+    "noMedications": "No medications tracked yet",
+    "addFirstMedication": "Add Your First Medication"
   },
   "community": {
     "lorettaCommunity": "Loretta Community",
@@ -157,7 +161,9 @@
     "friendsDescription": "Just you and your friends",
     "friendsMembers": "{{count}} members",
     "communityTip": "Community Tip",
-    "friends": "Friends"
+    "friends": "Friends",
+    "loretta": "Loretta Community",
+    "team": "My Team"
   },
   "missionData": {
     "drinkWater": {
@@ -212,7 +218,25 @@
     "privacyPolicy": "Privacy Policy",
     "privacyDescription": "Your privacy matters to us. Review how we handle your data.",
     "privacyContent1": "We collect health data to provide personalized insights and improve your wellness journey.",
-    "privacyContent2": "Your data is encrypted and never shared with third parties without your explicit consent."
+    "privacyContent2": "Your data is encrypted and never shared with third parties without your explicit consent.",
+    "accessibilityPolicy": "Inclusion & Accessibility Statement",
+    "accessibilityDescription": "Our commitment to making Loretta accessible to everyone.",
+    "accessibilityContent1": "Loretta is designed with accessibility in mind, supporting screen readers and keyboard navigation.",
+    "accessibilityContent2": "We continuously work to improve our accessibility standards."
+  },
+  "chat": {
+    "speakToLoretta": "Speak to Loretta",
+    "speakToLorettaSubtitle": "Get personalized health guidance and support"
+  },
+  "healthScience": {
+    "title": "Health Science"
+  },
+  "location": {
+    "usingYours": "Using your location",
+    "usingDefault": "Using default location (Berlin)",
+    "clickTo": "Click to",
+    "disable": "disable",
+    "enable": "enable"
   },
   "disclaimer": "Loretta is not a diagnostic tool. Always consult healthcare professionals for medical advice.",
   "weather": {
