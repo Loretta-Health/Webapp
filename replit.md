@@ -57,6 +57,23 @@ Preferred communication style: Simple, everyday language.
   - Text sizing: `text-[10px] sm:text-xs` for small labels, responsive padding.
 - Pages optimized: auth-page, Onboarding, Profile, Dashboard, Questionnaire, MissionDetails, RiskScoreDetails, StreakDetails, Calendar, LeaderboardPage.
 
+### Analytics (Microsoft Clarity)
+- **Integration**: Microsoft Clarity for user behavior analytics, heatmaps, and session recordings.
+- **Configuration**: Set `VITE_CLARITY_PROJECT_ID` environment variable with your Clarity project ID.
+- **Initialization**: Clarity loads automatically on app start via `client/src/main.tsx`.
+- **Tracking Library**: Custom tracking utilities in `client/src/lib/clarity.ts` with typed event names.
+- **Tracked Events**:
+  - **Authentication**: Login, logout, signup
+  - **Medications**: Added, logged, skipped, deleted
+  - **Missions**: Started, completed, abandoned
+  - **Check-ins**: Daily and emotional check-ins completed
+  - **AI Chat**: Chat opened, messages sent
+  - **Questionnaire**: Started, step completed, completed
+  - **Navigation**: Page views, leaderboard views
+  - **Gamification**: XP earned, level up, achievements
+- **React Hook**: `useClarity` hook in `client/src/hooks/useClarity.ts` for easy integration.
+- **Privacy**: User identification via Clarity's `identify` function after login.
+
 ## External Dependencies
 
 - **Database**: `@neondatabase/serverless`, `drizzle-orm`, `drizzle-zod`, `connect-pg-simple`.
@@ -65,3 +82,4 @@ Preferred communication style: Simple, everyday language.
 - **Utilities**: `date-fns`, `class-variance-authority`, `clsx`, `tailwind-merge`, `nanoid`.
 - **Development Tools**: `@replit/vite-plugin-*`, `tsx`, `esbuild`.
 - **Routing**: `wouter`.
+- **Analytics**: Microsoft Clarity (via custom integration).

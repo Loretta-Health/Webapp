@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { trackMedication } from '@/lib/clarity';
 
 export interface MedicationDose {
   id: number;
@@ -54,6 +55,7 @@ export interface LogDoseResult {
   log: MedicationLog;
   streak: number;
   achievementsUnlocked: string[];
+  xpAwarded?: number;
 }
 
 export function useMedicationProgress() {
@@ -139,7 +141,9 @@ export function useMedicationProgress() {
   const logDose = async (medicationId: string, doseNumber?: number): Promise<{ success: boolean; xpEarned: number }> => {
     try {
       const result = await logDoseMutation.mutateAsync({ medicationId, doseNumber });
-      return { success: result.success, xpEarned: result.xpAwarded };
+      const med = getMedication(medicationId);
+      trackMedication('logged', med?.name);
+      return { success: result.success, xpEarned: result.xpAwarded || 0 };
     } catch (error) {
       console.error('Failed to log dose:', error);
       return { success: false, xpEarned: 0 };
@@ -192,6 +196,7 @@ export function useMedicationProgress() {
   const createMedication = async (data: CreateMedicationInput): Promise<Medication | null> => {
     try {
       const result = await createMedicationMutation.mutateAsync(data);
+      trackMedication('added', data.name);
       return result;
     } catch (error) {
       console.error('Failed to create medication:', error);
@@ -213,7 +218,9 @@ export function useMedicationProgress() {
   // Delete a medication
   const deleteMedication = async (id: string): Promise<boolean> => {
     try {
+      const med = getMedication(id);
       await deleteMedicationMutation.mutateAsync(id);
+      trackMedication('deleted', med?.name);
       return true;
     } catch (error) {
       console.error('Failed to delete medication:', error);
