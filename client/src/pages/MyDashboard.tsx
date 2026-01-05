@@ -943,14 +943,14 @@ export default function MyDashboard() {
                     icon={<Heart className="w-5 h-5" />}
                     defaultOpen={true}
                   >
-                    <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                      <div className="relative w-24 h-24 sm:w-32 sm:h-32">
+                    <div className="flex flex-col items-center justify-center w-full py-2 sm:py-4">
+                      <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-4 sm:mb-6">
                         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="10" className="text-gray-100 dark:text-gray-800" />
+                          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-100 dark:text-gray-800" />
                           <circle
                             cx="50" cy="50" r="40" fill="none"
                             stroke="url(#scoreGradient)"
-                            strokeWidth="10"
+                            strokeWidth="8"
                             strokeLinecap="round"
                             strokeDasharray={`${(100 - riskScore) * 2.51} 251`}
                           />
@@ -962,27 +962,27 @@ export default function MyDashboard() {
                           </defs>
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white">{riskScore}</span>
-                          <span className={`text-xs sm:text-sm font-bold ${riskColor}`}>{riskLevel}</span>
+                          <span className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white">{riskScore}</span>
+                          <span className={`text-sm sm:text-base font-bold ${riskColor}`}>{riskLevel}</span>
                         </div>
                       </div>
                       
-                      <div className="flex-1 space-y-2 sm:space-y-3 text-center sm:text-left w-full">
-                        <p className="text-gray-600 dark:text-gray-400 font-medium text-sm sm:text-base">
-                          {riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
-                        </p>
-                        <div className="flex items-center justify-center sm:justify-start gap-2">
-                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
-                            <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                          </div>
-                          <span className="text-green-600 font-bold text-sm sm:text-base">{t('riskScore.stable', 'Stable')}</span>
+                      <p className="text-gray-600 dark:text-gray-400 font-medium text-sm sm:text-base text-center mb-3 sm:mb-4">
+                        {riskScoreData ? t('riskScore.subtitle') : t('riskScore.notAvailable')}
+                      </p>
+                      
+                      <div className="flex items-center justify-center gap-2 mb-4 sm:mb-5">
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
+                          <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
-                        <Link href="/risk-score">
-                          <button className="text-sm text-[#013DC4] font-bold hover:underline flex items-center gap-1 justify-center sm:justify-start w-full sm:w-auto min-h-[44px]">
-                            {t('riskScore.viewDetails', 'View Details')} <ChevronRight className="w-4 h-4" />
-                          </button>
-                        </Link>
+                        <span className="text-green-600 font-bold text-base sm:text-lg">{t('riskScore.stable', 'Stable')}</span>
                       </div>
+                      
+                      <Link href="/risk-score" className="w-full sm:w-auto">
+                        <button className="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-[#013DC4] font-bold hover:bg-[#013DC4]/5 rounded-xl flex items-center gap-1 justify-center min-h-[48px] transition-all">
+                          {t('riskScore.viewDetails', 'View Details')} <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </button>
+                      </Link>
                     </div>
                   </CollapsibleSectionNew>
                   
