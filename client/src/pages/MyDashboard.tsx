@@ -504,8 +504,8 @@ export default function MyDashboard() {
             </div>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: t('sidebar.xpEarned'), value: `+${xp}`, color: 'from-[#013DC4] to-[#0150FF]' },
-                { label: t('sidebar.quests'), value: `${completedCount}/${totalCount}`, color: 'from-[#CDB6EF] to-purple-400' },
+                { label: t('sidebar.xpEarned'), value: `+${allEmotionalCheckins?.filter(c => isToday(new Date(c.checkedInAt))).reduce((sum, c) => sum + (c.xpAwarded || 0), 0) || 0}`, color: 'from-[#013DC4] to-[#0150FF]' },
+                { label: t('sidebar.missions'), value: `${activeMissions.length}/${completedCount}`, color: 'from-[#CDB6EF] to-purple-400' },
                 { label: t('sidebar.achievements'), value: `${userAchievements?.filter(a => a.unlocked).length || 0}`, color: 'from-amber-400 to-orange-400' },
               ].map((stat) => (
                 <div key={stat.label} className="text-center p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50">
