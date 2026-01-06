@@ -27,9 +27,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
-import { useWeatherSimulation } from '@/contexts/WeatherSimulationContext';
-import { Switch } from '@/components/ui/switch';
-import { CloudRain } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface GamificationData {
@@ -166,7 +163,6 @@ export default function MyDashboard() {
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
   const { locationEnabled, toggleLocationEnabled, usingDefault, loading: locationLoading } = useGeolocation();
-  const { simulateBadWeather, setSimulateBadWeather } = useWeatherSimulation();
   const userId = user?.id;
   const { activeMissions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
@@ -670,17 +666,6 @@ export default function MyDashboard() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            
-            <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 bg-white/10 backdrop-blur-sm rounded-xl">
-              <CloudRain className={`w-4 h-4 sm:w-5 sm:h-5 ${simulateBadWeather ? 'text-amber-400' : 'text-white/70'}`} />
-              <span className="text-xs sm:text-sm text-white/80 hidden md:inline font-medium">{t('weather.simulateBadWeather', 'Weather')}</span>
-              <Switch
-                checked={simulateBadWeather}
-                onCheckedChange={setSimulateBadWeather}
-                data-testid="switch-weather-simulation"
-                className="data-[state=checked]:bg-amber-500 scale-90 sm:scale-100"
-              />
-            </div>
             
             <button 
               className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
