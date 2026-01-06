@@ -31,8 +31,10 @@ import {
   MessageCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
+import { RefreshCw } from 'lucide-react';
 
 interface RiskScoreData {
   overallScore: number;
@@ -99,6 +101,18 @@ export default function RiskScoreDetails() {
     enabled: !!user,
   });
 
+  const recalculateMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/risk-scores/calculate');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-factors'] });
+    },
+  });
+
   if (isAuthLoading || isScoreLoading || isFactorsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center">
@@ -132,10 +146,11 @@ export default function RiskScoreDetails() {
   };
 
   const getScoreLabel = () => {
-    if (score <= 20) return 'Excellent';
-    if (score <= 40) return 'Great';
-    if (score <= 60) return 'Getting There';
-    return 'Room to Improve';
+    // Higher score = better health (100 = excellent, 0 = high risk)
+    if (score >= 80) return 'Excellent';
+    if (score >= 60) return 'Great';
+    if (score >= 40) return 'Getting There';
+    return 'Needs Attention';
   };
 
   const getFactorStyles = (type: 'negative' | 'warning' | 'positive', points: number, maxPoints: number) => {
@@ -217,10 +232,18 @@ export default function RiskScoreDetails() {
               </Button>
             </Link>
             <div className="text-center">
-              <h1 className="text-xl font-black text-white">Risk Score</h1>
+              <h1 className="text-xl font-black text-white">Health Score</h1>
               <p className="text-white/70 text-sm">Health Overview</p>
             </div>
-            <div className="w-16" />
+            <Button 
+              variant="ghost" 
+              className="text-white hover:bg-white/20" 
+              onClick={() => recalculateMutation.mutate()}
+              disabled={recalculateMutation.isPending}
+              data-testid="button-recalculate"
+            >
+              <RefreshCw className={`w-4 h-4 ${recalculateMutation.isPending ? 'animate-spin' : ''}`} />
+            </Button>
           </div>
         </div>
       </div>
