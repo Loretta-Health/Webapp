@@ -417,6 +417,41 @@ export class DatabaseStorage implements IStorage {
     return created;
   }
 
+  async checkUserActiveToday(userId: string): Promise<boolean> {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const startOfDay = new Date(todayStr + 'T00:00:00.000Z');
+    const endOfDay = new Date(todayStr + 'T23:59:59.999Z');
+
+    // Check for emotional check-in today
+    const latestCheckin = await this.getLatestEmotionalCheckin(userId);
+    if (latestCheckin?.checkedInAt && new Date(latestCheckin.checkedInAt) >= startOfDay) {
+      return true;
+    }
+
+    // Check for medication log today
+    const medicationLogs = await this.getMedicationLogsForDate(userId, todayStr);
+    if (medicationLogs.length > 0) {
+      return true;
+    }
+
+    // Check for mission completed today
+    const userMissions = await this.getUserMissions(userId);
+    for (const mission of userMissions) {
+      if (mission.completedAt && new Date(mission.completedAt) >= startOfDay) {
+        return true;
+      }
+    }
+
+    // Check if lastCheckIn from gamification is today
+    const gamification = await this.getUserGamification(userId);
+    if (gamification?.lastCheckIn && new Date(gamification.lastCheckIn) >= startOfDay) {
+      return true;
+    }
+
+    return false;
+  }
+
   async updateStreak(userId: string): Promise<UserGamification> {
     let gamification = await this.getUserGamification(userId);
     
