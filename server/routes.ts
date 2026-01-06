@@ -3068,27 +3068,22 @@ function calculateRiskScores(answers: Record<string, string>): {
     heartRisk += 5; // Already at risk if taking preventive aspirin
   }
   
-  // === NORMALIZE SCORES ===
-  // Ensure scores are within 0-100 range and apply reasonable caps
+  // === NORMALIZE SCORE ===
+  // Ensure score is within 0-100 range
   diabetesRisk = Math.max(0, Math.min(100, diabetesRisk));
-  heartRisk = Math.max(0, Math.min(100, heartRisk));
-  strokeRisk = Math.max(0, Math.min(100, strokeRisk));
   
   // Apply a minimum baseline risk based on age if no other factors
   if (age >= 40 && diabetesRisk < 10) diabetesRisk = 10;
-  if (age >= 50 && heartRisk < 10) heartRisk = 10;
-  if (age >= 60 && strokeRisk < 10) strokeRisk = 10;
   
-  // Calculate overall score (weighted average favoring highest risk)
-  const maxRisk = Math.max(diabetesRisk, heartRisk, strokeRisk);
-  const avgRisk = (diabetesRisk + heartRisk + strokeRisk) / 3;
-  const overallScore = maxRisk * 0.6 + avgRisk * 0.4; // Weight toward highest risk
+  // Use diabetes risk as the single health risk score
+  // (Heart and stroke risks are deprecated - we only have the diabetes ML model)
+  const overallScore = Math.round(diabetesRisk * 10) / 10;
 
   return {
-    overallScore: Math.round(overallScore * 10) / 10,
-    diabetesRisk: Math.round(diabetesRisk * 10) / 10,
-    heartRisk: Math.round(heartRisk * 10) / 10,
-    strokeRisk: Math.round(strokeRisk * 10) / 10,
+    overallScore,
+    diabetesRisk: overallScore,
+    heartRisk: 0,
+    strokeRisk: 0,
   };
 }
 
