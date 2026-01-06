@@ -50,7 +50,6 @@ interface RiskFactorData {
   id: string;
   name: string;
   description: string;
-  category: string;
   type: 'negative' | 'warning' | 'positive';
   icon: string;
 }
@@ -339,9 +338,8 @@ export default function RiskScoreDetails() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{factor.description}</p>
+                      <p className="text-xs text-muted-foreground">{factor.description}</p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground flex-shrink-0">{factor.category}</span>
                   </motion.div>
                 );
               })
@@ -378,9 +376,8 @@ export default function RiskScoreDetails() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{factor.description}</p>
+                      <p className="text-xs text-muted-foreground">{factor.description}</p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground flex-shrink-0">{factor.category}</span>
                   </motion.div>
                 );
               })}
@@ -417,9 +414,8 @@ export default function RiskScoreDetails() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{factor.description}</p>
+                      <p className="text-xs text-muted-foreground">{factor.description}</p>
                     </div>
-                    <span className="text-[10px] text-muted-foreground flex-shrink-0">{factor.category}</span>
                   </motion.div>
                 );
               })}

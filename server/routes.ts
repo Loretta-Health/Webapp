@@ -3090,7 +3090,6 @@ interface RiskFactor {
   id: string;
   name: string;
   description: string;
-  category: string;
   type: 'negative' | 'warning' | 'positive';
   icon: string;
 }
@@ -3136,7 +3135,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       id: 'bmi',
       name: 'Body Mass Index',
       description: bmiDescription,
-      category: 'Physical Measurements',
       type: bmiType,
       icon: 'scale',
     });
@@ -3151,7 +3149,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
         id: 'weight-gain',
         name: 'Significant Weight Gain',
         description: `Gained ${weightGainKg.toFixed(1)} kg in the past year`,
-        category: 'Physical Measurements',
         type: 'negative',
         icon: 'trending-up',
       });
@@ -3160,7 +3157,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
         id: 'weight-gain',
         name: 'Moderate Weight Gain',
         description: `Gained ${weightGainKg.toFixed(1)} kg in the past year`,
-        category: 'Physical Measurements',
         type: 'warning',
         icon: 'trending-up',
       });
@@ -3169,7 +3165,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
         id: 'weight-loss',
         name: 'Weight Loss',
         description: `Lost ${Math.abs(weightGainKg).toFixed(1)} kg in the past year`,
-        category: 'Physical Measurements',
         type: 'positive',
         icon: 'trending-down',
       });
@@ -3184,8 +3179,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'prediabetes',
       name: 'Prediabetes',
-      description: 'Previously told you have prediabetes',
-      category: 'Health Conditions',
+      description: 'Ever told you have prediabetes: Yes',
       type: 'negative',
       icon: 'droplets',
     });
@@ -3197,8 +3191,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'blood-test',
       name: 'Recent Blood Test',
-      description: 'Had blood tested in the past 3 years',
-      category: 'Health Conditions',
+      description: 'Had blood tested in the past 3 years: Yes',
       type: 'positive',
       icon: 'droplets',
     });
@@ -3206,8 +3199,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'blood-test',
       name: 'No Recent Blood Test',
-      description: 'No blood test in the past 3 years',
-      category: 'Health Conditions',
+      description: 'Had blood tested in the past 3 years: No',
       type: 'warning',
       icon: 'droplets',
     });
@@ -3219,8 +3211,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'high-bp',
       name: 'High Blood Pressure',
-      description: 'Ever told you had high blood pressure',
-      category: 'Health Conditions',
+      description: 'Ever told you had high blood pressure: Yes',
       type: 'negative',
       icon: 'heart-pulse',
     });
@@ -3232,8 +3223,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'high-cholesterol',
       name: 'High Cholesterol',
-      description: 'Doctor told you - high cholesterol level',
-      category: 'Health Conditions',
+      description: 'Doctor told you have high cholesterol: Yes',
       type: 'negative',
       icon: 'activity',
     });
@@ -3245,8 +3235,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'arthritis',
       name: 'Arthritis',
-      description: 'Doctor ever said you had arthritis',
-      category: 'Health Conditions',
+      description: 'Doctor ever said you had arthritis: Yes',
       type: 'warning',
       icon: 'footprints',
     });
@@ -3258,8 +3247,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'heart-failure',
       name: 'Heart Failure',
-      description: 'Ever told had congestive heart failure',
-      category: 'Health Conditions',
+      description: 'Ever told you had congestive heart failure: Yes',
       type: 'negative',
       icon: 'heart-off',
     });
@@ -3271,8 +3259,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'coronary-disease',
       name: 'Coronary Heart Disease',
-      description: 'Ever told you had coronary heart disease',
-      category: 'Health Conditions',
+      description: 'Ever told you had coronary heart disease: Yes',
       type: 'negative',
       icon: 'heart',
     });
@@ -3284,21 +3271,19 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'heart-attack',
       name: 'Previous Heart Attack',
-      description: 'Ever told you had a heart attack',
-      category: 'Health Conditions',
+      description: 'Ever told you had a heart attack: Yes',
       type: 'negative',
       icon: 'heart-crack',
     });
   }
   
   // Kidney disease (KIQ022)
-  const hasKidneyDisease = answers.KIQ022 === '1' || answers.kidney_disease === 'yes';
+  const hasKidneyDisease = answers.KIQ022 === '1' || answers.kidney_problems === 'yes';
   if (hasKidneyDisease) {
     factors.push({
       id: 'kidney-disease',
       name: 'Kidney Disease',
-      description: 'Ever told you had weak/failing kidneys',
-      category: 'Health Conditions',
+      description: 'Ever told you had weak/failing kidneys: Yes',
       type: 'negative',
       icon: 'kidney',
     });
@@ -3310,8 +3295,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'gallbladder-surgery',
       name: 'Gallbladder Surgery',
-      description: 'Ever had gallbladder surgery',
-      category: 'Health Conditions',
+      description: 'Ever had gallbladder surgery: Yes',
       type: 'warning',
       icon: 'pill',
     });
@@ -3325,8 +3309,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'activity',
       name: 'Very Active Lifestyle',
-      description: `${moderateActivity}+ hours of moderate activity per week`,
-      category: 'Lifestyle & Activity',
+      description: `Moderate activity hours/week: ${moderateActivity}+`,
       type: 'positive',
       icon: 'dumbbell',
     });
@@ -3334,8 +3317,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'activity',
       name: 'Active Lifestyle',
-      description: `${moderateActivity} hours of moderate activity per week`,
-      category: 'Lifestyle & Activity',
+      description: `Moderate activity hours/week: ${moderateActivity}`,
       type: 'positive',
       icon: 'dumbbell',
     });
@@ -3343,8 +3325,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'activity',
       name: 'Limited Physical Activity',
-      description: `Only ${moderateActivity} hour(s) of activity per week`,
-      category: 'Lifestyle & Activity',
+      description: `Moderate activity hours/week: ${moderateActivity}`,
       type: 'warning',
       icon: 'dumbbell',
     });
@@ -3352,8 +3333,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'activity',
       name: 'Sedentary Lifestyle',
-      description: 'Little to no regular physical activity',
-      category: 'Lifestyle & Activity',
+      description: 'Moderate activity hours/week: 0',
       type: 'negative',
       icon: 'dumbbell',
     });
@@ -3363,8 +3343,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'sedentary',
       name: 'Highly Sedentary',
-      description: `${sedentaryHours}+ hours of sitting per day`,
-      category: 'Lifestyle & Activity',
+      description: `Sedentary hours/day: ${sedentaryHours}+`,
       type: 'negative',
       icon: 'armchair',
     });
@@ -3372,8 +3351,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'sedentary',
       name: 'Extended Sitting Time',
-      description: `${sedentaryHours} hours of sitting per day`,
-      category: 'Lifestyle & Activity',
+      description: `Sedentary hours/day: ${sedentaryHours}`,
       type: 'warning',
       icon: 'armchair',
     });
@@ -3381,8 +3359,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'sedentary',
       name: 'Low Sedentary Time',
-      description: `Only ${sedentaryHours} hours of sitting per day`,
-      category: 'Lifestyle & Activity',
+      description: `Sedentary hours/day: ${sedentaryHours}`,
       type: 'positive',
       icon: 'armchair',
     });
@@ -3394,8 +3371,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'alcohol',
       name: 'Daily Alcohol Consumption',
-      description: 'Drinking every day or nearly every day',
-      category: 'Lifestyle & Activity',
+      description: 'Alcohol frequency: Every day or nearly every day',
       type: 'negative',
       icon: 'wine',
     });
@@ -3403,8 +3379,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'alcohol',
       name: 'Regular Alcohol Consumption',
-      description: 'Drinking 1-4 times per week',
-      category: 'Lifestyle & Activity',
+      description: 'Alcohol frequency: 1-4 times per week',
       type: 'warning',
       icon: 'wine',
     });
@@ -3412,8 +3387,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'alcohol',
       name: 'No Alcohol',
-      description: 'Never drinks in the past year',
-      category: 'Lifestyle & Activity',
+      description: 'Alcohol frequency: Never in the past year',
       type: 'positive',
       icon: 'wine',
     });
@@ -3427,37 +3401,30 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     : weekdaySleep > 0 ? weekdaySleep : weekendSleep;
   
   if (avgSleep > 0) {
-    let sleepPoints = 0;
     let sleepType: 'negative' | 'warning' | 'positive' = 'positive';
     let sleepDescription = '';
     
     if (avgSleep < 5) {
-      sleepPoints = 15;
       sleepType = 'negative';
-      sleepDescription = `Severe sleep deprivation (${avgSleep.toFixed(1)} hrs/night)`;
+      sleepDescription = `Sleep hours per night: ${avgSleep.toFixed(1)} (severe deprivation)`;
     } else if (avgSleep < 6) {
-      sleepPoints = 10;
       sleepType = 'negative';
-      sleepDescription = `Sleep deprived (${avgSleep.toFixed(1)} hrs/night)`;
+      sleepDescription = `Sleep hours per night: ${avgSleep.toFixed(1)} (deprived)`;
     } else if (avgSleep < 7) {
-      sleepPoints = 5;
       sleepType = 'warning';
-      sleepDescription = `Slightly low sleep (${avgSleep.toFixed(1)} hrs/night)`;
+      sleepDescription = `Sleep hours per night: ${avgSleep.toFixed(1)} (slightly low)`;
     } else if (avgSleep <= 9) {
-      sleepPoints = 0;
       sleepType = 'positive';
-      sleepDescription = `Optimal sleep (${avgSleep.toFixed(1)} hrs/night)`;
+      sleepDescription = `Sleep hours per night: ${avgSleep.toFixed(1)} (optimal)`;
     } else {
-      sleepPoints = 5;
       sleepType = 'warning';
-      sleepDescription = `Excessive sleep (${avgSleep.toFixed(1)} hrs/night)`;
+      sleepDescription = `Sleep hours per night: ${avgSleep.toFixed(1)} (excessive)`;
     }
     
     factors.push({
       id: 'sleep',
       name: 'Sleep Duration',
       description: sleepDescription,
-      category: 'Sleep',
       type: sleepType,
       icon: 'moon',
     });
@@ -3469,8 +3436,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'sleep-trouble',
       name: 'Severe Sleep Difficulties',
-      description: 'Trouble sleeping or sleeping too much nearly every day',
-      category: 'Sleep',
+      description: 'Trouble sleeping or sleeping too much: Nearly every day',
       type: 'negative',
       icon: 'moon',
     });
@@ -3478,8 +3444,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'sleep-trouble',
       name: 'Frequent Sleep Difficulties',
-      description: 'Trouble sleeping more than half the days',
-      category: 'Sleep',
+      description: 'Trouble sleeping or sleeping too much: More than half the days',
       type: 'warning',
       icon: 'moon',
     });
@@ -3487,8 +3452,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'sleep-trouble',
       name: 'Occasional Sleep Difficulties',
-      description: 'Trouble sleeping several days',
-      category: 'Sleep',
+      description: 'Trouble sleeping or sleeping too much: Several days',
       type: 'warning',
       icon: 'moon',
     });
@@ -3496,8 +3460,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'sleep-trouble',
       name: 'Good Sleep Quality',
-      description: 'No trouble sleeping',
-      category: 'Sleep',
+      description: 'Trouble sleeping or sleeping too much: Not at all',
       type: 'positive',
       icon: 'moon',
     });
@@ -3514,12 +3477,26 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
   const frequentFalls = fallsAnswer === '4' || fallsAnswer === '5' || fallsAnswer === '6' ||
                         fallsAnswer === 'monthly' || fallsAnswer === 'weekly' || fallsAnswer === 'daily';
   
+  // Get human-readable fall frequency
+  const getFallFrequency = (answer: string | undefined): string => {
+    if (!answer) return 'Not specified';
+    const map: Record<string, string> = {
+      '0': 'Never', 'never': 'Never',
+      '1': '1 or 2 times', '1_2': '1 or 2 times',
+      '2': '3 to 4 times', '3_4': '3 to 4 times',
+      '3': 'About every year', 'yearly': 'About every year',
+      '4': 'About every month', 'monthly': 'About every month',
+      '5': 'About every week', 'weekly': 'About every week',
+      '6': 'Daily or constantly', 'daily': 'Daily or constantly',
+    };
+    return map[answer] || answer;
+  };
+  
   if (frequentFalls) {
     factors.push({
       id: 'balance',
       name: 'Frequent Falls',
-      description: 'Falls monthly or more often in past 5 years',
-      category: 'Balance/Mobility',
+      description: `Falls in past 5 years: ${getFallFrequency(fallsAnswer)}`,
       type: 'negative',
       icon: 'footprints',
     });
@@ -3527,17 +3504,23 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'balance',
       name: 'Balance/Fall Concerns',
-      description: 'Problems with unsteadiness and history of falls',
-      category: 'Balance/Mobility',
+      description: `Problems with unsteadiness: Yes | Falls in past 5 years: ${getFallFrequency(fallsAnswer)}`,
       type: 'warning',
       icon: 'footprints',
     });
-  } else if (hasUnsteadiness || hadFalls) {
+  } else if (hasUnsteadiness) {
     factors.push({
       id: 'balance',
       name: 'Balance/Mobility Concern',
-      description: hasUnsteadiness ? 'Problems with unsteadiness in past 12 months' : 'History of falls in past 5 years',
-      category: 'Balance/Mobility',
+      description: 'Problems with unsteadiness in past 12 months: Yes',
+      type: 'warning',
+      icon: 'footprints',
+    });
+  } else if (hadFalls) {
+    factors.push({
+      id: 'balance',
+      name: 'Balance/Mobility Concern',
+      description: `Falls in past 5 years: ${getFallFrequency(fallsAnswer)}`,
       type: 'warning',
       icon: 'footprints',
     });
@@ -3567,12 +3550,24 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
   
   const mouthProblemCount = [frequentMouthAching, frequentFeelBad, frequentAvoidFood, frequentEatingProblems].filter(Boolean).length;
   
+  // Get human-readable dental health rating
+  const getDentalRating = (answer: string | undefined): string => {
+    if (!answer) return 'Not specified';
+    const map: Record<string, string> = {
+      '0': 'Excellent', 'excellent': 'Excellent',
+      '1': 'Very good', 'very_good': 'Very good',
+      '2': 'Good', 'good': 'Good',
+      '3': 'Fair', 'fair': 'Fair',
+      '4': 'Poor', 'poor': 'Poor',
+    };
+    return map[answer] || answer;
+  };
+  
   if (mouthProblemCount >= 3 || (poorDentalRating && mouthProblemCount >= 2)) {
     factors.push({
       id: 'oral-health',
       name: 'Significant Oral Health Issues',
-      description: 'Frequent mouth aching, eating difficulties, or food avoidance',
-      category: 'Oral Health',
+      description: `Rate health of teeth and gums: ${getDentalRating(dentalHealthRating)} | Multiple mouth problems reported`,
       type: 'negative',
       icon: 'smile',
     });
@@ -3580,8 +3575,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'oral-health',
       name: 'Oral Health Concerns',
-      description: poorDentalRating ? 'Fair or poor dental health rating' : 'Some mouth discomfort or eating issues',
-      category: 'Oral Health',
+      description: `Rate health of teeth and gums: ${getDentalRating(dentalHealthRating)}`,
       type: 'warning',
       icon: 'smile',
     });
@@ -3589,8 +3583,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'oral-health',
       name: 'Good Oral Health',
-      description: 'Excellent or very good dental health',
-      category: 'Oral Health',
+      description: `Rate health of teeth and gums: ${getDentalRating(dentalHealthRating)}`,
       type: 'positive',
       icon: 'smile',
     });
@@ -3598,53 +3591,60 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
   
   // === GENERAL HEALTH (ML Features: HUQ010, HUQ030, HUQ055) ===
   const generalHealth = answers.HUQ010 || answers.general_health;
-  if (generalHealth === '4') {
+  const getGeneralHealthRating = (answer: string | undefined): string => {
+    if (!answer) return 'Not specified';
+    const map: Record<string, string> = {
+      '0': 'Excellent', 'excellent': 'Excellent',
+      '1': 'Very good', 'very_good': 'Very good',
+      '2': 'Good', 'good': 'Good',
+      '3': 'Fair', 'fair': 'Fair',
+      '4': 'Poor', 'poor': 'Poor',
+    };
+    return map[answer] || answer;
+  };
+  
+  if (generalHealth === '3' || generalHealth === 'fair') {
     factors.push({
       id: 'general-health',
       name: 'General Health Condition',
-      description: 'Fair health',
-      category: 'General Health',
+      description: `General health condition: ${getGeneralHealthRating(generalHealth)}`,
       type: 'warning',
       icon: 'user',
     });
-  } else if (generalHealth === '5') {
+  } else if (generalHealth === '4' || generalHealth === 'poor') {
     factors.push({
       id: 'general-health',
       name: 'General Health Condition',
-      description: 'Poor health',
-      category: 'General Health',
+      description: `General health condition: ${getGeneralHealthRating(generalHealth)}`,
       type: 'negative',
       icon: 'user',
     });
-  } else if (generalHealth === '1') {
+  } else if (generalHealth === '0' || generalHealth === 'excellent') {
     factors.push({
       id: 'general-health',
       name: 'General Health Condition',
-      description: 'Excellent health',
-      category: 'General Health',
+      description: `General health condition: ${getGeneralHealthRating(generalHealth)}`,
       type: 'positive',
       icon: 'user',
     });
-  } else if (generalHealth === '2' || generalHealth === '3') {
+  } else if (generalHealth === '1' || generalHealth === '2' || generalHealth === 'very_good' || generalHealth === 'good') {
     factors.push({
       id: 'general-health',
       name: 'General Health Condition',
-      description: generalHealth === '2' ? 'Very good health' : 'Good health',
-      category: 'General Health',
+      description: `General health condition: ${getGeneralHealthRating(generalHealth)}`,
       type: 'positive',
       icon: 'user',
     });
   }
   
   // Routine healthcare place (HUQ030)
-  const hasHealthcarePlace = answers.HUQ030 === '0' || answers.healthcare_place === 'yes';
-  const noHealthcarePlace = answers.HUQ030 === '1' || answers.healthcare_place === 'no';
+  const hasHealthcarePlace = answers.HUQ030 === '0' || answers.routine_healthcare === 'yes';
+  const noHealthcarePlace = answers.HUQ030 === '1' || answers.routine_healthcare === 'no';
   if (hasHealthcarePlace) {
     factors.push({
       id: 'healthcare-access',
       name: 'Healthcare Access',
-      description: 'Has a routine place for healthcare',
-      category: 'General Health',
+      description: 'Routine place to go for healthcare: Yes',
       type: 'positive',
       icon: 'heart-pulse',
     });
@@ -3652,8 +3652,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'healthcare-access',
       name: 'No Regular Healthcare',
-      description: 'No routine place to go for healthcare',
-      category: 'General Health',
+      description: 'Routine place to go for healthcare: No',
       type: 'warning',
       icon: 'heart-pulse',
     });
@@ -3665,18 +3664,14 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     factors.push({
       id: 'aspirin',
       name: 'Daily Aspirin',
-      description: 'Doctor advised to take daily low-dose aspirin',
-      category: 'Medications',
+      description: 'Doctor told to take daily low-dose aspirin: Yes',
       type: 'warning',
       icon: 'pill',
     });
   }
   
-  // Sort by category and name for consistent display
-  factors.sort((a, b) => {
-    if (a.category !== b.category) return a.category.localeCompare(b.category);
-    return a.name.localeCompare(b.name);
-  });
+  // Sort by name for consistent display
+  factors.sort((a, b) => a.name.localeCompare(b.name));
   
   return factors;
 }
