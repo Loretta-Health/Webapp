@@ -3100,7 +3100,12 @@ interface RiskFactor {
 function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
   const factors: RiskFactor[] = [];
   
-  // === BIOMETRIC FACTORS ===
+  // =============================================
+  // ML MODEL FEATURE CATEGORIES (NHANES-based)
+  // All factors below correspond to actual ML model features
+  // =============================================
+  
+  // === PHYSICAL MEASUREMENTS (WHD010, WHD020, WHD050) ===
   const heightCm = parseNumeric(answers.height || answers.WHD010);
   const weightKg = parseNumeric(answers.weight_current || answers.WHD020 || answers.weight);
   const bmi = calculateBMI(heightCm, weightKg);
@@ -3140,7 +3145,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       id: 'bmi',
       name: 'Body Mass Index',
       description: bmiDescription,
-      category: 'Biometrics',
+      category: 'Physical Measurements',
       points: bmiPoints,
       maxPoints: 30,
       type: bmiType,
@@ -3148,7 +3153,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     });
   }
   
-  // Weight change
+  // Weight change (WHD020 vs WHD050)
   const weightOneYearAgo = parseNumeric(answers.weight_year_ago || answers.WHD050);
   if (weightOneYearAgo > 0 && weightKg > 0) {
     const weightGainKg = weightKg - weightOneYearAgo;
@@ -3157,7 +3162,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
         id: 'weight-gain',
         name: 'Significant Weight Gain',
         description: `Gained ${weightGainKg.toFixed(1)} kg in the past year`,
-        category: 'Biometrics',
+        category: 'Physical Measurements',
         points: 8,
         maxPoints: 8,
         type: 'negative',
@@ -3168,7 +3173,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
         id: 'weight-gain',
         name: 'Moderate Weight Gain',
         description: `Gained ${weightGainKg.toFixed(1)} kg in the past year`,
-        category: 'Biometrics',
+        category: 'Physical Measurements',
         points: 4,
         maxPoints: 8,
         type: 'warning',
@@ -3179,7 +3184,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
         id: 'weight-loss',
         name: 'Weight Loss',
         description: `Lost ${Math.abs(weightGainKg).toFixed(1)} kg in the past year`,
-        category: 'Biometrics',
+        category: 'Physical Measurements',
         points: 0,
         maxPoints: 8,
         type: 'positive',
@@ -3188,100 +3193,117 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     }
   }
   
-  // Age - NOT included in displayed factors since users cannot control their age
-  // Age is still used internally for risk calculation but not shown to users
+  // === HEALTH CONDITIONS (ML Features: BPQ020, BPQ080, DIQ160, DIQ180, MCQ160A/B/C/E, KIQ022, MCQ560) ===
   
-  // === MEDICAL HISTORY ===
-  const hasDiabetes = answers.DIQ180 === '1' || answers.diabetes === 'yes';
+  // Prediabetes (DIQ160)
   const hasPrediabetes = answers.DIQ160 === '1' || answers.prediabetes === 'yes';
-  
-  if (hasDiabetes) {
-    factors.push({
-      id: 'diabetes',
-      name: 'Diabetes Diagnosis',
-      description: 'Previously diagnosed with diabetes',
-      category: 'Medical History',
-      points: 40,
-      maxPoints: 40,
-      type: 'negative',
-      icon: 'droplets',
-    });
-  } else if (hasPrediabetes) {
+  if (hasPrediabetes) {
     factors.push({
       id: 'prediabetes',
       name: 'Prediabetes',
-      description: 'Previously diagnosed with prediabetes',
-      category: 'Medical History',
+      description: 'Previously told you have prediabetes',
+      category: 'Health Conditions',
       points: 25,
-      maxPoints: 40,
+      maxPoints: 25,
       type: 'negative',
       icon: 'droplets',
     });
   }
   
+  // Blood test in past 3 years (DIQ180)
+  const hadBloodTest = answers.DIQ180 === '1' || answers.blood_test_3_years === 'yes';
+  if (hadBloodTest) {
+    factors.push({
+      id: 'blood-test',
+      name: 'Recent Blood Test',
+      description: 'Had blood tested in the past 3 years',
+      category: 'Health Conditions',
+      points: 0,
+      maxPoints: 5,
+      type: 'positive',
+      icon: 'droplets',
+    });
+  } else if (answers.DIQ180 === '0' || answers.blood_test_3_years === 'no') {
+    factors.push({
+      id: 'blood-test',
+      name: 'No Recent Blood Test',
+      description: 'No blood test in the past 3 years',
+      category: 'Health Conditions',
+      points: 5,
+      maxPoints: 5,
+      type: 'warning',
+      icon: 'droplets',
+    });
+  }
+  
+  // High blood pressure (BPQ020)
   const hasHighBP = answers.BPQ020 === '1' || answers.high_blood_pressure === 'yes';
   if (hasHighBP) {
     factors.push({
       id: 'high-bp',
       name: 'High Blood Pressure',
-      description: 'Diagnosed with hypertension',
-      category: 'Medical History',
-      points: 25,
-      maxPoints: 25,
+      description: 'Ever told you had high blood pressure',
+      category: 'Health Conditions',
+      points: 20,
+      maxPoints: 20,
       type: 'negative',
       icon: 'heart-pulse',
     });
   }
   
+  // High cholesterol (BPQ080)
   const hasHighCholesterol = answers.BPQ080 === '1' || answers.high_cholesterol === 'yes';
   if (hasHighCholesterol) {
     factors.push({
       id: 'high-cholesterol',
       name: 'High Cholesterol',
-      description: 'Diagnosed with high cholesterol',
-      category: 'Medical History',
-      points: 18,
-      maxPoints: 18,
+      description: 'Doctor told you - high cholesterol level',
+      category: 'Health Conditions',
+      points: 15,
+      maxPoints: 15,
       type: 'negative',
       icon: 'activity',
     });
   }
   
-  const hadHeartAttack = answers.MCQ160A === '1';
-  if (hadHeartAttack) {
+  // Arthritis (MCQ160A) - Note: This is arthritis, NOT heart attack
+  const hasArthritis = answers.MCQ160A === '1' || answers.arthritis === 'yes';
+  if (hasArthritis) {
     factors.push({
-      id: 'heart-attack',
-      name: 'Previous Heart Attack',
-      description: 'History of myocardial infarction',
-      category: 'Medical History',
-      points: 25,
-      maxPoints: 25,
-      type: 'negative',
-      icon: 'heart-crack',
+      id: 'arthritis',
+      name: 'Arthritis',
+      description: 'Doctor ever said you had arthritis',
+      category: 'Health Conditions',
+      points: 8,
+      maxPoints: 8,
+      type: 'warning',
+      icon: 'footprints',
     });
   }
   
-  const hasHeartFailure = answers.MCQ160B === '1';
+  // Heart failure (MCQ160B)
+  const hasHeartFailure = answers.MCQ160B === '1' || answers.heart_failure === 'yes';
   if (hasHeartFailure) {
     factors.push({
       id: 'heart-failure',
       name: 'Heart Failure',
-      description: 'Diagnosed with heart failure',
-      category: 'Medical History',
-      points: 30,
-      maxPoints: 30,
+      description: 'Ever told had congestive heart failure',
+      category: 'Health Conditions',
+      points: 25,
+      maxPoints: 25,
       type: 'negative',
       icon: 'heart-off',
     });
   }
   
-  const hasCoronaryDisease = answers.MCQ160C === '1';
+  // Coronary heart disease (MCQ160C)
+  const hasCoronaryDisease = answers.MCQ160C === '1' || answers.coronary_disease === 'yes';
   if (hasCoronaryDisease) {
     factors.push({
       id: 'coronary-disease',
       name: 'Coronary Heart Disease',
-      description: 'Diagnosed with coronary artery disease',
-      category: 'Medical History',
+      description: 'Ever told you had coronary heart disease',
+      category: 'Health Conditions',
       points: 20,
       maxPoints: 20,
       type: 'negative',
@@ -3289,27 +3311,29 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     });
   }
   
-  const hadStroke = answers.MCQ160E === '1';
-  if (hadStroke) {
+  // Heart attack (MCQ160E)
+  const hadHeartAttack = answers.MCQ160E === '1' || answers.heart_attack === 'yes';
+  if (hadHeartAttack) {
     factors.push({
-      id: 'stroke',
-      name: 'Previous Stroke',
-      description: 'History of stroke',
-      category: 'Medical History',
-      points: 30,
-      maxPoints: 30,
+      id: 'heart-attack',
+      name: 'Previous Heart Attack',
+      description: 'Ever told you had a heart attack',
+      category: 'Health Conditions',
+      points: 25,
+      maxPoints: 25,
       type: 'negative',
-      icon: 'brain',
+      icon: 'heart-crack',
     });
   }
   
-  const hasKidneyDisease = answers.KIQ022 === '1';
+  // Kidney disease (KIQ022)
+  const hasKidneyDisease = answers.KIQ022 === '1' || answers.kidney_disease === 'yes';
   if (hasKidneyDisease) {
     factors.push({
       id: 'kidney-disease',
       name: 'Kidney Disease',
-      description: 'Diagnosed with kidney disease',
-      category: 'Medical History',
+      description: 'Ever told you had weak/failing kidneys',
+      category: 'Health Conditions',
       points: 15,
       maxPoints: 15,
       type: 'negative',
@@ -3317,18 +3341,33 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     });
   }
   
-  // === LIFESTYLE FACTORS ===
-  const moderateActivity = parseNumeric(answers.PAD790);
-  const sedentaryHours = parseNumeric(answers.PAD680);
+  // Gallbladder surgery (MCQ560)
+  const hadGallbladderSurgery = answers.MCQ560 === '1' || answers.gallbladder_surgery === 'yes';
+  if (hadGallbladderSurgery) {
+    factors.push({
+      id: 'gallbladder-surgery',
+      name: 'Gallbladder Surgery',
+      description: 'Ever had gallbladder surgery',
+      category: 'Health Conditions',
+      points: 5,
+      maxPoints: 5,
+      type: 'warning',
+      icon: 'pill',
+    });
+  }
+  
+  // === LIFESTYLE & ACTIVITY (ML Features: PAD790, PAD680, ALQ121) ===
+  const moderateActivity = parseNumeric(answers.PAD790 || answers.moderate_activity);
+  const sedentaryHours = parseNumeric(answers.PAD680 || answers.sedentary_hours);
   
   if (moderateActivity >= 5) {
     factors.push({
       id: 'activity',
       name: 'Very Active Lifestyle',
       description: `${moderateActivity}+ hours of moderate activity per week`,
-      category: 'Lifestyle',
+      category: 'Lifestyle & Activity',
       points: 0,
-      maxPoints: 27,
+      maxPoints: 15,
       type: 'positive',
       icon: 'dumbbell',
     });
@@ -3337,9 +3376,9 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       id: 'activity',
       name: 'Active Lifestyle',
       description: `${moderateActivity} hours of moderate activity per week`,
-      category: 'Lifestyle',
+      category: 'Lifestyle & Activity',
       points: 0,
-      maxPoints: 27,
+      maxPoints: 15,
       type: 'positive',
       icon: 'dumbbell',
     });
@@ -3348,20 +3387,20 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       id: 'activity',
       name: 'Limited Physical Activity',
       description: `Only ${moderateActivity} hour(s) of activity per week`,
-      category: 'Lifestyle',
+      category: 'Lifestyle & Activity',
       points: 5,
-      maxPoints: 27,
+      maxPoints: 15,
       type: 'warning',
       icon: 'dumbbell',
     });
-  } else if (moderateActivity === 0 || answers.PAD790) {
+  } else if (moderateActivity === 0 || answers.PAD790 || answers.moderate_activity) {
     factors.push({
       id: 'activity',
       name: 'Sedentary Lifestyle',
       description: 'Little to no regular physical activity',
-      category: 'Lifestyle',
+      category: 'Lifestyle & Activity',
       points: 15,
-      maxPoints: 27,
+      maxPoints: 15,
       type: 'negative',
       icon: 'dumbbell',
     });
@@ -3372,7 +3411,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       id: 'sedentary',
       name: 'Highly Sedentary',
       description: `${sedentaryHours}+ hours of sitting per day`,
-      category: 'Lifestyle',
+      category: 'Lifestyle & Activity',
       points: 12,
       maxPoints: 12,
       type: 'negative',
@@ -3383,21 +3422,70 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       id: 'sedentary',
       name: 'Extended Sitting Time',
       description: `${sedentaryHours} hours of sitting per day`,
-      category: 'Lifestyle',
+      category: 'Lifestyle & Activity',
       points: 8,
       maxPoints: 12,
       type: 'warning',
       icon: 'armchair',
     });
+  } else if (sedentaryHours > 0 && sedentaryHours < 6) {
+    factors.push({
+      id: 'sedentary',
+      name: 'Low Sedentary Time',
+      description: `Only ${sedentaryHours} hours of sitting per day`,
+      category: 'Lifestyle & Activity',
+      points: 0,
+      maxPoints: 12,
+      type: 'positive',
+      icon: 'armchair',
+    });
   }
   
-  // Sleep
-  const weekdaySleep = parseNumeric(answers.SLD012, 7);
-  const weekendSleep = parseNumeric(answers.SLD013, 7);
-  const avgSleep = (weekdaySleep + weekendSleep) / 2;
-  const hasSleepTrouble = answers.DPQ030 === '1' || answers.DPQ030 === '2';
+  // Alcohol consumption (ALQ121)
+  const alcoholFreq = answers.ALQ121 || answers.alcohol_frequency;
+  if (alcoholFreq === '1' || alcoholFreq === '2') {
+    factors.push({
+      id: 'alcohol',
+      name: 'Daily Alcohol Consumption',
+      description: 'Drinking every day or nearly every day',
+      category: 'Lifestyle & Activity',
+      points: 15,
+      maxPoints: 15,
+      type: 'negative',
+      icon: 'wine',
+    });
+  } else if (alcoholFreq === '3' || alcoholFreq === '4' || alcoholFreq === '5') {
+    factors.push({
+      id: 'alcohol',
+      name: 'Regular Alcohol Consumption',
+      description: 'Drinking 1-4 times per week',
+      category: 'Lifestyle & Activity',
+      points: 8,
+      maxPoints: 15,
+      type: 'warning',
+      icon: 'wine',
+    });
+  } else if (alcoholFreq === '0' || alcoholFreq === 'never') {
+    factors.push({
+      id: 'alcohol',
+      name: 'No Alcohol',
+      description: 'Never drinks in the past year',
+      category: 'Lifestyle & Activity',
+      points: 0,
+      maxPoints: 15,
+      type: 'positive',
+      icon: 'wine',
+    });
+  }
   
-  if (avgSleep > 0 && (answers.SLD012 || answers.SLD013)) {
+  // === SLEEP (ML Features: SLD012, SLD013, DPQ030) ===
+  const weekdaySleep = parseNumeric(answers.SLD012 || answers.sleep_hours_weekday, 0);
+  const weekendSleep = parseNumeric(answers.SLD013 || answers.sleep_hours_weekend, 0);
+  const avgSleep = weekdaySleep > 0 && weekendSleep > 0 
+    ? (weekdaySleep + weekendSleep) / 2 
+    : weekdaySleep > 0 ? weekdaySleep : weekendSleep;
+  
+  if (avgSleep > 0) {
     let sleepPoints = 0;
     let sleepType: 'negative' | 'warning' | 'positive' = 'positive';
     let sleepDescription = '';
@@ -3426,95 +3514,110 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     
     factors.push({
       id: 'sleep',
-      name: 'Sleep Quality',
+      name: 'Sleep Duration',
       description: sleepDescription,
-      category: 'Lifestyle',
+      category: 'Sleep',
       points: sleepPoints,
-      maxPoints: 23,
+      maxPoints: 15,
       type: sleepType,
       icon: 'moon',
     });
   }
   
-  if (hasSleepTrouble) {
+  // Sleep trouble (DPQ030)
+  const sleepTrouble = answers.DPQ030 || answers.sleep_trouble;
+  if (sleepTrouble === '3') {
     factors.push({
       id: 'sleep-trouble',
-      name: 'Sleep Difficulties',
-      description: 'Reports trouble sleeping',
-      category: 'Lifestyle',
-      points: 8,
-      maxPoints: 8,
+      name: 'Severe Sleep Difficulties',
+      description: 'Trouble sleeping or sleeping too much nearly every day',
+      category: 'Sleep',
+      points: 10,
+      maxPoints: 10,
+      type: 'negative',
+      icon: 'moon',
+    });
+  } else if (sleepTrouble === '2') {
+    factors.push({
+      id: 'sleep-trouble',
+      name: 'Frequent Sleep Difficulties',
+      description: 'Trouble sleeping more than half the days',
+      category: 'Sleep',
+      points: 6,
+      maxPoints: 10,
       type: 'warning',
+      icon: 'moon',
+    });
+  } else if (sleepTrouble === '1') {
+    factors.push({
+      id: 'sleep-trouble',
+      name: 'Occasional Sleep Difficulties',
+      description: 'Trouble sleeping several days',
+      category: 'Sleep',
+      points: 3,
+      maxPoints: 10,
+      type: 'warning',
+      icon: 'moon',
+    });
+  } else if (sleepTrouble === '0') {
+    factors.push({
+      id: 'sleep-trouble',
+      name: 'Good Sleep Quality',
+      description: 'No trouble sleeping',
+      category: 'Sleep',
+      points: 0,
+      maxPoints: 10,
+      type: 'positive',
       icon: 'moon',
     });
   }
   
-  // Alcohol
-  const alcoholFreq = parseNumeric(answers.ALQ121);
-  if (alcoholFreq >= 10) {
-    factors.push({
-      id: 'alcohol',
-      name: 'High Alcohol Consumption',
-      description: `${alcoholFreq}+ drinks per week`,
-      category: 'Lifestyle',
-      points: 15,
-      maxPoints: 15,
-      type: 'negative',
-      icon: 'wine',
-    });
-  } else if (alcoholFreq >= 5) {
-    factors.push({
-      id: 'alcohol',
-      name: 'Moderate Alcohol Consumption',
-      description: `${alcoholFreq} drinks per week`,
-      category: 'Lifestyle',
-      points: 8,
-      maxPoints: 15,
-      type: 'warning',
-      icon: 'wine',
-    });
-  } else if (alcoholFreq > 0 && alcoholFreq < 5) {
-    factors.push({
-      id: 'alcohol',
-      name: 'Low Alcohol Consumption',
-      description: `${alcoholFreq} drinks per week`,
-      category: 'Lifestyle',
-      points: 0,
-      maxPoints: 15,
-      type: 'positive',
-      icon: 'wine',
-    });
-  }
+  // === BALANCE/MOBILITY (ML Features: BAQ061, BAQ161B, BAQ321C, BAQ530) ===
+  const difficultyBalancing = answers.BAQ061 === '1' || answers.difficulty_balancing === 'yes';
+  const dizzinessWhileStanding = answers.BAQ161B === '1' || answers.dizziness_standing === 'yes';
+  const dizzinessFrequent = answers.BAQ321C === '1' || answers.dizziness_frequent === 'yes';
+  const fallsRecent = answers.BAQ530 === '1' || answers.BAQ530 === '2' || answers.falls_recent === 'yes';
   
-  // Balance/Falls
-  const hasBalanceIssues = answers.BAQ321C === '1';
-  const hasFalls = answers.BAQ530 === '1' || answers.BAQ530 === '2';
-  if (hasBalanceIssues || hasFalls) {
+  const balanceIssueCount = [difficultyBalancing, dizzinessWhileStanding, dizzinessFrequent, fallsRecent].filter(Boolean).length;
+  
+  if (balanceIssueCount >= 3) {
     factors.push({
       id: 'balance',
-      name: 'Balance/Fall Risk',
-      description: 'History of balance issues or falls',
-      category: 'Physical Health',
-      points: 8,
-      maxPoints: 8,
+      name: 'Multiple Balance/Mobility Issues',
+      description: 'Multiple concerns with balance, dizziness, or falls',
+      category: 'Balance/Mobility',
+      points: 12,
+      maxPoints: 12,
+      type: 'negative',
+      icon: 'footprints',
+    });
+  } else if (balanceIssueCount >= 1) {
+    factors.push({
+      id: 'balance',
+      name: 'Balance/Mobility Concerns',
+      description: 'Some issues with balance or stability',
+      category: 'Balance/Mobility',
+      points: 6,
+      maxPoints: 12,
       type: 'warning',
       icon: 'footprints',
     });
   }
   
-  // Oral Health
-  const poorDentalHealth = answers.OHQ845 === '4' || answers.OHQ845 === '5';
-  const hasGumDisease = answers.OHQ620 === '1';
-  const hasLooseTeeth = answers.OHQ630 === '1';
-  const hasBoneLoss = answers.OHQ660 === '1';
+  // === ORAL HEALTH (ML Features: OHQ620, OHQ630, OHQ660, OHQ845) ===
+  const hasGumDisease = answers.OHQ620 === '1' || answers.gum_disease === 'yes';
+  const hasLooseTeeth = answers.OHQ630 === '1' || answers.loose_teeth === 'yes';
+  const hasBoneLoss = answers.OHQ660 === '1' || answers.bone_loss === 'yes';
+  const oralHealthRating = answers.OHQ845 || answers.oral_health_rating;
+  const poorDentalHealth = oralHealthRating === '4' || oralHealthRating === '5';
   
   const oralHealthIssues = [poorDentalHealth, hasGumDisease, hasLooseTeeth, hasBoneLoss].filter(Boolean).length;
   if (oralHealthIssues >= 3) {
     factors.push({
       id: 'oral-health',
       name: 'Poor Oral Health',
-      description: 'Multiple oral health concerns',
-      category: 'Physical Health',
+      description: 'Multiple oral health concerns (gum disease, loose teeth, bone loss)',
+      category: 'Oral Health',
       points: 10,
       maxPoints: 10,
       type: 'negative',
@@ -3525,76 +3628,111 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       id: 'oral-health',
       name: 'Oral Health Concerns',
       description: 'Some oral health issues present',
-      category: 'Physical Health',
+      category: 'Oral Health',
       points: 5,
       maxPoints: 10,
       type: 'warning',
       icon: 'smile',
     });
+  } else if (oralHealthRating === '1' || oralHealthRating === '2') {
+    factors.push({
+      id: 'oral-health',
+      name: 'Good Oral Health',
+      description: 'Excellent or very good oral health',
+      category: 'Oral Health',
+      points: 0,
+      maxPoints: 10,
+      type: 'positive',
+      icon: 'smile',
+    });
   }
   
-  // General Health
-  const generalHealth = answers.HUQ010;
-  if (generalHealth === '4' || generalHealth === '5') {
+  // === GENERAL HEALTH (ML Features: HUQ010, HUQ030, HUQ055) ===
+  const generalHealth = answers.HUQ010 || answers.general_health;
+  if (generalHealth === '4') {
     factors.push({
       id: 'general-health',
-      name: 'Self-Assessed Health',
-      description: generalHealth === '4' ? 'Fair health' : 'Poor health',
-      category: 'General',
-      points: 8,
-      maxPoints: 8,
+      name: 'General Health Condition',
+      description: 'Fair health',
+      category: 'General Health',
+      points: 6,
+      maxPoints: 10,
+      type: 'warning',
+      icon: 'user',
+    });
+  } else if (generalHealth === '5') {
+    factors.push({
+      id: 'general-health',
+      name: 'General Health Condition',
+      description: 'Poor health',
+      category: 'General Health',
+      points: 10,
+      maxPoints: 10,
       type: 'negative',
       icon: 'user',
     });
   } else if (generalHealth === '1') {
     factors.push({
       id: 'general-health',
-      name: 'Self-Assessed Health',
+      name: 'General Health Condition',
       description: 'Excellent health',
-      category: 'General',
+      category: 'General Health',
       points: 0,
-      maxPoints: 8,
+      maxPoints: 10,
       type: 'positive',
       icon: 'user',
     });
   } else if (generalHealth === '2' || generalHealth === '3') {
     factors.push({
       id: 'general-health',
-      name: 'Self-Assessed Health',
+      name: 'General Health Condition',
       description: generalHealth === '2' ? 'Very good health' : 'Good health',
-      category: 'General',
+      category: 'General Health',
       points: 0,
-      maxPoints: 8,
+      maxPoints: 10,
       type: 'positive',
       icon: 'user',
     });
   }
   
-  // Medications
-  const takingAspirin = answers.RXQ510 === '1';
-  if (takingAspirin) {
+  // Routine healthcare place (HUQ030)
+  const hasHealthcarePlace = answers.HUQ030 === '0' || answers.healthcare_place === 'yes';
+  const noHealthcarePlace = answers.HUQ030 === '1' || answers.healthcare_place === 'no';
+  if (hasHealthcarePlace) {
     factors.push({
-      id: 'aspirin',
-      name: 'Preventive Aspirin Use',
-      description: 'Taking aspirin for heart health',
-      category: 'Medical',
-      points: 5,
-      maxPoints: 5,
-      type: 'warning',
-      icon: 'pill',
-    });
-  }
-  
-  const takingPrescriptions = answers.RXQ033 === '1';
-  if (takingPrescriptions && !hasDiabetes && !hasHighBP && !hasHighCholesterol) {
-    factors.push({
-      id: 'prescriptions',
-      name: 'Prescription Medications',
-      description: 'Taking regular prescription medications',
-      category: 'Medical',
+      id: 'healthcare-access',
+      name: 'Healthcare Access',
+      description: 'Has a routine place for healthcare',
+      category: 'General Health',
       points: 0,
       maxPoints: 5,
       type: 'positive',
+      icon: 'heart-pulse',
+    });
+  } else if (noHealthcarePlace) {
+    factors.push({
+      id: 'healthcare-access',
+      name: 'No Regular Healthcare',
+      description: 'No routine place to go for healthcare',
+      category: 'General Health',
+      points: 5,
+      maxPoints: 5,
+      type: 'warning',
+      icon: 'heart-pulse',
+    });
+  }
+  
+  // === MEDICATIONS (ML Feature: RXQ510) ===
+  const takingAspirin = answers.RXQ510 === '1' || answers.daily_aspirin === 'yes';
+  if (takingAspirin) {
+    factors.push({
+      id: 'aspirin',
+      name: 'Daily Aspirin',
+      description: 'Doctor advised to take daily low-dose aspirin',
+      category: 'Medications',
+      points: 5,
+      maxPoints: 5,
+      type: 'warning',
       icon: 'pill',
     });
   }
