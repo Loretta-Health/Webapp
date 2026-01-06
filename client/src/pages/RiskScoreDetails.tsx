@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { Link, Redirect } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   ChevronRight, 
-  ChevronDown,
   AlertCircle, 
   CheckCircle2, 
   AlertTriangle,
@@ -29,8 +27,7 @@ import {
   Armchair,
   Footprints,
   MessageCircle,
-  RefreshCw,
-  Shield
+  RefreshCw
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -77,46 +74,49 @@ function GlassCard({
   );
 }
 
-function CollapsibleSection({ 
+function SolidCard({ 
+  children, 
+  className = ''
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+}) {
+  return (
+    <div className={`
+      bg-white dark:bg-gray-900
+      border border-gray-200 dark:border-gray-800
+      rounded-3xl shadow-xl
+      ${className}
+    `}>
+      {children}
+    </div>
+  );
+}
+
+function Section({ 
   title, 
   icon, 
   badge, 
   children, 
-  defaultOpen = true,
-  gradient = false,
   iconColor = 'from-[#013DC4] to-[#CDB6EF]'
 }: { 
   title: string; 
   icon: React.ReactNode; 
   badge?: React.ReactNode;
   children: React.ReactNode;
-  defaultOpen?: boolean;
-  gradient?: boolean;
   iconColor?: string;
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  
   return (
     <GlassCard className="overflow-hidden">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full p-4 sm:p-5 flex items-center justify-between transition-colors min-h-[60px] ${
-          gradient ? 'bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10' : 'hover:bg-white/50 dark:hover:bg-gray-800/50'
-        }`}
-      >
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+      <div className="p-4 sm:p-5">
+        <div className="flex items-center gap-2 sm:gap-3 mb-4">
           <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br ${iconColor} flex items-center justify-center text-white shadow-lg flex-shrink-0`}>
             {icon}
           </div>
-          <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{title}</h3>
+          <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{title}</h3>
           {badge}
         </div>
-        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`}>
-          <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
-        </div>
-      </button>
-      <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="px-4 pb-4 sm:px-5 sm:pb-5">{children}</div>
+        {children}
       </div>
     </GlassCard>
   );
@@ -203,11 +203,11 @@ export default function RiskScoreDetails() {
     return 'text-red-500';
   };
 
-  const getScoreGradient = () => {
-    if (score <= 20) return 'from-green-500 to-emerald-400';
-    if (score <= 40) return 'from-[#013DC4] to-[#CDB6EF]';
-    if (score <= 60) return 'from-amber-500 to-orange-400';
-    return 'from-red-500 to-rose-400';
+  const getScoreLabelColor = () => {
+    if (score <= 20) return 'bg-green-500';
+    if (score <= 40) return 'bg-[#013DC4]';
+    if (score <= 60) return 'bg-amber-500';
+    return 'bg-red-500';
   };
 
   const getScoreLabel = () => {
@@ -280,15 +280,15 @@ export default function RiskScoreDetails() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 -mt-24 space-y-4 pb-8">
-        {/* Score Card */}
-        <GlassCard className="p-5 sm:p-6" glow>
+        {/* Score Card - Solid white background */}
+        <SolidCard className="p-5 sm:p-6">
           <div className="flex flex-col items-center">
             {/* Score Circle */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', bounce: 0.4 }}
-              className="relative w-32 h-32 sm:w-40 sm:h-40 mb-4"
+              className="relative w-36 h-36 mb-4"
             >
               <svg className="w-full h-full transform -rotate-90">
                 <circle
@@ -298,7 +298,7 @@ export default function RiskScoreDetails() {
                   stroke="currentColor"
                   strokeWidth="8"
                   fill="none"
-                  className="text-gray-200 dark:text-gray-700"
+                  className="text-muted/30"
                 />
                 <circle
                   cx="50%"
@@ -318,14 +318,14 @@ export default function RiskScoreDetails() {
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-3xl sm:text-4xl font-black ${getScoreColor()}`}>{Math.round(score)}</span>
-                <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium">out of 100</span>
+                <span className={`text-4xl font-black ${getScoreColor()}`}>{Math.round(score)}</span>
+                <span className="text-xs text-muted-foreground font-medium">out of 100</span>
               </div>
             </motion.div>
 
             {/* Score Label & Trend */}
             <div className="flex items-center gap-3 mb-4">
-              <Badge className={`bg-gradient-to-r ${getScoreGradient()} text-white border-0 px-4 py-1 rounded-full shadow-lg`}>
+              <Badge className={`${getScoreLabelColor()} text-white border-0 px-4 py-1 rounded-full shadow-lg`}>
                 {getScoreLabel()}
               </Badge>
               {trend === 'up' && (
@@ -358,7 +358,7 @@ export default function RiskScoreDetails() {
               </div>
             </div>
           </div>
-        </GlassCard>
+        </SolidCard>
 
         {/* What This Means */}
         <GlassCard className="p-4 sm:p-5">
@@ -376,8 +376,8 @@ export default function RiskScoreDetails() {
           </div>
         </GlassCard>
 
-        {/* Risk Factors Section */}
-        <CollapsibleSection
+        {/* Risk Factors Section - Not collapsible */}
+        <Section
           title="Areas Needing Attention"
           icon={<AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />}
           iconColor="from-red-500 to-rose-400"
@@ -386,7 +386,6 @@ export default function RiskScoreDetails() {
               {negativeFactors.length}
             </Badge>
           }
-          defaultOpen={true}
         >
           <div className="space-y-2">
             {negativeFactors.length === 0 ? (
@@ -414,11 +413,11 @@ export default function RiskScoreDetails() {
               })
             )}
           </div>
-        </CollapsibleSection>
+        </Section>
 
-        {/* Warnings Section */}
+        {/* Warnings Section - Not collapsible */}
         {warningFactors.length > 0 && (
-          <CollapsibleSection
+          <Section
             title="Watch These"
             icon={<AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />}
             iconColor="from-amber-500 to-orange-400"
@@ -427,7 +426,6 @@ export default function RiskScoreDetails() {
                 {warningFactors.length}
               </Badge>
             }
-            defaultOpen={false}
           >
             <div className="space-y-2">
               {warningFactors.map((factor, index) => {
@@ -451,12 +449,12 @@ export default function RiskScoreDetails() {
                 );
               })}
             </div>
-          </CollapsibleSection>
+          </Section>
         )}
 
-        {/* Positive Factors Section */}
+        {/* Positive Factors Section - Not collapsible */}
         {positiveFactors.length > 0 && (
-          <CollapsibleSection
+          <Section
             title="Keep It Up!"
             icon={<CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />}
             iconColor="from-green-500 to-emerald-400"
@@ -465,7 +463,6 @@ export default function RiskScoreDetails() {
                 {positiveFactors.length}
               </Badge>
             }
-            defaultOpen={false}
           >
             <div className="space-y-2">
               {positiveFactors.map((factor, index) => {
@@ -489,11 +486,11 @@ export default function RiskScoreDetails() {
                 );
               })}
             </div>
-          </CollapsibleSection>
+          </Section>
         )}
 
         {/* Get Personalized Recommendations */}
-        <GlassCard className="p-4 sm:p-5 bg-gradient-to-br from-[#013DC4]/5 to-[#CDB6EF]/10" glow>
+        <GlassCard className="p-4 sm:p-5 bg-gradient-to-br from-[#013DC4]/5 to-[#CDB6EF]/10">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center shadow-lg">
               <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
