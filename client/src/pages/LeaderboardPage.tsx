@@ -470,20 +470,20 @@ export default function LeaderboardPage() {
                 </div>
                 <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{t('leaderboard.teamRankings')}</h3>
                 <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
-                  {displayEntries.length}
+                  {displayEntries.length} {displayEntries.length === 1 ? 'member' : 'members'}
                 </Badge>
-              </div>
-              {/* Community Selector - Right aligned, smaller */}
-              <div className="relative">
-                <select
-                  value={selectedCommunity}
-                  onChange={(e) => setSelectedCommunity(e.target.value as CommunityType)}
-                  className="appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-xl px-3 py-2 pr-8 text-sm font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
-                >
-                  <option value="loretta">{t('leaderboard.lorettaCommunity', 'Loretta Community')}</option>
-                  <option value="friends">{t('leaderboard.myFriends', 'My Friends')} ({(Array.isArray(friends) ? friends.length : 0) + 1})</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#013DC4] pointer-events-none" />
+                {/* Community Selector - Inline with title */}
+                <div className="relative ml-2">
+                  <select
+                    value={selectedCommunity}
+                    onChange={(e) => setSelectedCommunity(e.target.value as CommunityType)}
+                    className="appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-xl px-3 py-1.5 pr-7 text-xs font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
+                  >
+                    <option value="loretta">{t('leaderboard.lorettaCommunity', 'Loretta Community')}</option>
+                    <option value="friends">{t('leaderboard.myFriends', 'My Friends')} ({(Array.isArray(friends) ? friends.length : 0) + 1})</option>
+                  </select>
+                  <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#013DC4] pointer-events-none" />
+                </div>
               </div>
             </div>
             
