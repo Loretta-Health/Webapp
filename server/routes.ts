@@ -729,10 +729,34 @@ IMPORTANT: When discussing risk scores, remember:
       const xp = xpRecord?.totalXp || 0;
       const level = calculateLevelFromXP(xp);
       
+      // Calculate effective streak based on today's activity
+      const isActiveToday = await storage.checkUserActiveToday(userId);
+      const lastCheckIn = gamification.lastCheckIn;
+      let effectiveStreak = gamification.currentStreak || 0;
+      
+      if (!isActiveToday) {
+        // User hasn't been active today
+        if (lastCheckIn) {
+          const now = new Date();
+          const hoursSinceLastCheckIn = (now.getTime() - new Date(lastCheckIn).getTime()) / (1000 * 60 * 60);
+          
+          if (hoursSinceLastCheckIn >= 48) {
+            // Missed more than a day, streak is broken
+            effectiveStreak = 0;
+          }
+          // If 24-48 hours, streak is still valid but will break if they don't act today
+        } else {
+          // No previous check-in, streak is 0
+          effectiveStreak = 0;
+        }
+      }
+      
       res.json({
         ...gamification,
+        currentStreak: effectiveStreak,
         xp,
         level,
+        isActiveToday,
       });
     } catch (error) {
       console.error("Error fetching gamification:", error);
