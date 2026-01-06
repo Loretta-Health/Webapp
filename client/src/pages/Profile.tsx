@@ -353,9 +353,6 @@ const questionCategories = {
     icon: ClipboardList,
     questionIds: [
       'high_blood_pressure',
-      'blood_test_3_years',
-      'prediabetes',
-      'diabetes',
       'high_cholesterol',
       'arthritis',
       'prescription_medicine',

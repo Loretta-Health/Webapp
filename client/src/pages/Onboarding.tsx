@@ -98,28 +98,14 @@ interface Question {
   followUpFor?: string;
 }
 
-const CORE_QUESTION_COUNT = 10;
+const CORE_QUESTION_COUNT = 8;
 
 const baseQuestions: Question[] = [
   // ==========================================
-  // CORE QUESTIONS (10) - Ordered by ML Feature Importance
+  // CORE QUESTIONS (8) - Ordered by ML Feature Importance
   // ==========================================
   
-  // 1. Blood test - HIGHEST importance (gain: 302.4)
-  {
-    id: 'blood_test_3_years',
-    apiId: 'DIQ180',
-    text: "Have you had your blood tested in the past 3 years?",
-    type: 'choice',
-    icon: Stethoscope,
-    category: "Quick Health Check",
-    module: 'core',
-    options: [
-      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 0 },
-      { label: 'No', value: 'no', apiValue: 0, riskWeight: 2 },
-    ],
-  },
-  // 2. Prescription medicine - 2nd highest (gain: 265.4)
+  // 1. Prescription medicine - High importance (gain: 265.4)
   {
     id: 'prescription_medicine',
     apiId: 'RXQ033',
@@ -220,7 +206,7 @@ const baseQuestions: Question[] = [
       { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },
-  // 9. Daily aspirin - CV risk indicator (gain: 62.8)
+  // 8. Daily aspirin - CV risk indicator (gain: 62.8)
   {
     id: 'daily_aspirin',
     apiId: 'RXQ510',
@@ -231,20 +217,6 @@ const baseQuestions: Question[] = [
     module: 'core',
     options: [
       { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 1 },
-      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
-    ],
-  },
-  // 10. Prediabetes - Direct precursor (gain: 43.9)
-  {
-    id: 'prediabetes',
-    apiId: 'DIQ160',
-    text: "Have you ever been told you have prediabetes?",
-    type: 'choice',
-    icon: Activity,
-    category: "Quick Health Check",
-    module: 'core',
-    options: [
-      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 2 },
       { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
     ],
   },

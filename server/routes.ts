@@ -267,14 +267,12 @@ ${!isGoodForOutdoor ? `IMPORTANT: The weather is currently BAD for outdoor activ
           const weight = mergedAnswers.weight_current || profile?.weight || 'Not provided';
           const hasHighBP = mergedAnswers.high_blood_pressure === 'yes' ? 'Yes' : mergedAnswers.high_blood_pressure === 'no' ? 'No' : 'Not provided';
           const hasHighCholesterol = mergedAnswers.high_cholesterol === 'yes' ? 'Yes' : mergedAnswers.high_cholesterol === 'no' ? 'No' : 'Not provided';
-          const hasPrediabetes = mergedAnswers.prediabetes === 'yes' ? 'Yes' : mergedAnswers.prediabetes === 'no' ? 'No' : 'Not provided';
           const generalHealth = mergedAnswers.general_health || 'Not provided';
           const weekdaySleep = mergedAnswers.weekday_sleep || 'Not provided';
           const weekendSleep = mergedAnswers.weekend_sleep || 'Not provided';
           const moderateActivity = mergedAnswers.moderate_activity || 'Not provided';
           const sedentaryHours = mergedAnswers.sedentary_hours || 'Not provided';
           const takesAspirin = mergedAnswers.daily_aspirin === 'yes' ? 'Yes' : mergedAnswers.daily_aspirin === 'no' ? 'No' : 'Not provided';
-          const bloodTest = mergedAnswers.blood_test_3_years === 'yes' ? 'Yes' : mergedAnswers.blood_test_3_years === 'no' ? 'No' : 'Not provided';
           
           healthProfileContext = `\n\n=== USER'S HEALTH PROFILE (from their questionnaire) ===
 This is the user's actual health data they provided during onboarding:
@@ -287,9 +285,7 @@ BIOMETRICS:
 MEDICAL CONDITIONS:
 - High blood pressure: ${hasHighBP}
 - High cholesterol: ${hasHighCholesterol}
-- Prediabetes or borderline diabetes: ${hasPrediabetes}
 - Takes daily aspirin: ${takesAspirin}
-- Had blood test in last 3 years: ${bloodTest}
 
 LIFESTYLE:
 - Self-rated general health: ${generalHealth}
@@ -2972,19 +2968,6 @@ function calculateRiskScores(answers: Record<string, string>): {
   
   // === MEDICAL HISTORY (NHANES-style API IDs) ===
   
-  // Diabetes/prediabetes (DIQ160 = prediabetes, DIQ180 = diabetes)
-  const hasDiabetes = answers.DIQ180 === '1' || answers.diabetes === 'yes';
-  const hasPrediabetes = answers.DIQ160 === '1' || answers.prediabetes === 'yes';
-  if (hasDiabetes) {
-    diabetesRisk += 40; // Already diagnosed
-    heartRisk += 15; // Diabetes increases cardiovascular risk
-    strokeRisk += 12;
-  } else if (hasPrediabetes) {
-    diabetesRisk += 25;
-    heartRisk += 8;
-    strokeRisk += 6;
-  }
-  
   // High blood pressure (BPQ020)
   const hasHighBP = answers.BPQ020 === '1' || answers.high_blood_pressure === 'yes';
   if (hasHighBP) {
@@ -3195,39 +3178,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     }
   }
   
-  // === HEALTH CONDITIONS (ML Features: BPQ020, BPQ080, DIQ160, DIQ180, MCQ160A/B/C/E, KIQ022, MCQ560) ===
-  
-  // Prediabetes (DIQ160)
-  const hasPrediabetes = answers.DIQ160 === '1' || answers.prediabetes === 'yes';
-  if (hasPrediabetes) {
-    factors.push({
-      id: 'prediabetes',
-      name: 'Prediabetes',
-      description: 'Ever told you have prediabetes: Yes',
-      type: 'negative',
-      icon: 'droplets',
-    });
-  }
-  
-  // Blood test in past 3 years (DIQ180)
-  const hadBloodTest = answers.DIQ180 === '1' || answers.blood_test_3_years === 'yes';
-  if (hadBloodTest) {
-    factors.push({
-      id: 'blood-test',
-      name: 'Recent Blood Test',
-      description: 'Had blood tested in the past 3 years: Yes',
-      type: 'positive',
-      icon: 'droplets',
-    });
-  } else if (answers.DIQ180 === '0' || answers.blood_test_3_years === 'no') {
-    factors.push({
-      id: 'blood-test',
-      name: 'No Recent Blood Test',
-      description: 'Had blood tested in the past 3 years: No',
-      type: 'warning',
-      icon: 'droplets',
-    });
-  }
+  // === HEALTH CONDITIONS (ML Features: BPQ020, BPQ080, MCQ160A/B/C/E, KIQ022, MCQ560) ===
   
   // High blood pressure (BPQ020)
   const hasHighBP = answers.BPQ020 === '1' || answers.high_blood_pressure === 'yes';
