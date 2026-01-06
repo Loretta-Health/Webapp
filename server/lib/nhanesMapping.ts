@@ -12,24 +12,44 @@ export const QUESTIONNAIRE_TO_NHANES: FeatureMapping[] = [
   // Demographics
   { questionId: 'age', nhanesId: 'RIDAGEYR', valueType: 'numerical' },
   { questionId: 'ethnicity', nhanesId: 'RIDRETH3', valueType: 'categorical', valueMapping: {
+    // NHANES standard values
     'mexican-american': 'Mexican American',
     'other-hispanic': 'Other Hispanic',
     'non-hispanic-white': 'Non-Hispanic White',
     'non-hispanic-black': 'Non-Hispanic Black',
     'non-hispanic-asian': 'Non-Hispanic Asian',
     'other-multi-racial': 'Other Race - Including Multi-Racial',
+    // Questionnaire values (map to NHANES equivalents)
+    'white-european': 'Non-Hispanic White',
+    'black-african': 'Non-Hispanic Black',
+    'afro-caribbean': 'Non-Hispanic Black',
     'hispanic-latino': 'Other Hispanic',
+    'east-asian': 'Non-Hispanic Asian',
+    'south-asian': 'Non-Hispanic Asian',
+    'southeast-asian': 'Non-Hispanic Asian',
+    'middle-eastern': 'Other Race - Including Multi-Racial',
+    'native-american': 'Other Race - Including Multi-Racial',
+    'pacific-islander': 'Other Race - Including Multi-Racial',
+    'mixed-multiracial': 'Other Race - Including Multi-Racial',
+    'prefer-not-to-say': 'Other Race - Including Multi-Racial',
+    // Legacy short values
     'white': 'Non-Hispanic White',
     'black': 'Non-Hispanic Black',
     'asian': 'Non-Hispanic Asian',
     'other': 'Other Race - Including Multi-Racial'
   }},
   { questionId: 'education', nhanesId: 'DMDEDUC2', valueType: 'categorical', valueMapping: {
+    // NHANES standard values
     'less_than_9th': 'Less than 9th grade',
     '9_11th_grade': '9-11th grade (Includes 12th grade with no diploma)',
     'high_school': 'High school graduate/GED or equivalent',
     'some_college': 'Some college or AA degree',
     'college_grad': 'College graduate or above',
+    // Questionnaire values (map to NHANES equivalents)
+    'less_9th': 'Less than 9th grade',
+    '9_11th': '9-11th grade (Includes 12th grade with no diploma)',
+    'hs_grad': 'High school graduate/GED or equivalent',
+    // Legacy values
     'less_than_high_school': 'Less than 9th grade',
     'high_school_grad': 'High school graduate/GED or equivalent',
     'college_graduate': 'College graduate or above'
@@ -45,19 +65,27 @@ export const QUESTIONNAIRE_TO_NHANES: FeatureMapping[] = [
   }},
   { questionId: 'household_size', nhanesId: 'DMDHHSIZ', valueType: 'numerical' },
   { questionId: 'income_poverty_ratio', nhanesId: 'INDFMPIR', valueType: 'categorical', valueMapping: {
+    // NHANES standard values
     'below_poverty': '0.5',
     'near_poverty': '1.0',
     'low_income': '1.5',
     'moderate': '2.5',
     'comfortable': '3.5',
-    'high_income': '5.0'
+    'high_income': '5.0',
+    // Questionnaire values (map to NHANES equivalents)
+    'struggling': '0.5',
+    'getting_by': '1.5',
+    'well_off': '5.0'
   }},
   { questionId: 'monthly_poverty_index', nhanesId: 'INDFMMPI', valueType: 'categorical', valueMapping: {
+    // NHANES standard values
     'never': '0.5',
     'rarely': '1.0',
     'sometimes': '2.0',
     'often': '3.0',
-    'always': '4.0'
+    'always': '4.0',
+    // Questionnaire value (shorthand)
+    'usually': '3.0'
   }},
   { questionId: 'savings', nhanesId: 'INQ300', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
   { questionId: 'household_rooms', nhanesId: 'HOD051', valueType: 'categorical', valueMapping: {
@@ -124,10 +152,14 @@ export const QUESTIONNAIRE_TO_NHANES: FeatureMapping[] = [
 
   // Employment
   { questionId: 'job_type', nhanesId: 'OCD150', valueType: 'categorical', valueMapping: {
+    // NHANES standard values
     'working': 'Working at a job or business',
     'with_job_not_working': 'With a job or business but not at work',
     'looking_for_work': 'Looking for work',
     'not_working': 'Not working at a job or business',
+    // Questionnaire shorthand
+    'looking': 'Looking for work',
+    // Legacy values
     'employed': 'Working at a job or business',
     'unemployed': 'Looking for work',
     'retired': 'Not working at a job or business',
@@ -148,23 +180,33 @@ export const QUESTIONNAIRE_TO_NHANES: FeatureMapping[] = [
   // Balance & Mobility
   { questionId: 'unsteadiness', nhanesId: 'BAQ321C', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
   { questionId: 'falls', nhanesId: 'BAQ530', valueType: 'categorical', valueMapping: {
+    // NHANES standard values
     'never': 'Never',
     '1_2_times': '1 or 2 times',
     '3_4_times': '3 to 4 times',
     'every_year': 'About every year',
     'every_month': 'About every month',
     'every_week': 'About every week',
-    'daily': 'Daily or constantly'
+    'daily': 'Daily or constantly',
+    // Questionnaire values (map to NHANES equivalents)
+    '1_2': '1 or 2 times',
+    '3_4': '3 to 4 times',
+    'yearly': 'About every year',
+    'monthly': 'About every month',
+    'weekly': 'About every week'
   }},
 
   // Hearing
   { questionId: 'hearing_health', nhanesId: 'AUQ054', valueType: 'categorical', valueMapping: {
+    // NHANES standard values
     'excellent': 'Excellent',
     'good': 'Good',
     'little_trouble': 'A little trouble',
     'moderate_trouble': 'Moderate hearing trouble',
     'lot_trouble': 'A lot of trouble',
-    'deaf': 'Deaf'
+    'deaf': 'Deaf',
+    // Questionnaire value (shorthand)
+    'moderate': 'Moderate hearing trouble'
   }},
 
   // Oral Health
