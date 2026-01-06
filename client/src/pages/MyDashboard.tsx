@@ -541,7 +541,7 @@ export default function MyDashboard() {
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#013DC4] pointer-events-none" />
               </div>
               
-              <Link href="/leaderboard">
+              <Link href={`/leaderboard?community=${communityType}`}>
                 <button 
                   className="w-full flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-white/50 dark:hover:bg-gray-800/50"
                   data-testid="button-leaderboard"
