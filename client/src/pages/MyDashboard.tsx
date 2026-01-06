@@ -82,6 +82,12 @@ interface UserAchievement {
   unlockedAt: string | null;
 }
 
+interface Team {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 function GlassCard({ 
   children, 
   className = '',
@@ -206,6 +212,11 @@ export default function MyDashboard() {
 
   const { data: userAchievements } = useQuery<UserAchievement[]>({
     queryKey: ['/api/achievements/user'],
+    enabled: !!user,
+  });
+
+  const { data: userTeams } = useQuery<Team[]>({
+    queryKey: ['/api/teams/me'],
     enabled: !!user,
   });
 
@@ -515,31 +526,32 @@ export default function MyDashboard() {
           <GlassCard className="p-4">
             <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">{t('sidebar.myCommunity')}</h3>
             <div className="space-y-2">
-              {[
-                { id: 'loretta' as CommunityType, label: t('community.loretta', 'Loretta Community'), icon: Users, gradient: 'from-[#013DC4] to-[#0150FF]' },
-                { id: 'friends' as CommunityType, label: t('community.friends', 'My Friends'), icon: Heart, gradient: 'from-[#CDB6EF] to-purple-400' },
-                { id: 'team' as CommunityType, label: t('community.team', 'My Team'), icon: Target, gradient: 'from-amber-400 to-orange-400' },
-              ].map((option) => (
-                <button 
-                  key={option.id}
-                  onClick={() => setCommunityType(option.id)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all ${
-                    communityType === option.id 
-                      ? 'bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 shadow-lg' 
-                      : 'hover:bg-white/50 dark:hover:bg-gray-800/50'
-                  }`}
+              <div className="relative">
+                <select
+                  value={communityType}
+                  onChange={(e) => setCommunityType(e.target.value as CommunityType)}
+                  className="w-full appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-2xl px-4 py-3 pr-10 font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
                 >
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${option.gradient} flex items-center justify-center shadow-lg`}>
-                    <option.icon className="w-5 h-5 text-white" />
+                  <option value="loretta">{t('community.loretta', 'Loretta Community')}</option>
+                  <option value="friends">{t('community.friends', 'My Friends')}</option>
+                  {userTeams && userTeams.filter(team => team.id !== 'loretta-community').map((team) => (
+                    <option key={team.id} value={team.id}>{team.name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#013DC4] pointer-events-none" />
+              </div>
+              
+              <Link href="/leaderboard">
+                <button 
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl transition-all hover:bg-white/50 dark:hover:bg-gray-800/50"
+                  data-testid="button-leaderboard"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-lg">
+                    <Trophy className="w-5 h-5 text-white" />
                   </div>
-                  <span className={`font-semibold ${communityType === option.id ? 'text-[#013DC4]' : 'text-gray-700 dark:text-gray-300'}`}>
-                    {option.label}
-                  </span>
-                  {communityType === option.id && (
-                    <div className="ml-auto w-2 h-2 rounded-full bg-gradient-to-r from-[#013DC4] to-[#CDB6EF]" />
-                  )}
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">{t('sidebar.leaderboard')}</span>
                 </button>
-              ))}
+              </Link>
             </div>
           </GlassCard>
           
@@ -567,17 +579,6 @@ export default function MyDashboard() {
                   <MessageCircle className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-semibold text-gray-700 dark:text-gray-300">{t('sidebar.healthNavigator')}</span>
-              </button>
-            </Link>
-            <Link href="/leaderboard">
-              <button 
-                className="w-full flex items-center gap-3 p-3.5 rounded-2xl transition-all hover:bg-white/50 dark:hover:bg-gray-800/50"
-                data-testid="button-leaderboard"
-              >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-lg">
-                  <Users className="w-5 h-5 text-white" />
-                </div>
-                <span className="font-semibold text-gray-700 dark:text-gray-300">{t('sidebar.leaderboard')}</span>
               </button>
             </Link>
             <button 
