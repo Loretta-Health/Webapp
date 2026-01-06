@@ -453,7 +453,7 @@ export default function RiskScoreDetails() {
           </p>
 
           <Link href="/chat">
-            <button className="w-full py-3 sm:py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:shadow-2xl hover:shadow-[#013DC4]/30 transition-all hover:scale-[1.02] min-h-[48px] flex items-center justify-center gap-2">
+            <button className="w-full py-3 sm:py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:shadow-2xl hover:shadow-[#CDB6EF]/30 transition-all hover:scale-[1.02] min-h-[48px] flex items-center justify-center gap-2">
               <Sparkles className="w-4 h-4" />
               Get Personalized Tips
             </button>
