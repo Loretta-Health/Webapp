@@ -113,51 +113,6 @@ function GlassCard({
   );
 }
 
-function CollapsibleSection({ 
-  title, 
-  icon, 
-  badge, 
-  children, 
-  defaultOpen = true,
-  gradient = false,
-  className = ''
-}: { 
-  title: string; 
-  icon: React.ReactNode; 
-  badge?: React.ReactNode;
-  children: React.ReactNode;
-  defaultOpen?: boolean;
-  gradient?: boolean;
-  className?: string;
-}) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  
-  return (
-    <GlassCard className={`overflow-hidden ${className}`}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full p-4 sm:p-5 flex items-center justify-between transition-colors min-h-[60px] ${
-          gradient ? 'bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10' : 'hover:bg-white/50 dark:hover:bg-gray-800/50'
-        }`}
-      >
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg flex-shrink-0">
-            {icon}
-          </div>
-          <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{title}</h3>
-          {badge}
-        </div>
-        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`}>
-          <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
-        </div>
-      </button>
-      <div className={`overflow-hidden transition-all ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-        <div className="px-4 pb-4 sm:px-5 sm:pb-5">{children}</div>
-      </div>
-    </GlassCard>
-  );
-}
-
 function formatRelativeDate(dateString: string | null, t: (key: string, options?: Record<string, unknown>) => string): string | undefined {
   if (!dateString) return undefined;
   
@@ -506,18 +461,19 @@ export default function LeaderboardPage() {
         </GlassCard>
 
         {activeTab === 'leaderboard' && (
-          <CollapsibleSection
-            title={t('leaderboard.teamRankings')}
-            icon={<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />}
-            badge={
-              <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
-                {displayEntries.length}
-              </Badge>
-            }
-            gradient
-          >
-            {/* Community Selector - Right aligned, smaller */}
-            <div className="flex justify-end mb-4">
+          <GlassCard className="overflow-hidden">
+            {/* Section Header */}
+            <div className="p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg">
+                  <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{t('leaderboard.teamRankings')}</h3>
+                <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
+                  {displayEntries.length}
+                </Badge>
+              </div>
+              {/* Community Selector - Right aligned, smaller */}
               <div className="relative">
                 <select
                   value={selectedCommunity}
@@ -530,7 +486,8 @@ export default function LeaderboardPage() {
                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#013DC4] pointer-events-none" />
               </div>
             </div>
-
+            
+            <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-4">
             {/* Team Selector */}
             {selectedCommunity === 'loretta' && teams.length > 1 && (
               <div className="flex gap-2 flex-wrap mb-4">
@@ -730,20 +687,26 @@ export default function LeaderboardPage() {
                 ))}
               </div>
             )}
-          </CollapsibleSection>
+            </div>
+          </GlassCard>
         )}
 
         {activeTab === 'achievements' && (
-          <CollapsibleSection
-            title={t('leaderboard.tabs.achievements')}
-            icon={<Award className="w-4 h-4 sm:w-5 sm:h-5" />}
-            badge={
-              <Badge className="bg-amber-500/10 text-amber-600 border-0 text-xs">
-                {unlockedCount}/{totalCount}
-              </Badge>
-            }
-            gradient
-          >
+          <GlassCard className="overflow-hidden">
+            {/* Section Header */}
+            <div className="p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-amber-500/5 to-yellow-500/10">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center text-white shadow-lg">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{t('leaderboard.tabs.achievements')}</h3>
+                <Badge className="bg-amber-500/10 text-amber-600 border-0 text-xs">
+                  {unlockedCount}/{totalCount}
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-4">
             {/* Achievement Progress */}
             <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-yellow-500/10 mb-4">
               <div>
@@ -827,7 +790,8 @@ export default function LeaderboardPage() {
                 })}
               </div>
             )}
-          </CollapsibleSection>
+            </div>
+          </GlassCard>
         )}
       </main>
     </div>
