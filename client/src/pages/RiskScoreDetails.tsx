@@ -36,9 +36,6 @@ import { useAuth } from '@/hooks/use-auth';
 
 interface RiskScoreData {
   overallScore: number;
-  diabetesRisk: number;
-  heartRisk: number;
-  strokeRisk: number;
 }
 
 interface RiskScoreHistoryEntry {

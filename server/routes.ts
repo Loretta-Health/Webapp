@@ -527,13 +527,13 @@ IMPORTANT: When discussing risk scores, remember:
           if (mlFeatures.length >= 5) {
             const mlResult = await callMLPredictionAPI(mlFeatures);
             if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-              const diabetesScore = Math.round(mlResult.diabetes_probability * 100);
-              const fallbackScores = calculateRiskScores(mergedAnswers);
+              // Convert probability to health score (100 = perfect health, 0 = high risk)
+              const healthScore = Math.round((1 - mlResult.diabetes_probability) * 100);
               riskScore = {
-                overallScore: diabetesScore,
-                diabetesRisk: diabetesScore,
-                heartRisk: fallbackScores.heartRisk,
-                strokeRisk: fallbackScores.strokeRisk,
+                overallScore: healthScore,
+                diabetesRisk: healthScore,
+                heartRisk: 0,
+                strokeRisk: 0,
               };
               console.log("[API] Risk score auto-recalculated using ML model after questionnaire update");
             } else {
@@ -628,13 +628,13 @@ IMPORTANT: When discussing risk scores, remember:
             if (mlFeatures.length >= 5) {
               const mlResult = await callMLPredictionAPI(mlFeatures);
               if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-                const diabetesScore = Math.round(mlResult.diabetes_probability * 100);
-                const fallbackScores = calculateRiskScores(mergedAnswers);
+                // Convert probability to health score (100 = perfect health, 0 = high risk)
+                const healthScore = Math.round((1 - mlResult.diabetes_probability) * 100);
                 riskScore = {
-                  overallScore: diabetesScore,
-                  diabetesRisk: diabetesScore,
-                  heartRisk: fallbackScores.heartRisk,
-                  strokeRisk: fallbackScores.strokeRisk,
+                  overallScore: healthScore,
+                  diabetesRisk: healthScore,
+                  heartRisk: 0,
+                  strokeRisk: 0,
                 };
                 console.log("[API] Risk score auto-recalculated using ML model after profile update");
               } else {
@@ -910,17 +910,17 @@ IMPORTANT: When discussing risk scores, remember:
           const mlResult = await callMLPredictionAPI(mlFeatures);
           
           if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-            const diabetesScore = Math.round(mlResult.diabetes_probability * 100);
-            const fallbackScores = calculateRiskScores(allAnswers);
+            // Convert probability to health score (100 = perfect health, 0 = high risk)
+            const healthScore = Math.round((1 - mlResult.diabetes_probability) * 100);
             
             riskScore = {
-              overallScore: diabetesScore,
-              diabetesRisk: diabetesScore,
-              heartRisk: fallbackScores.heartRisk,
-              strokeRisk: fallbackScores.strokeRisk,
+              overallScore: healthScore,
+              diabetesRisk: healthScore,
+              heartRisk: 0,
+              strokeRisk: 0,
             };
             usedMLModel = true;
-            console.log('[Risk Calculation] ML model prediction:', mlResult.diabetes_probability, '-> score:', diabetesScore);
+            console.log('[Risk Calculation] ML model prediction:', mlResult.diabetes_probability, '-> health score:', healthScore);
           } else {
             console.log('[Risk Calculation] ML API unavailable, using fallback calculation');
             riskScore = calculateRiskScores(allAnswers);
@@ -3075,13 +3075,13 @@ function calculateRiskScores(answers: Record<string, string>): {
   // Apply a minimum baseline risk based on age if no other factors
   if (age >= 40 && diabetesRisk < 10) diabetesRisk = 10;
   
-  // Use diabetes risk as the single health risk score
-  // (Heart and stroke risks are deprecated - we only have the diabetes ML model)
-  const overallScore = Math.round(diabetesRisk * 10) / 10;
+  // Convert risk to health score (100 = perfect health, 0 = high risk)
+  // UI semantics: higher score = better health
+  const healthScore = Math.round((100 - diabetesRisk) * 10) / 10;
 
   return {
-    overallScore,
-    diabetesRisk: overallScore,
+    overallScore: healthScore,
+    diabetesRisk: healthScore,
     heartRisk: 0,
     strokeRisk: 0,
   };

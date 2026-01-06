@@ -976,12 +976,11 @@ function calculateBMIMetric(heightCm: number, weightKg: number): number {
 }
 
 // Evidence-based risk calculation matching server-side logic
+// Uses only diabetes risk as the single health risk score (ML model focus)
 function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; level: string; color: string } {
   if (answers.length === 0) return { score: 50, level: 'Unknown', color: 'text-muted-foreground' };
   
   let diabetesRisk = 0;
-  let heartRisk = 0;
-  let strokeRisk = 0;
   
   // === BIOMETRIC FACTORS ===
   
@@ -991,29 +990,28 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   
   const bmi = calculateBMIMetric(heightCm, weightKg);
   if (bmi > 0) {
-    if (bmi < 18.5) { diabetesRisk += 5; heartRisk += 5; strokeRisk += 5; }
-    else if (bmi >= 25 && bmi < 30) { diabetesRisk += 10; heartRisk += 8; strokeRisk += 6; }
-    else if (bmi >= 30 && bmi < 35) { diabetesRisk += 18; heartRisk += 15; strokeRisk += 12; }
-    else if (bmi >= 35 && bmi < 40) { diabetesRisk += 25; heartRisk += 22; strokeRisk += 18; }
-    else if (bmi >= 40) { diabetesRisk += 30; heartRisk += 28; strokeRisk += 22; }
+    if (bmi < 18.5) { diabetesRisk += 5; }
+    else if (bmi >= 25 && bmi < 30) { diabetesRisk += 10; }
+    else if (bmi >= 30 && bmi < 35) { diabetesRisk += 18; }
+    else if (bmi >= 35 && bmi < 40) { diabetesRisk += 25; }
+    else if (bmi >= 40) { diabetesRisk += 30; }
   }
   
   // Weight change in kg
   const weightOneYearAgo = parseNumericAnswer(getAnswerValue(answers, 'weight_year_ago'));
   if (weightOneYearAgo > 0 && weightKg > 0) {
     const weightGainKg = weightKg - weightOneYearAgo;
-    // ~10kg gain is significant, ~5kg is moderate
-    if (weightGainKg >= 10) { diabetesRisk += 8; heartRisk += 6; }
-    else if (weightGainKg >= 5) { diabetesRisk += 4; heartRisk += 3; }
+    if (weightGainKg >= 10) { diabetesRisk += 8; }
+    else if (weightGainKg >= 5) { diabetesRisk += 4; }
   }
   
   // Age-based risk
   const age = parseNumericAnswer(getAnswerValue(answers, 'age'));
-  if (age >= 75) { diabetesRisk += 25; heartRisk += 25; strokeRisk += 28; }
-  else if (age >= 65) { diabetesRisk += 22; heartRisk += 22; strokeRisk += 22; }
-  else if (age >= 55) { diabetesRisk += 18; heartRisk += 18; strokeRisk += 15; }
-  else if (age >= 45) { diabetesRisk += 12; heartRisk += 12; strokeRisk += 8; }
-  else if (age >= 35) { diabetesRisk += 5; heartRisk += 5; strokeRisk += 3; }
+  if (age >= 75) { diabetesRisk += 25; }
+  else if (age >= 65) { diabetesRisk += 22; }
+  else if (age >= 55) { diabetesRisk += 18; }
+  else if (age >= 45) { diabetesRisk += 12; }
+  else if (age >= 35) { diabetesRisk += 5; }
   
   // === MEDICAL HISTORY ===
   
@@ -1023,45 +1021,26 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
                          getAnswerValue(answers, 'prediabetes_followup') === 'yes';
   if (hasDiabetes) {
     diabetesRisk += 40;
-    heartRisk += 15;
-    strokeRisk += 12;
   } else if (hasPrediabetes) {
     diabetesRisk += 25;
-    heartRisk += 8;
-    strokeRisk += 6;
   }
   
   // High blood pressure
   const hasHighBP = getAnswerValue(answers, 'high_blood_pressure') === 'yes';
   if (hasHighBP) {
     diabetesRisk += 8;
-    heartRisk += 20;
-    strokeRisk += 25;
   }
   
   // High cholesterol
   const hasHighCholesterol = getAnswerValue(answers, 'high_cholesterol') === 'yes';
   if (hasHighCholesterol) {
     diabetesRisk += 5;
-    heartRisk += 18;
-    strokeRisk += 12;
   }
-  
-  // Cardiovascular history - use actual question IDs
-  const hadHeartAttack = getAnswerValue(answers, 'heart_attack') === 'yes';
-  const hasHeartFailure = getAnswerValue(answers, 'heart_failure') === 'yes';
-  const hasCoronaryDisease = getAnswerValue(answers, 'coronary_disease') === 'yes';
-  
-  if (hadHeartAttack) { heartRisk += 25; strokeRisk += 10; }
-  if (hasHeartFailure) { heartRisk += 30; strokeRisk += 15; }
-  if (hasCoronaryDisease) { heartRisk += 20; strokeRisk += 10; }
   
   // Kidney problems - use correct question ID
   const hasKidneyProblems = getAnswerValue(answers, 'kidney_problems') === 'yes';
   if (hasKidneyProblems) {
     diabetesRisk += 12;
-    heartRisk += 15;
-    strokeRisk += 10;
   }
   
   // === LIFESTYLE FACTORS ===
@@ -1082,8 +1061,6 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   
   const activityRiskPoints = Math.max(0, activityScore);
   diabetesRisk += activityRiskPoints;
-  heartRisk += activityRiskPoints;
-  strokeRisk += Math.round(activityRiskPoints * 0.7);
   
   // Sleep patterns - use correct question IDs from questionnaire
   const weekdaySleep = parseNumericAnswer(getAnswerValue(answers, 'weekday_sleep'), 7);
@@ -1099,39 +1076,16 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   if (hasSleepTrouble) sleepScore += 8;
   
   diabetesRisk += sleepScore;
-  heartRisk += sleepScore;
-  strokeRisk += Math.round(sleepScore * 0.8);
-  
-  // Alcohol consumption
-  const alcoholAnswer = getAnswerValue(answers, 'alcohol_frequency');
-  if (alcoholAnswer === 'daily' || alcoholAnswer === 'frequently') {
-    heartRisk += 10;
-    strokeRisk += 15;
-  } else if (alcoholAnswer === 'weekly') {
-    heartRisk += 5;
-    strokeRisk += 8;
-  }
-  
-  // === BALANCE AND FALLS - use correct question IDs ===
-  const hasUnsteadiness = getAnswerValue(answers, 'unsteadiness') === 'yes';
-  const hasFalls = getAnswerValue(answers, 'falls') === 'yes';
-  if (hasUnsteadiness || hasFalls) {
-    strokeRisk += 8;
-  }
   
   // === GENERAL HEALTH ===
   const generalHealth = getAnswerValue(answers, 'general_health');
   if (generalHealth === 'fair' || generalHealth === 'poor') {
     diabetesRisk += 8;
-    heartRisk += 8;
-    strokeRisk += 8;
   } else if (generalHealth === 'excellent') {
     diabetesRisk -= 5;
-    heartRisk -= 5;
-    strokeRisk -= 5;
   }
   
-  // === ORAL HEALTH (correlates with cardiovascular health) ===
+  // === ORAL HEALTH (correlates with metabolic health) ===
   const dentalHealth = getAnswerValue(answers, 'dental_health');
   const hasMouthAching = getAnswerValue(answers, 'mouth_aching') === 'yes';
   const hasMouthEatingProblems = getAnswerValue(answers, 'mouth_eating_problems') === 'yes';
@@ -1143,30 +1097,19 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   ].filter(Boolean).length;
   
   if (oralHealthIssues >= 2) {
-    heartRisk += 10;
     diabetesRisk += 8;
   } else if (oralHealthIssues >= 1) {
-    heartRisk += 5;
     diabetesRisk += 4;
   }
   
-  // === NORMALIZE SCORES ===
+  // === NORMALIZE SCORE ===
   diabetesRisk = Math.max(0, Math.min(100, diabetesRisk));
-  heartRisk = Math.max(0, Math.min(100, heartRisk));
-  strokeRisk = Math.max(0, Math.min(100, strokeRisk));
   
   // Apply minimum baseline for older users
   if (age >= 40 && diabetesRisk < 10) diabetesRisk = 10;
-  if (age >= 50 && heartRisk < 10) heartRisk = 10;
-  if (age >= 60 && strokeRisk < 10) strokeRisk = 10;
   
-  // Calculate overall score (weighted average favoring highest risk)
-  const maxRisk = Math.max(diabetesRisk, heartRisk, strokeRisk);
-  const avgRisk = (diabetesRisk + heartRisk + strokeRisk) / 3;
-  const overallRisk = maxRisk * 0.6 + avgRisk * 0.4;
-  
-  // Convert risk to health score (100 = perfect health, 0 = high risk)
-  const healthScore = Math.round(100 - overallRisk);
+  // Use diabetes risk as the single health risk score
+  const healthScore = Math.round(100 - diabetesRisk);
   
   if (healthScore >= 80) return { score: healthScore, level: 'Excellent', color: 'text-primary' };
   if (healthScore >= 60) return { score: healthScore, level: 'Good', color: 'text-chart-2' };
