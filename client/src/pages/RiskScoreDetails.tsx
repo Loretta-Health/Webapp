@@ -282,8 +282,9 @@ export default function RiskScoreDetails() {
                 />
                 <defs>
                   <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" className={`${getScoreColor().replace('text-', 'stop-color-')}`} style={{ stopColor: score >= 60 ? '#84cc16' : '#f97316' }} />
-                    <stop offset="100%" style={{ stopColor: '#06b6d4' }} />
+                    {/* Risk score: higher = worse, so low scores get green, high scores get red */}
+                    <stop offset="0%" style={{ stopColor: score <= 30 ? '#22c55e' : score <= 60 ? '#f59e0b' : '#ef4444' }} />
+                    <stop offset="100%" style={{ stopColor: score <= 30 ? '#84cc16' : score <= 60 ? '#f97316' : '#dc2626' }} />
                   </linearGradient>
                 </defs>
               </svg>
