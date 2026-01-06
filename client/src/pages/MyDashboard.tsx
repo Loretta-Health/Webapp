@@ -1143,50 +1143,48 @@ export default function MyDashboard() {
                   }
                 >
                   {medications.length > 0 ? (
-                    <div className="space-y-3 sm:space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                        {medications.slice(0, 4).map((med: any) => (
-                          <Link key={med.id} href={`/medication-details?id=${med.id}`}>
-                            <div className="p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all cursor-pointer">
-                              <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
-                                <div className="min-w-0 flex-1">
-                                  <h4 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{med.name}</h4>
-                                  <p className="text-xs sm:text-sm text-gray-500">{med.dosage}</p>
-                                </div>
-                                <div className={`px-2 sm:px-3 py-1 rounded-full font-bold text-xs sm:text-sm flex-shrink-0 ${
-                                  (med.adherencePercent ?? 100) >= 90 
-                                    ? 'bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/20 text-green-600' 
-                                    : 'bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/20 text-amber-600'
-                                }`}>
-                                  {med.adherencePercent ?? 100}%
-                                </div>
+                    <div className="space-y-3">
+                      {medications.slice(0, 3).map((med: any) => (
+                        <Link key={med.id} href={`/medication-details?id=${med.id}`}>
+                          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all cursor-pointer">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base truncate">{med.name}</h4>
+                                <p className="text-xs text-gray-500 truncate">{med.dosage}</p>
                               </div>
-                              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                {groupMedicationTimes(med.scheduledTimes || []).map((group, j) => (
-                                  <div key={j} className="flex items-center gap-1">
-                                    {group.label !== 'Daily' && (
-                                      <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-[#013DC4] text-white text-[10px] sm:text-xs font-bold rounded-md">
-                                        {group.label}
-                                      </span>
-                                    )}
-                                    {group.times.map((time, k) => (
-                                      <span key={k} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl">
-                                        {time}
-                                      </span>
-                                    ))}
-                                  </div>
-                                ))}
+                              <div className={`px-2 py-1 rounded-full font-bold text-xs flex-shrink-0 ${
+                                (med.adherencePercent ?? 100) >= 90 
+                                  ? 'bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/20 text-green-600' 
+                                  : 'bg-gradient-to-r from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/20 text-amber-600'
+                              }`}>
+                                {med.adherencePercent ?? 100}%
                               </div>
                             </div>
-                          </Link>
-                        ))}
-                      </div>
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {groupMedicationTimes(med.scheduledTimes || []).map((group, j) => (
+                                <div key={j} className="flex items-center gap-1">
+                                  {group.label !== 'Daily' && (
+                                    <span className="px-1.5 py-0.5 bg-[#013DC4] text-white text-[10px] font-bold rounded-md">
+                                      {group.label}
+                                    </span>
+                                  )}
+                                  {group.times.map((time, k) => (
+                                    <span key={k} className="px-2 py-1 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-xs font-semibold rounded-lg">
+                                      {time}
+                                    </span>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
                       <button 
                         onClick={() => setShowAddMedicationModal(true)}
-                        className="w-full py-3 sm:py-4 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base hover:border-[#013DC4] hover:text-[#013DC4] hover:bg-[#013DC4]/5 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+                        className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 rounded-xl font-bold text-sm hover:border-[#013DC4] hover:text-[#013DC4] hover:bg-[#013DC4]/5 transition-all flex items-center justify-center gap-2 min-h-[44px]"
                         data-testid="button-add-medication"
                       >
-                        <Pill className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <Pill className="w-4 h-4" />
                         {t('medications.addMedication', 'Add Medication')}
                       </button>
                     </div>
