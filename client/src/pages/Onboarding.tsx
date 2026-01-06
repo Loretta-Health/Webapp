@@ -930,12 +930,6 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   
   // === MEDICAL HISTORY ===
   
-  // Prediabetes check
-  const hasPrediabetes = getAnswerValue(answers, 'prediabetes') === 'yes';
-  if (hasPrediabetes) {
-    diabetesRisk += 25;
-  }
-  
   // High blood pressure
   const hasHighBP = getAnswerValue(answers, 'high_blood_pressure') === 'yes';
   if (hasHighBP) {
