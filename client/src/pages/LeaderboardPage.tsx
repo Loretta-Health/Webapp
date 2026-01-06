@@ -511,7 +511,7 @@ export default function LeaderboardPage() {
             icon={<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />}
             badge={
               <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
-                {displayEntries.length} {t('leaderboard.members')}
+                {displayEntries.length}
               </Badge>
             }
             gradient
@@ -605,7 +605,7 @@ export default function LeaderboardPage() {
                               <span className="font-medium">{participant.xp.toLocaleString()} XP</span>
                               <span className="flex items-center gap-1">
                                 <Flame className="w-3 h-3 text-orange-500" />
-                                {participant.currentStreak} {t('leaderboard.days')}
+                                {participant.currentStreak}
                               </span>
                             </p>
                           </div>
@@ -713,7 +713,7 @@ export default function LeaderboardPage() {
                         <span className="font-medium">{entry.xp.toLocaleString()} XP</span>
                         <span className="flex items-center gap-1">
                           <Flame className="w-3 h-3 text-orange-500" />
-                          {entry.streak} {t('leaderboard.days')}
+                          {entry.streak}
                         </span>
                       </p>
                     </div>
