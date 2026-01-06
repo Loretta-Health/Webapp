@@ -737,18 +737,36 @@ export default function LeaderboardPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                     >
-                      <GlassCard 
-                        className={`p-4 ${!shouldHighlight ? 'opacity-70' : ''}`}
+                      <div 
+                        className={`p-4 rounded-3xl transition-all ${
+                          achievement.unlocked 
+                            ? 'bg-gradient-to-r from-emerald-500/15 to-green-500/10 border-2 border-emerald-500/40 shadow-lg shadow-emerald-500/10' 
+                            : shouldHighlight
+                              ? 'backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 shadow-xl'
+                              : 'backdrop-blur-xl bg-white/50 dark:bg-gray-900/50 border border-white/30 dark:border-white/5 opacity-70'
+                        }`}
                       >
                         <div className="flex items-start gap-4">
-                          <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${rarityColors[achievement.rarity]} flex items-center justify-center shrink-0 shadow-lg ${
+                          <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${rarityColors[achievement.rarity]} flex items-center justify-center shrink-0 shadow-lg ${
                             !shouldHighlight ? 'grayscale' : ''
                           }`}>
                             <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                            {achievement.unlocked && (
+                              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-900">
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-bold text-gray-900 dark:text-white">{achievement.title}</p>
+                              <p className={`font-bold ${achievement.unlocked ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>{achievement.title}</p>
+                              {achievement.unlocked && (
+                                <Badge className="bg-emerald-500 text-white border-0 text-xs font-bold">
+                                  UNLOCKED
+                                </Badge>
+                              )}
                               <Badge 
                                 variant="outline" 
                                 className={`text-xs capitalize ${
@@ -764,8 +782,8 @@ export default function LeaderboardPage() {
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{achievement.description}</p>
                             
                             {achievement.unlocked ? (
-                              <p className="text-xs text-emerald-600 font-medium mt-2 flex items-center gap-1">
-                                <Award className="w-3 h-3" />
+                              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-2 flex items-center gap-1">
+                                <Star className="w-3 h-3 fill-current" />
                                 {t('leaderboard.achievements.unlocked', { date: achievement.unlockedDate })}
                               </p>
                             ) : achievement.progress !== undefined && achievement.maxProgress !== undefined ? (
@@ -784,7 +802,7 @@ export default function LeaderboardPage() {
                             )}
                           </div>
                         </div>
-                      </GlassCard>
+                      </div>
                     </motion.div>
                   );
                 })}
