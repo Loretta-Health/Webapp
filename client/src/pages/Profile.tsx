@@ -103,9 +103,6 @@ const translations = {
     },
     questionTexts: {
       high_blood_pressure: 'Have you ever been told you have high blood pressure?',
-      blood_test_3_years: 'Have you had your blood tested in the last 3 years?',
-      prediabetes: 'Have you ever been told you have prediabetes?',
-      diabetes: 'Have you ever been told you have diabetes?',
       high_cholesterol: 'Have you been told you have high cholesterol?',
       arthritis: 'Has a doctor ever said you have arthritis?',
       prescription_medicine: 'Have you taken any prescription medicine in the past month?',
@@ -241,9 +238,6 @@ const translations = {
     },
     questionTexts: {
       high_blood_pressure: 'Wurde Ihnen jemals gesagt, dass Sie hohen Blutdruck haben?',
-      blood_test_3_years: 'Wurde Ihr Blut in den letzten 3 Jahren getestet?',
-      prediabetes: 'Wurde Ihnen jemals gesagt, dass Sie Prädiabetes haben?',
-      diabetes: 'Wurde Ihnen jemals gesagt, dass Sie Diabetes haben?',
       high_cholesterol: 'Wurde Ihnen gesagt, dass Sie hohen Cholesterinspiegel haben?',
       arthritis: 'Hat ein Arzt jemals gesagt, dass Sie Arthritis haben?',
       prescription_medicine: 'Haben Sie im letzten Monat verschreibungspflichtige Medikamente eingenommen?',
