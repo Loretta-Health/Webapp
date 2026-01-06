@@ -723,44 +723,44 @@ export default function MyDashboard() {
               </div>
             </div>
             
-            <div className="grid grid-cols-4 gap-2 sm:gap-3">
-              <GlassCard className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg flex-shrink-0">
-                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+              <GlassCard className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg flex-shrink-0">
+                  <Zap className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-base sm:text-xl font-black text-gray-900 dark:text-white truncate">{xp.toLocaleString()}</div>
-                  <div className="text-[10px] sm:text-xs text-gray-500 font-medium">{t('sidebar.totalXp', 'Total XP')}</div>
+                  <div className="text-sm sm:text-xl font-black text-gray-900 dark:text-white truncate">{xp.toLocaleString()}</div>
+                  <div className="text-[9px] sm:text-xs text-gray-500 font-medium">{t('sidebar.totalXp', 'Total XP')}</div>
                 </div>
               </GlassCard>
               
-              <GlassCard className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg flex-shrink-0">
-                  <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <GlassCard className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg flex-shrink-0">
+                  <Flame className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-base sm:text-xl font-black text-gray-900 dark:text-white truncate">{streak} {t('common.days', 'days')}</div>
-                  <div className="text-[10px] sm:text-xs text-gray-500 font-medium">{t('sidebar.streakLabel', 'Streak')}</div>
+                  <div className="text-sm sm:text-xl font-black text-gray-900 dark:text-white truncate">{streak} {t('common.days', 'days')}</div>
+                  <div className="text-[9px] sm:text-xs text-gray-500 font-medium">{t('sidebar.streakLabel', 'Streak')}</div>
                 </div>
               </GlassCard>
               
-              <GlassCard className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center shadow-lg flex-shrink-0">
-                  <Target className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <GlassCard className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center shadow-lg flex-shrink-0">
+                  <Target className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-base sm:text-xl font-black text-gray-900 dark:text-white truncate">{completedCount}/{activeMissions.length}</div>
-                  <div className="text-[10px] sm:text-xs text-gray-500 font-medium">{t('sidebar.missions', 'Missions')}</div>
+                  <div className="text-sm sm:text-xl font-black text-gray-900 dark:text-white truncate">{completedCount}/{activeMissions.length}</div>
+                  <div className="text-[9px] sm:text-xs text-gray-500 font-medium">{t('sidebar.missions', 'Missions')}</div>
                 </div>
               </GlassCard>
               
-              <GlassCard className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-lg flex-shrink-0">
-                  <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <GlassCard className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+                <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-lg flex-shrink-0">
+                  <Trophy className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-base sm:text-xl font-black text-gray-900 dark:text-white truncate">{userAchievements?.filter(a => a.unlocked).length || 0}</div>
-                  <div className="text-[10px] sm:text-xs text-gray-500 font-medium">{t('sidebar.achievements', 'Badges')}</div>
+                  <div className="text-sm sm:text-xl font-black text-gray-900 dark:text-white truncate">{userAchievements?.filter(a => a.unlocked).length || 0}</div>
+                  <div className="text-[9px] sm:text-xs text-gray-500 font-medium">{t('sidebar.achievements', 'Badges')}</div>
                 </div>
               </GlassCard>
             </div>
