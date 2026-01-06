@@ -1,5 +1,4 @@
 import { Link, Redirect } from 'wouter';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
   ChevronRight, 
@@ -218,24 +217,22 @@ export default function RiskScoreDetails() {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <Link href="/my-dashboard">
-              <Button variant="ghost" className="text-white hover:bg-white/20 rounded-xl" data-testid="button-back-dashboard">
-                <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-                <span className="hidden sm:inline">Back</span>
-              </Button>
+              <button className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center text-white" data-testid="button-back-dashboard">
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 rotate-180" />
+              </button>
             </Link>
             <div className="text-center">
               <h1 className="text-lg sm:text-xl font-black text-white">Health Score</h1>
               <p className="text-white/70 text-xs sm:text-sm">Your Health Overview</p>
             </div>
-            <Button 
-              variant="ghost" 
-              className="text-white hover:bg-white/20 rounded-xl" 
+            <button 
+              className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center text-white disabled:opacity-50" 
               onClick={() => recalculateMutation.mutate()}
               disabled={recalculateMutation.isPending}
               data-testid="button-recalculate"
             >
-              <RefreshCw className={`w-4 h-4 ${recalculateMutation.isPending ? 'animate-spin' : ''}`} />
-            </Button>
+              <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${recalculateMutation.isPending ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
       </div>
@@ -456,10 +453,10 @@ export default function RiskScoreDetails() {
           </p>
 
           <Link href="/chat">
-            <Button className="w-full bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] hover:opacity-90 text-white rounded-xl py-6 font-bold shadow-lg">
-              <Sparkles className="w-4 h-4 mr-2" />
+            <button className="w-full py-3 sm:py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:shadow-2xl hover:shadow-[#013DC4]/30 transition-all hover:scale-[1.02] min-h-[48px] flex items-center justify-center gap-2">
+              <Sparkles className="w-4 h-4" />
               Get Personalized Tips
-            </Button>
+            </button>
           </Link>
         </GlassCard>
 
