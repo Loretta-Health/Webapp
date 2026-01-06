@@ -178,9 +178,33 @@ export default function Leaderboard({
     }));
   };
 
-  const displayEntries = selectedCommunity === 'friends' 
-    ? getFriendsEntries().slice(0, maxEntries)
-    : getLorettaEntries().slice(0, maxEntries);
+  const getContextualEntries = (allEntries: LeaderboardEntry[]): LeaderboardEntry[] => {
+    if (allEntries.length === 0) return [];
+    
+    const userIndex = allEntries.findIndex(e => e.isCurrentUser);
+    if (userIndex === -1) return allEntries.slice(0, 3);
+    
+    const result: LeaderboardEntry[] = [];
+    
+    if (userIndex > 0) {
+      result.push(allEntries[userIndex - 1]);
+    }
+    
+    result.push(allEntries[userIndex]);
+    
+    if (userIndex < allEntries.length - 1) {
+      result.push(allEntries[userIndex + 1]);
+    }
+    
+    return result;
+  };
+
+  const allEntries = selectedCommunity === 'friends' 
+    ? getFriendsEntries()
+    : getLorettaEntries();
+  
+  const totalMembers = allEntries.length;
+  const displayEntries = getContextualEntries(allEntries);
   
   return (
     <GlassCard className={`overflow-hidden ${className}`} data-testid="leaderboard">
@@ -191,7 +215,7 @@ export default function Leaderboard({
           </div>
           <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{t('sidebar.leaderboard', 'Leaderboard')}</h3>
           <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
-            {displayEntries.length} {displayEntries.length === 1 ? 'member' : 'members'}
+            {totalMembers} {totalMembers === 1 ? 'member' : 'members'}
           </Badge>
           <div className="relative">
             <select
