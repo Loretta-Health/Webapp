@@ -1,9 +1,31 @@
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Trophy, Users, Home, Crown, Flame, Loader2 } from 'lucide-react';
+import { Trophy, Users, Home, Crown, Flame, Loader2, ChevronDown } from 'lucide-react';
 import type { CommunityType } from './CommunitySelector';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { useAuth } from '@/hooks/use-auth';
+
+interface TeamMember {
+  id: string;
+  teamId: string;
+  userId: string;
+  role: string;
+  username: string;
+  xp: number;
+  level: number;
+  currentStreak: number;
+  consentGiven: boolean;
+}
+
+interface Friend {
+  id: string;
+  username: string;
+  xp: number;
+  level: number;
+  currentStreak: number;
+}
 
 interface LeaderboardEntry {
   rank: number;
@@ -11,17 +33,13 @@ interface LeaderboardEntry {
   xp: number;
   level?: number;
   streak?: number;
-  change?: number;
   isCurrentUser?: boolean;
-  isFamily?: boolean;
 }
 
 interface LeaderboardProps {
-  entries?: LeaderboardEntry[];
-  currentUserRank?: number;
   className?: string;
   communityType?: CommunityType;
-  loading?: boolean;
+  maxEntries?: number;
 }
 
 function GlassCard({ 
@@ -47,14 +65,70 @@ function GlassCard({
 }
 
 export default function Leaderboard({
-  entries = [],
-  currentUserRank = 4,
   className = '',
-  communityType = 'loretta',
-  loading = false
+  communityType: initialCommunityType = 'loretta',
+  maxEntries = 5
 }: LeaderboardProps) {
   const { t } = useTranslation('dashboard');
-  const displayEntries = entries;
+  const { user } = useAuth();
+  
+  const [selectedCommunity, setSelectedCommunity] = useState<CommunityType>(initialCommunityType);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [userGamification, setUserGamification] = useState<{ xp: number; level: number; currentStreak: number } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    setSelectedCommunity(initialCommunityType);
+  }, [initialCommunityType]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [teamsRes, gamificationRes, friendsRes] = await Promise.all([
+        fetch('/api/teams/me', { credentials: 'include' }),
+        fetch('/api/gamification', { credentials: 'include' }),
+        fetch('/api/friends', { credentials: 'include' }),
+      ]);
+
+      if (gamificationRes.ok) {
+        const gamData = await gamificationRes.json();
+        setUserGamification({
+          xp: gamData.xp || 0,
+          level: gamData.level || 1,
+          currentStreak: gamData.currentStreak || 0,
+        });
+      }
+
+      if (friendsRes.ok) {
+        const friendsData: Friend[] = await friendsRes.json();
+        setFriends(friendsData);
+      }
+
+      if (teamsRes.ok) {
+        const teams = await teamsRes.json();
+        if (teams.length > 0) {
+          const membersRes = await fetch(`/api/teams/${teams[0].id}/members`, {
+            credentials: 'include',
+          });
+          if (membersRes.ok) {
+            const membersData = await membersRes.json();
+            setTeamMembers(membersData);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch leaderboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getRankBg = (rank: number) => {
     if (rank === 1) return 'bg-gradient-to-br from-amber-400 to-yellow-500';
@@ -62,19 +136,74 @@ export default function Leaderboard({
     if (rank === 3) return 'bg-gradient-to-br from-amber-600 to-amber-700';
     return 'bg-gray-100 dark:bg-gray-800';
   };
+
+  const getLorettaEntries = (): LeaderboardEntry[] => {
+    if (!Array.isArray(teamMembers)) return [];
+    
+    const sortedMembers = [...teamMembers]
+      .filter(m => m.consentGiven)
+      .sort((a, b) => b.xp - a.xp);
+    
+    return sortedMembers.map((member, index) => ({
+      rank: index + 1,
+      name: member.username,
+      xp: member.xp,
+      level: member.level,
+      streak: member.currentStreak,
+      isCurrentUser: member.userId === user?.id,
+    }));
+  };
+
+  const getFriendsEntries = (): LeaderboardEntry[] => {
+    const friendsList = Array.isArray(friends) ? friends : [];
+    const allParticipants = [
+      ...(user && userGamification ? [{
+        id: user.id,
+        username: user.username,
+        xp: userGamification.xp,
+        level: userGamification.level,
+        currentStreak: userGamification.currentStreak,
+        isCurrentUser: true,
+      }] : []),
+      ...friendsList.map(f => ({ ...f, username: f.username, isCurrentUser: false })),
+    ].sort((a, b) => b.xp - a.xp);
+    
+    return allParticipants.map((participant, index) => ({
+      rank: index + 1,
+      name: participant.username,
+      xp: participant.xp,
+      level: participant.level,
+      streak: participant.currentStreak,
+      isCurrentUser: participant.isCurrentUser,
+    }));
+  };
+
+  const displayEntries = selectedCommunity === 'friends' 
+    ? getFriendsEntries().slice(0, maxEntries)
+    : getLorettaEntries().slice(0, maxEntries);
   
   return (
     <GlassCard className={`overflow-hidden ${className}`} data-testid="leaderboard">
       <div className="p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg flex-shrink-0">
             <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{t('sidebar.leaderboard', 'Leaderboard')}</h3>
           <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
-            {communityType === 'friends' ? <Home className="w-3 h-3 mr-1" /> : <Users className="w-3 h-3 mr-1" />}
-            {communityType === 'friends' ? t('community.friends') : t('community.lorettaCommunity')}
+            {displayEntries.length} {displayEntries.length === 1 ? 'member' : 'members'}
           </Badge>
+          <div className="relative">
+            <select
+              value={selectedCommunity}
+              onChange={(e) => setSelectedCommunity(e.target.value as CommunityType)}
+              className="appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-xl px-3 py-1.5 pr-7 text-xs font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
+            >
+              <option value="loretta">{t('community.lorettaCommunity', 'Loretta Community')}</option>
+              <option value="friends">{t('community.friends', 'My Friends')} ({(Array.isArray(friends) ? friends.length : 0) + 1})</option>
+            </select>
+            <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#013DC4] pointer-events-none" />
+          </div>
         </div>
       </div>
       
@@ -90,9 +219,9 @@ export default function Leaderboard({
             <p className="text-sm text-gray-400 dark:text-gray-500">{t('leaderboard.noEntriesHint', 'Complete activities to appear on the leaderboard!')}</p>
           </div>
         ) : (
-          displayEntries.slice(0, 5).map((entry, index) => (
+          displayEntries.map((entry, index) => (
             <motion.div
-              key={entry.rank}
+              key={`${entry.name}-${entry.rank}`}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
@@ -120,7 +249,7 @@ export default function Leaderboard({
                   {entry.name}
                   {entry.rank === 1 && <Crown className="w-4 h-4 text-amber-500 flex-shrink-0" />}
                   {entry.isCurrentUser && (
-                    <span className="text-[10px] sm:text-xs bg-[#013DC4]/10 text-[#013DC4] px-2 py-0.5 rounded-full flex-shrink-0">You</span>
+                    <span className="text-[10px] sm:text-xs bg-[#013DC4]/10 text-[#013DC4] px-2 py-0.5 rounded-full flex-shrink-0">{t('leaderboard.you', 'You')}</span>
                   )}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 flex items-center gap-3">
