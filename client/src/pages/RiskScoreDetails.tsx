@@ -54,28 +54,6 @@ interface RiskFactorData {
 
 function GlassCard({ 
   children, 
-  className = '',
-  glow = false 
-}: { 
-  children: React.ReactNode; 
-  className?: string;
-  glow?: boolean;
-}) {
-  return (
-    <div className={`
-      backdrop-blur-xl bg-white/70 dark:bg-gray-900/70
-      border border-white/50 dark:border-white/10
-      rounded-3xl shadow-xl
-      ${glow ? 'shadow-[#013DC4]/20' : ''}
-      ${className}
-    `}>
-      {children}
-    </div>
-  );
-}
-
-function SolidCard({ 
-  children, 
   className = ''
 }: { 
   children: React.ReactNode; 
@@ -83,8 +61,8 @@ function SolidCard({
 }) {
   return (
     <div className={`
-      bg-white dark:bg-gray-900
-      border border-gray-200 dark:border-gray-800
+      backdrop-blur-xl bg-white/70 dark:bg-gray-900/70
+      border border-white/50 dark:border-white/10
       rounded-3xl shadow-xl
       ${className}
     `}>
@@ -190,32 +168,16 @@ export default function RiskScoreDetails() {
     return <Redirect to="/auth" />;
   }
 
-  const score = riskScoreData?.overallScore ?? 50;
+  const riskScore = riskScoreData?.overallScore ?? 50;
   const previousScore = riskScoreHistory && riskScoreHistory.length > 1 
-    ? riskScoreHistory[1]?.overallScore ?? score 
-    : score;
-  const trend = score > previousScore ? 'up' : score < previousScore ? 'down' : 'stable';
+    ? riskScoreHistory[1]?.overallScore ?? riskScore 
+    : riskScore;
+  const trend = riskScore > previousScore ? 'up' : riskScore < previousScore ? 'down' : 'stable';
 
-  const getScoreColor = () => {
-    if (score <= 20) return 'text-green-500';
-    if (score <= 40) return 'text-[#013DC4]';
-    if (score <= 60) return 'text-amber-500';
-    return 'text-red-500';
-  };
-
-  const getScoreLabelColor = () => {
-    if (score <= 20) return 'bg-green-500';
-    if (score <= 40) return 'bg-[#013DC4]';
-    if (score <= 60) return 'bg-amber-500';
-    return 'bg-red-500';
-  };
-
-  const getScoreLabel = () => {
-    if (score <= 20) return 'Low Risk';
-    if (score <= 40) return 'Moderate';
-    if (score <= 60) return 'Elevated';
-    return 'High Risk';
-  };
+  // Match MyDashboard thresholds exactly: ≤30 green, 31-60 amber, >60 red
+  const riskLevel = riskScore <= 30 ? 'Low Risk' : riskScore <= 60 ? 'Moderate Risk' : 'High Risk';
+  const riskColor = riskScore <= 30 ? 'text-green-600' : riskScore <= 60 ? 'text-amber-600' : 'text-red-600';
+  const riskBgColor = riskScore <= 30 ? 'bg-green-500' : riskScore <= 60 ? 'bg-amber-500' : 'bg-red-500';
 
   const getFactorStyles = (type: 'negative' | 'warning' | 'positive') => {
     if (type === 'negative') {
@@ -280,67 +242,55 @@ export default function RiskScoreDetails() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 -mt-24 space-y-4 pb-8">
-        {/* Score Card - Solid white background */}
-        <SolidCard className="p-5 sm:p-6">
-          <div className="flex flex-col items-center">
-            {/* Score Circle */}
+        {/* Score Card - Using GlassCard like MyDashboard's CollapsibleSectionNew */}
+        <GlassCard className="p-5 sm:p-6">
+          <div className="flex flex-col items-center justify-center w-full py-2 sm:py-4">
+            {/* Score Circle - Matching MyDashboard exactly */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', bounce: 0.4 }}
-              className="relative w-36 h-36 mb-4"
+              className="relative w-32 h-32 sm:w-40 sm:h-40 mb-4 sm:mb-6"
             >
-              <svg className="w-full h-full transform -rotate-90">
+              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-100 dark:text-gray-800" />
                 <circle
-                  cx="50%"
-                  cy="50%"
-                  r="45%"
-                  stroke="currentColor"
+                  cx="50" cy="50" r="40" fill="none"
+                  stroke="url(#scoreGradientDetails)"
                   strokeWidth="8"
-                  fill="none"
-                  className="text-muted/30"
-                />
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="45%"
-                  stroke="url(#scoreGradient)"
-                  strokeWidth="8"
-                  fill="none"
                   strokeLinecap="round"
-                  strokeDasharray={`${(score / 100) * 283} 283`}
+                  strokeDasharray={`${Math.round(riskScore) * 2.51} 251`}
                 />
                 <defs>
-                  <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style={{ stopColor: score <= 30 ? '#22c55e' : score <= 60 ? '#f59e0b' : '#ef4444' }} />
-                    <stop offset="100%" style={{ stopColor: score <= 30 ? '#84cc16' : score <= 60 ? '#f97316' : '#dc2626' }} />
+                  <linearGradient id="scoreGradientDetails" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor={riskScore <= 30 ? "#22C55E" : riskScore <= 60 ? "#F59E0B" : "#EF4444"} />
+                    <stop offset="100%" stopColor={riskScore <= 30 ? "#10B981" : riskScore <= 60 ? "#D97706" : "#DC2626"} />
                   </linearGradient>
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-4xl font-black ${getScoreColor()}`}>{Math.round(score)}</span>
-                <span className="text-xs text-muted-foreground font-medium">out of 100</span>
+                <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{Math.round(riskScore)}</span>
+                <span className={`text-xs sm:text-sm font-bold ${riskColor}`}>{riskLevel}</span>
               </div>
             </motion.div>
 
-            {/* Score Label & Trend */}
-            <div className="flex items-center gap-3 mb-4">
-              <Badge className={`${getScoreLabelColor()} text-white border-0 px-4 py-1 rounded-full shadow-lg`}>
-                {getScoreLabel()}
-              </Badge>
-              {trend === 'up' && (
-                <div className="flex items-center gap-1 text-red-500 text-sm font-medium">
-                  <TrendingUp className="w-4 h-4" />
-                  <span>+{Math.round(score - previousScore)}</span>
-                </div>
-              )}
-              {trend === 'down' && (
-                <div className="flex items-center gap-1 text-green-500 text-sm font-medium">
-                  <TrendingDown className="w-4 h-4" />
-                  <span>{Math.round(score - previousScore)}</span>
-                </div>
-              )}
-            </div>
+            {/* Trend indicator */}
+            {trend !== 'stable' && (
+              <div className="flex items-center gap-2 mb-4">
+                {trend === 'up' && (
+                  <div className="flex items-center gap-1 text-red-500 text-sm font-medium bg-red-50 dark:bg-red-900/20 px-3 py-1 rounded-full">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>+{Math.round(riskScore - previousScore)} from last</span>
+                  </div>
+                )}
+                {trend === 'down' && (
+                  <div className="flex items-center gap-1 text-green-500 text-sm font-medium bg-green-50 dark:bg-green-900/20 px-3 py-1 rounded-full">
+                    <TrendingDown className="w-4 h-4" />
+                    <span>{Math.round(riskScore - previousScore)} from last</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-sm">
@@ -358,7 +308,7 @@ export default function RiskScoreDetails() {
               </div>
             </div>
           </div>
-        </SolidCard>
+        </GlassCard>
 
         {/* What This Means */}
         <GlassCard className="p-4 sm:p-5">
@@ -376,7 +326,7 @@ export default function RiskScoreDetails() {
           </div>
         </GlassCard>
 
-        {/* Risk Factors Section - Not collapsible */}
+        {/* Risk Factors Section */}
         <Section
           title="Areas Needing Attention"
           icon={<AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />}
@@ -415,7 +365,7 @@ export default function RiskScoreDetails() {
           </div>
         </Section>
 
-        {/* Warnings Section - Not collapsible */}
+        {/* Warnings Section */}
         {warningFactors.length > 0 && (
           <Section
             title="Watch These"
@@ -452,7 +402,7 @@ export default function RiskScoreDetails() {
           </Section>
         )}
 
-        {/* Positive Factors Section - Not collapsible */}
+        {/* Positive Factors Section */}
         {positiveFactors.length > 0 && (
           <Section
             title="Keep It Up!"
