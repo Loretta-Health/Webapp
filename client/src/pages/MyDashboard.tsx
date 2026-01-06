@@ -1002,7 +1002,7 @@ export default function MyDashboard() {
                             stroke="url(#scoreGradient)"
                             strokeWidth="8"
                             strokeLinecap="round"
-                            strokeDasharray={`${(100 - Math.round(riskScore)) * 2.51} 251`}
+                            strokeDasharray={`${Math.round(riskScore) * 2.51} 251`}
                           />
                           <defs>
                             <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
