@@ -186,20 +186,20 @@ export default function Leaderboard({
   
   return (
     <div className={className} data-testid="leaderboard">
-      <div className="flex items-center gap-2 flex-wrap mb-4">
-        <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
+      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+        <Badge className="hidden sm:inline-flex bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
           {totalMembers} {totalMembers === 1 ? 'member' : 'members'}
         </Badge>
-        <div className="relative">
+        <div className="relative flex-1 sm:flex-none">
           <select
             value={selectedCommunity}
             onChange={(e) => setSelectedCommunity(e.target.value as CommunityType)}
-            className="appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-xl px-3 py-1.5 pr-7 text-xs font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
+            className="w-full sm:w-auto appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-xl px-3 py-2 sm:py-1.5 pr-8 text-xs font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
           >
             <option value="loretta">{t('community.lorettaCommunity', 'Loretta Community')}</option>
             <option value="friends">{t('community.friends', 'My Friends')} ({(Array.isArray(friends) ? friends.length : 0) + 1})</option>
           </select>
-          <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#013DC4] pointer-events-none" />
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#013DC4] pointer-events-none" />
         </div>
       </div>
       
