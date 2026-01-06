@@ -1,17 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { 
   ArrowLeft, 
   Trophy, 
-  TrendingUp, 
-  TrendingDown, 
   Users, 
-  Home,
   Award,
   Target,
   Flame,
@@ -24,7 +18,7 @@ import {
   Moon,
   Loader2,
   Plus,
-  UserPlus
+  ChevronDown
 } from 'lucide-react';
 import { Link, useSearch } from 'wouter';
 import { motion } from 'framer-motion';
@@ -32,6 +26,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
 import CommunitySelector, { CommunityType } from '@/components/CommunitySelector';
 import { trackEvent, trackPageView, ClarityEvents } from '@/lib/clarity';
+import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
 
 interface Team {
   id: string;
@@ -96,6 +91,73 @@ interface FlatAchievement {
   unlockedAt: string | null;
 }
 
+function GlassCard({ 
+  children, 
+  className = '',
+  glow = false 
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+  glow?: boolean;
+}) {
+  return (
+    <div className={`
+      backdrop-blur-xl bg-white/70 dark:bg-gray-900/70
+      border border-white/50 dark:border-white/10
+      rounded-3xl shadow-xl
+      ${glow ? 'shadow-[#013DC4]/20' : ''}
+      ${className}
+    `}>
+      {children}
+    </div>
+  );
+}
+
+function CollapsibleSection({ 
+  title, 
+  icon, 
+  badge, 
+  children, 
+  defaultOpen = true,
+  gradient = false,
+  className = ''
+}: { 
+  title: string; 
+  icon: React.ReactNode; 
+  badge?: React.ReactNode;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  gradient?: boolean;
+  className?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  
+  return (
+    <GlassCard className={`overflow-hidden ${className}`}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full p-4 sm:p-5 flex items-center justify-between transition-colors min-h-[60px] ${
+          gradient ? 'bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10' : 'hover:bg-white/50 dark:hover:bg-gray-800/50'
+        }`}
+      >
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg flex-shrink-0">
+            {icon}
+          </div>
+          <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{title}</h3>
+          {badge}
+        </div>
+        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`}>
+          <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+        </div>
+      </button>
+      <div className={`overflow-hidden transition-all ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="px-4 pb-4 sm:px-5 sm:pb-5">{children}</div>
+      </div>
+    </GlassCard>
+  );
+}
+
 function formatRelativeDate(dateString: string | null, t: (key: string, options?: Record<string, unknown>) => string): string | undefined {
   if (!dateString) return undefined;
   
@@ -140,30 +202,30 @@ const iconMap = {
 
 const rarityColors = {
   common: 'from-emerald-500 to-green-400',
-  rare: 'from-primary to-chart-2',
-  epic: 'from-chart-4 to-purple-500',
-  legendary: 'from-chart-3 to-yellow-500',
+  rare: 'from-[#013DC4] to-[#0150FF]',
+  epic: 'from-purple-500 to-[#CDB6EF]',
+  legendary: 'from-amber-500 to-yellow-400',
 };
 
 const rarityBgColors = {
   common: 'bg-emerald-500/10',
-  rare: 'bg-primary/10',
-  epic: 'bg-chart-4/10',
-  legendary: 'bg-chart-3/10',
+  rare: 'bg-[#013DC4]/10',
+  epic: 'bg-purple-500/10',
+  legendary: 'bg-amber-500/10',
 };
 
 const rarityBorderColors = {
   common: 'border-emerald-500/30',
-  rare: 'border-primary/30',
-  epic: 'border-chart-4/30',
-  legendary: 'border-chart-3/30',
+  rare: 'border-[#013DC4]/30',
+  epic: 'border-purple-500/30',
+  legendary: 'border-amber-500/30',
 };
 
 const rarityProgressBgColors = {
   common: 'bg-emerald-500/20',
-  rare: 'bg-primary/20',
-  epic: 'bg-chart-4/20',
-  legendary: 'bg-chart-3/20',
+  rare: 'bg-[#013DC4]/20',
+  epic: 'bg-purple-500/20',
+  legendary: 'bg-amber-500/20',
 };
 
 export default function LeaderboardPage() {
@@ -176,6 +238,7 @@ export default function LeaderboardPage() {
   
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'leaderboard' | 'achievements'>('leaderboard');
   
   useEffect(() => {
     trackPageView('leaderboard');
@@ -308,12 +371,11 @@ export default function LeaderboardPage() {
       const data = await response.json();
       setTeams(data);
       
-      // If community param is a team ID, select that team
       if (initialCommunity && initialCommunity !== 'loretta' && initialCommunity !== 'friends') {
         const matchingTeam = data.find((t: Team) => t.id === initialCommunity);
         if (matchingTeam) {
           setSelectedTeamId(matchingTeam.id);
-          setSelectedCommunity('loretta'); // Show team view under loretta community
+          setSelectedCommunity('loretta');
         } else if (data.length > 0) {
           setSelectedTeamId(data[0].id);
         }
@@ -370,283 +432,323 @@ export default function LeaderboardPage() {
   const displayEntries = getLeaderboardEntries();
 
   const getRankColor = (rank: number) => {
-    if (rank === 1) return 'text-chart-3';
-    if (rank === 2) return 'text-muted-foreground';
-    if (rank === 3) return 'text-chart-3/70';
-    return 'text-foreground';
+    if (rank === 1) return 'text-amber-500';
+    if (rank === 2) return 'text-gray-400';
+    if (rank === 3) return 'text-amber-600';
+    return 'text-gray-600 dark:text-gray-400';
+  };
+
+  const getRankBg = (rank: number) => {
+    if (rank === 1) return 'bg-gradient-to-br from-amber-400 to-yellow-500';
+    if (rank === 2) return 'bg-gradient-to-br from-gray-300 to-gray-400';
+    if (rank === 3) return 'bg-gradient-to-br from-amber-600 to-amber-700';
+    return 'bg-gray-100 dark:bg-gray-800';
   };
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
   const totalCount = achievements.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      {/* Header */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/my-dashboard">
-              <Button size="icon" variant="ghost" data-testid="button-back">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
+              <button className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+              </button>
             </Link>
-            <div>
-              <h1 className="text-xl font-black text-foreground">{t('leaderboard.title')}</h1>
-              <p className="text-sm text-muted-foreground">{t('leaderboard.achievementsUnlocked', { count: unlockedCount, total: totalCount })}</p>
+            <div className="flex items-center gap-2">
+              <img src={logomarkViolet} alt="Loretta" className="w-8 h-8" />
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 dark:text-white">{t('leaderboard.title')}</h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('leaderboard.achievementsUnlocked', { count: unlockedCount, total: totalCount })}</p>
+              </div>
             </div>
           </div>
-          <Button 
-            size="icon" 
-            variant="ghost"
+          <button 
             onClick={toggleDarkMode}
-            data-testid="button-theme-toggle"
+            className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
           >
-            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </Button>
+            {darkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-gray-600" />}
+          </button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4 space-y-6">
-        <Tabs defaultValue="leaderboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="leaderboard" className="font-bold" data-testid="tab-leaderboard">
-              <Trophy className="w-4 h-4 mr-2" />
+      <main className="max-w-4xl mx-auto p-4 space-y-4">
+        {/* Tab Buttons */}
+        <GlassCard className="p-1.5">
+          <div className="grid grid-cols-2 gap-1">
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold transition-all ${
+                activeTab === 'leaderboard'
+                  ? 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white shadow-lg'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+            >
+              <Trophy className="w-4 h-4" />
               {t('leaderboard.tabs.leaderboard')}
-            </TabsTrigger>
-            <TabsTrigger value="achievements" className="font-bold" data-testid="tab-achievements">
-              <Award className="w-4 h-4 mr-2" />
+            </button>
+            <button
+              onClick={() => setActiveTab('achievements')}
+              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold transition-all ${
+                activeTab === 'achievements'
+                  ? 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white shadow-lg'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+            >
+              <Award className="w-4 h-4" />
               {t('leaderboard.tabs.achievements')}
-            </TabsTrigger>
-          </TabsList>
+            </button>
+          </div>
+        </GlassCard>
 
-          <TabsContent value="leaderboard">
-            <Card className="p-6">
-              <div className="flex flex-col gap-4 mb-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-chart-3" />
-                    <h3 className="text-xl sm:text-2xl font-black text-foreground">{t('leaderboard.teamRankings')}</h3>
+        {activeTab === 'leaderboard' && (
+          <CollapsibleSection
+            title={t('leaderboard.teamRankings')}
+            icon={<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />}
+            badge={
+              <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
+                {displayEntries.length} {t('leaderboard.members')}
+              </Badge>
+            }
+            gradient
+          >
+            {/* Community Selector */}
+            <div className="mb-4">
+              <CommunitySelector 
+                value={selectedCommunity} 
+                onChange={setSelectedCommunity}
+                friendsCount={(Array.isArray(friends) ? friends.length : 0) + 1}
+                className="w-full"
+              />
+            </div>
+
+            {/* Team Selector */}
+            {selectedCommunity === 'loretta' && teams.length > 1 && (
+              <div className="flex gap-2 flex-wrap mb-4">
+                {teams.map(team => (
+                  <button
+                    key={team.id}
+                    onClick={() => setSelectedTeamId(team.id)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                      selectedTeamId === team.id
+                        ? 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white shadow-lg'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    <Users className="w-4 h-4" />
+                    {team.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Leaderboard Content */}
+            {selectedCommunity === 'friends' ? (
+              <div className="space-y-3">
+                {loadingFriends || !userGamification ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-[#013DC4]" />
                   </div>
-                  <CommunitySelector 
-                    value={selectedCommunity} 
-                    onChange={setSelectedCommunity}
-                    friendsCount={friends.length + 1}
-                    className="w-full sm:w-auto sm:min-w-[180px]"
-                  />
-                </div>
-                {selectedCommunity === 'loretta' && teams.length > 1 && (
-                  <div className="flex gap-2 flex-wrap">
-                    {teams.map(team => (
-                      <Button
-                        key={team.id}
-                        size="sm"
-                        variant={selectedTeamId === team.id ? 'default' : 'outline'}
-                        onClick={() => setSelectedTeamId(team.id)}
-                      >
-                        <Users className="w-4 h-4 mr-1" />
-                        {team.name}
-                      </Button>
-                    ))}
-                  </div>
+                ) : (
+                  <>
+                    {(() => {
+                      const friendsList = Array.isArray(friends) ? friends : [];
+                      const allParticipants = [
+                        ...(user && userGamification ? [{
+                          id: user.id,
+                          username: user.username,
+                          xp: userGamification.xp,
+                          level: userGamification.level,
+                          currentStreak: userGamification.currentStreak,
+                          isCurrentUser: true,
+                        }] : []),
+                        ...friendsList.map(f => ({ ...f, isCurrentUser: false })),
+                      ].sort((a, b) => b.xp - a.xp);
+                      
+                      return allParticipants.map((participant, index) => (
+                        <motion.div
+                          key={participant.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className={`flex items-center gap-3 p-4 rounded-2xl transition-all ${
+                            participant.isCurrentUser
+                              ? 'bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border-2 border-[#013DC4]/30 shadow-lg'
+                              : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                          }`}
+                        >
+                          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center font-black text-sm sm:text-base ${
+                            index < 3 ? `${getRankBg(index + 1)} text-white` : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                          }`}>
+                            #{index + 1}
+                          </div>
+                          
+                          <Avatar className="w-10 h-10">
+                            <AvatarFallback className="bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] text-white font-bold">
+                              {participant.username.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="flex-1 min-w-0">
+                            <p className={`font-bold flex items-center gap-2 truncate ${participant.isCurrentUser ? 'text-[#013DC4]' : 'text-gray-900 dark:text-white'}`}>
+                              {participant.username}
+                              {index === 0 && <Crown className="w-4 h-4 text-amber-500 flex-shrink-0" />}
+                              {participant.isCurrentUser && (
+                                <span className="text-xs bg-[#013DC4]/10 text-[#013DC4] px-2 py-0.5 rounded-full flex-shrink-0">{t('leaderboard.you')}</span>
+                              )}
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-3">
+                              <span className="font-medium">{participant.xp.toLocaleString()} XP</span>
+                              <span className="flex items-center gap-1">
+                                <Flame className="w-3 h-3 text-orange-500" />
+                                {participant.currentStreak} {t('leaderboard.days')}
+                              </span>
+                            </p>
+                          </div>
+                          
+                          <div className="bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                            Lv.{participant.level}
+                          </div>
+                        </motion.div>
+                      ));
+                    })()}
+                    
+                    <div className="text-center py-6 border-t border-gray-200 dark:border-gray-700 mt-4">
+                      <h4 className="text-base font-bold text-gray-900 dark:text-white mb-2">{t('leaderboard.inviteFriends.title')}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        {t('leaderboard.inviteFriends.message')}
+                      </p>
+                      {inviteCode && (
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-4">
+                          <code className="px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-xl font-mono text-xs sm:text-sm break-all max-w-full overflow-hidden text-gray-700 dark:text-gray-300">
+                            {window.location.origin}/join/{inviteCode}
+                          </code>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(`${window.location.origin}/join/${inviteCode}`);
+                            }}
+                            className="w-full sm:w-auto mt-2 sm:mt-0 px-4 py-2 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white font-medium rounded-xl text-sm hover:opacity-90 transition-opacity"
+                          >
+                            {t('leaderboard.inviteFriends.copy')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
-
-              {selectedCommunity === 'friends' ? (
-                <div className="space-y-3">
-                  {loadingFriends || !userGamification ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    <>
-                      {(() => {
-                        const friendsList = Array.isArray(friends) ? friends : [];
-                        const allParticipants = [
-                          ...(user && userGamification ? [{
-                            id: user.id,
-                            username: user.username,
-                            xp: userGamification.xp,
-                            level: userGamification.level,
-                            currentStreak: userGamification.currentStreak,
-                            isCurrentUser: true,
-                          }] : []),
-                          ...friendsList.map(f => ({ ...f, isCurrentUser: false })),
-                        ].sort((a, b) => b.xp - a.xp);
-                        
-                        return allParticipants.map((participant, index) => (
-                          <motion.div
-                            key={participant.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className={`flex items-center gap-3 p-4 rounded-lg transition-all ${
-                              participant.isCurrentUser
-                                ? 'bg-primary/10 border-2 border-primary shadow-md'
-                                : 'bg-muted/30 hover:bg-muted/50'
-                            } ${index < 3 ? 'shadow-md' : ''}`}
-                            data-testid={`leaderboard-entry-${index + 1}`}
-                          >
-                            <div className={`w-12 h-12 rounded-full bg-card flex items-center justify-center font-black text-lg ${getRankColor(index + 1)}`}>
-                              #{index + 1}
-                            </div>
-                            
-                            <Avatar className="w-10 h-10">
-                              <AvatarFallback className="bg-gradient-to-br from-primary to-chart-2 text-white font-bold">
-                                {participant.username.substring(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            
-                            <div className="flex-1">
-                              <p className={`font-bold flex items-center gap-2 ${participant.isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
-                                {participant.username}
-                                {index === 0 && <Crown className="w-4 h-4 text-chart-3" />}
-                                {participant.isCurrentUser && <Badge variant="secondary" className="text-xs">{t('leaderboard.you')}</Badge>}
-                              </p>
-                              <p className="text-sm text-muted-foreground flex items-center gap-3">
-                                <span>{participant.xp.toLocaleString()} XP</span>
-                                <span className="flex items-center gap-1">
-                                  <Flame className="w-3 h-3 text-chart-3" />
-                                  {t('leaderboard.dayStreak', { count: participant.currentStreak })}
-                                </span>
-                              </p>
-                            </div>
-                            
-                            <Badge className="bg-primary/20 text-primary">
-                              {t('leaderboard.lvl', { level: participant.level })}
-                            </Badge>
-                          </motion.div>
-                        ));
-                      })()}
-                      
-                      <div className="text-center py-6 border-t border-border mt-4">
-                        <h4 className="text-md font-bold mb-2">{t('leaderboard.inviteFriends.title')}</h4>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          {t('leaderboard.inviteFriends.message')}
-                        </p>
-                        {inviteCode && (
-                          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mb-4">
-                            <code className="px-3 py-2 bg-muted rounded-lg font-mono text-xs sm:text-sm break-all max-w-full overflow-hidden">
-                              {window.location.origin}/join/{inviteCode}
-                            </code>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-full sm:w-auto mt-2 sm:mt-0"
-                              onClick={() => {
-                                navigator.clipboard.writeText(`${window.location.origin}/join/${inviteCode}`);
-                              }}
-                            >
-                              {t('leaderboard.inviteFriends.copy')}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : loadingTeams ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-              ) : teams.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h4 className="text-lg font-bold mb-2">{t('leaderboard.noTeams.title')}</h4>
-                  <p className="text-muted-foreground mb-4">
-                    {t('leaderboard.noTeams.message')}
-                  </p>
-                  <Link href="/invite">
-                    <Button>
-                      <Plus className="w-4 h-4 mr-2" />
-                      {t('leaderboard.noTeams.createTeam')}
-                    </Button>
-                  </Link>
-                </div>
-              ) : loadingMembers ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-              ) : displayEntries.length === 0 ? (
-                <div className="text-center py-12">
-                  <Shield className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h4 className="text-lg font-bold mb-2">{t('leaderboard.waitingMembers.title')}</h4>
-                  <p className="text-muted-foreground">
-                    {t('leaderboard.waitingMembers.message')}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {displayEntries.map((entry, index) => (
-                    <motion.div
-                      key={entry.rank}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className={`flex items-center gap-3 p-4 rounded-lg transition-all ${
-                        entry.isCurrentUser
-                          ? 'bg-primary/10 border-2 border-primary'
-                          : 'bg-muted/30 hover:bg-muted/50'
-                      } ${entry.rank <= 3 ? 'shadow-md' : ''}`}
-                      data-testid={`leaderboard-entry-${entry.rank}`}
-                    >
-                      <div className={`w-12 h-12 rounded-full bg-card flex items-center justify-center font-black text-lg ${getRankColor(entry.rank)}`}>
-                        #{entry.rank}
-                      </div>
-                      
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback className="bg-gradient-to-br from-primary to-chart-2 text-white font-bold">
-                          {entry.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1">
-                        <p className={`font-bold flex items-center gap-2 ${entry.isCurrentUser ? 'text-primary' : 'text-foreground'}`}>
-                          {entry.name}
-                          {entry.isOwner && (
-                            <Crown className="w-4 h-4 text-chart-3" />
-                          )}
-                          {entry.isCurrentUser && (
-                            <Badge variant="secondary" className="text-xs">{t('leaderboard.you')}</Badge>
-                          )}
-                        </p>
-                        <p className="text-sm text-muted-foreground flex items-center gap-3">
-                          <span>{entry.xp.toLocaleString()} XP</span>
-                          <span className="flex items-center gap-1">
-                            <Flame className="w-3 h-3 text-chart-3" />
-                            {t('leaderboard.dayStreak', { count: entry.streak })}
-                          </span>
-                        </p>
-                      </div>
-                      
-                      <Badge className="bg-primary/20 text-primary">
-                        {t('leaderboard.lvl', { level: entry.level })}
-                      </Badge>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="achievements">
-            {loadingAchievements ? (
+            ) : loadingTeams ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#013DC4]" />
+              </div>
+            ) : teams.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <Users className="w-8 h-8 text-gray-400" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{t('leaderboard.noTeams.title')}</h4>
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  {t('leaderboard.noTeams.message')}
+                </p>
+                <Link href="/invite">
+                  <button className="px-6 py-3 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white font-bold rounded-xl flex items-center gap-2 mx-auto hover:opacity-90 transition-opacity">
+                    <Plus className="w-4 h-4" />
+                    {t('leaderboard.noTeams.createTeam')}
+                  </button>
+                </Link>
+              </div>
+            ) : loadingMembers ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-[#013DC4]" />
+              </div>
+            ) : displayEntries.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <Shield className="w-8 h-8 text-gray-400" />
+                </div>
+                <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{t('leaderboard.waitingMembers.title')}</h4>
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t('leaderboard.waitingMembers.message')}
+                </p>
               </div>
             ) : (
-            <div className="space-y-4">
-              <Card className="p-4 bg-gradient-to-r from-chart-3/10 to-chart-3/5 border-chart-3/30">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t('leaderboard.achievements.progress')}</p>
-                    <p className="text-2xl font-black text-foreground">{t('leaderboard.achievements.ofTotal', { count: unlockedCount, total: totalCount })}</p>
-                  </div>
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-chart-3 to-yellow-500 flex items-center justify-center">
-                    <Trophy className="w-8 h-8 text-white" />
-                  </div>
-                </div>
-                <Progress value={totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0} className="mt-3 h-2" />
-              </Card>
+              <div className="space-y-3">
+                {displayEntries.map((entry, index) => (
+                  <motion.div
+                    key={entry.rank}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`flex items-center gap-3 p-4 rounded-2xl transition-all ${
+                      entry.isCurrentUser
+                        ? 'bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border-2 border-[#013DC4]/30 shadow-lg'
+                        : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-800/80'
+                    }`}
+                  >
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center font-black text-sm sm:text-base ${
+                      entry.rank <= 3 ? `${getRankBg(entry.rank)} text-white` : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                    }`}>
+                      #{entry.rank}
+                    </div>
+                    
+                    <Avatar className="w-10 h-10">
+                      <AvatarFallback className="bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] text-white font-bold">
+                        {entry.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold flex items-center gap-2 truncate ${entry.isCurrentUser ? 'text-[#013DC4]' : 'text-gray-900 dark:text-white'}`}>
+                        {entry.name}
+                        {entry.isOwner && <Crown className="w-4 h-4 text-amber-500 flex-shrink-0" />}
+                        {entry.isCurrentUser && (
+                          <span className="text-xs bg-[#013DC4]/10 text-[#013DC4] px-2 py-0.5 rounded-full flex-shrink-0">{t('leaderboard.you')}</span>
+                        )}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-3">
+                        <span className="font-medium">{entry.xp.toLocaleString()} XP</span>
+                        <span className="flex items-center gap-1">
+                          <Flame className="w-3 h-3 text-orange-500" />
+                          {entry.streak} {t('leaderboard.days')}
+                        </span>
+                      </p>
+                    </div>
+                    
+                    <div className="bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                      Lv.{entry.level}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </CollapsibleSection>
+        )}
 
+        {activeTab === 'achievements' && (
+          <>
+            {/* Achievement Progress Card */}
+            <GlassCard className="p-5 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" glow>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('leaderboard.achievements.progress')}</p>
+                  <p className="text-2xl font-black text-gray-900 dark:text-white">{t('leaderboard.achievements.ofTotal', { count: unlockedCount, total: totalCount })}</p>
+                </div>
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center shadow-lg">
+                  <Trophy className="w-7 h-7 text-white" />
+                </div>
+              </div>
+              <Progress value={totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0} className="h-2 bg-gray-200 dark:bg-gray-700" />
+            </GlassCard>
+
+            {loadingAchievements ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-[#013DC4]" />
+              </div>
+            ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {achievements.map((achievement, index) => {
                   const IconComponent = iconMap[achievement.icon] || Award;
@@ -660,65 +762,61 @@ export default function LeaderboardPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                     >
-                      <Card 
-                        className={`p-4 ${rarityBgColors[achievement.rarity]} border ${rarityBorderColors[achievement.rarity]} ${
-                          !shouldHighlight ? 'opacity-70' : ''
-                        }`}
-                        data-testid={`achievement-${achievement.id}`}
+                      <GlassCard 
+                        className={`p-4 ${!shouldHighlight ? 'opacity-70' : ''}`}
                       >
                         <div className="flex items-start gap-4">
-                          <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${rarityColors[achievement.rarity]} flex items-center justify-center shrink-0 ${
+                          <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${rarityColors[achievement.rarity]} flex items-center justify-center shrink-0 shadow-lg ${
                             !shouldHighlight ? 'grayscale' : ''
                           }`}>
-                            <IconComponent className="w-7 h-7 text-white" />
+                            <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-bold text-foreground">{achievement.title}</p>
+                              <p className="font-bold text-gray-900 dark:text-white">{achievement.title}</p>
                               <Badge 
                                 variant="outline" 
                                 className={`text-xs capitalize ${
-                                  achievement.rarity === 'legendary' ? 'border-chart-3 text-chart-3' :
-                                  achievement.rarity === 'epic' ? 'border-chart-4 text-chart-4' :
-                                  achievement.rarity === 'rare' ? 'border-primary text-primary' :
+                                  achievement.rarity === 'legendary' ? 'border-amber-500 text-amber-500' :
+                                  achievement.rarity === 'epic' ? 'border-purple-500 text-purple-500' :
+                                  achievement.rarity === 'rare' ? 'border-[#013DC4] text-[#013DC4]' :
                                   'border-emerald-500 text-emerald-500'
                                 }`}
                               >
                                 {achievement.rarity}
                               </Badge>
                             </div>
-                            <p className="text-sm text-muted-foreground mt-1">{achievement.description}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{achievement.description}</p>
                             
                             {achievement.unlocked ? (
-                              <p className="text-xs text-chart-2 font-medium mt-2 flex items-center gap-1">
+                              <p className="text-xs text-emerald-600 font-medium mt-2 flex items-center gap-1">
                                 <Award className="w-3 h-3" />
                                 {t('leaderboard.achievements.unlocked', { date: achievement.unlockedDate })}
                               </p>
                             ) : achievement.progress !== undefined && achievement.maxProgress !== undefined ? (
                               <div className="mt-2">
-                                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                                   <span>{t('leaderboard.achievements.progress')}</span>
                                   <span>{achievement.progress}/{achievement.maxProgress}</span>
                                 </div>
                                 <Progress 
                                   value={(achievement.progress / achievement.maxProgress) * 100} 
-                                  className={`h-1.5 ${rarityProgressBgColors[achievement.rarity]} ${hasNoProgress ? '[&>div]:bg-muted-foreground/40' : ''}`}
+                                  className={`h-1.5 ${rarityProgressBgColors[achievement.rarity]} ${hasNoProgress ? '[&>div]:bg-gray-400' : ''}`}
                                 />
                               </div>
                             ) : (
-                              <p className="text-xs text-muted-foreground mt-2">{t('leaderboard.achievements.notUnlocked')}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{t('leaderboard.achievements.notUnlocked')}</p>
                             )}
                           </div>
                         </div>
-                      </Card>
+                      </GlassCard>
                     </motion.div>
                   );
                 })}
               </div>
-            </div>
             )}
-          </TabsContent>
-        </Tabs>
+          </>
+        )}
       </main>
     </div>
   );
