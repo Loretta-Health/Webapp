@@ -26,7 +26,7 @@ import {
   Plus,
   UserPlus
 } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link, useSearch } from 'wouter';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
@@ -170,6 +170,10 @@ export default function LeaderboardPage() {
   const { t } = useTranslation('pages');
   const { t: tDashboard } = useTranslation('dashboard');
   const { user } = useAuth();
+  const searchString = useSearch();
+  const urlParams = new URLSearchParams(searchString);
+  const initialCommunity = urlParams.get('community') as CommunityType | null;
+  
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   
@@ -182,7 +186,7 @@ export default function LeaderboardPage() {
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loadingAchievements, setLoadingAchievements] = useState(true);
-  const [selectedCommunity, setSelectedCommunity] = useState<CommunityType>('loretta');
+  const [selectedCommunity, setSelectedCommunity] = useState<CommunityType>(initialCommunity || 'loretta');
   const [userGamification, setUserGamification] = useState<{ xp: number; level: number; currentStreak: number } | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loadingFriends, setLoadingFriends] = useState(false);
@@ -204,7 +208,7 @@ export default function LeaderboardPage() {
   const fetchUserGamification = async () => {
     if (!user?.id) return;
     try {
-      const response = await fetch(`/api/gamification/${user.id}`, {
+      const response = await fetch(`/api/gamification`, {
         credentials: 'include',
       });
       if (response.ok) {
@@ -303,7 +307,17 @@ export default function LeaderboardPage() {
       });
       const data = await response.json();
       setTeams(data);
-      if (data.length > 0) {
+      
+      // If community param is a team ID, select that team
+      if (initialCommunity && initialCommunity !== 'loretta' && initialCommunity !== 'friends') {
+        const matchingTeam = data.find((t: Team) => t.id === initialCommunity);
+        if (matchingTeam) {
+          setSelectedTeamId(matchingTeam.id);
+          setSelectedCommunity('loretta'); // Show team view under loretta community
+        } else if (data.length > 0) {
+          setSelectedTeamId(data[0].id);
+        }
+      } else if (data.length > 0) {
         setSelectedTeamId(data[0].id);
       }
     } catch (err) {
