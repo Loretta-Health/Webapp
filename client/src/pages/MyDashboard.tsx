@@ -723,7 +723,7 @@ export default function MyDashboard() {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               <GlassCard className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
                 <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg flex-shrink-0">
                   <Zap className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
