@@ -3572,73 +3572,103 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
     });
   }
   
-  // === BALANCE/MOBILITY (ML Features: BAQ061, BAQ161B, BAQ321C, BAQ530) ===
-  const difficultyBalancing = answers.BAQ061 === '1' || answers.difficulty_balancing === 'yes';
-  const dizzinessWhileStanding = answers.BAQ161B === '1' || answers.dizziness_standing === 'yes';
-  const dizzinessFrequent = answers.BAQ321C === '1' || answers.dizziness_frequent === 'yes';
-  const fallsRecent = answers.BAQ530 === '1' || answers.BAQ530 === '2' || answers.falls_recent === 'yes';
+  // === BALANCE/MOBILITY (ML Features: BAQ321C, BAQ530 ONLY) ===
+  // Note: BAQ061 and BAQ161B are NOT in the ML model
+  const hasUnsteadiness = answers.BAQ321C === '1' || answers.unsteadiness === 'yes';
+  const fallsAnswer = answers.BAQ530 || answers.falls;
+  // Questionnaire stores: 'never', '1_2', '3_4', 'yearly', 'monthly', 'weekly', 'daily'
+  // Or numeric API values: '0'=never, '1'=1-2 times, '2'=3-4 times, '3'=yearly, '4'=monthly, '5'=weekly, '6'=daily
+  const hadFalls = fallsAnswer === '1' || fallsAnswer === '2' || fallsAnswer === '3' || 
+                   fallsAnswer === '1_2' || fallsAnswer === '3_4' || fallsAnswer === 'yearly';
+  const frequentFalls = fallsAnswer === '4' || fallsAnswer === '5' || fallsAnswer === '6' ||
+                        fallsAnswer === 'monthly' || fallsAnswer === 'weekly' || fallsAnswer === 'daily';
   
-  const balanceIssueCount = [difficultyBalancing, dizzinessWhileStanding, dizzinessFrequent, fallsRecent].filter(Boolean).length;
-  
-  if (balanceIssueCount >= 3) {
+  if (frequentFalls) {
     factors.push({
       id: 'balance',
-      name: 'Multiple Balance/Mobility Issues',
-      description: 'Multiple concerns with balance, dizziness, or falls',
+      name: 'Frequent Falls',
+      description: 'Falls monthly or more often in past 5 years',
       category: 'Balance/Mobility',
       points: 12,
       maxPoints: 12,
       type: 'negative',
       icon: 'footprints',
     });
-  } else if (balanceIssueCount >= 1) {
+  } else if (hasUnsteadiness && hadFalls) {
     factors.push({
       id: 'balance',
-      name: 'Balance/Mobility Concerns',
-      description: 'Some issues with balance or stability',
+      name: 'Balance/Fall Concerns',
+      description: 'Problems with unsteadiness and history of falls',
       category: 'Balance/Mobility',
-      points: 6,
+      points: 8,
+      maxPoints: 12,
+      type: 'warning',
+      icon: 'footprints',
+    });
+  } else if (hasUnsteadiness || hadFalls) {
+    factors.push({
+      id: 'balance',
+      name: 'Balance/Mobility Concern',
+      description: hasUnsteadiness ? 'Problems with unsteadiness in past 12 months' : 'History of falls in past 5 years',
+      category: 'Balance/Mobility',
+      points: 5,
       maxPoints: 12,
       type: 'warning',
       icon: 'footprints',
     });
   }
   
-  // === ORAL HEALTH (ML Features: OHQ620, OHQ630, OHQ660, OHQ845) ===
-  const hasGumDisease = answers.OHQ620 === '1' || answers.gum_disease === 'yes';
-  const hasLooseTeeth = answers.OHQ630 === '1' || answers.loose_teeth === 'yes';
-  const hasBoneLoss = answers.OHQ660 === '1' || answers.bone_loss === 'yes';
-  const oralHealthRating = answers.OHQ845 || answers.oral_health_rating;
-  const poorDentalHealth = oralHealthRating === '4' || oralHealthRating === '5';
+  // === ORAL HEALTH (ML Features: OHQ845, OHQ620, OHQ630, OHQ660, OHQ670) ===
+  // IMPORTANT: These features measure mouth problems, NOT gum disease/loose teeth/bone loss
+  // OHQ620 = "How often had aching in mouth?" (very_often=0, fairly_often=1, occasionally=2, hardly_ever=3, never=4)
+  // OHQ630 = "How often felt bad because of mouth?" (same scale)
+  // OHQ660 = "Avoid food because of mouth" (same scale)
+  // OHQ670 = "Couldn't eat because of mouth" (same scale)
+  // OHQ845 = "Rate teeth and gums health" (excellent=0, very_good=1, good=2, fair=3, poor=4)
   
-  const oralHealthIssues = [poorDentalHealth, hasGumDisease, hasLooseTeeth, hasBoneLoss].filter(Boolean).length;
-  if (oralHealthIssues >= 3) {
+  const mouthAching = answers.OHQ620 || answers.mouth_aching;
+  const mouthFeelBad = answers.OHQ630 || answers.mouth_feel_bad;
+  const mouthAvoidFood = answers.OHQ660 || answers.mouth_avoid_food;
+  const mouthEatingProblems = answers.OHQ670 || answers.mouth_eating_problems;
+  const dentalHealthRating = answers.OHQ845 || answers.dental_health;
+  
+  // Count frequent mouth problems (very_often or fairly_often = serious issue)
+  const frequentMouthAching = mouthAching === '0' || mouthAching === '1' || mouthAching === 'very_often' || mouthAching === 'fairly_often';
+  const frequentFeelBad = mouthFeelBad === '0' || mouthFeelBad === '1' || mouthFeelBad === 'very_often' || mouthFeelBad === 'fairly_often';
+  const frequentAvoidFood = mouthAvoidFood === '0' || mouthAvoidFood === '1' || mouthAvoidFood === 'very_often' || mouthAvoidFood === 'fairly_often';
+  const frequentEatingProblems = mouthEatingProblems === '0' || mouthEatingProblems === '1' || mouthEatingProblems === 'very_often' || mouthEatingProblems === 'fairly_often';
+  const poorDentalRating = dentalHealthRating === '3' || dentalHealthRating === '4' || dentalHealthRating === 'fair' || dentalHealthRating === 'poor';
+  const goodDentalRating = dentalHealthRating === '0' || dentalHealthRating === '1' || dentalHealthRating === 'excellent' || dentalHealthRating === 'very_good';
+  
+  const mouthProblemCount = [frequentMouthAching, frequentFeelBad, frequentAvoidFood, frequentEatingProblems].filter(Boolean).length;
+  
+  if (mouthProblemCount >= 3 || (poorDentalRating && mouthProblemCount >= 2)) {
     factors.push({
       id: 'oral-health',
-      name: 'Poor Oral Health',
-      description: 'Multiple oral health concerns (gum disease, loose teeth, bone loss)',
+      name: 'Significant Oral Health Issues',
+      description: 'Frequent mouth aching, eating difficulties, or food avoidance',
       category: 'Oral Health',
       points: 10,
       maxPoints: 10,
       type: 'negative',
       icon: 'smile',
     });
-  } else if (oralHealthIssues >= 1) {
+  } else if (mouthProblemCount >= 1 || poorDentalRating) {
     factors.push({
       id: 'oral-health',
       name: 'Oral Health Concerns',
-      description: 'Some oral health issues present',
+      description: poorDentalRating ? 'Fair or poor dental health rating' : 'Some mouth discomfort or eating issues',
       category: 'Oral Health',
       points: 5,
       maxPoints: 10,
       type: 'warning',
       icon: 'smile',
     });
-  } else if (oralHealthRating === '1' || oralHealthRating === '2') {
+  } else if (goodDentalRating) {
     factors.push({
       id: 'oral-health',
       name: 'Good Oral Health',
-      description: 'Excellent or very good oral health',
+      description: 'Excellent or very good dental health',
       category: 'Oral Health',
       points: 0,
       maxPoints: 10,
