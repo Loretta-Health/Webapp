@@ -709,51 +709,51 @@ export default function MyDashboard() {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-3">
               <Link href="/leaderboard">
-                <GlassCard className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer">
-                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg flex-shrink-0">
-                    <Zap className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
+                <GlassCard className="p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer h-full">
+                  <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg flex-shrink-0">
+                    <Zap className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-sm sm:text-xl font-black text-gray-900 dark:text-white truncate">{xp.toLocaleString()}</div>
-                    <div className="text-[9px] sm:text-xs text-gray-500 font-medium">{t('sidebar.totalXp', 'Total XP')}</div>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="text-xs sm:text-xl font-black text-gray-900 dark:text-white truncate">{xp.toLocaleString()}</div>
+                    <div className="text-[8px] sm:text-xs text-gray-500 font-medium truncate">{t('sidebar.totalXp', 'Total XP')}</div>
                   </div>
                 </GlassCard>
               </Link>
               
               <Link href="/streak">
-                <GlassCard className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer">
-                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg flex-shrink-0">
-                    <Flame className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
+                <GlassCard className="p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer h-full">
+                  <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg flex-shrink-0">
+                    <Flame className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-sm sm:text-xl font-black text-gray-900 dark:text-white truncate">{streak} {t('common.days', 'days')}</div>
-                    <div className="text-[9px] sm:text-xs text-gray-500 font-medium">{t('sidebar.streakLabel', 'Streak')}</div>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="text-xs sm:text-xl font-black text-gray-900 dark:text-white truncate">{streak}d</div>
+                    <div className="text-[8px] sm:text-xs text-gray-500 font-medium truncate">{t('sidebar.streakLabel', 'Streak')}</div>
                   </div>
                 </GlassCard>
               </Link>
               
               <Link href="/missions">
-                <GlassCard className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer">
-                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center shadow-lg flex-shrink-0">
-                    <Target className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
+                <GlassCard className="p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer h-full">
+                  <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center shadow-lg flex-shrink-0">
+                    <Target className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-sm sm:text-xl font-black text-gray-900 dark:text-white truncate">{completedCount}/{activeMissions.length}</div>
-                    <div className="text-[9px] sm:text-xs text-gray-500 font-medium">{t('sidebar.missions', 'Missions')}</div>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="text-xs sm:text-xl font-black text-gray-900 dark:text-white truncate">{completedCount}/{activeMissions.length}</div>
+                    <div className="text-[8px] sm:text-xs text-gray-500 font-medium truncate">{t('sidebar.missions', 'Missions')}</div>
                   </div>
                 </GlassCard>
               </Link>
               
               <Link href="/leaderboard">
-                <GlassCard className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer">
-                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-lg flex-shrink-0">
-                    <Trophy className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white" />
+                <GlassCard className="p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer h-full">
+                  <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-lg flex-shrink-0">
+                    <Trophy className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="text-sm sm:text-xl font-black text-gray-900 dark:text-white truncate">{userAchievements?.filter(a => a.unlocked).length || 0}</div>
-                    <div className="text-[9px] sm:text-xs text-gray-500 font-medium">{t('sidebar.achievements', 'Achievements')}</div>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <div className="text-xs sm:text-xl font-black text-gray-900 dark:text-white truncate">{userAchievements?.filter(a => a.unlocked).length || 0}</div>
+                    <div className="text-[8px] sm:text-xs text-gray-500 font-medium truncate">{t('sidebar.achievements', 'Achievements')}</div>
                   </div>
                 </GlassCard>
               </Link>
