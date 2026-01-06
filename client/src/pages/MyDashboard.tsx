@@ -221,8 +221,8 @@ export default function MyDashboard() {
   });
 
   const coreQuestionIds = [
-    'blood_test_3_years', 'prescription_medicine', 'high_blood_pressure', 'general_health',
-    'age', 'weight_current', 'height', 'high_cholesterol', 'daily_aspirin', 'prediabetes'
+    'prescription_medicine', 'high_blood_pressure', 'general_health',
+    'age', 'weight_current', 'height', 'high_cholesterol', 'daily_aspirin'
   ];
   
   const getSavedAnswerIds = (): string[] => {

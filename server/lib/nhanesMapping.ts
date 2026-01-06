@@ -95,11 +95,9 @@ export const QUESTIONNAIRE_TO_NHANES: FeatureMapping[] = [
   }},
 
   // Health Conditions
-  { questionId: 'blood_test_3_years', nhanesId: 'DIQ180', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
   { questionId: 'prescription_medicine', nhanesId: 'RXQ033', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
   { questionId: 'high_blood_pressure', nhanesId: 'BPQ020', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
   { questionId: 'high_cholesterol', nhanesId: 'BPQ080', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
-  { questionId: 'prediabetes', nhanesId: 'DIQ160', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
   { questionId: 'arthritis', nhanesId: 'MCQ160A', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
   { questionId: 'heart_failure', nhanesId: 'MCQ160B', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
   { questionId: 'coronary_disease', nhanesId: 'MCQ160C', valueType: 'categorical', valueMapping: YES_NO_MAPPING },
