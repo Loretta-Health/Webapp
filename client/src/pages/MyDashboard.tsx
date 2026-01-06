@@ -44,9 +44,6 @@ interface GamificationData {
 
 interface RiskScoreData {
   overallScore: number;
-  diabetesRisk: number;
-  heartRisk: number;
-  strokeRisk: number;
 }
 
 interface EmotionalCheckinData {

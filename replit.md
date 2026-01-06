@@ -36,9 +36,9 @@ Preferred communication style: Simple, everyday language.
   - **Authentication**: API key stored in `ML_API_KEY` secret, sent via `X-API-Key` header
   - **Feature Mapping**: `server/lib/nhanesMapping.ts` converts questionnaire answers to NHANES feature format
   - **Fallback**: If ML API is unavailable or insufficient features, uses evidence-based risk model
-- **Risk Calculation**: Primary diabetes risk from ML model (0-100 scale based on probability), heart/stroke risk from evidence-based model.
+- **Single Health Risk Score**: The application uses ONE health risk score powered by the diabetes ML model (RDP001). Heart and stroke risk calculations have been deprecated - only the overall diabetes-based health score is used.
 - **Data Sync**: Bidirectional synchronization between profile and questionnaire for shared fields (age, height, weight, ethnicity). Changes to either automatically update the other.
-- **Auto-Recalculation**: Risk scores automatically recalculate when profile health data or questionnaire answers are updated, attempting ML model first.
+- **Auto-Recalculation**: Risk score automatically recalculates when profile health data or questionnaire answers are updated, attempting ML model first.
 
 ### Friend System
 - **Unique Invite Codes**: Each user has a unique 8-character invite code stored in `user_invite_codes` table
