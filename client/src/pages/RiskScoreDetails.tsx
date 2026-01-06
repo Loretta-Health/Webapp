@@ -1,10 +1,10 @@
+import { useState } from 'react';
 import { Link, Redirect } from 'wouter';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { 
   ChevronRight, 
+  ChevronDown,
   AlertCircle, 
   CheckCircle2, 
   AlertTriangle,
@@ -28,13 +28,14 @@ import {
   User,
   Armchair,
   Footprints,
-  MessageCircle
+  MessageCircle,
+  RefreshCw,
+  Shield
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
-import { RefreshCw } from 'lucide-react';
 
 interface RiskScoreData {
   overallScore: number;
@@ -54,30 +55,97 @@ interface RiskFactorData {
   icon: string;
 }
 
-const getIconComponent = (iconName: string) => {
+function GlassCard({ 
+  children, 
+  className = '',
+  glow = false 
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+  glow?: boolean;
+}) {
+  return (
+    <div className={`
+      backdrop-blur-xl bg-white/70 dark:bg-gray-900/70
+      border border-white/50 dark:border-white/10
+      rounded-3xl shadow-xl
+      ${glow ? 'shadow-[#013DC4]/20' : ''}
+      ${className}
+    `}>
+      {children}
+    </div>
+  );
+}
+
+function CollapsibleSection({ 
+  title, 
+  icon, 
+  badge, 
+  children, 
+  defaultOpen = true,
+  gradient = false,
+  iconColor = 'from-[#013DC4] to-[#CDB6EF]'
+}: { 
+  title: string; 
+  icon: React.ReactNode; 
+  badge?: React.ReactNode;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  gradient?: boolean;
+  iconColor?: string;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  
+  return (
+    <GlassCard className="overflow-hidden">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full p-4 sm:p-5 flex items-center justify-between transition-colors min-h-[60px] ${
+          gradient ? 'bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10' : 'hover:bg-white/50 dark:hover:bg-gray-800/50'
+        }`}
+      >
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br ${iconColor} flex items-center justify-center text-white shadow-lg flex-shrink-0`}>
+            {icon}
+          </div>
+          <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{title}</h3>
+          {badge}
+        </div>
+        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`}>
+          <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+        </div>
+      </button>
+      <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+        <div className="px-4 pb-4 sm:px-5 sm:pb-5">{children}</div>
+      </div>
+    </GlassCard>
+  );
+}
+
+const getIconComponent = (iconName: string, size = 'w-4 h-4') => {
   const iconMap: Record<string, React.ReactNode> = {
-    'scale': <Scale className="w-4 h-4" />,
-    'trending-up': <TrendingUp className="w-4 h-4" />,
-    'trending-down': <TrendingDown className="w-4 h-4" />,
-    'calendar': <Calendar className="w-4 h-4" />,
-    'droplets': <Droplets className="w-4 h-4" />,
-    'heart-pulse': <HeartPulse className="w-4 h-4" />,
-    'activity': <Activity className="w-4 h-4" />,
-    'heart': <Heart className="w-4 h-4" />,
-    'heart-crack': <Heart className="w-4 h-4" />,
-    'heart-off': <Heart className="w-4 h-4" />,
-    'brain': <Brain className="w-4 h-4" />,
-    'kidney': <Droplets className="w-4 h-4" />,
-    'dumbbell': <Dumbbell className="w-4 h-4" />,
-    'armchair': <Armchair className="w-4 h-4" />,
-    'moon': <Moon className="w-4 h-4" />,
-    'wine': <Wine className="w-4 h-4" />,
-    'footprints': <Footprints className="w-4 h-4" />,
-    'smile': <Smile className="w-4 h-4" />,
-    'user': <User className="w-4 h-4" />,
-    'pill': <Pill className="w-4 h-4" />,
+    'scale': <Scale className={size} />,
+    'trending-up': <TrendingUp className={size} />,
+    'trending-down': <TrendingDown className={size} />,
+    'calendar': <Calendar className={size} />,
+    'droplets': <Droplets className={size} />,
+    'heart-pulse': <HeartPulse className={size} />,
+    'activity': <Activity className={size} />,
+    'heart': <Heart className={size} />,
+    'heart-crack': <Heart className={size} />,
+    'heart-off': <Heart className={size} />,
+    'brain': <Brain className={size} />,
+    'kidney': <Droplets className={size} />,
+    'dumbbell': <Dumbbell className={size} />,
+    'armchair': <Armchair className={size} />,
+    'moon': <Moon className={size} />,
+    'wine': <Wine className={size} />,
+    'footprints': <Footprints className={size} />,
+    'smile': <Smile className={size} />,
+    'user': <User className={size} />,
+    'pill': <Pill className={size} />,
   };
-  return iconMap[iconName] || <Activity className="w-4 h-4" />;
+  return iconMap[iconName] || <Activity className={size} />;
 };
 
 export default function RiskScoreDetails() {
@@ -112,8 +180,8 @@ export default function RiskScoreDetails() {
 
   if (isAuthLoading || isScoreLoading || isFactorsLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-gradient-to-br from-[#013DC4]/5 via-white to-[#CDB6EF]/10 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#013DC4]" />
       </div>
     );
   }
@@ -129,23 +197,20 @@ export default function RiskScoreDetails() {
   const trend = score > previousScore ? 'up' : score < previousScore ? 'down' : 'stable';
 
   const getScoreColor = () => {
-    // Risk score: higher = worse health (0 = healthy, 100 = high risk)
-    if (score <= 20) return 'text-primary';
-    if (score <= 40) return 'text-chart-3';
-    if (score <= 60) return 'text-chart-2';
-    return 'text-destructive';
+    if (score <= 20) return 'text-green-500';
+    if (score <= 40) return 'text-[#013DC4]';
+    if (score <= 60) return 'text-amber-500';
+    return 'text-red-500';
   };
 
   const getScoreGradient = () => {
-    // Risk score: higher = worse health (0 = healthy, 100 = high risk)
-    if (score <= 20) return 'from-primary to-chart-2';
-    if (score <= 40) return 'from-chart-3 to-chart-2';
-    if (score <= 60) return 'from-chart-2 to-destructive';
-    return 'from-destructive to-red-700';
+    if (score <= 20) return 'from-green-500 to-emerald-400';
+    if (score <= 40) return 'from-[#013DC4] to-[#CDB6EF]';
+    if (score <= 60) return 'from-amber-500 to-orange-400';
+    return 'from-red-500 to-rose-400';
   };
 
   const getScoreLabel = () => {
-    // Risk score: higher = worse health (0 = healthy, 100 = high risk)
     if (score <= 20) return 'Low Risk';
     if (score <= 40) return 'Moderate';
     if (score <= 60) return 'Elevated';
@@ -155,27 +220,27 @@ export default function RiskScoreDetails() {
   const getFactorStyles = (type: 'negative' | 'warning' | 'positive') => {
     if (type === 'negative') {
       return {
-        bg: 'bg-destructive/10',
-        border: 'border-destructive/20',
-        iconBg: 'bg-destructive/20',
-        iconColor: 'text-destructive',
-        text: 'text-foreground',
+        bg: 'bg-red-50 dark:bg-red-900/20',
+        border: 'border-red-200 dark:border-red-800/30',
+        iconBg: 'bg-gradient-to-br from-red-500 to-rose-400',
+        iconColor: 'text-white',
+        text: 'text-gray-900 dark:text-white',
       };
     } else if (type === 'warning') {
       return {
-        bg: 'bg-chart-3/10',
-        border: 'border-chart-3/20',
-        iconBg: 'bg-chart-3/20',
-        iconColor: 'text-chart-3',
-        text: 'text-foreground',
+        bg: 'bg-amber-50 dark:bg-amber-900/20',
+        border: 'border-amber-200 dark:border-amber-800/30',
+        iconBg: 'bg-gradient-to-br from-amber-500 to-orange-400',
+        iconColor: 'text-white',
+        text: 'text-gray-900 dark:text-white',
       };
     }
     return {
-      bg: 'bg-primary/10',
-      border: 'border-primary/20',
-      iconBg: 'bg-primary/20',
-      iconColor: 'text-primary',
-      text: 'text-foreground',
+      bg: 'bg-green-50 dark:bg-green-900/20',
+      border: 'border-green-200 dark:border-green-800/30',
+      iconBg: 'bg-gradient-to-br from-green-500 to-emerald-400',
+      iconColor: 'text-white',
+      text: 'text-gray-900 dark:text-white',
     };
   };
 
@@ -185,24 +250,24 @@ export default function RiskScoreDetails() {
   const positiveFactors = factors.filter(f => f.type === 'positive').sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+    <div className="min-h-screen bg-gradient-to-br from-[#013DC4]/5 via-white to-[#CDB6EF]/10 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 pb-32">
+      <div className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] p-4 sm:p-6 pb-28 sm:pb-32">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <Link href="/my-dashboard">
-              <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
+              <Button variant="ghost" className="text-white hover:bg-white/20 rounded-xl" data-testid="button-back-dashboard">
                 <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-                Back
+                <span className="hidden sm:inline">Back</span>
               </Button>
             </Link>
             <div className="text-center">
-              <h1 className="text-xl font-black text-white">Health Score</h1>
-              <p className="text-white/70 text-sm">Health Overview</p>
+              <h1 className="text-lg sm:text-xl font-black text-white">Health Score</h1>
+              <p className="text-white/70 text-xs sm:text-sm">Your Health Overview</p>
             </div>
             <Button 
               variant="ghost" 
-              className="text-white hover:bg-white/20" 
+              className="text-white hover:bg-white/20 rounded-xl" 
               onClick={() => recalculateMutation.mutate()}
               disabled={recalculateMutation.isPending}
               data-testid="button-recalculate"
@@ -212,16 +277,18 @@ export default function RiskScoreDetails() {
           </div>
         </div>
       </div>
-      {/* Score Card - Overlapping Header */}
-      <div className="max-w-4xl mx-auto px-4 -mt-24">
-        <Card className="p-6 mb-6 border-0 shadow-xl">
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 -mt-24 space-y-4 pb-8">
+        {/* Score Card */}
+        <GlassCard className="p-5 sm:p-6" glow>
           <div className="flex flex-col items-center">
             {/* Score Circle */}
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', bounce: 0.4 }}
-              className="relative w-36 h-36 mb-4"
+              className="relative w-32 h-32 sm:w-40 sm:h-40 mb-4"
             >
               <svg className="w-full h-full transform -rotate-90">
                 <circle
@@ -231,7 +298,7 @@ export default function RiskScoreDetails() {
                   stroke="currentColor"
                   strokeWidth="8"
                   fill="none"
-                  className="text-muted/30"
+                  className="text-gray-200 dark:text-gray-700"
                 />
                 <circle
                   cx="50%"
@@ -245,83 +312,85 @@ export default function RiskScoreDetails() {
                 />
                 <defs>
                   <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    {/* Risk score: higher = worse, so low scores get green, high scores get red */}
                     <stop offset="0%" style={{ stopColor: score <= 30 ? '#22c55e' : score <= 60 ? '#f59e0b' : '#ef4444' }} />
                     <stop offset="100%" style={{ stopColor: score <= 30 ? '#84cc16' : score <= 60 ? '#f97316' : '#dc2626' }} />
                   </linearGradient>
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-4xl font-black ${getScoreColor()}`}>{Math.round(score)}</span>
-                <span className="text-xs text-muted-foreground font-medium">out of 100</span>
+                <span className={`text-3xl sm:text-4xl font-black ${getScoreColor()}`}>{Math.round(score)}</span>
+                <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium">out of 100</span>
               </div>
             </motion.div>
 
             {/* Score Label & Trend */}
             <div className="flex items-center gap-3 mb-4">
-              <Badge className={`bg-gradient-to-r ${getScoreGradient()} text-white border-0 px-4 py-1`}>
+              <Badge className={`bg-gradient-to-r ${getScoreGradient()} text-white border-0 px-4 py-1 rounded-full shadow-lg`}>
                 {getScoreLabel()}
               </Badge>
               {trend === 'up' && (
-                <div className="flex items-center gap-1 text-primary text-sm font-medium">
+                <div className="flex items-center gap-1 text-red-500 text-sm font-medium">
                   <TrendingUp className="w-4 h-4" />
-                  <span>+{Math.round(score - previousScore)} pts</span>
+                  <span>+{Math.round(score - previousScore)}</span>
                 </div>
               )}
               {trend === 'down' && (
-                <div className="flex items-center gap-1 text-destructive text-sm font-medium">
+                <div className="flex items-center gap-1 text-green-500 text-sm font-medium">
                   <TrendingDown className="w-4 h-4" />
-                  <span>{Math.round(score - previousScore)} pts</span>
+                  <span>{Math.round(score - previousScore)}</span>
                 </div>
               )}
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-md">
-              <div className="text-center p-2 sm:p-3 rounded-xl bg-destructive/10">
-                <p className="text-xl sm:text-2xl font-black text-destructive">{negativeFactors.length}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Risk Factors</p>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 w-full max-w-sm">
+              <div className="text-center p-3 sm:p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30">
+                <p className="text-xl sm:text-2xl font-black text-red-500">{negativeFactors.length}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Risk</p>
               </div>
-              <div className="text-center p-2 sm:p-3 rounded-xl bg-chart-3/10">
-                <p className="text-xl sm:text-2xl font-black text-chart-3">{warningFactors.length}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Warnings</p>
+              <div className="text-center p-3 sm:p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30">
+                <p className="text-xl sm:text-2xl font-black text-amber-500">{warningFactors.length}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Watch</p>
               </div>
-              <div className="text-center p-2 sm:p-3 rounded-xl bg-primary/10">
-                <p className="text-xl sm:text-2xl font-black text-primary">{positiveFactors.length}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Positive</p>
+              <div className="text-center p-3 sm:p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30">
+                <p className="text-xl sm:text-2xl font-black text-green-500">{positiveFactors.length}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Good</p>
               </div>
             </div>
           </div>
-        </Card>
+        </GlassCard>
 
         {/* What This Means */}
-        <Card className="p-5 mb-4 border-0 shadow-lg">
+        <GlassCard className="p-4 sm:p-5">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Info className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Info className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-foreground mb-1">What does this mean?</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">Your risk score is calculated from your lifestyle, medical history, and daily habits. Focus on improving the red items that can be changed first for the biggest impact on your health.</p>
+              <h3 className="font-bold text-gray-900 dark:text-white mb-1">What does this mean?</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                Your risk score is calculated from your lifestyle, medical history, and daily habits. 
+                Focus on improving the red items first for the biggest impact on your health.
+              </p>
             </div>
           </div>
-        </Card>
+        </GlassCard>
 
         {/* Risk Factors Section */}
-        <Card className="p-5 mb-4 border-0 shadow-lg">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center">
-              <AlertCircle className="w-4 h-4 text-destructive" />
-            </div>
-            <h3 className="font-bold text-foreground">Areas Needing Attention</h3>
-            <Badge variant="outline" className="ml-auto text-destructive border-destructive/30">
-              {negativeFactors.length} factors
+        <CollapsibleSection
+          title="Areas Needing Attention"
+          icon={<AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />}
+          iconColor="from-red-500 to-rose-400"
+          badge={
+            <Badge className="ml-2 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border-0 rounded-full text-xs">
+              {negativeFactors.length}
             </Badge>
-          </div>
-          
+          }
+          defaultOpen={true}
+        >
           <div className="space-y-2">
             {negativeFactors.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No significant risk factors found. Great job!</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No significant risk factors found. Great job!</p>
             ) : (
               negativeFactors.map((factor, index) => {
                 const styles = getFactorStyles(factor.type);
@@ -331,35 +400,35 @@ export default function RiskScoreDetails() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
+                    className={`flex items-center gap-3 p-3 rounded-2xl ${styles.bg} border ${styles.border}`}
                   >
-                    <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl ${styles.iconBg} flex items-center justify-center ${styles.iconColor} shadow-lg flex-shrink-0`}>
                       {getIconComponent(factor.icon)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
-                      <p className="text-xs text-muted-foreground">{factor.description}</p>
+                      <p className={`text-sm font-semibold ${styles.text}`}>{factor.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{factor.description}</p>
                     </div>
                   </motion.div>
                 );
               })
             )}
           </div>
-        </Card>
+        </CollapsibleSection>
 
         {/* Warnings Section */}
         {warningFactors.length > 0 && (
-          <Card className="p-5 mb-4 border-0 shadow-lg">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full bg-chart-3/10 flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4 text-chart-3" />
-              </div>
-              <h3 className="font-bold text-foreground">Watch These</h3>
-              <Badge variant="outline" className="ml-auto text-chart-3 border-chart-3/30">
-                {warningFactors.length} factor{warningFactors.length > 1 ? 's' : ''}
+          <CollapsibleSection
+            title="Watch These"
+            icon={<AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />}
+            iconColor="from-amber-500 to-orange-400"
+            badge={
+              <Badge className="ml-2 bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-0 rounded-full text-xs">
+                {warningFactors.length}
               </Badge>
-            </div>
-            
+            }
+            defaultOpen={false}
+          >
             <div className="space-y-2">
               {warningFactors.map((factor, index) => {
                 const styles = getFactorStyles(factor.type);
@@ -368,36 +437,36 @@ export default function RiskScoreDetails() {
                     key={factor.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: (negativeFactors.length + index) * 0.05 }}
-                    className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
+                    transition={{ delay: index * 0.05 }}
+                    className={`flex items-center gap-3 p-3 rounded-2xl ${styles.bg} border ${styles.border}`}
                   >
-                    <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl ${styles.iconBg} flex items-center justify-center ${styles.iconColor} shadow-lg flex-shrink-0`}>
                       {getIconComponent(factor.icon)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
-                      <p className="text-xs text-muted-foreground">{factor.description}</p>
+                      <p className={`text-sm font-semibold ${styles.text}`}>{factor.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{factor.description}</p>
                     </div>
                   </motion.div>
                 );
               })}
             </div>
-          </Card>
+          </CollapsibleSection>
         )}
 
         {/* Positive Factors Section */}
         {positiveFactors.length > 0 && (
-          <Card className="p-5 mb-4 border-0 shadow-lg">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-              </div>
-              <h3 className="font-bold text-foreground">Keep It Up!</h3>
-              <Badge variant="outline" className="ml-auto text-primary border-primary/30">
-                {positiveFactors.length} factor{positiveFactors.length > 1 ? 's' : ''}
+          <CollapsibleSection
+            title="Keep It Up!"
+            icon={<CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />}
+            iconColor="from-green-500 to-emerald-400"
+            badge={
+              <Badge className="ml-2 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 border-0 rounded-full text-xs">
+                {positiveFactors.length}
               </Badge>
-            </div>
-            
+            }
+            defaultOpen={false}
+          >
             <div className="space-y-2">
               {positiveFactors.map((factor, index) => {
                 const styles = getFactorStyles(factor.type);
@@ -406,53 +475,53 @@ export default function RiskScoreDetails() {
                     key={factor.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: (negativeFactors.length + warningFactors.length + index) * 0.05 }}
-                    className={`flex items-center gap-3 p-3 rounded-xl ${styles.bg} border ${styles.border}`}
+                    transition={{ delay: index * 0.05 }}
+                    className={`flex items-center gap-3 p-3 rounded-2xl ${styles.bg} border ${styles.border}`}
                   >
-                    <div className={`w-8 h-8 rounded-full ${styles.iconBg} flex items-center justify-center ${styles.iconColor}`}>
+                    <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl ${styles.iconBg} flex items-center justify-center ${styles.iconColor} shadow-lg flex-shrink-0`}>
                       {getIconComponent(factor.icon)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
-                      <p className="text-xs text-muted-foreground">{factor.description}</p>
+                      <p className={`text-sm font-semibold ${styles.text}`}>{factor.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{factor.description}</p>
                     </div>
                   </motion.div>
                 );
               })}
             </div>
-          </Card>
+          </CollapsibleSection>
         )}
 
         {/* Get Personalized Recommendations */}
-        <Card className="p-5 mb-8 border-0 shadow-lg bg-gradient-to-br from-primary/5 to-chart-2/5">
+        <GlassCard className="p-4 sm:p-5 bg-gradient-to-br from-[#013DC4]/5 to-[#CDB6EF]/10" glow>
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center">
-              <MessageCircle className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center shadow-lg">
+              <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-foreground">Want to lower your risk?</h3>
-              <p className="text-sm text-muted-foreground">Chat with Loretta for personalized recommendations</p>
+              <h3 className="font-bold text-gray-900 dark:text-white">Want to lower your risk?</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Chat with Loretta for personalized tips</p>
             </div>
           </div>
           
-          <p className="text-sm text-muted-foreground mb-4">
-            Our AI health assistant can analyze your risk factors and suggest practical steps tailored to your lifestyle and goals.
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+            Our AI health assistant can analyze your risk factors and suggest practical steps tailored to your lifestyle.
           </p>
 
           <Link href="/chat">
-            <Button className="w-full bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+            <Button className="w-full bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] hover:opacity-90 text-white rounded-xl py-6 font-bold shadow-lg">
               <Sparkles className="w-4 h-4 mr-2" />
               Get Personalized Tips
             </Button>
           </Link>
-        </Card>
+        </GlassCard>
 
         {/* Disclaimer */}
-        <div className="text-center pb-8">
-          <p className="text-xs text-muted-foreground leading-relaxed max-w-md mx-auto">
+        <div className="text-center pt-2 pb-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed max-w-md mx-auto">
             <span className="font-semibold">Disclaimer:</span> Loretta is not a diagnostic tool. 
-            The information provided is for educational purposes only and should not replace 
-            professional medical advice, diagnosis, or treatment. Always consult your healthcare provider.
+            This information is for educational purposes only and should not replace 
+            professional medical advice. Always consult your healthcare provider.
           </p>
         </div>
       </div>
