@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Trophy, Users, Home, Crown, Flame, Loader2, ChevronDown } from 'lucide-react';
+import { Users, Crown, Flame, Loader2, ChevronDown } from 'lucide-react';
 import type { CommunityType } from './CommunitySelector';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -40,28 +40,6 @@ interface LeaderboardProps {
   className?: string;
   communityType?: CommunityType;
   maxEntries?: number;
-}
-
-function GlassCard({ 
-  children, 
-  className = '',
-  glow = false 
-}: { 
-  children: React.ReactNode; 
-  className?: string;
-  glow?: boolean;
-}) {
-  return (
-    <div className={`
-      backdrop-blur-xl bg-white/70 dark:bg-gray-900/70
-      border border-white/50 dark:border-white/10
-      rounded-3xl shadow-xl
-      ${glow ? 'shadow-[#013DC4]/20' : ''}
-      ${className}
-    `}>
-      {children}
-    </div>
-  );
 }
 
 export default function Leaderboard({
@@ -207,31 +185,25 @@ export default function Leaderboard({
   const displayEntries = getContextualEntries(allEntries);
   
   return (
-    <GlassCard className={`overflow-hidden ${className}`} data-testid="leaderboard">
-      <div className="p-4 sm:p-5 flex items-center justify-between bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10">
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg flex-shrink-0">
-            <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
-          </div>
-          <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{t('sidebar.leaderboard', 'Leaderboard')}</h3>
-          <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
-            {totalMembers} {totalMembers === 1 ? 'member' : 'members'}
-          </Badge>
-          <div className="relative">
-            <select
-              value={selectedCommunity}
-              onChange={(e) => setSelectedCommunity(e.target.value as CommunityType)}
-              className="appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-xl px-3 py-1.5 pr-7 text-xs font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
-            >
-              <option value="loretta">{t('community.lorettaCommunity', 'Loretta Community')}</option>
-              <option value="friends">{t('community.friends', 'My Friends')} ({(Array.isArray(friends) ? friends.length : 0) + 1})</option>
-            </select>
-            <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#013DC4] pointer-events-none" />
-          </div>
+    <div className={className} data-testid="leaderboard">
+      <div className="flex items-center gap-2 flex-wrap mb-4">
+        <Badge className="bg-[#013DC4]/10 text-[#013DC4] border-0 text-xs">
+          {totalMembers} {totalMembers === 1 ? 'member' : 'members'}
+        </Badge>
+        <div className="relative">
+          <select
+            value={selectedCommunity}
+            onChange={(e) => setSelectedCommunity(e.target.value as CommunityType)}
+            className="appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-xl px-3 py-1.5 pr-7 text-xs font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
+          >
+            <option value="loretta">{t('community.lorettaCommunity', 'Loretta Community')}</option>
+            <option value="friends">{t('community.friends', 'My Friends')} ({(Array.isArray(friends) ? friends.length : 0) + 1})</option>
+          </select>
+          <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#013DC4] pointer-events-none" />
         </div>
       </div>
       
-      <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-4 space-y-3">
+      <div className="space-y-3">
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 animate-spin text-[#013DC4]" />
@@ -290,6 +262,6 @@ export default function Leaderboard({
           ))
         )}
       </div>
-    </GlassCard>
+    </div>
   );
 }
