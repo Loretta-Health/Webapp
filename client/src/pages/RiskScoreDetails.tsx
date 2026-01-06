@@ -51,8 +51,6 @@ interface RiskFactorData {
   name: string;
   description: string;
   category: string;
-  points: number;
-  maxPoints: number;
   type: 'negative' | 'warning' | 'positive';
   icon: string;
 }
@@ -155,55 +153,22 @@ export default function RiskScoreDetails() {
     return 'High Risk';
   };
 
-  const getFactorStyles = (type: 'negative' | 'warning' | 'positive', points: number, maxPoints: number) => {
+  const getFactorStyles = (type: 'negative' | 'warning' | 'positive') => {
     if (type === 'negative') {
-      const intensity = maxPoints > 0 ? Math.min(points / maxPoints, 1) : Math.min(points / 30, 1);
-      if (intensity >= 0.7 || points >= 20) {
-        return {
-          bg: 'bg-red-500/20',
-          border: 'border-red-500/40',
-          iconBg: 'bg-red-500/30',
-          iconColor: 'text-red-500',
-          text: 'text-foreground',
-          pointsBg: 'bg-red-500',
-        };
-      } else if (intensity >= 0.4 || points >= 10) {
-        return {
-          bg: 'bg-destructive/15',
-          border: 'border-destructive/30',
-          iconBg: 'bg-destructive/25',
-          iconColor: 'text-destructive',
-          text: 'text-foreground',
-          pointsBg: 'bg-destructive',
-        };
-      }
       return {
         bg: 'bg-destructive/10',
         border: 'border-destructive/20',
         iconBg: 'bg-destructive/20',
         iconColor: 'text-destructive',
         text: 'text-foreground',
-        pointsBg: 'bg-destructive/80',
       };
     } else if (type === 'warning') {
-      const intensity = maxPoints > 0 ? Math.min(points / maxPoints, 1) : Math.min(points / 15, 1);
-      if (intensity >= 0.6 || points >= 10) {
-        return {
-          bg: 'bg-amber-500/15',
-          border: 'border-amber-500/30',
-          iconBg: 'bg-amber-500/25',
-          iconColor: 'text-amber-500',
-          text: 'text-foreground',
-          pointsBg: 'bg-amber-500',
-        };
-      }
       return {
         bg: 'bg-chart-3/10',
         border: 'border-chart-3/20',
         iconBg: 'bg-chart-3/20',
         iconColor: 'text-chart-3',
         text: 'text-foreground',
-        pointsBg: 'bg-chart-3',
       };
     }
     return {
@@ -212,14 +177,13 @@ export default function RiskScoreDetails() {
       iconBg: 'bg-primary/20',
       iconColor: 'text-primary',
       text: 'text-foreground',
-      pointsBg: 'bg-primary',
     };
   };
 
   const factors = riskFactorsData || [];
-  const negativeFactors = factors.filter(f => f.type === 'negative').sort((a, b) => b.points - a.points);
-  const warningFactors = factors.filter(f => f.type === 'warning').sort((a, b) => b.points - a.points);
-  const positiveFactors = factors.filter(f => f.type === 'positive').sort((a, b) => b.points - a.points);
+  const negativeFactors = factors.filter(f => f.type === 'negative').sort((a, b) => a.name.localeCompare(b.name));
+  const warningFactors = factors.filter(f => f.type === 'warning').sort((a, b) => a.name.localeCompare(b.name));
+  const positiveFactors = factors.filter(f => f.type === 'positive').sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
@@ -361,7 +325,7 @@ export default function RiskScoreDetails() {
               <p className="text-sm text-muted-foreground text-center py-4">No significant risk factors found. Great job!</p>
             ) : (
               negativeFactors.map((factor, index) => {
-                const styles = getFactorStyles(factor.type, factor.points, factor.maxPoints);
+                const styles = getFactorStyles(factor.type);
                 return (
                   <motion.div
                     key={factor.id}
@@ -377,12 +341,7 @@ export default function RiskScoreDetails() {
                       <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{factor.description}</p>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge className={`${styles.pointsBg} text-white text-xs px-2`}>
-                        +{factor.points} pts
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">{factor.category}</span>
-                    </div>
+                    <span className="text-[10px] text-muted-foreground flex-shrink-0">{factor.category}</span>
                   </motion.div>
                 );
               })
@@ -405,7 +364,7 @@ export default function RiskScoreDetails() {
             
             <div className="space-y-2">
               {warningFactors.map((factor, index) => {
-                const styles = getFactorStyles(factor.type, factor.points, factor.maxPoints);
+                const styles = getFactorStyles(factor.type);
                 return (
                   <motion.div
                     key={factor.id}
@@ -421,12 +380,7 @@ export default function RiskScoreDetails() {
                       <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{factor.description}</p>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge className={`${styles.pointsBg} text-white text-xs px-2`}>
-                        +{factor.points} pts
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">{factor.category}</span>
-                    </div>
+                    <span className="text-[10px] text-muted-foreground flex-shrink-0">{factor.category}</span>
                   </motion.div>
                 );
               })}
@@ -449,7 +403,7 @@ export default function RiskScoreDetails() {
             
             <div className="space-y-2">
               {positiveFactors.map((factor, index) => {
-                const styles = getFactorStyles(factor.type, factor.points, factor.maxPoints);
+                const styles = getFactorStyles(factor.type);
                 return (
                   <motion.div
                     key={factor.id}
@@ -465,12 +419,7 @@ export default function RiskScoreDetails() {
                       <p className={`text-sm font-medium ${styles.text}`}>{factor.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{factor.description}</p>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge className={`${styles.pointsBg} text-white text-xs px-2`}>
-                        0 pts
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">{factor.category}</span>
-                    </div>
+                    <span className="text-[10px] text-muted-foreground flex-shrink-0">{factor.category}</span>
                   </motion.div>
                 );
               })}

@@ -3091,8 +3091,6 @@ interface RiskFactor {
   name: string;
   description: string;
   category: string;
-  points: number;
-  maxPoints: number;
   type: 'negative' | 'warning' | 'positive';
   icon: string;
 }
@@ -3111,32 +3109,25 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
   const bmi = calculateBMI(heightCm, weightKg);
   
   if (bmi > 0) {
-    let bmiPoints = 0;
     let bmiDescription = '';
     let bmiType: 'negative' | 'warning' | 'positive' = 'positive';
     
     if (bmi < 18.5) {
-      bmiPoints = 5;
       bmiDescription = `Underweight (BMI: ${bmi.toFixed(1)})`;
       bmiType = 'warning';
     } else if (bmi < 25) {
-      bmiPoints = 0;
       bmiDescription = `Normal weight (BMI: ${bmi.toFixed(1)})`;
       bmiType = 'positive';
     } else if (bmi < 30) {
-      bmiPoints = 10;
       bmiDescription = `Overweight (BMI: ${bmi.toFixed(1)})`;
       bmiType = 'warning';
     } else if (bmi < 35) {
-      bmiPoints = 18;
       bmiDescription = `Obesity Class I (BMI: ${bmi.toFixed(1)})`;
       bmiType = 'negative';
     } else if (bmi < 40) {
-      bmiPoints = 25;
       bmiDescription = `Obesity Class II (BMI: ${bmi.toFixed(1)})`;
       bmiType = 'negative';
     } else {
-      bmiPoints = 30;
       bmiDescription = `Obesity Class III (BMI: ${bmi.toFixed(1)})`;
       bmiType = 'negative';
     }
@@ -3146,8 +3137,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Body Mass Index',
       description: bmiDescription,
       category: 'Physical Measurements',
-      points: bmiPoints,
-      maxPoints: 30,
       type: bmiType,
       icon: 'scale',
     });
@@ -3163,8 +3152,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
         name: 'Significant Weight Gain',
         description: `Gained ${weightGainKg.toFixed(1)} kg in the past year`,
         category: 'Physical Measurements',
-        points: 8,
-        maxPoints: 8,
         type: 'negative',
         icon: 'trending-up',
       });
@@ -3174,8 +3161,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
         name: 'Moderate Weight Gain',
         description: `Gained ${weightGainKg.toFixed(1)} kg in the past year`,
         category: 'Physical Measurements',
-        points: 4,
-        maxPoints: 8,
         type: 'warning',
         icon: 'trending-up',
       });
@@ -3185,8 +3170,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
         name: 'Weight Loss',
         description: `Lost ${Math.abs(weightGainKg).toFixed(1)} kg in the past year`,
         category: 'Physical Measurements',
-        points: 0,
-        maxPoints: 8,
         type: 'positive',
         icon: 'trending-down',
       });
@@ -3203,8 +3186,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Prediabetes',
       description: 'Previously told you have prediabetes',
       category: 'Health Conditions',
-      points: 25,
-      maxPoints: 25,
       type: 'negative',
       icon: 'droplets',
     });
@@ -3218,8 +3199,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Recent Blood Test',
       description: 'Had blood tested in the past 3 years',
       category: 'Health Conditions',
-      points: 0,
-      maxPoints: 5,
       type: 'positive',
       icon: 'droplets',
     });
@@ -3229,8 +3208,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'No Recent Blood Test',
       description: 'No blood test in the past 3 years',
       category: 'Health Conditions',
-      points: 5,
-      maxPoints: 5,
       type: 'warning',
       icon: 'droplets',
     });
@@ -3244,8 +3221,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'High Blood Pressure',
       description: 'Ever told you had high blood pressure',
       category: 'Health Conditions',
-      points: 20,
-      maxPoints: 20,
       type: 'negative',
       icon: 'heart-pulse',
     });
@@ -3259,8 +3234,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'High Cholesterol',
       description: 'Doctor told you - high cholesterol level',
       category: 'Health Conditions',
-      points: 15,
-      maxPoints: 15,
       type: 'negative',
       icon: 'activity',
     });
@@ -3274,8 +3247,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Arthritis',
       description: 'Doctor ever said you had arthritis',
       category: 'Health Conditions',
-      points: 8,
-      maxPoints: 8,
       type: 'warning',
       icon: 'footprints',
     });
@@ -3289,8 +3260,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Heart Failure',
       description: 'Ever told had congestive heart failure',
       category: 'Health Conditions',
-      points: 25,
-      maxPoints: 25,
       type: 'negative',
       icon: 'heart-off',
     });
@@ -3304,8 +3273,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Coronary Heart Disease',
       description: 'Ever told you had coronary heart disease',
       category: 'Health Conditions',
-      points: 20,
-      maxPoints: 20,
       type: 'negative',
       icon: 'heart',
     });
@@ -3319,8 +3286,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Previous Heart Attack',
       description: 'Ever told you had a heart attack',
       category: 'Health Conditions',
-      points: 25,
-      maxPoints: 25,
       type: 'negative',
       icon: 'heart-crack',
     });
@@ -3334,8 +3299,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Kidney Disease',
       description: 'Ever told you had weak/failing kidneys',
       category: 'Health Conditions',
-      points: 15,
-      maxPoints: 15,
       type: 'negative',
       icon: 'kidney',
     });
@@ -3349,8 +3312,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Gallbladder Surgery',
       description: 'Ever had gallbladder surgery',
       category: 'Health Conditions',
-      points: 5,
-      maxPoints: 5,
       type: 'warning',
       icon: 'pill',
     });
@@ -3366,8 +3327,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Very Active Lifestyle',
       description: `${moderateActivity}+ hours of moderate activity per week`,
       category: 'Lifestyle & Activity',
-      points: 0,
-      maxPoints: 15,
       type: 'positive',
       icon: 'dumbbell',
     });
@@ -3377,8 +3336,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Active Lifestyle',
       description: `${moderateActivity} hours of moderate activity per week`,
       category: 'Lifestyle & Activity',
-      points: 0,
-      maxPoints: 15,
       type: 'positive',
       icon: 'dumbbell',
     });
@@ -3388,8 +3345,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Limited Physical Activity',
       description: `Only ${moderateActivity} hour(s) of activity per week`,
       category: 'Lifestyle & Activity',
-      points: 5,
-      maxPoints: 15,
       type: 'warning',
       icon: 'dumbbell',
     });
@@ -3399,8 +3354,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Sedentary Lifestyle',
       description: 'Little to no regular physical activity',
       category: 'Lifestyle & Activity',
-      points: 15,
-      maxPoints: 15,
       type: 'negative',
       icon: 'dumbbell',
     });
@@ -3412,8 +3365,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Highly Sedentary',
       description: `${sedentaryHours}+ hours of sitting per day`,
       category: 'Lifestyle & Activity',
-      points: 12,
-      maxPoints: 12,
       type: 'negative',
       icon: 'armchair',
     });
@@ -3423,8 +3374,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Extended Sitting Time',
       description: `${sedentaryHours} hours of sitting per day`,
       category: 'Lifestyle & Activity',
-      points: 8,
-      maxPoints: 12,
       type: 'warning',
       icon: 'armchair',
     });
@@ -3434,8 +3383,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Low Sedentary Time',
       description: `Only ${sedentaryHours} hours of sitting per day`,
       category: 'Lifestyle & Activity',
-      points: 0,
-      maxPoints: 12,
       type: 'positive',
       icon: 'armchair',
     });
@@ -3449,8 +3396,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Daily Alcohol Consumption',
       description: 'Drinking every day or nearly every day',
       category: 'Lifestyle & Activity',
-      points: 15,
-      maxPoints: 15,
       type: 'negative',
       icon: 'wine',
     });
@@ -3460,8 +3405,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Regular Alcohol Consumption',
       description: 'Drinking 1-4 times per week',
       category: 'Lifestyle & Activity',
-      points: 8,
-      maxPoints: 15,
       type: 'warning',
       icon: 'wine',
     });
@@ -3471,8 +3414,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'No Alcohol',
       description: 'Never drinks in the past year',
       category: 'Lifestyle & Activity',
-      points: 0,
-      maxPoints: 15,
       type: 'positive',
       icon: 'wine',
     });
@@ -3517,8 +3458,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Sleep Duration',
       description: sleepDescription,
       category: 'Sleep',
-      points: sleepPoints,
-      maxPoints: 15,
       type: sleepType,
       icon: 'moon',
     });
@@ -3532,8 +3471,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Severe Sleep Difficulties',
       description: 'Trouble sleeping or sleeping too much nearly every day',
       category: 'Sleep',
-      points: 10,
-      maxPoints: 10,
       type: 'negative',
       icon: 'moon',
     });
@@ -3543,8 +3480,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Frequent Sleep Difficulties',
       description: 'Trouble sleeping more than half the days',
       category: 'Sleep',
-      points: 6,
-      maxPoints: 10,
       type: 'warning',
       icon: 'moon',
     });
@@ -3554,8 +3489,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Occasional Sleep Difficulties',
       description: 'Trouble sleeping several days',
       category: 'Sleep',
-      points: 3,
-      maxPoints: 10,
       type: 'warning',
       icon: 'moon',
     });
@@ -3565,8 +3498,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Good Sleep Quality',
       description: 'No trouble sleeping',
       category: 'Sleep',
-      points: 0,
-      maxPoints: 10,
       type: 'positive',
       icon: 'moon',
     });
@@ -3589,8 +3520,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Frequent Falls',
       description: 'Falls monthly or more often in past 5 years',
       category: 'Balance/Mobility',
-      points: 12,
-      maxPoints: 12,
       type: 'negative',
       icon: 'footprints',
     });
@@ -3600,8 +3529,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Balance/Fall Concerns',
       description: 'Problems with unsteadiness and history of falls',
       category: 'Balance/Mobility',
-      points: 8,
-      maxPoints: 12,
       type: 'warning',
       icon: 'footprints',
     });
@@ -3611,8 +3538,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Balance/Mobility Concern',
       description: hasUnsteadiness ? 'Problems with unsteadiness in past 12 months' : 'History of falls in past 5 years',
       category: 'Balance/Mobility',
-      points: 5,
-      maxPoints: 12,
       type: 'warning',
       icon: 'footprints',
     });
@@ -3648,8 +3573,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Significant Oral Health Issues',
       description: 'Frequent mouth aching, eating difficulties, or food avoidance',
       category: 'Oral Health',
-      points: 10,
-      maxPoints: 10,
       type: 'negative',
       icon: 'smile',
     });
@@ -3659,8 +3582,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Oral Health Concerns',
       description: poorDentalRating ? 'Fair or poor dental health rating' : 'Some mouth discomfort or eating issues',
       category: 'Oral Health',
-      points: 5,
-      maxPoints: 10,
       type: 'warning',
       icon: 'smile',
     });
@@ -3670,8 +3591,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Good Oral Health',
       description: 'Excellent or very good dental health',
       category: 'Oral Health',
-      points: 0,
-      maxPoints: 10,
       type: 'positive',
       icon: 'smile',
     });
@@ -3685,8 +3604,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'General Health Condition',
       description: 'Fair health',
       category: 'General Health',
-      points: 6,
-      maxPoints: 10,
       type: 'warning',
       icon: 'user',
     });
@@ -3696,8 +3613,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'General Health Condition',
       description: 'Poor health',
       category: 'General Health',
-      points: 10,
-      maxPoints: 10,
       type: 'negative',
       icon: 'user',
     });
@@ -3707,8 +3622,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'General Health Condition',
       description: 'Excellent health',
       category: 'General Health',
-      points: 0,
-      maxPoints: 10,
       type: 'positive',
       icon: 'user',
     });
@@ -3718,8 +3631,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'General Health Condition',
       description: generalHealth === '2' ? 'Very good health' : 'Good health',
       category: 'General Health',
-      points: 0,
-      maxPoints: 10,
       type: 'positive',
       icon: 'user',
     });
@@ -3734,8 +3645,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Healthcare Access',
       description: 'Has a routine place for healthcare',
       category: 'General Health',
-      points: 0,
-      maxPoints: 5,
       type: 'positive',
       icon: 'heart-pulse',
     });
@@ -3745,8 +3654,6 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'No Regular Healthcare',
       description: 'No routine place to go for healthcare',
       category: 'General Health',
-      points: 5,
-      maxPoints: 5,
       type: 'warning',
       icon: 'heart-pulse',
     });
@@ -3760,22 +3667,16 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       name: 'Daily Aspirin',
       description: 'Doctor advised to take daily low-dose aspirin',
       category: 'Medications',
-      points: 5,
-      maxPoints: 5,
       type: 'warning',
       icon: 'pill',
     });
   }
   
-  // Filter out zero-point factors (they don't contribute to risk)
-  // Keep positive factors only if they genuinely have 0 points (indicating good health choices)
-  const contributingFactors = factors.filter(f => {
-    if (f.type === 'positive') return true; // Always show positive factors as they represent healthy choices
-    return f.points > 0; // Only show negative/warning factors if they contribute points
+  // Sort by category and name for consistent display
+  factors.sort((a, b) => {
+    if (a.category !== b.category) return a.category.localeCompare(b.category);
+    return a.name.localeCompare(b.name);
   });
   
-  // Sort by points (highest first)
-  contributingFactors.sort((a, b) => b.points - a.points);
-  
-  return contributingFactors;
+  return factors;
 }
