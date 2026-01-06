@@ -24,7 +24,7 @@ import { Link, useSearch } from 'wouter';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
-import CommunitySelector, { CommunityType } from '@/components/CommunitySelector';
+import { type CommunityType } from '@/components/CommunitySelector';
 import { trackEvent, trackPageView, ClarityEvents } from '@/lib/clarity';
 import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
 
@@ -517,13 +517,16 @@ export default function LeaderboardPage() {
             gradient
           >
             {/* Community Selector */}
-            <div className="mb-4">
-              <CommunitySelector 
-                value={selectedCommunity} 
-                onChange={setSelectedCommunity}
-                friendsCount={(Array.isArray(friends) ? friends.length : 0) + 1}
-                className="w-full"
-              />
+            <div className="mb-4 relative">
+              <select
+                value={selectedCommunity}
+                onChange={(e) => setSelectedCommunity(e.target.value as CommunityType)}
+                className="w-full appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-2xl px-4 py-3 pr-10 font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
+              >
+                <option value="loretta">{t('leaderboard.lorettaCommunity', 'Loretta Community')}</option>
+                <option value="friends">{t('leaderboard.myFriends', 'My Friends')} ({(Array.isArray(friends) ? friends.length : 0) + 1})</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#013DC4] pointer-events-none" />
             </div>
 
             {/* Team Selector */}
@@ -729,27 +732,34 @@ export default function LeaderboardPage() {
         )}
 
         {activeTab === 'achievements' && (
-          <>
-            {/* Achievement Progress Card */}
-            <GlassCard className="p-5 bg-gradient-to-r from-amber-500/10 to-yellow-500/10" glow>
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('leaderboard.achievements.progress')}</p>
-                  <p className="text-2xl font-black text-gray-900 dark:text-white">{t('leaderboard.achievements.ofTotal', { count: unlockedCount, total: totalCount })}</p>
-                </div>
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center shadow-lg">
-                  <Trophy className="w-7 h-7 text-white" />
-                </div>
+          <CollapsibleSection
+            title={t('leaderboard.tabs.achievements')}
+            icon={<Award className="w-4 h-4 sm:w-5 sm:h-5" />}
+            badge={
+              <Badge className="bg-amber-500/10 text-amber-600 border-0 text-xs">
+                {unlockedCount}/{totalCount}
+              </Badge>
+            }
+            gradient
+          >
+            {/* Achievement Progress */}
+            <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-yellow-500/10 mb-4">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('leaderboard.achievements.progress')}</p>
+                <p className="text-xl font-black text-gray-900 dark:text-white">{unlockedCount} / {totalCount}</p>
               </div>
-              <Progress value={totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0} className="h-2 bg-gray-200 dark:bg-gray-700" />
-            </GlassCard>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center shadow-lg">
+                <Trophy className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <Progress value={totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0} className="h-2 bg-gray-200 dark:bg-gray-700 mb-4" />
 
             {loadingAchievements ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-[#013DC4]" />
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3">
                 {achievements.map((achievement, index) => {
                   const IconComponent = iconMap[achievement.icon] || Award;
                   const shouldHighlight = achievement.unlocked || alwaysHighlightedIds.includes(achievement.id);
@@ -815,7 +825,7 @@ export default function LeaderboardPage() {
                 })}
               </div>
             )}
-          </>
+          </CollapsibleSection>
         )}
       </main>
     </div>
