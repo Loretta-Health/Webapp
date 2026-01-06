@@ -27,6 +27,7 @@ import {
   isLowMoodEmotion,
   type EmotionCategory,
 } from "@shared/emotions";
+import { convertQuestionnaireToMLFeatures, type MLFeature } from "./lib/nhanesMapping";
 
 // Scaleway AI configuration
 const SCALEWAY_BASE_URL = 'https://api.scaleway.ai/v1';
@@ -335,7 +336,37 @@ IMPORTANT: When discussing risk scores, remember:
   });
 
   // ML Prediction API endpoint
-  const PREDICTION_API_URL = process.env.PREDICTION_API_URL || 'https://loretta-ml-prediction-dev-5oc2gjs2kq-el.a.run.app/predict';
+  const PREDICTION_API_BASE_URL = process.env.PREDICTION_API_URL || 'https://loretta-predict.replit.app';
+  const ML_API_KEY = process.env.ML_API_KEY;
+  
+  async function callMLPredictionAPI(features: MLFeature[]): Promise<{ diabetes_probability: number; risk_level: string } | null> {
+    if (!ML_API_KEY) {
+      console.warn('[ML API] No ML_API_KEY configured, skipping ML prediction');
+      return null;
+    }
+    
+    const predictUrl = `${PREDICTION_API_BASE_URL}/predict`;
+    console.log('[ML API] Calling:', predictUrl, 'with', features.length, 'features');
+    
+    const response = await fetch(predictUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': ML_API_KEY,
+      },
+      body: JSON.stringify({ features }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[ML API] Error:', response.status, errorText);
+      throw new Error(`ML API error: ${response.status} - ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('[ML API] Result:', result);
+    return result;
+  }
   
   app.post("/api/predict", async (req, res) => {
     const startTime = Date.now();
@@ -352,7 +383,7 @@ IMPORTANT: When discussing risk scores, remember:
     } = {
       method: 'ml_api',
       success: false,
-      ml_api_url: PREDICTION_API_URL,
+      ml_api_url: PREDICTION_API_BASE_URL,
       features_received: 0,
       features_sent: [],
     };
@@ -372,13 +403,19 @@ IMPORTANT: When discussing risk scores, remember:
       metadata.features_sent = features;
 
       console.log('[Prediction API] Calling ML service with features:', JSON.stringify(features, null, 2));
-      console.log('[Prediction API] ML API URL:', PREDICTION_API_URL);
+      console.log('[Prediction API] ML API URL:', PREDICTION_API_BASE_URL);
 
-      const response = await fetch(PREDICTION_API_URL, {
+      const predictUrl = `${PREDICTION_API_BASE_URL}/predict`;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (ML_API_KEY) {
+        headers['X-API-Key'] = ML_API_KEY;
+      }
+      
+      const response = await fetch(predictUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({ features }),
       });
 
@@ -476,7 +513,6 @@ IMPORTANT: When discussing risk scores, remember:
           Object.assign(mergedAnswers, a.answers);
         });
         
-        // Also merge in profile data for comprehensive risk calculation
         const profile = await storage.getUserProfile(userId);
         if (profile) {
           if (profile.age && !mergedAnswers.age) mergedAnswers.age = profile.age;
@@ -484,15 +520,40 @@ IMPORTANT: When discussing risk scores, remember:
           if (profile.weight && !mergedAnswers.weight_current) mergedAnswers.weight_current = profile.weight;
         }
         
-        const riskScore = calculateRiskScores(mergedAnswers);
+        let riskScore: { overallScore: number; diabetesRisk: number; heartRisk: number; strokeRisk: number };
+        
+        try {
+          const mlFeatures = convertQuestionnaireToMLFeatures(mergedAnswers);
+          if (mlFeatures.length >= 5) {
+            const mlResult = await callMLPredictionAPI(mlFeatures);
+            if (mlResult && typeof mlResult.diabetes_probability === 'number') {
+              const diabetesScore = Math.round(mlResult.diabetes_probability * 100);
+              const fallbackScores = calculateRiskScores(mergedAnswers);
+              riskScore = {
+                overallScore: diabetesScore,
+                diabetesRisk: diabetesScore,
+                heartRisk: fallbackScores.heartRisk,
+                strokeRisk: fallbackScores.strokeRisk,
+              };
+              console.log("[API] Risk score auto-recalculated using ML model after questionnaire update");
+            } else {
+              riskScore = calculateRiskScores(mergedAnswers);
+              console.log("[API] Risk score auto-recalculated using fallback after questionnaire update");
+            }
+          } else {
+            riskScore = calculateRiskScores(mergedAnswers);
+          }
+        } catch (mlError) {
+          riskScore = calculateRiskScores(mergedAnswers);
+          console.log("[API] Risk score auto-recalculated using fallback (ML error) after questionnaire update");
+        }
+        
         await storage.saveRiskScore({
           userId,
           ...riskScore,
         });
-        console.log("[API] Risk score auto-recalculated after questionnaire update");
       } catch (riskError) {
         console.error("[API] Failed to auto-recalculate risk score:", riskError);
-        // Don't fail the whole request if risk calculation fails
       }
       
       res.json(saved);
@@ -550,7 +611,7 @@ IMPORTANT: When discussing risk scores, remember:
       if (saved.age || saved.height || saved.weight) {
         try {
           const allAnswers = await storage.getAllQuestionnaireAnswers(userId);
-          const mergedAnswers: Record<string, string> = {};
+          const mergedAnswers: Record<string, any> = {};
           allAnswers.forEach(a => {
             Object.assign(mergedAnswers, a.answers);
           });
@@ -560,12 +621,38 @@ IMPORTANT: When discussing risk scores, remember:
           if (saved.height) mergedAnswers.height = saved.height;
           if (saved.weight) mergedAnswers.weight_current = saved.weight;
           
-          const riskScore = calculateRiskScores(mergedAnswers);
+          let riskScore: { overallScore: number; diabetesRisk: number; heartRisk: number; strokeRisk: number };
+          
+          try {
+            const mlFeatures = convertQuestionnaireToMLFeatures(mergedAnswers);
+            if (mlFeatures.length >= 5) {
+              const mlResult = await callMLPredictionAPI(mlFeatures);
+              if (mlResult && typeof mlResult.diabetes_probability === 'number') {
+                const diabetesScore = Math.round(mlResult.diabetes_probability * 100);
+                const fallbackScores = calculateRiskScores(mergedAnswers);
+                riskScore = {
+                  overallScore: diabetesScore,
+                  diabetesRisk: diabetesScore,
+                  heartRisk: fallbackScores.heartRisk,
+                  strokeRisk: fallbackScores.strokeRisk,
+                };
+                console.log("[API] Risk score auto-recalculated using ML model after profile update");
+              } else {
+                riskScore = calculateRiskScores(mergedAnswers);
+                console.log("[API] Risk score auto-recalculated using fallback after profile update");
+              }
+            } else {
+              riskScore = calculateRiskScores(mergedAnswers);
+            }
+          } catch (mlError) {
+            riskScore = calculateRiskScores(mergedAnswers);
+            console.log("[API] Risk score auto-recalculated using fallback (ML error) after profile update");
+          }
+          
           await storage.saveRiskScore({
             userId,
             ...riskScore,
           });
-          console.log("[API] Risk score auto-recalculated after profile update");
         } catch (riskError) {
           console.error("[API] Failed to auto-recalculate risk score:", riskError);
         }
@@ -790,28 +877,72 @@ IMPORTANT: When discussing risk scores, remember:
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: "Not authenticated" });
     }
-    console.warn("[DEPRECATED] /api/risk-scores/calculate endpoint called - using legacy risk calculation as fallback");
     try {
       const userId = (req.user as any).id;
       
       const answers = await storage.getAllQuestionnaireAnswers(userId);
+      const profile = await storage.getUserProfile(userId);
       
-      const allAnswers: Record<string, string> = {};
+      const allAnswers: Record<string, any> = {};
       answers.forEach(a => {
         Object.assign(allAnswers, a.answers);
       });
       
-      const riskScore = calculateRiskScores(allAnswers);
+      if (profile) {
+        if (profile.age && !allAnswers.age) allAnswers.age = profile.age;
+        if (profile.height && !allAnswers.height) allAnswers.height = profile.height;
+        if (profile.weight && !allAnswers.weight_current) allAnswers.weight_current = profile.weight;
+      }
+      
+      let riskScore: {
+        overallScore: number;
+        diabetesRisk: number;
+        heartRisk: number;
+        strokeRisk: number;
+      };
+      let usedMLModel = false;
+      
+      try {
+        const mlFeatures = convertQuestionnaireToMLFeatures(allAnswers);
+        console.log('[Risk Calculation] Converted', Object.keys(allAnswers).length, 'answers to', mlFeatures.length, 'ML features');
+        
+        if (mlFeatures.length >= 5) {
+          const mlResult = await callMLPredictionAPI(mlFeatures);
+          
+          if (mlResult && typeof mlResult.diabetes_probability === 'number') {
+            const diabetesScore = Math.round(mlResult.diabetes_probability * 100);
+            const fallbackScores = calculateRiskScores(allAnswers);
+            
+            riskScore = {
+              overallScore: diabetesScore,
+              diabetesRisk: diabetesScore,
+              heartRisk: fallbackScores.heartRisk,
+              strokeRisk: fallbackScores.strokeRisk,
+            };
+            usedMLModel = true;
+            console.log('[Risk Calculation] ML model prediction:', mlResult.diabetes_probability, '-> score:', diabetesScore);
+          } else {
+            console.log('[Risk Calculation] ML API unavailable, using fallback calculation');
+            riskScore = calculateRiskScores(allAnswers);
+          }
+        } else {
+          console.log('[Risk Calculation] Not enough features for ML model, using fallback');
+          riskScore = calculateRiskScores(allAnswers);
+        }
+      } catch (mlError) {
+        console.error('[Risk Calculation] ML API error, falling back to evidence-based model:', mlError);
+        riskScore = calculateRiskScores(allAnswers);
+      }
       
       const saved = await storage.saveRiskScore({
         userId,
         ...riskScore,
       });
       
-      console.log("[DEPRECATED] Legacy risk calculation completed for user:", userId);
-      res.json(saved);
+      console.log('[Risk Calculation] Completed for user:', userId, '- Used ML model:', usedMLModel);
+      res.json({ ...saved, usedMLModel });
     } catch (error) {
-      console.error("[DEPRECATED] Error in legacy risk score calculation:", error);
+      console.error("[Risk Calculation] Error:", error);
       res.status(500).json({ error: "Failed to calculate risk score" });
     }
   });
