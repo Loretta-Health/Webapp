@@ -1064,64 +1064,64 @@ export default function MyDashboard() {
                   </CollapsibleSectionNew>
                 </div>
                 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-7">
-                  <CollapsibleSectionNew
-                    title={t('missions.title')}
-                    icon={<Flame className="w-5 h-5" />}
-                    defaultOpen={true}
-                    badge={
-                      activeMissions.length > 0 ? (
-                        <span className="ml-2 px-3 py-1 bg-gradient-to-r from-orange-400 to-red-400 text-white text-xs font-bold rounded-full shadow-lg">
-                          {activeMissions.length}
-                        </span>
-                      ) : null
-                    }
-                  >
-                    <div className="space-y-4">
-                      {activeMissions.length === 0 ? (
-                        <div className="p-6 text-center rounded-2xl bg-white/50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700">
-                          <p className="text-gray-500 mb-3">{t('missions.noActive')}</p>
-                          <Link href="/mission-details">
-                            <button className="px-4 py-2 border-2 border-[#013DC4] text-[#013DC4] rounded-xl font-bold hover:bg-[#013DC4] hover:text-white transition-all">
-                              {t('missions.activate')}
-                            </button>
-                          </Link>
-                        </div>
-                      ) : (
-                        <>
-                          {activeMissions.slice(0, 3).map((mission: any) => (
-                            <Link key={mission.id} href={`/mission-details?id=${mission.missionKey}`}>
-                              <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all cursor-pointer">
-                                <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
-                                  <div className="min-w-0 flex-1">
-                                    <span className="text-[10px] sm:text-xs text-[#013DC4] font-bold uppercase tracking-wider">{mission.category}</span>
-                                    <h4 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{mission.title}</h4>
-                                    <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">{mission.description}</p>
-                                  </div>
-                                  <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-[10px] sm:text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">
-                                    +{mission.xpReward} XP
-                                  </span>
+                <CollapsibleSectionNew
+                  title={t('missions.title')}
+                  icon={<Flame className="w-5 h-5" />}
+                  defaultOpen={true}
+                  badge={
+                    activeMissions.length > 0 ? (
+                      <span className="ml-2 px-3 py-1 bg-gradient-to-r from-orange-400 to-red-400 text-white text-xs font-bold rounded-full shadow-lg">
+                        {activeMissions.length}
+                      </span>
+                    ) : null
+                  }
+                >
+                  <div className="space-y-4">
+                    {activeMissions.length === 0 ? (
+                      <div className="p-6 text-center rounded-2xl bg-white/50 dark:bg-gray-800/50 border-2 border-dashed border-gray-200 dark:border-gray-700">
+                        <p className="text-gray-500 mb-3">{t('missions.noActive')}</p>
+                        <Link href="/mission-details">
+                          <button className="px-4 py-2 border-2 border-[#013DC4] text-[#013DC4] rounded-xl font-bold hover:bg-[#013DC4] hover:text-white transition-all">
+                            {t('missions.activate')}
+                          </button>
+                        </Link>
+                      </div>
+                    ) : (
+                      <>
+                        {activeMissions.slice(0, 3).map((mission: any) => (
+                          <Link key={mission.id} href={`/mission-details?id=${mission.missionKey}`}>
+                            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all cursor-pointer">
+                              <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <span className="text-[10px] sm:text-xs text-[#013DC4] font-bold uppercase tracking-wider">{mission.category}</span>
+                                  <h4 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg truncate">{mission.title}</h4>
+                                  <p className="text-xs sm:text-sm text-gray-500 line-clamp-2">{mission.description}</p>
                                 </div>
-                                <div className="h-1.5 sm:h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                                  <div 
-                                    className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all"
-                                    style={{ width: `${(mission.progress / mission.maxProgress) * 100}%` }}
-                                  />
-                                </div>
+                                <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] text-[10px] sm:text-xs font-bold rounded-full whitespace-nowrap flex-shrink-0">
+                                  +{mission.xpReward} XP
+                                </span>
                               </div>
-                            </Link>
-                          ))}
-                        </>
-                      )}
-                      
-                      <Link href="/mission-details">
-                        <button className="w-full py-3 border-2 border-[#013DC4] text-[#013DC4] rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base hover:bg-gradient-to-r hover:from-[#013DC4] hover:to-[#0150FF] hover:text-white hover:border-transparent transition-all min-h-[48px]" data-testid="button-view-all-quests">
-                          {t('missions.viewAll')}
-                        </button>
-                      </Link>
-                    </div>
-                  </CollapsibleSectionNew>
-                  
+                              <div className="h-1.5 sm:h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all"
+                                  style={{ width: `${(mission.progress / mission.maxProgress) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </>
+                    )}
+                    
+                    <Link href="/mission-details">
+                      <button className="w-full py-3 border-2 border-[#013DC4] text-[#013DC4] rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base hover:bg-gradient-to-r hover:from-[#013DC4] hover:to-[#0150FF] hover:text-white hover:border-transparent transition-all min-h-[48px]" data-testid="button-view-all-quests">
+                        {t('missions.viewAll')}
+                      </button>
+                    </Link>
+                  </div>
+                </CollapsibleSectionNew>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-7">
                   <CollapsibleSectionNew
                     title={t('sidebar.leaderboard')}
                     icon={<Users className="w-5 h-5" />}
@@ -1129,9 +1129,8 @@ export default function MyDashboard() {
                   >
                     <Leaderboard communityType={communityType} />
                   </CollapsibleSectionNew>
-                </div>
-                
-                <CollapsibleSectionNew
+                  
+                  <CollapsibleSectionNew
                   title={t('medications.title')}
                   icon={<Pill className="w-5 h-5" />}
                   defaultOpen={true}
@@ -1207,7 +1206,8 @@ export default function MyDashboard() {
                       </button>
                     </div>
                   )}
-                </CollapsibleSectionNew>
+                  </CollapsibleSectionNew>
+                </div>
                 
                 {!isNewUser && (
                   <CollapsibleSectionNew
