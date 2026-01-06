@@ -777,63 +777,6 @@ const baseQuestions: Question[] = [
   },
 ];
 
-const followUpQuestions: Question[] = [
-  {
-    id: 'blood_test_followup',
-    text: "Let's clarify: Have you ever had a blood test done by a healthcare provider?",
-    type: 'choice',
-    icon: HelpCircle,
-    category: "Clarification",
-    module: 'core',
-    followUpFor: 'blood_test_3_years',
-    options: [
-      { label: 'Yes, I have had blood tests before', value: 'yes', riskWeight: 0 },
-      { label: 'No, I have never had a blood test', value: 'no', riskWeight: 2 },
-    ],
-  },
-  {
-    id: 'prediabetes_followup',
-    text: "To confirm about prediabetes: Has any doctor mentioned elevated blood sugar or borderline diabetes?",
-    type: 'choice',
-    icon: HelpCircle,
-    category: "Clarification",
-    module: 'core',
-    followUpFor: 'prediabetes',
-    options: [
-      { label: 'Yes, I was told about elevated blood sugar', value: 'yes', riskWeight: 2 },
-      { label: 'No, my blood sugar has been normal', value: 'no', riskWeight: 0 },
-      { label: 'I have never had it checked', value: 'never_checked', riskWeight: 1 },
-    ],
-  },
-  {
-    id: 'diabetes_followup',
-    text: "To confirm about diabetes: Have you ever been diagnosed with Type 1 or Type 2 diabetes?",
-    type: 'choice',
-    icon: HelpCircle,
-    category: "Clarification",
-    module: 'core',
-    followUpFor: 'diabetes',
-    options: [
-      { label: 'Yes, I have diabetes', value: 'yes', riskWeight: 3 },
-      { label: 'No, I do not have diabetes', value: 'no', riskWeight: 0 },
-      { label: 'I have never been tested', value: 'never_tested', riskWeight: 1 },
-    ],
-  },
-  {
-    id: 'aspirin_followup',
-    text: "To clarify about aspirin: Has a doctor ever recommended you take aspirin regularly for heart health?",
-    type: 'choice',
-    icon: HelpCircle,
-    category: "Clarification",
-    module: 'core',
-    followUpFor: 'daily_aspirin',
-    options: [
-      { label: 'Yes, I was advised to take aspirin', value: 'yes', riskWeight: 1 },
-      { label: 'No, I was not advised to take aspirin', value: 'no', riskWeight: 0 },
-    ],
-  },
-];
-
 function parseTimeToMinutes(timeStr: string): number {
   const [hours, minutes] = timeStr.split(':').map(Number);
   return hours * 60 + minutes;
@@ -1015,13 +958,9 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   
   // === MEDICAL HISTORY ===
   
-  // Diabetes/prediabetes - use actual question IDs from the questionnaire
-  const hasDiabetes = getAnswerValue(answers, 'diabetes_followup') === 'yes';
-  const hasPrediabetes = getAnswerValue(answers, 'prediabetes') === 'yes' || 
-                         getAnswerValue(answers, 'prediabetes_followup') === 'yes';
-  if (hasDiabetes) {
-    diabetesRisk += 40;
-  } else if (hasPrediabetes) {
+  // Prediabetes check
+  const hasPrediabetes = getAnswerValue(answers, 'prediabetes') === 'yes';
+  if (hasPrediabetes) {
     diabetesRisk += 25;
   }
   
@@ -1137,7 +1076,7 @@ export interface FeatureItem {
 
 export function buildFeatureJson(answers: QuestionnaireAnswer[]): FeatureItem[] {
   const features: FeatureItem[] = [];
-  const allQuestions = [...baseQuestions, ...followUpQuestions];
+  const allQuestions = [...baseQuestions];
   
   for (const answer of answers) {
     const question = allQuestions.find(q => q.id === answer.questionId);
@@ -1180,21 +1119,7 @@ export function buildFeatureJson(answers: QuestionnaireAnswer[]): FeatureItem[] 
 }
 
 function getQuestionsWithFollowUps(answers: QuestionnaireAnswer[]): Question[] {
-  const questions = [...baseQuestions];
-  
-  const unsureAnswers = answers.filter(a => a.answer === 'unsure');
-  
-  for (const unsureAnswer of unsureAnswers) {
-    const followUp = followUpQuestions.find(q => q.followUpFor === unsureAnswer.questionId);
-    if (followUp) {
-      const originalIndex = questions.findIndex(q => q.id === unsureAnswer.questionId);
-      if (originalIndex !== -1 && !questions.find(q => q.id === followUp.id)) {
-        questions.splice(originalIndex + 1, 0, followUp);
-      }
-    }
-  }
-  
-  return questions;
+  return [...baseQuestions];
 }
 
 export default function Onboarding() {
