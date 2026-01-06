@@ -350,6 +350,8 @@ export default function LeaderboardPage() {
   };
 
   const getLeaderboardEntries = (): LeaderboardEntry[] => {
+    if (!Array.isArray(teamMembers)) return [];
+    
     const sortedMembers = [...teamMembers]
       .filter(m => m.consentGiven)
       .sort((a, b) => b.xp - a.xp);
@@ -457,6 +459,7 @@ export default function LeaderboardPage() {
                   ) : (
                     <>
                       {(() => {
+                        const friendsList = Array.isArray(friends) ? friends : [];
                         const allParticipants = [
                           ...(user && userGamification ? [{
                             id: user.id,
@@ -466,7 +469,7 @@ export default function LeaderboardPage() {
                             currentStreak: userGamification.currentStreak,
                             isCurrentUser: true,
                           }] : []),
-                          ...friends.map(f => ({ ...f, isCurrentUser: false })),
+                          ...friendsList.map(f => ({ ...f, isCurrentUser: false })),
                         ].sort((a, b) => b.xp - a.xp);
                         
                         return allParticipants.map((participant, index) => (
