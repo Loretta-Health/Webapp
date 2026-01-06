@@ -547,7 +547,9 @@ export default function MyDashboard() {
             </div>
           </GlassCard>
           
-          <div className="space-y-2 mt-2">
+          <div className="border-t border-gray-200 dark:border-gray-700 my-4" />
+          
+          <div className="space-y-2">
             <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider px-1 mb-3">{t('sidebar.navigation')}</h3>
             <Link href="/profile">
               <button 
