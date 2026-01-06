@@ -239,8 +239,8 @@ export default function RiskScoreDetails() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 -mt-24 space-y-4 pb-8">
-        {/* Score Card - Using GlassCard like MyDashboard's CollapsibleSectionNew */}
-        <GlassCard className="p-5 sm:p-6">
+        {/* Score Card - Opaque background */}
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl shadow-xl p-5 sm:p-6">
           <div className="flex flex-col items-center justify-center w-full py-2 sm:py-4">
             {/* Score Circle - Matching MyDashboard exactly */}
             <motion.div
@@ -305,7 +305,7 @@ export default function RiskScoreDetails() {
               </div>
             </div>
           </div>
-        </GlassCard>
+        </div>
 
         {/* What This Means */}
         <GlassCard className="p-4 sm:p-5">
