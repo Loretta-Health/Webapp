@@ -527,11 +527,11 @@ IMPORTANT: When discussing risk scores, remember:
           if (mlFeatures.length >= 5) {
             const mlResult = await callMLPredictionAPI(mlFeatures);
             if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-              // Convert probability to health score (100 = perfect health, 0 = high risk)
-              const healthScore = Math.round((1 - mlResult.diabetes_probability) * 100);
+              // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+              const riskValue = Math.round(mlResult.diabetes_probability * 100);
               riskScore = {
-                overallScore: healthScore,
-                diabetesRisk: healthScore,
+                overallScore: riskValue,
+                diabetesRisk: riskValue,
                 heartRisk: 0,
                 strokeRisk: 0,
               };
@@ -628,11 +628,11 @@ IMPORTANT: When discussing risk scores, remember:
             if (mlFeatures.length >= 5) {
               const mlResult = await callMLPredictionAPI(mlFeatures);
               if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-                // Convert probability to health score (100 = perfect health, 0 = high risk)
-                const healthScore = Math.round((1 - mlResult.diabetes_probability) * 100);
+                // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+                const riskValue = Math.round(mlResult.diabetes_probability * 100);
                 riskScore = {
-                  overallScore: healthScore,
-                  diabetesRisk: healthScore,
+                  overallScore: riskValue,
+                  diabetesRisk: riskValue,
                   heartRisk: 0,
                   strokeRisk: 0,
                 };
@@ -910,17 +910,17 @@ IMPORTANT: When discussing risk scores, remember:
           const mlResult = await callMLPredictionAPI(mlFeatures);
           
           if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-            // Convert probability to health score (100 = perfect health, 0 = high risk)
-            const healthScore = Math.round((1 - mlResult.diabetes_probability) * 100);
+            // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+            const riskValue = Math.round(mlResult.diabetes_probability * 100);
             
             riskScore = {
-              overallScore: healthScore,
-              diabetesRisk: healthScore,
+              overallScore: riskValue,
+              diabetesRisk: riskValue,
               heartRisk: 0,
               strokeRisk: 0,
             };
             usedMLModel = true;
-            console.log('[Risk Calculation] ML model prediction:', mlResult.diabetes_probability, '-> health score:', healthScore);
+            console.log('[Risk Calculation] ML model prediction:', mlResult.diabetes_probability, '-> risk score:', riskValue);
           } else {
             console.log('[Risk Calculation] ML API unavailable, using fallback calculation');
             riskScore = calculateRiskScores(allAnswers);
@@ -3075,13 +3075,12 @@ function calculateRiskScores(answers: Record<string, string>): {
   // Apply a minimum baseline risk based on age if no other factors
   if (age >= 40 && diabetesRisk < 10) diabetesRisk = 10;
   
-  // Convert risk to health score (100 = perfect health, 0 = high risk)
-  // UI semantics: higher score = better health
-  const healthScore = Math.round((100 - diabetesRisk) * 10) / 10;
+  // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+  const riskValue = Math.round(diabetesRisk * 10) / 10;
 
   return {
-    overallScore: healthScore,
-    diabetesRisk: healthScore,
+    overallScore: riskValue,
+    diabetesRisk: riskValue,
     heartRisk: 0,
     strokeRisk: 0,
   };

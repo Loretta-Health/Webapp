@@ -402,9 +402,9 @@ export default function MyDashboard() {
   };
 
   const riskScore = riskScoreData?.overallScore ?? 50;
-  // Higher score = better health (100 = excellent, 0 = high risk)
-  const riskLevel = riskScore >= 70 ? 'Excellent' : riskScore >= 40 ? 'Moderate' : 'Needs Attention';
-  const riskColor = riskScore >= 70 ? 'text-green-600' : riskScore >= 40 ? 'text-amber-600' : 'text-red-600';
+  // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+  const riskLevel = riskScore <= 30 ? 'Low Risk' : riskScore <= 60 ? 'Moderate Risk' : 'High Risk';
+  const riskColor = riskScore <= 30 ? 'text-green-600' : riskScore <= 60 ? 'text-amber-600' : 'text-red-600';
 
   if (isAuthLoading) {
     return (

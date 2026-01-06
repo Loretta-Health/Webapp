@@ -132,25 +132,27 @@ export default function RiskScoreDetails() {
   const trend = score > previousScore ? 'up' : score < previousScore ? 'down' : 'stable';
 
   const getScoreColor = () => {
-    if (score >= 80) return 'text-primary';
-    if (score >= 60) return 'text-chart-3';
-    if (score >= 40) return 'text-chart-2';
+    // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+    if (score <= 20) return 'text-primary';
+    if (score <= 40) return 'text-chart-3';
+    if (score <= 60) return 'text-chart-2';
     return 'text-destructive';
   };
 
   const getScoreGradient = () => {
-    if (score >= 80) return 'from-primary to-chart-2';
-    if (score >= 60) return 'from-chart-3 to-chart-2';
-    if (score >= 40) return 'from-chart-2 to-destructive';
+    // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+    if (score <= 20) return 'from-primary to-chart-2';
+    if (score <= 40) return 'from-chart-3 to-chart-2';
+    if (score <= 60) return 'from-chart-2 to-destructive';
     return 'from-destructive to-red-700';
   };
 
   const getScoreLabel = () => {
-    // Higher score = better health (100 = excellent, 0 = high risk)
-    if (score >= 80) return 'Excellent';
-    if (score >= 60) return 'Great';
-    if (score >= 40) return 'Getting There';
-    return 'Needs Attention';
+    // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+    if (score <= 20) return 'Low Risk';
+    if (score <= 40) return 'Moderate';
+    if (score <= 60) return 'Elevated';
+    return 'High Risk';
   };
 
   const getFactorStyles = (type: 'negative' | 'warning' | 'positive', points: number, maxPoints: number) => {
