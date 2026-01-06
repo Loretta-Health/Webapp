@@ -516,17 +516,19 @@ export default function LeaderboardPage() {
             }
             gradient
           >
-            {/* Community Selector */}
-            <div className="mb-4 relative">
-              <select
-                value={selectedCommunity}
-                onChange={(e) => setSelectedCommunity(e.target.value as CommunityType)}
-                className="w-full appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-2xl px-4 py-3 pr-10 font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
-              >
-                <option value="loretta">{t('leaderboard.lorettaCommunity', 'Loretta Community')}</option>
-                <option value="friends">{t('leaderboard.myFriends', 'My Friends')} ({(Array.isArray(friends) ? friends.length : 0) + 1})</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#013DC4] pointer-events-none" />
+            {/* Community Selector - Right aligned, smaller */}
+            <div className="flex justify-end mb-4">
+              <div className="relative">
+                <select
+                  value={selectedCommunity}
+                  onChange={(e) => setSelectedCommunity(e.target.value as CommunityType)}
+                  className="appearance-none bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 border border-[#013DC4]/20 rounded-xl px-3 py-2 pr-8 text-sm font-semibold text-[#013DC4] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 cursor-pointer"
+                >
+                  <option value="loretta">{t('leaderboard.lorettaCommunity', 'Loretta Community')}</option>
+                  <option value="friends">{t('leaderboard.myFriends', 'My Friends')} ({(Array.isArray(friends) ? friends.length : 0) + 1})</option>
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-[#013DC4] pointer-events-none" />
+              </div>
             </div>
 
             {/* Team Selector */}
