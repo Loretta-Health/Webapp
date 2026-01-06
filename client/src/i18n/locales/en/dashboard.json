@@ -21,7 +21,10 @@
     "leaderboard": "Leaderboard",
     "signOut": "Sign Out",
     "privacyPolicy": "Privacy Policy",
-    "accessibility": "Inclusion & Accessibility"
+    "accessibility": "Inclusion & Accessibility",
+    "totalXp": "Total XP",
+    "streakLabel": "Streak",
+    "streak": "day streak"
   },
   "setup": {
     "title": "Setup Checklist",
@@ -104,7 +107,8 @@
     "friend": "Friend",
     "atTime": "at {{time}}",
     "yesterdayAt": "yesterday at {{time}}",
-    "onDateAt": "on {{date}} at {{time}}"
+    "onDateAt": "on {{date}} at {{time}}",
+    "days": "days"
   },
   "achievements": {
     "title": "Your Achievements",

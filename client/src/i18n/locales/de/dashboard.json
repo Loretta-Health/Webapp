@@ -21,7 +21,10 @@
     "leaderboard": "Bestenliste",
     "signOut": "Abmelden",
     "privacyPolicy": "Datenschutzrichtlinie",
-    "accessibility": "Inklusion & Barrierefreiheit"
+    "accessibility": "Inklusion & Barrierefreiheit",
+    "totalXp": "Gesamt XP",
+    "streakLabel": "Serie",
+    "streak": "Tage Serie"
   },
   "setup": {
     "title": "Setup-Checkliste",
@@ -104,7 +107,8 @@
     "friend": "Freund",
     "atTime": "um {{time}}",
     "yesterdayAt": "gestern um {{time}}",
-    "onDateAt": "am {{date}} um {{time}}"
+    "onDateAt": "am {{date}} um {{time}}",
+    "days": "Tage"
   },
   "achievements": {
     "title": "Deine Erfolge",
