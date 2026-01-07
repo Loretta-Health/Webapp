@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Crown, Flame, Loader2, ChevronDown } from 'lucide-react';
 import type { CommunityType } from './CommunitySelector';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +17,7 @@ interface TeamMember {
   level: number;
   currentStreak: number;
   consentGiven: boolean;
+  profilePhoto?: string | null;
 }
 
 interface Friend {
@@ -25,6 +26,7 @@ interface Friend {
   xp: number;
   level: number;
   currentStreak: number;
+  profilePhoto?: string | null;
 }
 
 interface LeaderboardEntry {
@@ -34,6 +36,7 @@ interface LeaderboardEntry {
   level?: number;
   streak?: number;
   isCurrentUser?: boolean;
+  profilePhoto?: string | null;
 }
 
 interface LeaderboardProps {
@@ -54,6 +57,7 @@ export default function Leaderboard({
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [userGamification, setUserGamification] = useState<{ xp: number; level: number; currentStreak: number } | null>(null);
+  const [userProfilePhoto, setUserProfilePhoto] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,10 +73,11 @@ export default function Leaderboard({
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [teamsRes, gamificationRes, friendsRes] = await Promise.all([
+      const [teamsRes, gamificationRes, friendsRes, profileRes] = await Promise.all([
         fetch('/api/teams/me', { credentials: 'include' }),
         fetch('/api/gamification', { credentials: 'include' }),
         fetch('/api/friends', { credentials: 'include' }),
+        fetch('/api/profile', { credentials: 'include' }),
       ]);
 
       if (gamificationRes.ok) {
@@ -82,6 +87,11 @@ export default function Leaderboard({
           level: gamData.level || 1,
           currentStreak: gamData.currentStreak || 0,
         });
+      }
+      
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUserProfilePhoto(profileData?.profilePhoto || null);
       }
 
       if (friendsRes.ok) {
@@ -129,6 +139,7 @@ export default function Leaderboard({
       level: member.level,
       streak: member.currentStreak,
       isCurrentUser: member.userId === user?.id,
+      profilePhoto: member.profilePhoto,
     }));
   };
 
@@ -142,8 +153,9 @@ export default function Leaderboard({
         level: userGamification.level,
         currentStreak: userGamification.currentStreak,
         isCurrentUser: true,
+        profilePhoto: userProfilePhoto,
       }] : []),
-      ...friendsList.map(f => ({ ...f, username: f.username, isCurrentUser: false })),
+      ...friendsList.map(f => ({ ...f, username: f.username, isCurrentUser: false, profilePhoto: f.profilePhoto })),
     ].sort((a, b) => b.xp - a.xp);
     
     return allParticipants.map((participant, index) => ({
@@ -153,6 +165,7 @@ export default function Leaderboard({
       level: participant.level,
       streak: participant.currentStreak,
       isCurrentUser: participant.isCurrentUser,
+      profilePhoto: participant.profilePhoto,
     }));
   };
 
@@ -235,6 +248,9 @@ export default function Leaderboard({
               </div>
               
               <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
+                {entry.profilePhoto && (
+                  <AvatarImage src={entry.profilePhoto} alt={entry.name} />
+                )}
                 <AvatarFallback className="bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] text-white font-bold text-xs sm:text-sm">
                   {entry.name.substring(0, 2).toUpperCase()}
                 </AvatarFallback>
