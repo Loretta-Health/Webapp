@@ -1676,33 +1676,9 @@ export default function Profile() {
             </div>
           </TabsContent>
 
-          {/* Social Factors */}
+          {/* Social Settings */}
           <TabsContent value="social">
             <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg">
-                  <Users className="w-5 h-5" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.socialFactors.title}</h3>
-              </div>
-              <div className="space-y-2">
-                {getSocialFactors().map((factor, index) => (
-                  <motion.div
-                    key={factor.label}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all"
-                    data-testid={`social-factor-${index}`}
-                  >
-                    <p className="text-gray-500 font-medium">{factor.label}</p>
-                    <p className="font-bold text-gray-900 dark:text-white text-right">{factor.value}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6 mt-4">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center text-white shadow-lg">
                   <Users className="w-5 h-5" />
@@ -1736,6 +1712,32 @@ export default function Profile() {
 
           {/* Questionnaires */}
           <TabsContent value="questionnaires">
+            {/* Social Factors Section */}
+            <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6 mb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg">
+                  <Users className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.socialFactors.title}</h3>
+              </div>
+              <div className="space-y-2">
+                {getSocialFactors().map((factor, index) => (
+                  <motion.div
+                    key={factor.label}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all"
+                    data-testid={`social-factor-${index}`}
+                  >
+                    <p className="text-gray-500 font-medium">{factor.label}</p>
+                    <p className="font-bold text-gray-900 dark:text-white text-right">{factor.value}</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Health Questionnaires */}
             <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center text-white shadow-lg">
