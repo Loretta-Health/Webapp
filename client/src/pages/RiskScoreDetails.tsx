@@ -26,7 +26,8 @@ import {
   Armchair,
   Footprints,
   MessageCircle,
-  RefreshCw
+  RefreshCw,
+  Ear
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -121,6 +122,7 @@ const getIconComponent = (iconName: string, size = 'w-4 h-4') => {
     'smile': <Smile className={size} />,
     'user': <User className={size} />,
     'pill': <Pill className={size} />,
+    'ear': <Ear className={size} />,
   };
   return iconMap[iconName] || <Activity className={size} />;
 };

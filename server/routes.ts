@@ -3098,8 +3098,9 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
   }
   
   // Alcohol consumption (ALQ121)
+  // Questionnaire values: never, every_day, nearly_every_day, 3_4_week, 2_week, 1_week, 2_3_month, 1_month, 7_11_year, 3_6_year, 1_2_year
   const alcoholFreq = answers.ALQ121 || answers.alcohol_frequency;
-  if (alcoholFreq === '1' || alcoholFreq === '2') {
+  if (alcoholFreq === 'every_day' || alcoholFreq === 'nearly_every_day' || alcoholFreq === '1' || alcoholFreq === '2') {
     factors.push({
       id: 'alcohol',
       name: 'Daily Alcohol Consumption',
@@ -3107,7 +3108,8 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       type: 'negative',
       icon: 'wine',
     });
-  } else if (alcoholFreq === '3' || alcoholFreq === '4' || alcoholFreq === '5') {
+  } else if (alcoholFreq === '3_4_week' || alcoholFreq === '2_week' || alcoholFreq === '1_week' || 
+             alcoholFreq === '3' || alcoholFreq === '4' || alcoholFreq === '5') {
     factors.push({
       id: 'alcohol',
       name: 'Regular Alcohol Consumption',
@@ -3115,7 +3117,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       type: 'warning',
       icon: 'wine',
     });
-  } else if (alcoholFreq === '0' || alcoholFreq === 'never') {
+  } else if (alcoholFreq === 'never' || alcoholFreq === '0') {
     factors.push({
       id: 'alcohol',
       name: 'No Alcohol',
@@ -3123,11 +3125,21 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       type: 'positive',
       icon: 'wine',
     });
+  } else if (alcoholFreq === '2_3_month' || alcoholFreq === '1_month' || alcoholFreq === '7_11_year' || 
+             alcoholFreq === '3_6_year' || alcoholFreq === '1_2_year' ||
+             alcoholFreq === '6' || alcoholFreq === '7' || alcoholFreq === '8' || alcoholFreq === '9' || alcoholFreq === '10') {
+    factors.push({
+      id: 'alcohol',
+      name: 'Occasional Alcohol',
+      description: 'Alcohol frequency: Monthly or less',
+      type: 'positive',
+      icon: 'wine',
+    });
   }
   
   // === SLEEP (ML Features: SLD012, SLD013, DPQ030) ===
-  const weekdaySleep = parseNumeric(answers.SLD012 || answers.sleep_hours_weekday, 0);
-  const weekendSleep = parseNumeric(answers.SLD013 || answers.sleep_hours_weekend, 0);
+  const weekdaySleep = parseNumeric(answers.SLD012 || answers.weekday_sleep, 0);
+  const weekendSleep = parseNumeric(answers.SLD013 || answers.weekend_sleep, 0);
   const avgSleep = weekdaySleep > 0 && weekendSleep > 0 
     ? (weekdaySleep + weekendSleep) / 2 
     : weekdaySleep > 0 ? weekdaySleep : weekendSleep;
@@ -3163,8 +3175,9 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
   }
   
   // Sleep trouble (DPQ030)
+  // Questionnaire values: not_at_all, several_days, more_than_half, nearly_every_day
   const sleepTrouble = answers.DPQ030 || answers.sleep_trouble;
-  if (sleepTrouble === '3') {
+  if (sleepTrouble === 'nearly_every_day' || sleepTrouble === '3') {
     factors.push({
       id: 'sleep-trouble',
       name: 'Severe Sleep Difficulties',
@@ -3172,7 +3185,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       type: 'negative',
       icon: 'moon',
     });
-  } else if (sleepTrouble === '2') {
+  } else if (sleepTrouble === 'more_than_half' || sleepTrouble === '2') {
     factors.push({
       id: 'sleep-trouble',
       name: 'Frequent Sleep Difficulties',
@@ -3180,7 +3193,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       type: 'warning',
       icon: 'moon',
     });
-  } else if (sleepTrouble === '1') {
+  } else if (sleepTrouble === 'several_days' || sleepTrouble === '1') {
     factors.push({
       id: 'sleep-trouble',
       name: 'Occasional Sleep Difficulties',
@@ -3188,7 +3201,7 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       type: 'warning',
       icon: 'moon',
     });
-  } else if (sleepTrouble === '0') {
+  } else if (sleepTrouble === 'not_at_all' || sleepTrouble === '0') {
     factors.push({
       id: 'sleep-trouble',
       name: 'Good Sleep Quality',
@@ -3370,9 +3383,9 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
   }
   
   // Routine healthcare place (HUQ030)
-  const hasHealthcarePlace = answers.HUQ030 === '0' || answers.routine_healthcare === 'yes';
-  const noHealthcarePlace = answers.HUQ030 === '1' || answers.routine_healthcare === 'no';
-  if (hasHealthcarePlace) {
+  // Questionnaire values: yes, no, multiple
+  const healthcarePlace = answers.HUQ030 || answers.routine_healthcare;
+  if (healthcarePlace === 'yes' || healthcarePlace === 'multiple' || healthcarePlace === '0' || healthcarePlace === '2') {
     factors.push({
       id: 'healthcare-access',
       name: 'Healthcare Access',
@@ -3380,13 +3393,50 @@ function calculateRiskFactors(answers: Record<string, string>): RiskFactor[] {
       type: 'positive',
       icon: 'heart-pulse',
     });
-  } else if (noHealthcarePlace) {
+  } else if (healthcarePlace === 'no' || healthcarePlace === '1') {
     factors.push({
       id: 'healthcare-access',
       name: 'No Regular Healthcare',
       description: 'Routine place to go for healthcare: No',
       type: 'warning',
       icon: 'heart-pulse',
+    });
+  }
+  
+  // === HEARING (ML Feature: AUQ054) ===
+  // Questionnaire values: excellent, good, little_trouble, moderate, lot_trouble, deaf
+  const hearingHealth = answers.AUQ054 || answers.hearing_health;
+  if (hearingHealth === 'lot_trouble' || hearingHealth === 'deaf' || hearingHealth === '4' || hearingHealth === '5') {
+    factors.push({
+      id: 'hearing',
+      name: 'Significant Hearing Issues',
+      description: `Hearing condition: ${hearingHealth === 'deaf' || hearingHealth === '5' ? 'Deaf' : 'A lot of trouble'}`,
+      type: 'negative',
+      icon: 'ear',
+    });
+  } else if (hearingHealth === 'moderate' || hearingHealth === '3') {
+    factors.push({
+      id: 'hearing',
+      name: 'Moderate Hearing Trouble',
+      description: 'Hearing condition: Moderate trouble',
+      type: 'warning',
+      icon: 'ear',
+    });
+  } else if (hearingHealth === 'little_trouble' || hearingHealth === '2') {
+    factors.push({
+      id: 'hearing',
+      name: 'Minor Hearing Concerns',
+      description: 'Hearing condition: A little trouble',
+      type: 'warning',
+      icon: 'ear',
+    });
+  } else if (hearingHealth === 'excellent' || hearingHealth === 'good' || hearingHealth === '0' || hearingHealth === '1') {
+    factors.push({
+      id: 'hearing',
+      name: 'Good Hearing',
+      description: `Hearing condition: ${hearingHealth === 'excellent' || hearingHealth === '0' ? 'Excellent' : 'Good'}`,
+      type: 'positive',
+      icon: 'ear',
     });
   }
   
