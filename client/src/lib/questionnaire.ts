@@ -119,8 +119,8 @@ export const baseQuestions: Question[] = [
     module: 'core',
     placeholder: "Enter weight",
     unit: "kg",
-    min: 30,
-    max: 300,
+    min: 20,
+    max: 500,
   },
   {
     id: 'height',
@@ -132,8 +132,8 @@ export const baseQuestions: Question[] = [
     module: 'core',
     placeholder: "Enter height",
     unit: "cm",
-    min: 100,
-    max: 250,
+    min: 50,
+    max: 275,
   },
   {
     id: 'high_cholesterol',
@@ -173,8 +173,8 @@ export const baseQuestions: Question[] = [
     module: 'medical',
     placeholder: "Enter weight",
     unit: "kg",
-    min: 30,
-    max: 300,
+    min: 20,
+    max: 500,
   },
   {
     id: 'arthritis',
@@ -382,8 +382,8 @@ export const baseQuestions: Question[] = [
     module: 'lifestyle',
     placeholder: "Hours of sleep",
     unit: "hours",
-    min: 1,
-    max: 16,
+    min: 0,
+    max: 24,
   },
   {
     id: 'weekend_sleep',
@@ -395,8 +395,8 @@ export const baseQuestions: Question[] = [
     module: 'lifestyle',
     placeholder: "Hours of sleep",
     unit: "hours",
-    min: 1,
-    max: 16,
+    min: 0,
+    max: 24,
   },
   {
     id: 'sleep_time_weekday',
@@ -678,7 +678,7 @@ export const baseQuestions: Question[] = [
     module: 'financial',
     placeholder: "Number of rooms",
     min: 1,
-    max: 15,
+    max: 50,
   },
 ];
 
