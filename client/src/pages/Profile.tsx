@@ -872,10 +872,30 @@ export default function Profile() {
   };
 
   const handleAnswerChange = useCallback((questionId: string, value: string) => {
+    const newAnswers = { ...questionnaireAnswers, [questionId]: value };
+    setQuestionnaireAnswers(newAnswers);
+  }, [questionnaireAnswers]);
+
+  const validateAndSaveAnswer = useCallback((questionId: string, value: string) => {
     const sharedQuestion = getQuestionById(questionId);
     
     if (sharedQuestion?.type === 'number' && value !== '') {
       const numValue = parseFloat(value);
+      
+      if (isNaN(numValue)) {
+        toast({
+          title: language === 'en' ? 'Invalid value' : 'Ungültiger Wert',
+          description: language === 'en' 
+            ? 'Please enter a valid number' 
+            : 'Bitte geben Sie eine gültige Zahl ein',
+          variant: 'destructive',
+        });
+        const revertedAnswers = { ...questionnaireAnswers };
+        delete revertedAnswers[questionId];
+        setQuestionnaireAnswers(revertedAnswers);
+        return;
+      }
+      
       if (sharedQuestion.min !== undefined && numValue < sharedQuestion.min) {
         toast({
           title: language === 'en' ? 'Invalid value' : 'Ungültiger Wert',
@@ -884,6 +904,9 @@ export default function Profile() {
             : `Wert muss mindestens ${sharedQuestion.min} sein`,
           variant: 'destructive',
         });
+        const revertedAnswers = { ...questionnaireAnswers };
+        delete revertedAnswers[questionId];
+        setQuestionnaireAnswers(revertedAnswers);
         return;
       }
       if (sharedQuestion.max !== undefined && numValue > sharedQuestion.max) {
@@ -894,12 +917,14 @@ export default function Profile() {
             : `Wert darf höchstens ${sharedQuestion.max} sein`,
           variant: 'destructive',
         });
+        const revertedAnswers = { ...questionnaireAnswers };
+        delete revertedAnswers[questionId];
+        setQuestionnaireAnswers(revertedAnswers);
         return;
       }
     }
     
     const newAnswers = { ...questionnaireAnswers, [questionId]: value };
-    setQuestionnaireAnswers(newAnswers);
     localStorage.setItem('loretta_questionnaire_answers', JSON.stringify(newAnswers));
 
     const category = getCategoryForQuestion(questionId);
@@ -962,6 +987,27 @@ export default function Profile() {
   });
 
   const handleSave = async () => {
+    const validationErrors: string[] = [];
+    
+    if (editForm.age && (editForm.age < 18 || editForm.age > 120)) {
+      validationErrors.push(language === 'en' ? 'Age must be between 18 and 120' : 'Alter muss zwischen 18 und 120 liegen');
+    }
+    if (editForm.height && (editForm.height < 50 || editForm.height > 275)) {
+      validationErrors.push(language === 'en' ? 'Height must be between 50 and 275 cm' : 'Größe muss zwischen 50 und 275 cm liegen');
+    }
+    if (editForm.weight && (editForm.weight < 20 || editForm.weight > 500)) {
+      validationErrors.push(language === 'en' ? 'Weight must be between 20 and 500 kg' : 'Gewicht muss zwischen 20 und 500 kg liegen');
+    }
+    
+    if (validationErrors.length > 0) {
+      toast({
+        title: language === 'en' ? 'Invalid values' : 'Ungültige Werte',
+        description: validationErrors.join('. '),
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setProfileData(editForm);
     localStorage.setItem('loretta_profile', JSON.stringify(editForm));
     saveProfileMutation.mutate(editForm);
@@ -1486,13 +1532,8 @@ export default function Profile() {
                     <Input
                       id="age"
                       type="number"
-                      min={18}
-                      max={120}
                       value={editForm.age || ''}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 0;
-                        setEditForm({ ...editForm, age: Math.min(120, Math.max(0, val)) });
-                      }}
+                      onChange={(e) => setEditForm({ ...editForm, age: parseInt(e.target.value) || 0 })}
                       placeholder="0"
                     />
                   </div>
@@ -1501,13 +1542,8 @@ export default function Profile() {
                     <Input
                       id="height"
                       type="number"
-                      min={50}
-                      max={275}
                       value={editForm.height || ''}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 0;
-                        setEditForm({ ...editForm, height: Math.min(275, Math.max(0, val)) });
-                      }}
+                      onChange={(e) => setEditForm({ ...editForm, height: parseInt(e.target.value) || 0 })}
                       placeholder="0"
                     />
                   </div>
@@ -1516,13 +1552,8 @@ export default function Profile() {
                     <Input
                       id="weight"
                       type="number"
-                      min={20}
-                      max={500}
                       value={editForm.weight || ''}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value) || 0;
-                        setEditForm({ ...editForm, weight: Math.min(500, Math.max(0, val)) });
-                      }}
+                      onChange={(e) => setEditForm({ ...editForm, weight: parseInt(e.target.value) || 0 })}
                       placeholder="0"
                     />
                   </div>
@@ -1842,8 +1873,7 @@ export default function Profile() {
                                             placeholder={sharedQuestion.placeholder || (language === 'en' ? 'Enter value' : 'Wert eingeben')}
                                             value={questionnaireAnswers[question.id] || ''}
                                             onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                                            min={sharedQuestion.min}
-                                            max={sharedQuestion.max}
+                                            onBlur={(e) => validateAndSaveAnswer(question.id, e.target.value)}
                                             className="w-32"
                                             data-testid={`input-${question.id}`}
                                           />
