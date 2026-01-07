@@ -22,26 +22,10 @@ import {
   User,
   Mail,
   Sparkles,
-  Activity,
   Moon,
   Flame,
-  Pill,
-  Stethoscope,
-  Scale,
-  Ruler,
-  Clock,
-  Home,
-  GraduationCap,
-  DollarSign,
-  Ear,
-  Wine,
-  Video,
-  AlertTriangle,
-  Smile,
   ChevronDown,
   ChevronUp,
-  Briefcase,
-  TrendingUp,
   HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -50,6 +34,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { useAuth } from '@/hooks/use-auth';
+import { baseQuestions, CORE_QUESTION_COUNT, Question, QuestionOption } from '@/lib/questionnaireDefinitions';
 
 interface QuestionnaireRecord {
   category: string;
@@ -82,57 +67,8 @@ const privacyPoints = [
   { icon: Ban, title: "No data selling", description: "We never sell your data.", color: "text-destructive" }
 ];
 
-interface Question {
-  id: string;
-  apiId?: string;
-  text: string;
-  type: 'choice' | 'number' | 'time';
-  options?: { label: string; value: string; apiValue?: number; riskWeight: number }[];
-  placeholder?: string;
-  unit?: string;
-  min?: number;
-  max?: number;
-  icon: typeof Activity;
-  category: string;
-  module: 'core' | 'medical' | 'lifestyle' | 'oral' | 'financial';
-  followUpFor?: string;
-}
-
-const CORE_QUESTION_COUNT = 8;
-
-const baseQuestions: Question[] = [
-  // ==========================================
-  // CORE QUESTIONS (8) - Ordered by ML Feature Importance
-  // ==========================================
-  
-  // 1. Prescription medicine - High importance (gain: 265.4)
-  {
-    id: 'prescription_medicine',
-    apiId: 'RXQ033',
-    text: "Have you taken any prescription medicine in the past month?",
-    type: 'choice',
-    icon: Pill,
-    category: "Quick Health Check",
-    module: 'core',
-    options: [
-      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 1 },
-      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
-    ],
-  },
-  // 3. High blood pressure - Major clinical signal (gain: 93.7)
-  {
-    id: 'high_blood_pressure',
-    apiId: 'BPQ020',
-    text: "Have you ever been told you have high blood pressure?",
-    type: 'choice',
-    icon: Heart,
-    category: "Quick Health Check",
-    module: 'core',
-    options: [
-      { label: 'Yes', value: 'yes', apiValue: 1, riskWeight: 2 },
-      { label: 'No', value: 'no', apiValue: 0, riskWeight: 0 },
-    ],
-  },
+// baseQuestions, CORE_QUESTION_COUNT, and Question are imported from '@/lib/questionnaireDefinitions'
+// All question definitions are now centralized in questionnaireDefinitions.ts
   // 4. General health - Strong predictor (gain: 81.0)
   {
     id: 'general_health',
