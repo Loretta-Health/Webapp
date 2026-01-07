@@ -53,6 +53,7 @@ export interface QuestionnaireAnswer {
 export const CORE_QUESTION_COUNT = 8;
 
 export const baseQuestions: Question[] = [
+  // === CORE QUESTIONS (Quick Health Check) ===
   {
     id: 'prescription_medicine',
     apiId: 'RXQ033',
@@ -161,6 +162,7 @@ export const baseQuestions: Question[] = [
     ],
   },
 
+  // === MEDICAL HISTORY ===
   {
     id: 'weight_year_ago',
     apiId: 'WHD050',
@@ -328,23 +330,11 @@ export const baseQuestions: Question[] = [
     ],
   },
 
+  // === LIFESTYLE & ACTIVITY ===
   {
     id: 'moderate_activity',
     apiId: 'PAD790',
     text: "In a typical week, how many hours do you spend doing moderate leisure-time physical activity?",
-    type: 'number',
-    icon: Activity,
-    category: "Lifestyle & Activity",
-    module: 'lifestyle',
-    placeholder: "Hours per week",
-    unit: "hours",
-    min: 0,
-    max: 40,
-  },
-  {
-    id: 'vigorous_activity',
-    apiId: 'PAD645',
-    text: "In a typical week, how many hours do you spend doing vigorous leisure-time physical activity?",
     type: 'number',
     icon: Activity,
     category: "Lifestyle & Activity",
@@ -486,6 +476,7 @@ export const baseQuestions: Question[] = [
     ],
   },
 
+  // === ORAL HEALTH ===
   {
     id: 'dental_health',
     apiId: 'OHQ845',
@@ -567,6 +558,7 @@ export const baseQuestions: Question[] = [
     ],
   },
 
+  // === BACKGROUND / DEMOGRAPHICS / FINANCIAL ===
   {
     id: 'ethnicity',
     apiId: 'RIDRETH3',
@@ -686,7 +678,7 @@ export const baseQuestions: Question[] = [
     module: 'financial',
     placeholder: "Number of rooms",
     min: 1,
-    max: 12,
+    max: 15,
   },
 ];
 
@@ -694,38 +686,47 @@ export function getQuestionById(id: string): Question | undefined {
   return baseQuestions.find(q => q.id === id);
 }
 
+export function getQuestionByApiId(apiId: string): Question | undefined {
+  return baseQuestions.find(q => q.apiId === apiId);
+}
+
+export function formatAnswerDisplay(questionId: string, answerValue: string | number, language: 'en' | 'de' = 'en'): string {
+  const question = getQuestionById(questionId);
+  if (!question) return String(answerValue);
+  
+  if (question.type === 'number') {
+    return `${answerValue} ${question.unit || ''}`.trim();
+  }
+  
+  if (question.type === 'time') {
+    return String(answerValue);
+  }
+  
+  if (question.options) {
+    const option = question.options.find(o => o.value === answerValue);
+    if (option) {
+      return option.label;
+    }
+  }
+  
+  return String(answerValue);
+}
+
+export function getQuestionsByCategory(): Record<string, Question[]> {
+  const categories: Record<string, Question[]> = {};
+  
+  for (const question of baseQuestions) {
+    if (!categories[question.category]) {
+      categories[question.category] = [];
+    }
+    categories[question.category].push(question);
+  }
+  
+  return categories;
+}
+
 export function getQuestionsByModule(module: Question['module']): Question[] {
   return baseQuestions.filter(q => q.module === module);
 }
 
-export function getCoreQuestions(): Question[] {
-  return baseQuestions.filter(q => q.module === 'core' && !q.followUpFor);
-}
-
-export function getAllQuestionIds(): string[] {
-  return baseQuestions.map(q => q.id);
-}
-
-export function getQuestionCategories(): Record<string, { questionIds: string[] }> {
-  return {
-    onboarding: {
-      questionIds: baseQuestions.map(q => q.id),
-    },
-  };
-}
-
-export function formatAnswerDisplay(questionId: string, answerValue: string | number): string {
-  const question = getQuestionById(questionId);
-  if (!question) return String(answerValue);
-
-  if (question.type === 'choice' && question.options) {
-    const option = question.options.find(opt => opt.value === answerValue);
-    return option?.label || String(answerValue);
-  }
-
-  if (question.type === 'number' && question.unit) {
-    return `${answerValue} ${question.unit}`;
-  }
-
-  return String(answerValue);
-}
+export const TOTAL_QUESTION_COUNT = baseQuestions.length;
