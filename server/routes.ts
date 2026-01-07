@@ -28,6 +28,7 @@ import {
   type EmotionCategory,
 } from "@shared/emotions";
 import { convertQuestionnaireToMLFeatures, type MLFeature } from "./lib/nhanesMapping";
+import { calculateAndSaveRiskScore, gatherFullFeatureSet, callMLPredictionAPI as callMLAPI } from "./lib/riskCalculation";
 
 // Scaleway AI configuration
 const SCALEWAY_BASE_URL = 'https://api.scaleway.ai/v1';
@@ -331,38 +332,9 @@ IMPORTANT: When discussing risk scores, remember:
     }
   });
 
-  // ML Prediction API endpoint
+  // ML Prediction API endpoint (constants used by /api/predict)
   const PREDICTION_API_BASE_URL = process.env.PREDICTION_API_URL || 'https://loretta-predict.replit.app';
   const ML_API_KEY = process.env.ML_API_KEY;
-  
-  async function callMLPredictionAPI(features: MLFeature[]): Promise<{ diabetes_probability: number; risk_level: string } | null> {
-    if (!ML_API_KEY) {
-      console.warn('[ML API] No ML_API_KEY configured, skipping ML prediction');
-      return null;
-    }
-    
-    const predictUrl = `${PREDICTION_API_BASE_URL}/predict`;
-    console.log('[ML API] Calling:', predictUrl, 'with', features.length, 'features');
-    
-    const response = await fetch(predictUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': ML_API_KEY,
-      },
-      body: JSON.stringify({ features }),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[ML API] Error:', response.status, errorText);
-      throw new Error(`ML API error: ${response.status} - ${errorText}`);
-    }
-    
-    const result = await response.json();
-    console.log('[ML API] Result:', result);
-    return result;
-  }
   
   app.post("/api/predict", async (req, res) => {
     const startTime = Date.now();
@@ -501,47 +473,13 @@ IMPORTANT: When discussing risk scores, remember:
       const saved = await storage.saveQuestionnaireAnswers(validatedData);
       console.log("[API] Questionnaire saved successfully:", saved.id);
       
-      // Automatically recalculate risk score when questionnaire is updated
+      // Automatically recalculate risk score using full feature set
       try {
-        const allAnswers = await storage.getAllQuestionnaireAnswers(userId);
-        const mergedAnswers: Record<string, string> = {};
-        allAnswers.forEach(a => {
-          Object.assign(mergedAnswers, a.answers);
-        });
-        
-        const profile = await storage.getUserProfile(userId);
-        if (profile) {
-          if (profile.age && !mergedAnswers.age) mergedAnswers.age = profile.age;
-          if (profile.height && !mergedAnswers.height) mergedAnswers.height = profile.height;
-          if (profile.weight && !mergedAnswers.weight_current) mergedAnswers.weight_current = profile.weight;
-        }
-        
-        try {
-          const mlFeatures = convertQuestionnaireToMLFeatures(mergedAnswers);
-          if (mlFeatures.length >= 5) {
-            const mlResult = await callMLPredictionAPI(mlFeatures);
-            if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-              // Risk score comes purely from ML API - rounded to whole number
-              const riskValue = Math.round(mlResult.diabetes_probability * 100);
-              const riskScore = {
-                overallScore: riskValue,
-                diabetesRisk: riskValue,
-                heartRisk: 0,
-                strokeRisk: 0,
-              };
-              await storage.saveRiskScore({
-                userId,
-                ...riskScore,
-              });
-              console.log("[API] Risk score calculated from ML model after questionnaire update:", riskValue);
-            } else {
-              console.log("[API] ML API unavailable - risk score not updated");
-            }
-          } else {
-            console.log("[API] Not enough features for ML model - risk score not updated");
-          }
-        } catch (mlError) {
-          console.log("[API] ML API error - risk score not updated:", mlError);
+        const result = await calculateAndSaveRiskScore(userId);
+        if (result.success) {
+          console.log("[API] Risk score calculated from ML model after questionnaire update:", result.riskValue, "using", result.featuresUsed, "features");
+        } else {
+          console.log("[API] Risk score not updated:", result.error);
         }
       } catch (riskError) {
         console.error("[API] Failed to auto-recalculate risk score:", riskError);
@@ -598,46 +536,14 @@ IMPORTANT: When discussing risk scores, remember:
         achievementsUnlocked = xpResult.achievementsUnlocked;
       }
       
-      // Automatically recalculate risk score when profile is updated with health-relevant data
+      // Automatically recalculate risk score using full feature set when profile is updated
       if (saved.age || saved.height || saved.weight) {
         try {
-          const allAnswers = await storage.getAllQuestionnaireAnswers(userId);
-          const mergedAnswers: Record<string, any> = {};
-          allAnswers.forEach(a => {
-            Object.assign(mergedAnswers, a.answers);
-          });
-          
-          // Merge in profile data (profile takes precedence for these fields)
-          if (saved.age) mergedAnswers.age = saved.age;
-          if (saved.height) mergedAnswers.height = saved.height;
-          if (saved.weight) mergedAnswers.weight_current = saved.weight;
-          
-          try {
-            const mlFeatures = convertQuestionnaireToMLFeatures(mergedAnswers);
-            if (mlFeatures.length >= 5) {
-              const mlResult = await callMLPredictionAPI(mlFeatures);
-              if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-                // Risk score comes purely from ML API - rounded to whole number
-                const riskValue = Math.round(mlResult.diabetes_probability * 100);
-                const riskScore = {
-                  overallScore: riskValue,
-                  diabetesRisk: riskValue,
-                  heartRisk: 0,
-                  strokeRisk: 0,
-                };
-                await storage.saveRiskScore({
-                  userId,
-                  ...riskScore,
-                });
-                console.log("[API] Risk score calculated from ML model after profile update:", riskValue);
-              } else {
-                console.log("[API] ML API unavailable - risk score not updated");
-              }
-            } else {
-              console.log("[API] Not enough features for ML model - risk score not updated");
-            }
-          } catch (mlError) {
-            console.log("[API] ML API error - risk score not updated:", mlError);
+          const result = await calculateAndSaveRiskScore(userId);
+          if (result.success) {
+            console.log("[API] Risk score calculated from ML model after profile update:", result.riskValue, "using", result.featuresUsed, "features");
+          } else {
+            console.log("[API] Risk score not updated:", result.error);
           }
         } catch (riskError) {
           console.error("[API] Failed to auto-recalculate risk score:", riskError);
@@ -890,56 +796,28 @@ IMPORTANT: When discussing risk scores, remember:
     try {
       const userId = (req.user as any).id;
       
-      const answers = await storage.getAllQuestionnaireAnswers(userId);
-      const profile = await storage.getUserProfile(userId);
+      // Use centralized function that always gathers full feature set
+      const result = await calculateAndSaveRiskScore(userId);
       
-      const allAnswers: Record<string, any> = {};
-      answers.forEach(a => {
-        Object.assign(allAnswers, a.answers);
-      });
-      
-      if (profile) {
-        if (profile.age && !allAnswers.age) allAnswers.age = profile.age;
-        if (profile.height && !allAnswers.height) allAnswers.height = profile.height;
-        if (profile.weight && !allAnswers.weight_current) allAnswers.weight_current = profile.weight;
+      if (!result.success) {
+        if (result.error === 'Not enough features for ML model') {
+          return res.status(400).json({ 
+            error: "Not enough questionnaire answers to calculate risk score. Please complete more of the health questionnaire.",
+            featuresProvided: result.featuresUsed || 0,
+            featuresRequired: 5
+          });
+        }
+        if (result.error === 'ML API returned no result') {
+          return res.status(503).json({ 
+            error: "Risk calculation service is temporarily unavailable. Please try again later."
+          });
+        }
+        return res.status(500).json({ error: result.error });
       }
       
-      const mlFeatures = convertQuestionnaireToMLFeatures(allAnswers);
-      console.log('[Risk Calculation] Converted', Object.keys(allAnswers).length, 'answers to', mlFeatures.length, 'ML features');
-      
-      if (mlFeatures.length < 5) {
-        return res.status(400).json({ 
-          error: "Not enough questionnaire answers to calculate risk score. Please complete more of the health questionnaire.",
-          featuresProvided: mlFeatures.length,
-          featuresRequired: 5
-        });
-      }
-      
-      const mlResult = await callMLPredictionAPI(mlFeatures);
-      
-      if (!mlResult || typeof mlResult.diabetes_probability !== 'number') {
-        return res.status(503).json({ 
-          error: "Risk calculation service is temporarily unavailable. Please try again later."
-        });
-      }
-      
-      // Risk score comes purely from ML API - rounded to whole number
-      const riskValue = Math.round(mlResult.diabetes_probability * 100);
-      
-      const riskScore = {
-        overallScore: riskValue,
-        diabetesRisk: riskValue,
-        heartRisk: 0,
-        strokeRisk: 0,
-      };
-      
-      const saved = await storage.saveRiskScore({
-        userId,
-        ...riskScore,
-      });
-      
-      console.log('[Risk Calculation] ML model prediction:', mlResult.diabetes_probability, '-> risk score:', riskValue);
-      res.json({ ...saved, usedMLModel: true });
+      const riskScore = await storage.getLatestRiskScore(userId);
+      console.log('[Risk Calculation] ML model -> risk score:', result.riskValue, 'using', result.featuresUsed, 'features');
+      res.json({ ...riskScore, usedMLModel: true, featuresUsed: result.featuresUsed });
     } catch (error) {
       console.error("[Risk Calculation] Error:", error);
       res.status(500).json({ error: "Failed to calculate risk score" });
