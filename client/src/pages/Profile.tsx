@@ -630,9 +630,17 @@ export default function Profile() {
   const localT = translations[language];
   const [activeTab, setActiveTab] = useState('basic');
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isBasicInfoEditOpen, setIsBasicInfoEditOpen] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>(emptyProfile);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [editForm, setEditForm] = useState<ProfileData>(emptyProfile);
+  const [basicInfoForm, setBasicInfoForm] = useState({
+    age: 0,
+    height: 0,
+    weight: 0,
+    bloodType: '',
+    allergies: '',
+  });
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [shareOptions, setShareOptions] = useState({
@@ -978,6 +986,86 @@ export default function Profile() {
     toast({
       title: localT.editModal.saved,
       description: localT.editModal.savedDescription,
+    });
+  };
+
+  const openBasicInfoEdit = () => {
+    setBasicInfoForm({
+      age: profileData.age,
+      height: profileData.height,
+      weight: profileData.weight,
+      bloodType: profileData.bloodType,
+      allergies: profileData.allergies,
+    });
+    setIsBasicInfoEditOpen(true);
+  };
+
+  const handleBasicInfoSave = async () => {
+    const validationErrors: string[] = [];
+    
+    if (basicInfoForm.age && (basicInfoForm.age < 18 || basicInfoForm.age > 120)) {
+      validationErrors.push(language === 'en' ? 'Age must be between 18 and 120' : 'Alter muss zwischen 18 und 120 liegen');
+    }
+    if (basicInfoForm.height && (basicInfoForm.height < 50 || basicInfoForm.height > 275)) {
+      validationErrors.push(language === 'en' ? 'Height must be between 50 and 275 cm' : 'Größe muss zwischen 50 und 275 cm liegen');
+    }
+    if (basicInfoForm.weight && (basicInfoForm.weight < 20 || basicInfoForm.weight > 500)) {
+      validationErrors.push(language === 'en' ? 'Weight must be between 20 and 500 kg' : 'Gewicht muss zwischen 20 und 500 kg liegen');
+    }
+    
+    if (validationErrors.length > 0) {
+      toast({
+        title: language === 'en' ? 'Invalid values' : 'Ungültige Werte',
+        description: validationErrors.join('. '),
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Update profile data
+    const updatedProfile = {
+      ...profileData,
+      age: basicInfoForm.age,
+      height: basicInfoForm.height,
+      weight: basicInfoForm.weight,
+      bloodType: basicInfoForm.bloodType,
+      allergies: basicInfoForm.allergies,
+    };
+    
+    setProfileData(updatedProfile);
+    localStorage.setItem('loretta_profile', JSON.stringify(updatedProfile));
+    saveProfileMutation.mutate(updatedProfile);
+    
+    // Two-way sync: Update questionnaire answers
+    const questionnaireUpdates: Record<string, string> = {};
+    if (basicInfoForm.age > 0) questionnaireUpdates['age'] = String(basicInfoForm.age);
+    if (basicInfoForm.height > 0) questionnaireUpdates['height'] = String(basicInfoForm.height);
+    if (basicInfoForm.weight > 0) questionnaireUpdates['weight_current'] = String(basicInfoForm.weight);
+    
+    if (Object.keys(questionnaireUpdates).length > 0) {
+      const existingAnswers = questionnaireAnswers || {};
+      const mergedAnswers = { ...existingAnswers, ...questionnaireUpdates };
+      
+      try {
+        await apiRequest('POST', '/api/questionnaires', {
+          userId,
+          category: 'health_risk_assessment',
+          answers: mergedAnswers,
+        });
+        queryClient.invalidateQueries({ queryKey: ['/api/questionnaires'] });
+        console.log('[Profile] Synced basic info to questionnaire:', Object.keys(questionnaireUpdates).join(', '));
+        
+        // Recalculate risk score with updated data
+        recalculateRiskScoreMutation.mutate();
+      } catch (error) {
+        console.error('[Profile] Failed to sync to questionnaire:', error);
+      }
+    }
+    
+    setIsBasicInfoEditOpen(false);
+    toast({
+      title: language === 'en' ? 'Basic information updated' : 'Grundinformationen aktualisiert',
+      description: language === 'en' ? 'Your health information has been saved.' : 'Ihre Gesundheitsinformationen wurden gespeichert.',
     });
   };
 
@@ -1420,8 +1508,8 @@ export default function Profile() {
               </div>
               <p className="text-sm text-muted-foreground">
                 {language === 'en' 
-                  ? 'To update your health information (age, height, weight, etc.), please update the questionnaires in the Questionnaires tab.'
-                  : 'Um Ihre Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, aktualisieren Sie bitte die Fragebögen im Tab Fragebögen.'}
+                  ? 'To update your health information (age, height, weight, etc.), use the Edit button in the Basic Information tab.'
+                  : 'Um Ihre Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, verwenden Sie die Bearbeiten-Schaltfläche im Tab Grundinformationen.'}
               </p>
             </div>
             <div className="flex justify-end gap-3">
@@ -1539,11 +1627,23 @@ export default function Profile() {
           {/* Basic Information */}
           <TabsContent value="basic">
             <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center text-white shadow-lg">
-                  <User className="w-5 h-5" />
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center text-white shadow-lg">
+                    <User className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.basicInfo.title}</h3>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.basicInfo.title}</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={openBasicInfoEdit}
+                  className="rounded-xl border-[#013DC4]/30 hover:bg-[#013DC4]/10"
+                  data-testid="button-edit-basic-info"
+                >
+                  <Edit className="w-4 h-4 mr-1" />
+                  {language === 'en' ? 'Edit' : 'Bearbeiten'}
+                </Button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {getBasicInfo().map((info, index) => (
@@ -2079,8 +2179,8 @@ export default function Profile() {
             
             <p className="text-sm text-muted-foreground">
               {language === 'en' 
-                ? 'To update your health information (age, height, weight, etc.), please update the questionnaires in the Questionnaires tab.'
-                : 'Um Ihre Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, aktualisieren Sie bitte die Fragebögen im Tab Fragebögen.'}
+                ? 'To update your health information (age, height, weight, etc.), use the Edit button in the Basic Information tab.'
+                : 'Um Ihre Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, verwenden Sie die Bearbeiten-Schaltfläche im Tab Grundinformationen.'}
             </p>
           </div>
 
@@ -2089,6 +2189,99 @@ export default function Profile() {
               {localT.editModal.cancel}
             </Button>
             <Button onClick={handleSave} className="bg-gradient-to-r from-primary to-chart-2" data-testid="button-save-profile">
+              <Save className="w-4 h-4 mr-2" />
+              {localT.editModal.save}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Basic Info Edit Modal */}
+      <Dialog open={isBasicInfoEditOpen} onOpenChange={setIsBasicInfoEditOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black flex items-center gap-2">
+              <Edit className="w-5 h-5 text-[#013DC4]" />
+              {language === 'en' ? 'Edit Basic Information' : 'Grundinformationen bearbeiten'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="basic-age">{localT.editModal.age} (18-120)</Label>
+                <Input
+                  id="basic-age"
+                  type="number"
+                  value={basicInfoForm.age || ''}
+                  onChange={(e) => setBasicInfoForm({ ...basicInfoForm, age: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
+                  data-testid="input-basic-age"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="basic-height">{localT.editModal.height} (50-275 cm)</Label>
+                <Input
+                  id="basic-height"
+                  type="number"
+                  value={basicInfoForm.height || ''}
+                  onChange={(e) => setBasicInfoForm({ ...basicInfoForm, height: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
+                  data-testid="input-basic-height"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="basic-weight">{localT.editModal.weight} (20-500 kg)</Label>
+                <Input
+                  id="basic-weight"
+                  type="number"
+                  value={basicInfoForm.weight || ''}
+                  onChange={(e) => setBasicInfoForm({ ...basicInfoForm, weight: parseInt(e.target.value) || 0 })}
+                  placeholder="0"
+                  data-testid="input-basic-weight"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="basic-bloodType">{localT.editModal.bloodType}</Label>
+                <Select
+                  value={basicInfoForm.bloodType}
+                  onValueChange={(value) => setBasicInfoForm({ ...basicInfoForm, bloodType: value })}
+                >
+                  <SelectTrigger id="basic-bloodType" data-testid="select-basic-blood-type">
+                    <SelectValue placeholder={language === 'en' ? 'Select' : 'Wählen'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A+">A+</SelectItem>
+                    <SelectItem value="A-">A-</SelectItem>
+                    <SelectItem value="B+">B+</SelectItem>
+                    <SelectItem value="B-">B-</SelectItem>
+                    <SelectItem value="AB+">AB+</SelectItem>
+                    <SelectItem value="AB-">AB-</SelectItem>
+                    <SelectItem value="O+">O+</SelectItem>
+                    <SelectItem value="O-">O-</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="basic-allergies">{localT.editModal.allergies}</Label>
+              <Input
+                id="basic-allergies"
+                value={basicInfoForm.allergies}
+                onChange={(e) => setBasicInfoForm({ ...basicInfoForm, allergies: e.target.value })}
+                placeholder={language === 'en' ? 'None' : 'Keine'}
+                data-testid="input-basic-allergies"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setIsBasicInfoEditOpen(false)}>
+              {localT.editModal.cancel}
+            </Button>
+            <Button onClick={handleBasicInfoSave} className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF]">
               <Save className="w-4 h-4 mr-2" />
               {localT.editModal.save}
             </Button>
