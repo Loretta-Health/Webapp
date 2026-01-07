@@ -877,18 +877,10 @@ export default function Profile() {
     localStorage.setItem('loretta_questionnaire_answers', JSON.stringify(newAnswers));
 
     const category = getCategoryForQuestion(questionId);
-    const categoryQuestionIds = questionCategories[category as keyof typeof questionCategories].questionIds;
-    const categoryAnswers: Record<string, string> = {};
-    categoryQuestionIds.forEach((id) => {
-      if (newAnswers[id]) {
-        categoryAnswers[id] = newAnswers[id];
-      }
-    });
-
     setPendingSaves((prev) => ({ ...prev, [category]: true }));
     
     saveAnswersMutation.mutate(
-      { category, answers: categoryAnswers },
+      { category: 'health_risk_assessment', answers: newAnswers },
       {
         onSettled: () => {
           setPendingSaves((prev) => ({ ...prev, [category]: false }));
