@@ -133,7 +133,6 @@ export default function EmotionalCheckInModal({
         });
 
         if (response.ok) {
-          // Invalidate weekly stats so they refresh
           queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins/weekly-stats'] });
           queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
           
@@ -171,11 +170,18 @@ export default function EmotionalCheckInModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-gradient-to-br from-primary/5 via-background to-chart-2/5" data-testid="emotional-checkin-modal">
+      <DialogContent 
+        className="sm:max-w-md bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10" 
+        data-testid="emotional-checkin-modal"
+      >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl font-black">
-            <Heart className="w-5 h-5 text-destructive fill-destructive" />
-            Emotional Check-In
+          <DialogTitle className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-400 via-pink-500 to-[#CDB6EF] flex items-center justify-center shadow-lg shadow-pink-500/30">
+              <Heart className="w-6 h-6 text-white fill-white" />
+            </div>
+            <span className="text-xl font-black bg-gradient-to-r from-[#013DC4] to-[#0150FF] bg-clip-text text-transparent">
+              Emotional Check-In
+            </span>
           </DialogTitle>
         </DialogHeader>
 
@@ -198,13 +204,13 @@ export default function EmotionalCheckInModal({
                   className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-2 ${
+                    className={`max-w-[85%] rounded-2xl px-4 py-3 shadow-sm ${
                       message.role === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
+                        ? 'bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white'
+                        : 'bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-200'
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
+                    <p className="text-sm font-medium">{message.content}</p>
                   </div>
                 </motion.div>
               ))}
@@ -216,11 +222,11 @@ export default function EmotionalCheckInModal({
                 animate={{ opacity: 1 }}
                 className="flex justify-start"
               >
-                <div className="bg-muted rounded-2xl px-4 py-2">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="bg-white/80 dark:bg-gray-800/80 rounded-2xl px-4 py-3 shadow-sm">
+                  <div className="flex gap-1.5">
+                    <span className="w-2 h-2 bg-[#013DC4] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 bg-[#0150FF] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 bg-[#CDB6EF] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </motion.div>
@@ -232,22 +238,23 @@ export default function EmotionalCheckInModal({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex gap-2 justify-center"
+            className="flex gap-3 justify-center"
           >
             <Button
               onClick={() => handleConfirmEmotion(true)}
-              className="bg-chart-2 hover:bg-chart-2/90 text-white font-bold"
+              className="rounded-2xl h-11 px-5 bg-gradient-to-r from-emerald-400 to-green-500 hover:from-emerald-500 hover:to-green-600 text-white font-bold shadow-lg shadow-green-500/30"
               disabled={loading}
             >
-              <Check className="w-4 h-4 mr-1" />
+              <Check className="w-4 h-4 mr-2" />
               Yes, that's right
             </Button>
             <Button
               variant="outline"
               onClick={() => handleConfirmEmotion(false)}
               disabled={loading}
+              className="rounded-2xl h-11 px-5 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 font-bold"
             >
-              <X className="w-4 h-4 mr-1" />
+              <X className="w-4 h-4 mr-2" />
               No
             </Button>
           </motion.div>
@@ -260,7 +267,7 @@ export default function EmotionalCheckInModal({
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Tell me how you're feeling..."
-              className="flex-1"
+              className="flex-1 bg-white/70 dark:bg-gray-800/70 border-white/50 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#013DC4]/30 h-11"
               disabled={loading}
               autoFocus
             />
@@ -268,6 +275,7 @@ export default function EmotionalCheckInModal({
               onClick={handleSendMessage}
               disabled={!inputText.trim() || loading}
               size="icon"
+              className="h-11 w-11 rounded-xl bg-gradient-to-r from-[#013DC4] to-[#0150FF] shadow-lg shadow-[#013DC4]/30 hover:shadow-xl hover:shadow-[#013DC4]/40"
             >
               <Send className="w-4 h-4" />
             </Button>
@@ -281,9 +289,9 @@ export default function EmotionalCheckInModal({
           >
             <Button
               onClick={onClose}
-              className="w-full font-bold bg-gradient-to-r from-primary to-chart-2"
+              className="w-full h-12 rounded-2xl font-bold bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white shadow-lg shadow-[#013DC4]/30 hover:shadow-xl hover:shadow-[#013DC4]/40 transition-all"
             >
-              <Sparkles className="w-4 h-4 mr-2" />
+              <Sparkles className="w-5 h-5 mr-2" />
               Done (+10 XP)
             </Button>
           </motion.div>
