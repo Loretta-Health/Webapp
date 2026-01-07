@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -961,65 +962,17 @@ export default function Profile() {
   });
 
   const handleSave = async () => {
-    const validationErrors: string[] = [];
-    
-    if (editForm.age && (editForm.age < 18 || editForm.age > 120)) {
-      validationErrors.push(language === 'en' ? 'Age must be between 18 and 120' : 'Alter muss zwischen 18 und 120 liegen');
-    }
-    if (editForm.height && (editForm.height < 50 || editForm.height > 275)) {
-      validationErrors.push(language === 'en' ? 'Height must be between 50 and 275 cm' : 'Größe muss zwischen 50 und 275 cm liegen');
-    }
-    if (editForm.weight && (editForm.weight < 20 || editForm.weight > 500)) {
-      validationErrors.push(language === 'en' ? 'Weight must be between 20 and 500 kg' : 'Gewicht muss zwischen 20 und 500 kg liegen');
-    }
-    
-    if (validationErrors.length > 0) {
-      toast({
-        title: language === 'en' ? 'Invalid values' : 'Ungültige Werte',
-        description: validationErrors.join('. '),
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    setProfileData(editForm);
-    localStorage.setItem('loretta_profile', JSON.stringify(editForm));
-    saveProfileMutation.mutate(editForm);
-    
-    // Sync profile fields to questionnaire for bidirectional consistency
-    const profileToQuestionnaireMap: Record<string, string> = {
-      'age': 'age',
-      'height': 'height', 
-      'weight': 'weight_current',
-      'ethnicity': 'ethnicity',
+    // Only save name and profile photo - health data is managed via questionnaires
+    const updatedProfile = {
+      ...profileData,
+      firstName: editForm.firstName,
+      lastName: editForm.lastName,
+      profilePhoto: editForm.profilePhoto,
     };
     
-    const questionnaireUpdates: Record<string, string> = {};
-    if (editForm.age > 0) questionnaireUpdates['age'] = String(editForm.age);
-    if (editForm.height > 0) questionnaireUpdates['height'] = String(editForm.height);
-    if (editForm.weight > 0) questionnaireUpdates['weight_current'] = String(editForm.weight);
-    if (editForm.ethnicity) questionnaireUpdates['ethnicity'] = editForm.ethnicity;
-    
-    if (Object.keys(questionnaireUpdates).length > 0) {
-      // Merge with existing questionnaire answers
-      const existingAnswers = questionnaireAnswers || {};
-      const mergedAnswers = { ...existingAnswers, ...questionnaireUpdates };
-      
-      try {
-        await apiRequest('POST', '/api/questionnaires', {
-          userId,
-          category: 'health_risk_assessment',
-          answers: mergedAnswers,
-        });
-        queryClient.invalidateQueries({ queryKey: ['/api/questionnaires'] });
-        console.log('[Profile] Synced to questionnaire:', Object.keys(questionnaireUpdates).join(', '));
-        
-        // Recalculate risk score with updated data
-        recalculateRiskScoreMutation.mutate();
-      } catch (error) {
-        console.error('[Profile] Failed to sync to questionnaire:', error);
-      }
-    }
+    setProfileData(updatedProfile);
+    localStorage.setItem('loretta_profile', JSON.stringify(updatedProfile));
+    saveProfileMutation.mutate(updatedProfile);
     
     setIsEditOpen(false);
     toast({
@@ -1465,72 +1418,11 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
-              <Separator />
-              <div className="space-y-4">
-                <h4 className="font-bold text-sm text-muted-foreground uppercase">{localT.editModal.basicInfo}</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="age">{localT.editModal.age} (18-120)</Label>
-                    <Input
-                      id="age"
-                      type="number"
-                      value={editForm.age || ''}
-                      onChange={(e) => setEditForm({ ...editForm, age: parseInt(e.target.value) || 0 })}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="height">{localT.editModal.height} (50-275 cm)</Label>
-                    <Input
-                      id="height"
-                      type="number"
-                      value={editForm.height || ''}
-                      onChange={(e) => setEditForm({ ...editForm, height: parseInt(e.target.value) || 0 })}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="weight">{localT.editModal.weight} (20-500 kg)</Label>
-                    <Input
-                      id="weight"
-                      type="number"
-                      value={editForm.weight || ''}
-                      onChange={(e) => setEditForm({ ...editForm, weight: parseInt(e.target.value) || 0 })}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bloodType">{localT.editModal.bloodType}</Label>
-                    <Select
-                      value={editForm.bloodType}
-                      onValueChange={(value) => setEditForm({ ...editForm, bloodType: value })}
-                    >
-                      <SelectTrigger id="bloodType">
-                        <SelectValue placeholder={language === 'en' ? 'Select blood type' : 'Blutgruppe wählen'} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="A+">A+</SelectItem>
-                        <SelectItem value="A-">A-</SelectItem>
-                        <SelectItem value="B+">B+</SelectItem>
-                        <SelectItem value="B-">B-</SelectItem>
-                        <SelectItem value="AB+">AB+</SelectItem>
-                        <SelectItem value="AB-">AB-</SelectItem>
-                        <SelectItem value="O+">O+</SelectItem>
-                        <SelectItem value="O-">O-</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="allergies">{localT.editModal.allergies}</Label>
-                  <Input
-                    id="allergies"
-                    value={editForm.allergies}
-                    onChange={(e) => setEditForm({ ...editForm, allergies: e.target.value })}
-                    placeholder={language === 'en' ? 'None' : 'Keine'}
-                  />
-                </div>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                {language === 'en' 
+                  ? 'To update your health information (age, height, weight, etc.), please update the questionnaires in the Questionnaires tab.'
+                  : 'Um Ihre Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, aktualisieren Sie bitte die Fragebögen im Tab Fragebögen.'}
+              </p>
             </div>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setIsEditOpen(false)}>
@@ -2184,180 +2076,12 @@ export default function Profile() {
                 </div>
               </div>
             </div>
-
-            {/* Basic Info Section */}
-            <div className="space-y-4">
-              <h4 className="font-bold text-foreground">{localT.editModal.basicInfo}</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="age">{localT.editModal.age}</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    value={editForm.age}
-                    onChange={(e) => setEditForm({ ...editForm, age: parseInt(e.target.value) || 0 })}
-                    data-testid="input-age"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="height">{localT.editModal.height}</Label>
-                  <Input
-                    id="height"
-                    type="number"
-                    value={editForm.height}
-                    onChange={(e) => setEditForm({ ...editForm, height: parseInt(e.target.value) || 0 })}
-                    data-testid="input-height"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="weight">{localT.editModal.weight}</Label>
-                  <Input
-                    id="weight"
-                    type="number"
-                    value={editForm.weight}
-                    onChange={(e) => setEditForm({ ...editForm, weight: parseInt(e.target.value) || 0 })}
-                    data-testid="input-weight"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="bloodType">{localT.editModal.bloodType}</Label>
-                  <Select 
-                    value={editForm.bloodType} 
-                    onValueChange={(value) => setEditForm({ ...editForm, bloodType: value })}
-                  >
-                    <SelectTrigger data-testid="select-blood-type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="A+">A+</SelectItem>
-                      <SelectItem value="A-">A-</SelectItem>
-                      <SelectItem value="B+">B+</SelectItem>
-                      <SelectItem value="B-">B-</SelectItem>
-                      <SelectItem value="AB+">AB+</SelectItem>
-                      <SelectItem value="AB-">AB-</SelectItem>
-                      <SelectItem value="O+">O+</SelectItem>
-                      <SelectItem value="O-">O-</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="allergies">{localT.editModal.allergies}</Label>
-                <Input
-                  id="allergies"
-                  value={editForm.allergies}
-                  onChange={(e) => setEditForm({ ...editForm, allergies: e.target.value })}
-                  placeholder={language === 'en' ? 'None' : 'Keine'}
-                  data-testid="input-allergies"
-                />
-              </div>
-            </div>
-
-            {/* Social Info Section */}
-            <div className="space-y-4">
-              <h4 className="font-bold text-foreground">{localT.editModal.socialInfo}</h4>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ethnicity">{localT.editModal.ethnicity}</Label>
-                  <Select 
-                    value={editForm.ethnicity} 
-                    onValueChange={(value) => setEditForm({ ...editForm, ethnicity: value })}
-                  >
-                    <SelectTrigger data-testid="select-ethnicity">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="white-european">{language === 'en' ? 'White / European' : 'Weiß / Europäisch'}</SelectItem>
-                      <SelectItem value="black-african">{language === 'en' ? 'Black / African' : 'Schwarz / Afrikanisch'}</SelectItem>
-                      <SelectItem value="afro-caribbean">{language === 'en' ? 'Afro-Caribbean' : 'Afro-Karibisch'}</SelectItem>
-                      <SelectItem value="hispanic-latino">{language === 'en' ? 'Hispanic / Latino' : 'Hispanisch / Lateinamerikanisch'}</SelectItem>
-                      <SelectItem value="east-asian">{language === 'en' ? 'East Asian' : 'Ostasiatisch'}</SelectItem>
-                      <SelectItem value="south-asian">{language === 'en' ? 'South Asian' : 'Südasiatisch'}</SelectItem>
-                      <SelectItem value="southeast-asian">{language === 'en' ? 'Southeast Asian' : 'Südostasiatisch'}</SelectItem>
-                      <SelectItem value="middle-eastern">{language === 'en' ? 'Middle Eastern / North African' : 'Nahöstlich / Nordafrikanisch'}</SelectItem>
-                      <SelectItem value="native-american">{language === 'en' ? 'Native American / Indigenous' : 'Indigene Bevölkerung Amerikas'}</SelectItem>
-                      <SelectItem value="pacific-islander">{language === 'en' ? 'Pacific Islander' : 'Pazifikinsulaner'}</SelectItem>
-                      <SelectItem value="mixed-multiracial">{language === 'en' ? 'Mixed / Multiracial' : 'Gemischt / Multiethnisch'}</SelectItem>
-                      <SelectItem value="prefer-not-to-say">{language === 'en' ? 'Prefer not to say' : 'Möchte ich nicht angeben'}</SelectItem>
-                      <SelectItem value="other">{language === 'en' ? 'Other' : 'Andere'}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="socioeconomicStatus">{localT.editModal.socioeconomicStatus}</Label>
-                  <Select 
-                    value={editForm.socioeconomicStatus} 
-                    onValueChange={(value) => setEditForm({ ...editForm, socioeconomicStatus: value })}
-                  >
-                    <SelectTrigger data-testid="select-socioeconomic">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="lower">{language === 'en' ? 'Lower income' : 'Niedriges Einkommen'}</SelectItem>
-                      <SelectItem value="lower-middle">{language === 'en' ? 'Lower-middle income' : 'Untere Mittelschicht'}</SelectItem>
-                      <SelectItem value="middle">{language === 'en' ? 'Middle income' : 'Mittleres Einkommen'}</SelectItem>
-                      <SelectItem value="upper-middle">{language === 'en' ? 'Upper-middle income' : 'Obere Mittelschicht'}</SelectItem>
-                      <SelectItem value="upper">{language === 'en' ? 'Upper income' : 'Hohes Einkommen'}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="educationLevel">{localT.editModal.educationLevel}</Label>
-                  <Select 
-                    value={editForm.educationLevel} 
-                    onValueChange={(value) => setEditForm({ ...editForm, educationLevel: value })}
-                  >
-                    <SelectTrigger data-testid="select-education">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="no-formal">{language === 'en' ? 'No formal education' : 'Keine formale Bildung'}</SelectItem>
-                      <SelectItem value="high-school">{language === 'en' ? 'High school' : 'Gymnasium'}</SelectItem>
-                      <SelectItem value="some-college">{language === 'en' ? 'Some college' : 'Einige Hochschulsemester'}</SelectItem>
-                      <SelectItem value="bachelors">{language === 'en' ? "Bachelor's degree" : 'Bachelorabschluss'}</SelectItem>
-                      <SelectItem value="masters">{language === 'en' ? "Master's degree" : 'Masterabschluss'}</SelectItem>
-                      <SelectItem value="doctorate">{language === 'en' ? 'Doctorate' : 'Promotion'}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="employmentStatus">{localT.editModal.employmentStatus}</Label>
-                  <Select 
-                    value={editForm.employmentStatus} 
-                    onValueChange={(value) => setEditForm({ ...editForm, employmentStatus: value })}
-                  >
-                    <SelectTrigger data-testid="select-employment">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="full-time">{language === 'en' ? 'Employed full-time' : 'Vollzeit beschäftigt'}</SelectItem>
-                      <SelectItem value="part-time">{language === 'en' ? 'Employed part-time' : 'Teilzeit beschäftigt'}</SelectItem>
-                      <SelectItem value="self-employed">{language === 'en' ? 'Self-employed' : 'Selbstständig'}</SelectItem>
-                      <SelectItem value="unemployed">{language === 'en' ? 'Unemployed' : 'Arbeitslos'}</SelectItem>
-                      <SelectItem value="retired">{language === 'en' ? 'Retired' : 'Im Ruhestand'}</SelectItem>
-                      <SelectItem value="student">{language === 'en' ? 'Student' : 'Student'}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="housingStatus">{localT.editModal.housingStatus}</Label>
-                  <Select 
-                    value={editForm.housingStatus} 
-                    onValueChange={(value) => setEditForm({ ...editForm, housingStatus: value })}
-                  >
-                    <SelectTrigger data-testid="select-housing">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="own">{language === 'en' ? 'Own home' : 'Eigenheim'}</SelectItem>
-                      <SelectItem value="rent">{language === 'en' ? 'Renting' : 'Miete'}</SelectItem>
-                      <SelectItem value="family">{language === 'en' ? 'Living with family' : 'Bei Familie wohnend'}</SelectItem>
-                      <SelectItem value="temporary">{language === 'en' ? 'Temporary housing' : 'Vorübergehende Unterkunft'}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
+            
+            <p className="text-sm text-muted-foreground">
+              {language === 'en' 
+                ? 'To update your health information (age, height, weight, etc.), please update the questionnaires in the Questionnaires tab.'
+                : 'Um Ihre Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, aktualisieren Sie bitte die Fragebögen im Tab Fragebögen.'}
+            </p>
           </div>
 
           <div className="flex gap-3 justify-end">
