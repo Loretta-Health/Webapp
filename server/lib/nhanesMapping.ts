@@ -258,6 +258,31 @@ export interface MLFeature {
   Value: string;
 }
 
+function timeToMinutes(timeStr: string): number | null {
+  const timeRegex = /^(\d{1,2}):(\d{2})$/;
+  const match = timeStr.match(timeRegex);
+  if (!match) return null;
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function convertTimeToCyclical(timeStr: string, nhanesId: string): MLFeature[] {
+  const totalMinutes = timeToMinutes(timeStr);
+  if (totalMinutes === null) return [];
+  
+  const totalMinutesInDay = 24 * 60;
+  const radians = (2 * Math.PI * totalMinutes) / totalMinutesInDay;
+  const sinValue = Math.sin(radians);
+  const cosValue = Math.cos(radians);
+  
+  return [
+    { ID: `${nhanesId}_sin`, Value: sinValue.toFixed(6) },
+    { ID: `${nhanesId}_cos`, Value: cosValue.toFixed(6) }
+  ];
+}
+
 export function convertQuestionnaireToMLFeatures(answers: Record<string, any>): MLFeature[] {
   const features: MLFeature[] = [];
   const seenNhanesIds = new Set<string>();
@@ -278,26 +303,20 @@ export function convertQuestionnaireToMLFeatures(answers: Record<string, any>): 
     
     if (seenNhanesIds.has(mapping.nhanesId)) continue;
     
+    if (mapping.valueType === 'time') {
+      const cyclicalFeatures = convertTimeToCyclical(stringValue, mapping.nhanesId);
+      if (cyclicalFeatures.length > 0) {
+        features.push(...cyclicalFeatures);
+        seenNhanesIds.add(mapping.nhanesId);
+      } else {
+        console.warn(`[NHANES Mapping] Invalid time format for ${questionId}: "${stringValue}"`);
+      }
+      continue;
+    }
+    
     let value: string;
     
-    if (mapping.valueType === 'time') {
-      // Time format: already in HH:MM format, validate and pass through
-      const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-      if (timeRegex.test(stringValue)) {
-        value = stringValue;
-      } else {
-        // Try to parse and reformat if not in exact format
-        const parts = stringValue.split(':');
-        if (parts.length === 2) {
-          const hours = parts[0].padStart(2, '0');
-          const minutes = parts[1].padStart(2, '0');
-          value = `${hours}:${minutes}`;
-        } else {
-          console.warn(`[NHANES Mapping] Invalid time format for ${questionId}: "${stringValue}"`);
-          continue;
-        }
-      }
-    } else if (mapping.valueType === 'categorical' && mapping.valueMapping) {
+    if (mapping.valueType === 'categorical' && mapping.valueMapping) {
       const normalizedKey = stringValue.toLowerCase();
       const mappedValue = mapping.valueMapping[normalizedKey];
       if (!mappedValue) {
