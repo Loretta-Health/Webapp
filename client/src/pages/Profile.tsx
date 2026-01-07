@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -1607,13 +1606,13 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 pb-20">
+      <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-6 pb-20">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <Link href="/my-dashboard">
-              <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
+              <Button variant="ghost" className="text-white hover:bg-white/20 rounded-2xl" data-testid="button-back-dashboard">
                 <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
                 {localT.back}
               </Button>
@@ -1626,7 +1625,7 @@ export default function Profile() {
               <Button 
                 variant="ghost" 
                 size="sm"
-                className="text-white hover:bg-white/20 gap-2"
+                className="text-white hover:bg-white/20 gap-2 rounded-2xl"
                 onClick={toggleLanguage}
                 data-testid="button-language-toggle"
               >
@@ -1636,7 +1635,7 @@ export default function Profile() {
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20 rounded-2xl"
                 onClick={() => setIsShareOpen(true)}
                 data-testid="button-share-profile"
               >
@@ -1649,10 +1648,10 @@ export default function Profile() {
 
       {/* Profile Card - Overlapping Header */}
       <div className="max-w-4xl mx-auto px-4 -mt-16">
-        <Card className="p-6 mb-6 border-0 shadow-xl">
+        <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-6 mb-6">
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-primary shadow-lg bg-muted flex items-center justify-center">
+              <div className="w-24 h-24 rounded-3xl overflow-hidden bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] shadow-2xl shadow-[#013DC4]/30 flex items-center justify-center">
                 {profileData.profilePhoto ? (
                   <img 
                     src={profileData.profilePhoto} 
@@ -1661,55 +1660,57 @@ export default function Profile() {
                     data-testid="img-profile-avatar"
                   />
                 ) : (
-                  <User className="w-12 h-12 text-muted-foreground" data-testid="img-profile-avatar" />
+                  <User className="w-12 h-12 text-white" data-testid="img-profile-avatar" />
                 )}
               </div>
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+              <div className="absolute -bottom-2 -right-2 w-9 h-9 bg-gradient-to-br from-[#CDB6EF] to-purple-400 rounded-xl flex items-center justify-center border-2 border-white shadow-lg">
                 <Heart className="w-4 h-4 text-white" />
               </div>
             </div>
             <div className="text-center sm:text-left flex-1">
-              <h2 className="text-2xl font-black text-foreground" data-testid="text-profile-name">{profileData.firstName} {profileData.lastName}</h2>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-white" data-testid="text-profile-name">{profileData.firstName} {profileData.lastName}</h2>
               <button 
                 onClick={openEditModal}
-                className="text-primary text-sm flex items-center gap-1 justify-center sm:justify-start hover:underline"
+                className="text-[#013DC4] text-sm flex items-center gap-1 justify-center sm:justify-start hover:underline font-semibold"
                 data-testid="button-edit-profile"
               >
                 <Edit className="w-3 h-3" />
                 {localT.editProfile}
               </button>
               <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
-                <Badge className="bg-gradient-to-r from-primary to-chart-2 text-white border-0">{localT.level} 14</Badge>
-                <Badge variant="outline">59 {localT.dayStreak}</Badge>
+                <span className="px-3 py-1 bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] text-white text-xs font-bold rounded-full shadow-lg">{localT.level} 14</span>
+                <span className="px-3 py-1 bg-gradient-to-r from-orange-400 to-red-400 text-white text-xs font-bold rounded-full shadow-lg">59 {localT.dayStreak}</span>
               </div>
             </div>
             <Link href="/calendar">
-              <Button size="icon" variant="outline" className="rounded-xl border-primary/30 hover:bg-primary/10" data-testid="button-calendar">
-                <CalendarDays className="w-5 h-5 text-primary" />
+              <Button size="icon" variant="outline" className="rounded-2xl border-[#013DC4]/30 hover:bg-[#013DC4]/10 bg-white/50" data-testid="button-calendar">
+                <CalendarDays className="w-5 h-5 text-[#013DC4]" />
               </Button>
             </Link>
           </div>
-        </Card>
+        </div>
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-5 sm:w-full" data-testid="profile-tabs">
-              <TabsTrigger value="basic" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
-              <TabsTrigger value="social" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
-              <TabsTrigger value="questionnaires" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
-              <TabsTrigger value="behaviors" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
-              <TabsTrigger value="activity" className="whitespace-nowrap text-xs sm:text-sm" data-testid="tab-activity">{localT.tabs.activity}</TabsTrigger>
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-5 sm:w-full backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl p-1" data-testid="profile-tabs">
+              <TabsTrigger value="basic" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
+              <TabsTrigger value="social" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
+              <TabsTrigger value="questionnaires" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
+              <TabsTrigger value="behaviors" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
+              <TabsTrigger value="activity" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-activity">{localT.tabs.activity}</TabsTrigger>
             </TabsList>
           </div>
 
           {/* Basic Information */}
           <TabsContent value="basic">
-            <Card className="p-6">
-              <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
-                <User className="w-5 h-5 text-primary" />
-                {localT.basicInfo.title}
-              </h3>
+            <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center text-white shadow-lg">
+                  <User className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.basicInfo.title}</h3>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {getBasicInfo().map((info, index) => (
                   <motion.div
@@ -1717,58 +1718,64 @@ export default function Profile() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="flex items-center gap-3 p-4 rounded-lg bg-gradient-to-r from-muted/50 to-muted/30 hover-elevate"
+                    className="flex items-center gap-3 p-4 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all"
                     data-testid={`info-card-${index}`}
                   >
-                    <div className={`w-10 h-10 rounded-full ${info.bgColor} flex items-center justify-center`}>
-                      <info.icon className={`w-5 h-5 ${info.iconColor}`} />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#013DC4]/10 to-[#CDB6EF]/10 flex items-center justify-center">
+                      <info.icon className="w-5 h-5 text-[#013DC4]" />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">{info.label}</p>
-                      <p className="font-bold text-foreground">{info.value}</p>
+                      <p className="text-xs text-gray-500 font-medium">{info.label}</p>
+                      <p className="font-bold text-gray-900 dark:text-white">{info.value}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
-            </Card>
+            </div>
           </TabsContent>
 
           {/* Social Factors */}
           <TabsContent value="social">
-            <Card className="p-6">
-              <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                {localT.socialFactors.title}
-              </h3>
-              <div className="divide-y divide-border">
+            <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg">
+                  <Users className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.socialFactors.title}</h3>
+              </div>
+              <div className="space-y-2">
                 {getSocialFactors().map((factor, index) => (
                   <motion.div
                     key={factor.label}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="flex items-center justify-between py-3"
+                    className="flex items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all"
                     data-testid={`social-factor-${index}`}
                   >
-                    <p className="text-muted-foreground">{factor.label}</p>
-                    <p className="font-medium text-foreground text-right">{factor.value}</p>
+                    <p className="text-gray-500 font-medium">{factor.label}</p>
+                    <p className="font-bold text-gray-900 dark:text-white text-right">{factor.value}</p>
                   </motion.div>
                 ))}
               </div>
-            </Card>
+            </div>
             
-            <Card className="p-6 mt-4">
-              <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
-                <Users className="w-5 h-5 text-chart-2" />
-                {language === 'en' ? 'Community Settings' : 'Community-Einstellungen'}
-              </h3>
+            <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6 mt-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center text-white shadow-lg">
+                  <Users className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  {language === 'en' ? 'Community Settings' : 'Community-Einstellungen'}
+                </h3>
+              </div>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30">
+                <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-br from-[#CDB6EF]/10 to-[#D2EDFF]/10">
                   <div className="space-y-1 flex-1 pr-4">
-                    <p className="font-bold text-foreground">
+                    <p className="font-bold text-gray-900 dark:text-white">
                       {language === 'en' ? 'Loretta Community Leaderboard' : 'Loretta Community Rangliste'}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-gray-500">
                       {language === 'en' 
                         ? 'Show your XP, level, and streak on the community leaderboard so others can see your progress'
                         : 'Zeige dein XP, Level und deine Serie auf der Community-Rangliste, damit andere deinen Fortschritt sehen können'}
@@ -1782,16 +1789,18 @@ export default function Profile() {
                   />
                 </div>
               </div>
-            </Card>
+            </div>
           </TabsContent>
 
           {/* Questionnaires */}
           <TabsContent value="questionnaires">
-            <Card className="p-6">
-              <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
-                <ClipboardList className="w-5 h-5 text-primary" />
-                {localT.questionnaires.title}
-              </h3>
+            <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center text-white shadow-lg">
+                  <ClipboardList className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.questionnaires.title}</h3>
+              </div>
               <div className="space-y-3">
                 {getQuestionnaires().map((category, index) => {
                   const answeredCount = getAnsweredCount(category.questions.map(q => q.id));
@@ -1804,41 +1813,43 @@ export default function Profile() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="rounded-lg bg-muted/30 overflow-hidden"
+                      className="rounded-2xl bg-white/50 dark:bg-gray-800/50 overflow-hidden border border-white/50 dark:border-white/10"
                       data-testid={`questionnaire-${category.key}`}
                     >
                       <Collapsible
                         open={expandedCategories[category.key]}
                         onOpenChange={() => toggleCategory(category.key)}
                       >
-                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full ${category.bgColor} flex items-center justify-center`}>
-                              <category.icon className={`w-5 h-5 ${category.iconColor}`} />
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center shadow-lg">
+                              <category.icon className="w-5 h-5 text-white" />
                             </div>
                             <div className="text-left">
-                              <p className="font-bold text-foreground">{category.title}</p>
+                              <p className="font-bold text-gray-900 dark:text-white">{category.title}</p>
                               <div className="flex items-center gap-2">
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-gray-500">
                                   {answeredCount}/{totalCount} {localT.questionnaires.questions}
                                 </p>
                                 {isComplete && (
-                                  <Badge variant="secondary" className="text-xs bg-chart-2/20 text-chart-2">
-                                    <Check className="w-3 h-3 mr-1" />
+                                  <span className="px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-green-400 to-emerald-400 text-white rounded-full shadow-sm">
+                                    <Check className="w-3 h-3 inline mr-1" />
                                     {language === 'en' ? 'Complete' : 'Fertig'}
-                                  </Badge>
+                                  </span>
                                 )}
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                            <div className="w-16 h-2 bg-white/50 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
                               <div 
-                                className={`h-full ${category.bgColor.replace('/10', '')} transition-all`}
+                                className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg"
                                 style={{ width: `${(answeredCount / totalCount) * 100}%` }}
                               />
                             </div>
-                            <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform ${expandedCategories[category.key] ? 'rotate-180' : ''}`} />
+                            <div className={`w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-transform ${expandedCategories[category.key] ? 'rotate-180' : ''}`}>
+                              <ChevronDown className="w-4 h-4 text-gray-500" />
+                            </div>
                           </div>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
@@ -1950,7 +1961,7 @@ export default function Profile() {
                               </div>
                             ))}
                             
-                            <div className="pt-4 border-t border-border">
+                            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                               <Button
                                 onClick={() => {
                                   const categoryAnswers: Record<string, string> = {};
@@ -1970,7 +1981,7 @@ export default function Profile() {
                                       : `${category.title} Fragebogen wurde erfolgreich eingereicht.`,
                                   });
                                 }}
-                                className="w-full bg-primary hover:bg-primary/90"
+                                className="w-full bg-gradient-to-r from-[#013DC4] to-[#0150FF] hover:opacity-90 text-white rounded-2xl font-bold py-3 shadow-lg"
                                 disabled={saveAnswersMutation.isPending}
                                 data-testid={`submit-${category.key}`}
                               >
@@ -1987,15 +1998,18 @@ export default function Profile() {
                   );
                 })}
               </div>
-            </Card>
+            </div>
           </TabsContent>
 
           {/* Behaviors */}
           <TabsContent value="behaviors">
-            <Card className="p-6">
-              <h3 className="text-lg font-black text-foreground mb-4">
-                {localT.behaviors.title}
-              </h3>
+            <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white shadow-lg">
+                  <Heart className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.behaviors.title}</h3>
+              </div>
               <div className="space-y-3">
                 {getBehaviors().map((behavior, index) => (
                   <motion.div
@@ -2003,48 +2017,50 @@ export default function Profile() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="flex items-center gap-4 p-4 rounded-lg bg-muted/30"
+                    className="flex items-center gap-4 p-4 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg transition-all"
                     data-testid={`behavior-${index}`}
                   >
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${behavior.bgColor}`}>
-                      <behavior.icon className={`w-6 h-6 ${behavior.iconColor}`} />
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#013DC4]/10 to-[#CDB6EF]/10 flex items-center justify-center">
+                      <behavior.icon className="w-6 h-6 text-[#013DC4]" />
                     </div>
                     <div>
-                      <p className="font-bold text-foreground">{behavior.label}</p>
-                      <p className="text-sm text-muted-foreground">{behavior.value}</p>
+                      <p className="font-bold text-gray-900 dark:text-white">{behavior.label}</p>
+                      <p className="text-sm text-gray-500">{behavior.value}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
-            </Card>
+            </div>
           </TabsContent>
 
           {/* Activity */}
           <TabsContent value="activity">
-            <Card className="p-6">
-              <h3 className="text-lg font-black text-foreground mb-4 flex items-center gap-2">
-                <Footprints className="w-5 h-5 text-primary" />
-                {localT.activity.title}
-              </h3>
+            <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center text-white shadow-lg">
+                  <Footprints className="w-5 h-5" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.activity.title}</h3>
+              </div>
               {(() => {
                 const { avgSteps, avgGoal, displayData, hasData } = getWeeklyStats();
                 return (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-primary/10 to-chart-2/10">
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10">
                       <div>
-                        <p className="text-sm text-muted-foreground">{localT.activity.weeklyAverage}</p>
-                        <p className="text-2xl font-black text-foreground">
+                        <p className="text-sm text-gray-500">{localT.activity.weeklyAverage}</p>
+                        <p className="text-2xl font-black text-gray-900 dark:text-white">
                           {hasData ? avgSteps.toLocaleString() : '--'} {localT.activity.steps}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-muted-foreground">{localT.activity.goal}</p>
-                        <p className="text-2xl font-black text-primary">{avgGoal.toLocaleString()} {localT.activity.steps}</p>
+                        <p className="text-sm text-gray-500">{localT.activity.goal}</p>
+                        <p className="text-2xl font-black text-[#013DC4]">{avgGoal.toLocaleString()} {localT.activity.steps}</p>
                       </div>
                     </div>
                     
                     {!hasData ? (
-                      <div className="text-center py-8 text-muted-foreground">
+                      <div className="text-center py-8 text-gray-400">
                         <Footprints className="w-12 h-12 mx-auto mb-4 opacity-30" />
                         <p className="text-sm">
                           {language === 'en' 
@@ -2065,14 +2081,14 @@ export default function Profile() {
                               className="flex flex-col items-center"
                               data-testid={`activity-day-${day.day.toLowerCase()}`}
                             >
-                              <div className="w-full h-24 bg-muted/30 rounded-lg relative overflow-hidden">
+                              <div className="w-full h-24 bg-white/50 dark:bg-gray-700 rounded-2xl relative overflow-hidden shadow-inner">
                                 <div 
-                                  className="absolute bottom-0 w-full bg-gradient-to-t from-primary to-chart-2 rounded-lg transition-all"
+                                  className="absolute bottom-0 w-full bg-gradient-to-t from-[#013DC4] to-[#CDB6EF] rounded-2xl transition-all shadow-lg"
                                   style={{ height: `${percentage}%` }}
                                 />
                               </div>
-                              <p className="text-xs font-bold mt-2 text-muted-foreground">{day.day}</p>
-                              <p className="text-xs text-foreground">
+                              <p className="text-xs font-bold mt-2 text-gray-500">{day.day}</p>
+                              <p className="text-xs text-gray-900 dark:text-white font-semibold">
                                 {day.steps > 0 ? (day.steps / 1000).toFixed(1) + 'k' : '0'}
                               </p>
                             </motion.div>
@@ -2083,7 +2099,7 @@ export default function Profile() {
                   </div>
                 );
               })()}
-            </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
