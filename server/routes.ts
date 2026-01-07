@@ -516,38 +516,33 @@ IMPORTANT: When discussing risk scores, remember:
           if (profile.weight && !mergedAnswers.weight_current) mergedAnswers.weight_current = profile.weight;
         }
         
-        let riskScore: { overallScore: number; diabetesRisk: number; heartRisk: number; strokeRisk: number };
-        
         try {
           const mlFeatures = convertQuestionnaireToMLFeatures(mergedAnswers);
           if (mlFeatures.length >= 5) {
             const mlResult = await callMLPredictionAPI(mlFeatures);
             if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-              // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+              // Risk score comes purely from ML API - rounded to whole number
               const riskValue = Math.round(mlResult.diabetes_probability * 100);
-              riskScore = {
+              const riskScore = {
                 overallScore: riskValue,
                 diabetesRisk: riskValue,
                 heartRisk: 0,
                 strokeRisk: 0,
               };
-              console.log("[API] Risk score auto-recalculated using ML model after questionnaire update");
+              await storage.saveRiskScore({
+                userId,
+                ...riskScore,
+              });
+              console.log("[API] Risk score calculated from ML model after questionnaire update:", riskValue);
             } else {
-              riskScore = calculateRiskScores(mergedAnswers);
-              console.log("[API] Risk score auto-recalculated using fallback after questionnaire update");
+              console.log("[API] ML API unavailable - risk score not updated");
             }
           } else {
-            riskScore = calculateRiskScores(mergedAnswers);
+            console.log("[API] Not enough features for ML model - risk score not updated");
           }
         } catch (mlError) {
-          riskScore = calculateRiskScores(mergedAnswers);
-          console.log("[API] Risk score auto-recalculated using fallback (ML error) after questionnaire update");
+          console.log("[API] ML API error - risk score not updated:", mlError);
         }
-        
-        await storage.saveRiskScore({
-          userId,
-          ...riskScore,
-        });
       } catch (riskError) {
         console.error("[API] Failed to auto-recalculate risk score:", riskError);
       }
@@ -617,38 +612,33 @@ IMPORTANT: When discussing risk scores, remember:
           if (saved.height) mergedAnswers.height = saved.height;
           if (saved.weight) mergedAnswers.weight_current = saved.weight;
           
-          let riskScore: { overallScore: number; diabetesRisk: number; heartRisk: number; strokeRisk: number };
-          
           try {
             const mlFeatures = convertQuestionnaireToMLFeatures(mergedAnswers);
             if (mlFeatures.length >= 5) {
               const mlResult = await callMLPredictionAPI(mlFeatures);
               if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-                // Risk score: higher = worse health (0 = healthy, 100 = high risk)
+                // Risk score comes purely from ML API - rounded to whole number
                 const riskValue = Math.round(mlResult.diabetes_probability * 100);
-                riskScore = {
+                const riskScore = {
                   overallScore: riskValue,
                   diabetesRisk: riskValue,
                   heartRisk: 0,
                   strokeRisk: 0,
                 };
-                console.log("[API] Risk score auto-recalculated using ML model after profile update");
+                await storage.saveRiskScore({
+                  userId,
+                  ...riskScore,
+                });
+                console.log("[API] Risk score calculated from ML model after profile update:", riskValue);
               } else {
-                riskScore = calculateRiskScores(mergedAnswers);
-                console.log("[API] Risk score auto-recalculated using fallback after profile update");
+                console.log("[API] ML API unavailable - risk score not updated");
               }
             } else {
-              riskScore = calculateRiskScores(mergedAnswers);
+              console.log("[API] Not enough features for ML model - risk score not updated");
             }
           } catch (mlError) {
-            riskScore = calculateRiskScores(mergedAnswers);
-            console.log("[API] Risk score auto-recalculated using fallback (ML error) after profile update");
+            console.log("[API] ML API error - risk score not updated:", mlError);
           }
-          
-          await storage.saveRiskScore({
-            userId,
-            ...riskScore,
-          });
         } catch (riskError) {
           console.error("[API] Failed to auto-recalculate risk score:", riskError);
         }
@@ -914,53 +904,42 @@ IMPORTANT: When discussing risk scores, remember:
         if (profile.weight && !allAnswers.weight_current) allAnswers.weight_current = profile.weight;
       }
       
-      let riskScore: {
-        overallScore: number;
-        diabetesRisk: number;
-        heartRisk: number;
-        strokeRisk: number;
-      };
-      let usedMLModel = false;
+      const mlFeatures = convertQuestionnaireToMLFeatures(allAnswers);
+      console.log('[Risk Calculation] Converted', Object.keys(allAnswers).length, 'answers to', mlFeatures.length, 'ML features');
       
-      try {
-        const mlFeatures = convertQuestionnaireToMLFeatures(allAnswers);
-        console.log('[Risk Calculation] Converted', Object.keys(allAnswers).length, 'answers to', mlFeatures.length, 'ML features');
-        
-        if (mlFeatures.length >= 5) {
-          const mlResult = await callMLPredictionAPI(mlFeatures);
-          
-          if (mlResult && typeof mlResult.diabetes_probability === 'number') {
-            // Risk score: higher = worse health (0 = healthy, 100 = high risk)
-            const riskValue = Math.round(mlResult.diabetes_probability * 100);
-            
-            riskScore = {
-              overallScore: riskValue,
-              diabetesRisk: riskValue,
-              heartRisk: 0,
-              strokeRisk: 0,
-            };
-            usedMLModel = true;
-            console.log('[Risk Calculation] ML model prediction:', mlResult.diabetes_probability, '-> risk score:', riskValue);
-          } else {
-            console.log('[Risk Calculation] ML API unavailable, using fallback calculation');
-            riskScore = calculateRiskScores(allAnswers);
-          }
-        } else {
-          console.log('[Risk Calculation] Not enough features for ML model, using fallback');
-          riskScore = calculateRiskScores(allAnswers);
-        }
-      } catch (mlError) {
-        console.error('[Risk Calculation] ML API error, falling back to evidence-based model:', mlError);
-        riskScore = calculateRiskScores(allAnswers);
+      if (mlFeatures.length < 5) {
+        return res.status(400).json({ 
+          error: "Not enough questionnaire answers to calculate risk score. Please complete more of the health questionnaire.",
+          featuresProvided: mlFeatures.length,
+          featuresRequired: 5
+        });
       }
+      
+      const mlResult = await callMLPredictionAPI(mlFeatures);
+      
+      if (!mlResult || typeof mlResult.diabetes_probability !== 'number') {
+        return res.status(503).json({ 
+          error: "Risk calculation service is temporarily unavailable. Please try again later."
+        });
+      }
+      
+      // Risk score comes purely from ML API - rounded to whole number
+      const riskValue = Math.round(mlResult.diabetes_probability * 100);
+      
+      const riskScore = {
+        overallScore: riskValue,
+        diabetesRisk: riskValue,
+        heartRisk: 0,
+        strokeRisk: 0,
+      };
       
       const saved = await storage.saveRiskScore({
         userId,
         ...riskScore,
       });
       
-      console.log('[Risk Calculation] Completed for user:', userId, '- Used ML model:', usedMLModel);
-      res.json({ ...saved, usedMLModel });
+      console.log('[Risk Calculation] ML model prediction:', mlResult.diabetes_probability, '-> risk score:', riskValue);
+      res.json({ ...saved, usedMLModel: true });
     } catch (error) {
       console.error("[Risk Calculation] Error:", error);
       res.status(500).json({ error: "Failed to calculate risk score" });
@@ -2870,228 +2849,6 @@ function calculateBMI(heightCm: number, weightKg: number): number {
   return weightKg / (heightM * heightM);
 }
 
-// Get BMI category risk points (evidence-based from CDC/WHO guidelines)
-function getBMIRiskPoints(bmi: number): { diabetes: number; heart: number; stroke: number } {
-  if (bmi === 0) return { diabetes: 0, heart: 0, stroke: 0 };
-  if (bmi < 18.5) return { diabetes: 5, heart: 5, stroke: 5 }; // Underweight - some risk
-  if (bmi < 25) return { diabetes: 0, heart: 0, stroke: 0 }; // Normal - baseline
-  if (bmi < 30) return { diabetes: 10, heart: 8, stroke: 6 }; // Overweight
-  if (bmi < 35) return { diabetes: 18, heart: 15, stroke: 12 }; // Obese Class I
-  if (bmi < 40) return { diabetes: 25, heart: 22, stroke: 18 }; // Obese Class II
-  return { diabetes: 30, heart: 28, stroke: 22 }; // Obese Class III
-}
-
-// Get age-based risk points (risk increases with age, especially after 45)
-function getAgeRiskPoints(age: number): { diabetes: number; heart: number; stroke: number } {
-  if (age < 35) return { diabetes: 0, heart: 0, stroke: 0 };
-  if (age < 45) return { diabetes: 5, heart: 5, stroke: 3 };
-  if (age < 55) return { diabetes: 12, heart: 12, stroke: 8 };
-  if (age < 65) return { diabetes: 18, heart: 18, stroke: 15 };
-  if (age < 75) return { diabetes: 22, heart: 22, stroke: 22 };
-  return { diabetes: 25, heart: 25, stroke: 28 }; // 75+
-}
-
-// Get activity level risk points (sedentary lifestyle is a major risk factor)
-function getActivityRiskPoints(moderateHoursPerWeek: number, sedentaryHoursPerDay: number): { diabetes: number; heart: number; stroke: number } {
-  let activityScore = 0;
-  
-  // Moderate activity (recommended: 2.5+ hours/week)
-  if (moderateHoursPerWeek >= 5) activityScore -= 15; // Very active - protective
-  else if (moderateHoursPerWeek >= 2.5) activityScore -= 8; // Meets guidelines
-  else if (moderateHoursPerWeek >= 1) activityScore += 5; // Some activity
-  else activityScore += 15; // Sedentary
-  
-  // Sedentary time (sitting >8 hours/day is risky)
-  if (sedentaryHoursPerDay >= 10) activityScore += 12;
-  else if (sedentaryHoursPerDay >= 8) activityScore += 8;
-  else if (sedentaryHoursPerDay >= 6) activityScore += 4;
-  
-  const points = Math.max(0, activityScore);
-  return { diabetes: points, heart: points, stroke: Math.round(points * 0.7) };
-}
-
-// Get sleep quality risk points (poor sleep correlates with metabolic and cardiovascular issues)
-function getSleepRiskPoints(weekdayHours: number, weekendHours: number, hasSleepTrouble: boolean): { diabetes: number; heart: number; stroke: number } {
-  const avgSleep = (weekdayHours + weekendHours) / 2;
-  let sleepScore = 0;
-  
-  // Optimal sleep is 7-9 hours
-  if (avgSleep < 5) sleepScore += 15; // Severe sleep deprivation
-  else if (avgSleep < 6) sleepScore += 10; // Sleep deprived
-  else if (avgSleep < 7) sleepScore += 5; // Slightly low
-  else if (avgSleep <= 9) sleepScore += 0; // Optimal
-  else sleepScore += 5; // Too much sleep can also indicate issues
-  
-  if (hasSleepTrouble) sleepScore += 8;
-  
-  return { diabetes: sleepScore, heart: sleepScore, stroke: Math.round(sleepScore * 0.8) };
-}
-
-// Improved risk score calculation using questionnaire data properly
-function calculateRiskScores(answers: Record<string, string>): {
-  overallScore: number;
-  diabetesRisk: number;
-  heartRisk: number;
-  strokeRisk: number;
-} {
-  let diabetesRisk = 0;
-  let heartRisk = 0;
-  let strokeRisk = 0;
-  
-  // === BIOMETRIC FACTORS ===
-  
-  // BMI calculation from height (cm) and weight (kg)
-  // Check multiple possible field names: question ID, apiId, or common name
-  const heightCm = parseNumeric(answers.height || answers.WHD010);
-  const weightKg = parseNumeric(answers.weight_current || answers.WHD020 || answers.weight);
-  const bmi = calculateBMI(heightCm, weightKg);
-  const bmiRisk = getBMIRiskPoints(bmi);
-  diabetesRisk += bmiRisk.diabetes;
-  heartRisk += bmiRisk.heart;
-  strokeRisk += bmiRisk.stroke;
-  
-  // Weight change in past year (significant gain is a risk factor) - in kg
-  const weightOneYearAgo = parseNumeric(answers.weight_year_ago || answers.WHD050);
-  if (weightOneYearAgo > 0 && weightKg > 0) {
-    const weightGainKg = weightKg - weightOneYearAgo;
-    // ~10kg gain is significant, ~5kg is moderate
-    if (weightGainKg >= 10) { diabetesRisk += 8; heartRisk += 6; }
-    else if (weightGainKg >= 5) { diabetesRisk += 4; heartRisk += 3; }
-  }
-  
-  // Age-based risk
-  const age = parseNumeric(answers.RIDAGEYR || answers.age);
-  const ageRisk = getAgeRiskPoints(age);
-  diabetesRisk += ageRisk.diabetes;
-  heartRisk += ageRisk.heart;
-  strokeRisk += ageRisk.stroke;
-  
-  // === MEDICAL HISTORY (NHANES-style API IDs) ===
-  
-  // High blood pressure (BPQ020)
-  const hasHighBP = answers.BPQ020 === '1' || answers.high_blood_pressure === 'yes';
-  if (hasHighBP) {
-    diabetesRisk += 8;
-    heartRisk += 20; // Major heart risk factor
-    strokeRisk += 25; // Major stroke risk factor
-  }
-  
-  // High cholesterol (BPQ080)
-  const hasHighCholesterol = answers.BPQ080 === '1' || answers.high_cholesterol === 'yes';
-  if (hasHighCholesterol) {
-    diabetesRisk += 5;
-    heartRisk += 18;
-    strokeRisk += 12;
-  }
-  
-  // Cardiovascular history
-  const hadHeartAttack = answers.MCQ160A === '1';
-  const hasHeartFailure = answers.MCQ160B === '1';
-  const hasCoronaryDisease = answers.MCQ160C === '1';
-  const hadStroke = answers.MCQ160E === '1';
-  
-  if (hadHeartAttack) { heartRisk += 25; strokeRisk += 10; }
-  if (hasHeartFailure) { heartRisk += 30; strokeRisk += 15; }
-  if (hasCoronaryDisease) { heartRisk += 20; strokeRisk += 10; }
-  if (hadStroke) { strokeRisk += 30; heartRisk += 10; }
-  
-  // Kidney disease (KIQ022) - linked to diabetes and heart disease
-  const hasKidneyDisease = answers.KIQ022 === '1';
-  if (hasKidneyDisease) {
-    diabetesRisk += 12;
-    heartRisk += 15;
-    strokeRisk += 10;
-  }
-  
-  // === LIFESTYLE FACTORS ===
-  
-  // Physical activity (PAD790 = moderate activity hours/week, PAD680 = sedentary hours/day)
-  const moderateActivity = parseNumeric(answers.PAD790);
-  const sedentaryHours = parseNumeric(answers.PAD680);
-  const activityRisk = getActivityRiskPoints(moderateActivity, sedentaryHours);
-  diabetesRisk += activityRisk.diabetes;
-  heartRisk += activityRisk.heart;
-  strokeRisk += activityRisk.stroke;
-  
-  // Sleep patterns (SLD012 = weekday hours, SLD013 = weekend hours, DPQ030 = sleep trouble)
-  const weekdaySleep = parseNumeric(answers.SLD012, 7);
-  const weekendSleep = parseNumeric(answers.SLD013, 7);
-  const hasSleepTrouble = answers.DPQ030 === '1' || answers.DPQ030 === '2'; // 1=sometimes, 2=often
-  const sleepRisk = getSleepRiskPoints(weekdaySleep, weekendSleep, hasSleepTrouble);
-  diabetesRisk += sleepRisk.diabetes;
-  heartRisk += sleepRisk.heart;
-  strokeRisk += sleepRisk.stroke;
-  
-  // Alcohol consumption (ALQ121)
-  const alcoholFreq = parseNumeric(answers.ALQ121);
-  if (alcoholFreq >= 10) { // 10+ drinks per week
-    heartRisk += 10;
-    strokeRisk += 15;
-  } else if (alcoholFreq >= 5) {
-    heartRisk += 5;
-    strokeRisk += 8;
-  }
-  
-  // === BALANCE AND FALLS (indicators of overall health/frailty) ===
-  const hasBalanceIssues = answers.BAQ321C === '1';
-  const hasFalls = answers.BAQ530 === '1' || answers.BAQ530 === '2';
-  if (hasBalanceIssues || hasFalls) {
-    strokeRisk += 8; // Balance issues can indicate neurological risk
-  }
-  
-  // === ORAL HEALTH (correlates with systemic inflammation and cardiovascular health) ===
-  const poorDentalHealth = answers.OHQ845 === '4' || answers.OHQ845 === '5'; // Fair or Poor
-  const hasGumDisease = answers.OHQ620 === '1';
-  const hasLooseTeeth = answers.OHQ630 === '1';
-  const hasBoneLoss = answers.OHQ660 === '1';
-  
-  const oralHealthIssues = [poorDentalHealth, hasGumDisease, hasLooseTeeth, hasBoneLoss].filter(Boolean).length;
-  if (oralHealthIssues >= 3) {
-    heartRisk += 10;
-    diabetesRisk += 8;
-  } else if (oralHealthIssues >= 1) {
-    heartRisk += 5;
-    diabetesRisk += 4;
-  }
-  
-  // === GENERAL HEALTH SELF-ASSESSMENT ===
-  const generalHealth = answers.HUQ010;
-  if (generalHealth === '4' || generalHealth === '5') { // Fair or Poor
-    diabetesRisk += 8;
-    heartRisk += 8;
-    strokeRisk += 8;
-  } else if (generalHealth === '1') { // Excellent
-    diabetesRisk -= 5;
-    heartRisk -= 5;
-    strokeRisk -= 5;
-  }
-  
-  // === MEDICATIONS (can indicate managed conditions) ===
-  const takingPrescriptions = answers.RXQ033 === '1';
-  const takingAspirin = answers.RXQ510 === '1';
-  
-  // Taking aspirin may indicate preventive care for heart issues
-  if (takingAspirin) {
-    heartRisk += 5; // Already at risk if taking preventive aspirin
-  }
-  
-  // === NORMALIZE SCORE ===
-  // Ensure score is within 0-100 range
-  diabetesRisk = Math.max(0, Math.min(100, diabetesRisk));
-  
-  // Apply a minimum baseline risk based on age if no other factors
-  if (age >= 40 && diabetesRisk < 10) diabetesRisk = 10;
-  
-  // Risk score: higher = worse health (0 = healthy, 100 = high risk)
-  const riskValue = Math.round(diabetesRisk * 10) / 10;
-
-  return {
-    overallScore: riskValue,
-    diabetesRisk: riskValue,
-    heartRisk: 0,
-    strokeRisk: 0,
-  };
-}
 
 interface RiskFactor {
   id: string;
