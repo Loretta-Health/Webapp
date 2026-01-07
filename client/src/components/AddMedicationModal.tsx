@@ -47,13 +47,11 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
 
   const [weeklySchedule, setWeeklySchedule] = useState<ScheduledTime[]>([{ day: 'monday', time: '08:00' }]);
 
-  // Populate form when editing
   useEffect(() => {
     if (medicationToEdit && open) {
       const freq = medicationToEdit.frequency || 'daily';
       
       if (freq === 'weekly') {
-        // Parse weekly schedule from "day:HH:MM" format
         const parsed = medicationToEdit.scheduledTimes.map(s => {
           const parts = s.split(':');
           return { day: parts[0], time: parts.slice(1).join(':') };
@@ -78,7 +76,6 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
         });
       }
     } else if (!open) {
-      // Reset form when modal closes
       setFormData({
         name: '',
         dosage: '',
@@ -189,61 +186,71 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-              {isEditMode ? <Pencil className="w-6 h-6 text-primary" /> : <Pill className="w-6 h-6 text-primary" />}
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-lg shadow-[#013DC4]/30">
+              {isEditMode ? <Pencil className="w-7 h-7 text-white" /> : <Pill className="w-7 h-7 text-white" />}
             </div>
-            <DialogTitle className="text-xl font-black">
-              {isEditMode 
-                ? (language === 'en' ? 'Edit Medication' : 'Medikament bearbeiten')
-                : (language === 'en' ? 'Add Medication' : 'Medikament hinzufügen')}
-            </DialogTitle>
+            <div>
+              <DialogTitle className="text-xl font-black bg-gradient-to-r from-[#013DC4] to-[#0150FF] bg-clip-text text-transparent">
+                {isEditMode 
+                  ? (language === 'en' ? 'Edit Medication' : 'Medikament bearbeiten')
+                  : (language === 'en' ? 'Add Medication' : 'Medikament hinzufügen')}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-gray-500 mt-0.5">
+                {isEditMode
+                  ? (language === 'en' 
+                      ? 'Update the details for this medication.'
+                      : 'Aktualisieren Sie die Details für dieses Medikament.')
+                  : (language === 'en' 
+                      ? 'Add a medication to track.'
+                      : 'Fügen Sie ein Medikament zum Verfolgen hinzu.')}
+              </DialogDescription>
+            </div>
           </div>
-          <DialogDescription>
-            {isEditMode
-              ? (language === 'en' 
-                  ? 'Update the details for this medication.'
-                  : 'Aktualisieren Sie die Details für dieses Medikament.')
-              : (language === 'en' 
-                  ? 'Add a medication you want to track. You can edit or remove it later.'
-                  : 'Fügen Sie ein Medikament hinzu, das Sie verfolgen möchten. Sie können es später bearbeiten oder entfernen.')}
-          </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">
-            <Label htmlFor="name">{language === 'en' ? 'Medication Name' : 'Medikamentenname'}</Label>
+            <Label htmlFor="name" className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              {language === 'en' ? 'Medication Name' : 'Medikamentenname'}
+            </Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder={language === 'en' ? 'e.g., Vitamin D3' : 'z.B., Vitamin D3'}
               required
+              className="bg-white/70 dark:bg-gray-800/70 border-white/50 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#013DC4]/30"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dosage">{language === 'en' ? 'Dosage' : 'Dosierung'}</Label>
+            <Label htmlFor="dosage" className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              {language === 'en' ? 'Dosage' : 'Dosierung'}
+            </Label>
             <Input
               id="dosage"
               value={formData.dosage}
               onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
               placeholder={language === 'en' ? 'e.g., 2000 IU or 500mg' : 'z.B., 2000 IE oder 500mg'}
+              className="bg-white/70 dark:bg-gray-800/70 border-white/50 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#013DC4]/30"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>{language === 'en' ? 'Frequency' : 'Häufigkeit'}</Label>
+            <Label className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              {language === 'en' ? 'Frequency' : 'Häufigkeit'}
+            </Label>
             <Select 
               value={formData.frequency} 
               onValueChange={(value) => setFormData({ ...formData, frequency: value })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white/70 dark:bg-gray-800/70 border-white/50 dark:border-white/10 rounded-xl">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 {frequencyOptions.map(option => (
                   <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                 ))}
@@ -252,10 +259,10 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
           </div>
 
           {formData.frequency === 'daily' && (
-            <div className="space-y-3">
+            <div className="space-y-3 p-4 bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10 rounded-2xl">
               <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
+                <Label className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                  <Clock className="w-4 h-4 text-[#013DC4]" />
                   {language === 'en' ? 'Scheduled Times' : 'Geplante Zeiten'}
                 </Label>
                 <Button
@@ -263,10 +270,10 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                   variant="outline"
                   size="sm"
                   onClick={addTime}
-                  className="h-8 px-3"
+                  className="h-8 px-3 rounded-xl bg-white/70 border-[#013DC4]/20 hover:bg-[#013DC4]/10 text-[#013DC4]"
                 >
                   <Plus className="w-3 h-3 mr-1" />
-                  {language === 'en' ? 'Add Time' : 'Zeit hinzufügen'}
+                  {language === 'en' ? 'Add' : 'Hinzufügen'}
                 </Button>
               </div>
               
@@ -275,8 +282,8 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                   const [hours, minutes] = time.split(':');
                   return (
                     <div key={index} className="flex items-center gap-2">
-                      <div className="flex-1 flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
-                        <span className="text-sm font-medium text-muted-foreground w-16">
+                      <div className="flex-1 flex items-center gap-2 bg-white/80 dark:bg-gray-800/80 rounded-xl px-3 py-2 shadow-sm">
+                        <span className="text-sm font-semibold text-[#013DC4] w-16">
                           {language === 'en' ? `Dose ${index + 1}` : `Dosis ${index + 1}`}
                         </span>
                         <div className="flex items-center gap-1">
@@ -284,24 +291,24 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                             value={hours}
                             onValueChange={(h) => updateTime(index, `${h}:${minutes}`)}
                           >
-                            <SelectTrigger className="w-20 h-8">
+                            <SelectTrigger className="w-18 h-8 rounded-lg bg-white/70 border-[#013DC4]/20">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="rounded-xl">
                               {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
                                 <SelectItem key={h} value={h}>{h}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          <span className="text-lg font-bold">:</span>
+                          <span className="text-lg font-bold text-[#013DC4]">:</span>
                           <Select
                             value={minutes}
                             onValueChange={(m) => updateTime(index, `${hours}:${m}`)}
                           >
-                            <SelectTrigger className="w-20 h-8">
+                            <SelectTrigger className="w-18 h-8 rounded-lg bg-white/70 border-[#013DC4]/20">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="rounded-xl">
                               {['00', '15', '30', '45'].map(m => (
                                 <SelectItem key={m} value={m}>{m}</SelectItem>
                               ))}
@@ -315,7 +322,7 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                           variant="ghost"
                           size="sm"
                           onClick={() => removeTime(index)}
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl"
                         >
                           <X className="w-4 h-4" />
                         </Button>
@@ -324,7 +331,7 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                   );
                 })}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-500 font-medium">
                 {language === 'en' 
                   ? `${formData.scheduledTimes.length} dose${formData.scheduledTimes.length > 1 ? 's' : ''} per day`
                   : `${formData.scheduledTimes.length} Dosis${formData.scheduledTimes.length > 1 ? 'en' : ''} pro Tag`}
@@ -333,10 +340,10 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
           )}
 
           {formData.frequency === 'weekly' && (
-            <div className="space-y-3">
+            <div className="space-y-3 p-4 bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10 rounded-2xl">
               <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
+                <Label className="flex items-center gap-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                  <Calendar className="w-4 h-4 text-[#013DC4]" />
                   {language === 'en' ? 'Weekly Schedule' : 'Wochenplan'}
                 </Label>
                 <Button
@@ -344,7 +351,7 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                   variant="outline"
                   size="sm"
                   onClick={addWeeklyTime}
-                  className="h-8 px-3"
+                  className="h-8 px-3 rounded-xl bg-white/70 border-[#013DC4]/20 hover:bg-[#013DC4]/10 text-[#013DC4]"
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   {language === 'en' ? 'Add' : 'Hinzufügen'}
@@ -356,15 +363,15 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                   const [hours, minutes] = schedule.time.split(':');
                   return (
                     <div key={index} className="flex items-center gap-2">
-                      <div className="flex-1 flex flex-wrap items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+                      <div className="flex-1 flex flex-wrap items-center gap-2 bg-white/80 dark:bg-gray-800/80 rounded-xl px-3 py-2 shadow-sm">
                         <Select
                           value={schedule.day}
                           onValueChange={(day) => updateWeeklyTime(index, 'day', day)}
                         >
-                          <SelectTrigger className="w-32 h-8">
+                          <SelectTrigger className="w-32 h-8 rounded-lg bg-white/70 border-[#013DC4]/20">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="rounded-xl">
                             {daysOfWeek.map(day => (
                               <SelectItem key={day.value} value={day.value}>
                                 {language === 'en' ? day.en : day.de}
@@ -372,30 +379,30 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                             ))}
                           </SelectContent>
                         </Select>
-                        <span className="text-muted-foreground">{language === 'en' ? 'at' : 'um'}</span>
+                        <span className="text-gray-400 font-medium">{language === 'en' ? 'at' : 'um'}</span>
                         <div className="flex items-center gap-1">
                           <Select
                             value={hours}
                             onValueChange={(h) => updateWeeklyTime(index, 'time', `${h}:${minutes}`)}
                           >
-                            <SelectTrigger className="w-16 h-8">
+                            <SelectTrigger className="w-16 h-8 rounded-lg bg-white/70 border-[#013DC4]/20">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="rounded-xl">
                               {Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0')).map(h => (
                                 <SelectItem key={h} value={h}>{h}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          <span className="text-lg font-bold">:</span>
+                          <span className="text-lg font-bold text-[#013DC4]">:</span>
                           <Select
                             value={minutes}
                             onValueChange={(m) => updateWeeklyTime(index, 'time', `${hours}:${m}`)}
                           >
-                            <SelectTrigger className="w-16 h-8">
+                            <SelectTrigger className="w-16 h-8 rounded-lg bg-white/70 border-[#013DC4]/20">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="rounded-xl">
                               {['00', '15', '30', '45'].map(m => (
                                 <SelectItem key={m} value={m}>{m}</SelectItem>
                               ))}
@@ -409,7 +416,7 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                           variant="ghost"
                           size="sm"
                           onClick={() => removeWeeklyTime(index)}
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                          className="h-8 w-8 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl"
                         >
                           <X className="w-4 h-4" />
                         </Button>
@@ -418,7 +425,7 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                   );
                 })}
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-500 font-medium">
                 {language === 'en' 
                   ? `${weeklySchedule.length} dose${weeklySchedule.length > 1 ? 's' : ''} per week`
                   : `${weeklySchedule.length} Dosis${weeklySchedule.length > 1 ? 'en' : ''} pro Woche`}
@@ -427,8 +434,8 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
           )}
 
           {formData.frequency === 'as-needed' && (
-            <div className="p-3 bg-muted/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">
+            <div className="p-4 bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10 rounded-2xl">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {language === 'en' 
                   ? 'This medication can be taken as needed without a fixed schedule.'
                   : 'Dieses Medikament kann bei Bedarf ohne festen Zeitplan eingenommen werden.'}
@@ -437,7 +444,7 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="notes">
+            <Label htmlFor="notes" className="text-sm font-bold text-gray-700 dark:text-gray-300">
               {language === 'en' ? 'Notes (optional)' : 'Hinweise (optional)'}
             </Label>
             <Textarea
@@ -445,9 +452,10 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
               value={formData.notes || ''}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder={language === 'en' 
-                ? 'e.g., For blood pressure, take with food, avoid grapefruit...'
-                : 'z.B., Für Blutdruck, mit Essen einnehmen, Grapefruit vermeiden...'}
+                ? 'e.g., For blood pressure, take with food...'
+                : 'z.B., Für Blutdruck, mit Essen einnehmen...'}
               rows={2}
+              className="bg-white/70 dark:bg-gray-800/70 border-white/50 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-[#013DC4]/30"
             />
           </div>
 
@@ -456,13 +464,13 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
               type="button" 
               variant="outline" 
               onClick={() => onOpenChange(false)}
-              className="flex-1"
+              className="flex-1 rounded-2xl h-12 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 font-bold"
             >
               {language === 'en' ? 'Cancel' : 'Abbrechen'}
             </Button>
             <Button 
               type="submit" 
-              className="flex-1 bg-gradient-to-r from-primary to-chart-2 font-bold"
+              className="flex-1 h-12 rounded-2xl bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] font-bold text-white shadow-lg shadow-[#013DC4]/30 hover:shadow-xl hover:shadow-[#013DC4]/40 transition-all"
               disabled={isCreating || isUpdating || !formData.name}
             >
               {(isCreating || isUpdating) ? (
