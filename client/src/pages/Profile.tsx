@@ -872,6 +872,32 @@ export default function Profile() {
   };
 
   const handleAnswerChange = useCallback((questionId: string, value: string) => {
+    const sharedQuestion = getQuestionById(questionId);
+    
+    if (sharedQuestion?.type === 'number' && value !== '') {
+      const numValue = parseFloat(value);
+      if (sharedQuestion.min !== undefined && numValue < sharedQuestion.min) {
+        toast({
+          title: language === 'en' ? 'Invalid value' : 'Ungültiger Wert',
+          description: language === 'en' 
+            ? `Value must be at least ${sharedQuestion.min}` 
+            : `Wert muss mindestens ${sharedQuestion.min} sein`,
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (sharedQuestion.max !== undefined && numValue > sharedQuestion.max) {
+        toast({
+          title: language === 'en' ? 'Invalid value' : 'Ungültiger Wert',
+          description: language === 'en' 
+            ? `Value must be at most ${sharedQuestion.max}` 
+            : `Wert darf höchstens ${sharedQuestion.max} sein`,
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+    
     const newAnswers = { ...questionnaireAnswers, [questionId]: value };
     setQuestionnaireAnswers(newAnswers);
     localStorage.setItem('loretta_questionnaire_answers', JSON.stringify(newAnswers));
@@ -887,7 +913,7 @@ export default function Profile() {
         },
       }
     );
-  }, [questionnaireAnswers, saveAnswersMutation]);
+  }, [questionnaireAnswers, saveAnswersMutation, language, toast]);
 
   const getAnsweredCount = (questionIds: string[]) => {
     return questionIds.filter(id => questionnaireAnswers[id]).length;
@@ -1456,32 +1482,47 @@ export default function Profile() {
                 <h4 className="font-bold text-sm text-muted-foreground uppercase">{localT.editModal.basicInfo}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="age">{localT.editModal.age}</Label>
+                    <Label htmlFor="age">{localT.editModal.age} (18-120)</Label>
                     <Input
                       id="age"
                       type="number"
+                      min={18}
+                      max={120}
                       value={editForm.age || ''}
-                      onChange={(e) => setEditForm({ ...editForm, age: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        setEditForm({ ...editForm, age: Math.min(120, Math.max(0, val)) });
+                      }}
                       placeholder="0"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="height">{localT.editModal.height}</Label>
+                    <Label htmlFor="height">{localT.editModal.height} (50-275 cm)</Label>
                     <Input
                       id="height"
                       type="number"
+                      min={50}
+                      max={275}
                       value={editForm.height || ''}
-                      onChange={(e) => setEditForm({ ...editForm, height: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        setEditForm({ ...editForm, height: Math.min(275, Math.max(0, val)) });
+                      }}
                       placeholder="0"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="weight">{localT.editModal.weight}</Label>
+                    <Label htmlFor="weight">{localT.editModal.weight} (20-500 kg)</Label>
                     <Input
                       id="weight"
                       type="number"
+                      min={20}
+                      max={500}
                       value={editForm.weight || ''}
-                      onChange={(e) => setEditForm({ ...editForm, weight: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        setEditForm({ ...editForm, weight: Math.min(500, Math.max(0, val)) });
+                      }}
                       placeholder="0"
                     />
                   </div>
