@@ -1073,10 +1073,10 @@ export default function Profile() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size > 5 * 1024 * 1024) {
       toast({
         title: language === 'en' ? 'File too large' : 'Datei zu groß',
-        description: language === 'en' ? 'Please select an image under 2MB' : 'Bitte wählen Sie ein Bild unter 2MB',
+        description: language === 'en' ? 'Please select an image under 5MB' : 'Bitte wählen Sie ein Bild unter 5MB',
         variant: 'destructive',
       });
       return;
@@ -1091,10 +1091,39 @@ export default function Profile() {
       return;
     }
 
+    const img = new Image();
     const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      setEditForm({ ...editForm, profilePhoto: base64String });
+    
+    reader.onload = (e) => {
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxSize = 128;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          setEditForm({ ...editForm, profilePhoto: compressedBase64 });
+        }
+      };
+      img.src = e.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -2146,7 +2175,7 @@ export default function Profile() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                {language === 'en' ? 'Max file size: 2MB. Supported formats: JPG, PNG, GIF' : 'Max. Dateigröße: 2MB. Unterstützte Formate: JPG, PNG, GIF'}
+                {language === 'en' ? 'Images are automatically resized and compressed' : 'Bilder werden automatisch verkleinert und komprimiert'}
               </p>
             </div>
 
