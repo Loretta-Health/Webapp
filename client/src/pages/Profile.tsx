@@ -32,7 +32,6 @@ import {
   ChevronDown,
   Utensils,
   Moon,
-  Footprints,
   Brain,
   Globe,
   GraduationCap,
@@ -60,6 +59,16 @@ import {
   type Question 
 } from '@/lib/questionnaire';
 
+interface GamificationData {
+  xp: number;
+  level: number;
+  currentStreak: number;
+  longestStreak: number;
+  lives: number;
+  achievements: string[];
+  lastCheckIn: string | null;
+}
+
 const translations = {
   en: {
     back: 'Back',
@@ -73,7 +82,6 @@ const translations = {
       social: 'Social',
       questionnaires: 'Questionnaires',
       behaviors: 'Behaviors',
-      activity: 'Activity',
     },
     basicInfo: {
       title: 'Basic Information',
@@ -166,12 +174,6 @@ const translations = {
       alcohol: 'Alcohol',
       alcoholValue: '1 drink/day',
     },
-    activity: {
-      title: 'Your Activity',
-      weeklyAverage: 'Weekly Average',
-      steps: 'steps',
-      goal: 'Goal',
-    },
     editModal: {
       title: 'Edit Profile',
       name: 'Name',
@@ -207,7 +209,6 @@ const translations = {
       social: 'Sozial',
       questionnaires: 'Fragebögen',
       behaviors: 'Verhalten',
-      activity: 'Aktivität',
     },
     basicInfo: {
       title: 'Grundinformationen',
@@ -299,12 +300,6 @@ const translations = {
       smokingValue: '10 Zigaretten/Tag',
       alcohol: 'Alkohol',
       alcoholValue: '1 Getränk/Tag',
-    },
-    activity: {
-      title: 'Deine Aktivität',
-      weeklyAverage: 'Wochendurchschnitt',
-      steps: 'Schritte',
-      goal: 'Ziel',
     },
     editModal: {
       title: 'Profil bearbeiten',
@@ -776,28 +771,8 @@ export default function Profile() {
     }
   }, [backendProfile, backendAnswers, profileLoaded, user]);
 
-  interface ActivityData {
-    id: number;
-    userId: string;
-    date: string;
-    steps: number;
-    stepsGoal: number;
-    sleepHours: number | null;
-    sleepGoal: number;
-    heartRate: number | null;
-    calories: number;
-    caloriesGoal: number;
-    water: number;
-    waterGoal: number;
-  }
-
-  const { data: activitiesData } = useQuery<ActivityData[]>({
-    queryKey: ['/api/activities'],
-    queryFn: async () => {
-      const res = await fetch(`/api/activities?days=7`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Failed to fetch activities');
-      return res.json();
-    },
+  const { data: gamificationData } = useQuery<GamificationData>({
+    queryKey: ['/api/gamification'],
     enabled: !!userId,
   });
 
@@ -1333,38 +1308,6 @@ export default function Profile() {
     { icon: Brain, label: localT.questionnaires.stress, value: getStressSummary(), iconColor: 'text-destructive', bgColor: 'bg-destructive/10' },
   ];
 
-  const getActivityDisplayData = () => {
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const dayNamesDE = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-    
-    if (!activitiesData || activitiesData.length === 0) {
-      return [];
-    }
-    
-    const sortedData = [...activitiesData].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-    
-    return sortedData.slice(-7).map(activity => {
-      const date = new Date(activity.date);
-      const dayIndex = date.getDay();
-      return {
-        day: language === 'en' ? dayNames[dayIndex] : dayNamesDE[dayIndex],
-        steps: activity.steps || 0,
-        stepsGoal: activity.stepsGoal || 10000
-      };
-    });
-  };
-
-  const getWeeklyStats = () => {
-    const displayData = getActivityDisplayData();
-    const hasData = displayData.length > 0;
-    const totalSteps = displayData.reduce((sum, d) => sum + d.steps, 0);
-    const avgSteps = hasData ? Math.round(totalSteps / displayData.length) : 0;
-    const avgGoal = hasData ? Math.round(displayData.reduce((sum, d) => sum + d.stepsGoal, 0) / displayData.length) : 10000;
-    return { avgSteps, avgGoal, displayData, hasData };
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'good': return 'bg-primary/10 text-primary border-primary/20';
@@ -1678,8 +1621,8 @@ export default function Profile() {
                 {localT.editProfile}
               </button>
               <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
-                <span className="px-3 py-1 bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] text-white text-xs font-bold rounded-full shadow-lg">{localT.level} 14</span>
-                <span className="px-3 py-1 bg-gradient-to-r from-orange-400 to-red-400 text-white text-xs font-bold rounded-full shadow-lg">59 {localT.dayStreak}</span>
+                <span className="px-3 py-1 bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] text-white text-xs font-bold rounded-full shadow-lg">{localT.level} {gamificationData?.level || 1}</span>
+                <span className="px-3 py-1 bg-gradient-to-r from-orange-400 to-red-400 text-white text-xs font-bold rounded-full shadow-lg">{gamificationData?.currentStreak || 0} {localT.dayStreak}</span>
               </div>
             </div>
             <Link href="/calendar">
@@ -1693,12 +1636,11 @@ export default function Profile() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-5 sm:w-full backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl p-1" data-testid="profile-tabs">
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-4 sm:w-full backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl p-1" data-testid="profile-tabs">
               <TabsTrigger value="basic" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
               <TabsTrigger value="social" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
               <TabsTrigger value="questionnaires" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
               <TabsTrigger value="behaviors" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
-              <TabsTrigger value="activity" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-activity">{localT.tabs.activity}</TabsTrigger>
             </TabsList>
           </div>
 
@@ -2030,75 +1972,6 @@ export default function Profile() {
                   </motion.div>
                 ))}
               </div>
-            </div>
-          </TabsContent>
-
-          {/* Activity */}
-          <TabsContent value="activity">
-            <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center text-white shadow-lg">
-                  <Footprints className="w-5 h-5" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.activity.title}</h3>
-              </div>
-              {(() => {
-                const { avgSteps, avgGoal, displayData, hasData } = getWeeklyStats();
-                return (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10">
-                      <div>
-                        <p className="text-sm text-gray-500">{localT.activity.weeklyAverage}</p>
-                        <p className="text-2xl font-black text-gray-900 dark:text-white">
-                          {hasData ? avgSteps.toLocaleString() : '--'} {localT.activity.steps}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-500">{localT.activity.goal}</p>
-                        <p className="text-2xl font-black text-[#013DC4]">{avgGoal.toLocaleString()} {localT.activity.steps}</p>
-                      </div>
-                    </div>
-                    
-                    {!hasData ? (
-                      <div className="text-center py-8 text-gray-400">
-                        <Footprints className="w-12 h-12 mx-auto mb-4 opacity-30" />
-                        <p className="text-sm">
-                          {language === 'en' 
-                            ? 'No activity data recorded yet. Start tracking your steps to see your progress!' 
-                            : 'Noch keine Aktivitätsdaten erfasst. Beginnen Sie mit dem Tracking Ihrer Schritte!'}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-7 gap-2">
-                        {displayData.map((day, index) => {
-                          const percentage = Math.min((day.steps / day.stepsGoal) * 100, 100);
-                          return (
-                            <motion.div
-                              key={`${day.day}-${index}`}
-                              initial={{ opacity: 0, scaleY: 0 }}
-                              animate={{ opacity: 1, scaleY: 1 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="flex flex-col items-center"
-                              data-testid={`activity-day-${day.day.toLowerCase()}`}
-                            >
-                              <div className="w-full h-24 bg-white/50 dark:bg-gray-700 rounded-2xl relative overflow-hidden shadow-inner">
-                                <div 
-                                  className="absolute bottom-0 w-full bg-gradient-to-t from-[#013DC4] to-[#CDB6EF] rounded-2xl transition-all shadow-lg"
-                                  style={{ height: `${percentage}%` }}
-                                />
-                              </div>
-                              <p className="text-xs font-bold mt-2 text-gray-500">{day.day}</p>
-                              <p className="text-xs text-gray-900 dark:text-white font-semibold">
-                                {day.steps > 0 ? (day.steps / 1000).toFixed(1) + 'k' : '0'}
-                              </p>
-                            </motion.div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
             </div>
           </TabsContent>
         </Tabs>
