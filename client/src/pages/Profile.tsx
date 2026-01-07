@@ -54,6 +54,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { useTranslation } from 'react-i18next';
+import { 
+  baseQuestions, 
+  getQuestionById, 
+  formatAnswerDisplay,
+  type Question 
+} from '@/lib/questionnaire';
 
 const translations = {
   en: {
@@ -116,7 +122,7 @@ const translations = {
       video_consult: 'Did you have a video consult with a doctor?',
       moderate_activity: 'How many hours per week do you do moderate physical activity?',
       vigorous_activity: 'How many hours per week do you do vigorous physical activity?',
-      sedentary_minutes: 'How many minutes per day are you sedentary?',
+      sedentary_hours: 'How many hours per day do you sit or recline?',
       job_type: 'What type of work did you do last week?',
       weekday_sleep: 'How many hours do you typically sleep on weekdays?',
       weekend_sleep: 'How many hours do you typically sleep on weekends?',
@@ -131,7 +137,7 @@ const translations = {
       weight_year_ago: 'What was your weight 1 year ago?',
       education: 'What is your highest level of education?',
       income_poverty_ratio: 'How would you describe your household income?',
-      poverty_index: 'How often does your income cover all expenses?',
+      monthly_poverty_index: 'How often does your income cover all expenses?',
       household_rooms: 'How many rooms are in your household?',
       diet_fruits_vegetables: 'How many servings of fruits and vegetables do you eat daily?',
       diet_protein: 'How would you describe your protein intake?',
@@ -251,7 +257,7 @@ const translations = {
       video_consult: 'Hatten Sie eine Videokonsultation mit einem Arzt?',
       moderate_activity: 'Wie viele Stunden pro Woche machen Sie mäßige körperliche Aktivität?',
       vigorous_activity: 'Wie viele Stunden pro Woche machen Sie intensive körperliche Aktivität?',
-      sedentary_minutes: 'Wie viele Minuten pro Tag sind Sie sesshaft?',
+      sedentary_hours: 'Wie viele Stunden pro Tag sitzen oder liegen Sie?',
       job_type: 'Welche Art von Arbeit haben Sie letzte Woche gemacht?',
       weekday_sleep: 'Wie viele Stunden schlafen Sie normalerweise an Wochentagen?',
       weekend_sleep: 'Wie viele Stunden schlafen Sie normalerweise am Wochenende?',
@@ -266,7 +272,7 @@ const translations = {
       weight_year_ago: 'Wie viel wogen Sie vor einem Jahr?',
       education: 'Was ist Ihr höchster Bildungsabschluss?',
       income_poverty_ratio: 'Wie würden Sie Ihr Haushaltseinkommen beschreiben?',
-      poverty_index: 'Wie oft deckt Ihr Einkommen alle Ausgaben?',
+      monthly_poverty_index: 'Wie oft deckt Ihr Einkommen alle Ausgaben?',
       household_rooms: 'Wie viele Zimmer hat Ihr Haushalt?',
       diet_fruits_vegetables: 'Wie viele Portionen Obst und Gemüse essen Sie täglich?',
       diet_protein: 'Wie würden Sie Ihre Proteinaufnahme beschreiben?',
@@ -345,39 +351,7 @@ const socialFactors = [
 const questionCategories = {
   onboarding: {
     icon: ClipboardList,
-    questionIds: [
-      'high_blood_pressure',
-      'high_cholesterol',
-      'arthritis',
-      'prescription_medicine',
-      'daily_aspirin',
-      'general_health',
-      'dental_health',
-      'hearing_health',
-      'unsteadiness',
-      'mouth_eating_problems',
-      'mouth_feel_bad',
-      'video_consult',
-      'moderate_activity',
-      'vigorous_activity',
-      'sedentary_minutes',
-      'job_type',
-      'weekday_sleep',
-      'weekend_sleep',
-      'wake_time_weekday',
-      'sleep_time_weekday',
-      'wake_time_weekend',
-      'sleep_time_weekend',
-      'alcohol_frequency',
-      'age',
-      'height',
-      'weight_current',
-      'weight_year_ago',
-      'education',
-      'income_poverty_ratio',
-      'poverty_index',
-      'household_rooms',
-    ],
+    questionIds: baseQuestions.map(q => q.id),
   },
   diet: {
     icon: Utensils,
@@ -436,7 +410,7 @@ const questionTypeMap: Record<string, string> = {
   diet_protein: 'level',
   moderate_activity: 'activity_hours',
   vigorous_activity: 'activity_hours',
-  sedentary_minutes: 'sedentary',
+  sedentary_hours: 'sedentary',
   weekday_sleep: 'sleep_hours',
   weekend_sleep: 'sleep_hours',
   sleep_duration: 'sleep_hours',
@@ -455,7 +429,7 @@ const questionTypeMap: Record<string, string> = {
   job_type: 'job',
   education: 'education',
   income_poverty_ratio: 'income',
-  poverty_index: 'income_coverage',
+  monthly_poverty_index: 'income_coverage',
 };
 
 const optionSets: Record<string, Array<{ value: string; en: string; de: string; color: string }>> = {
@@ -1118,10 +1092,13 @@ export default function Profile() {
       icon: questionCategories.onboarding.icon,
       iconColor: 'text-primary',
       bgColor: 'bg-primary/10',
-      questions: questionCategories.onboarding.questionIds.map(id => ({
-        id,
-        text: localT.questionTexts[id as keyof typeof localT.questionTexts] || id
-      }))
+      questions: questionCategories.onboarding.questionIds.map(id => {
+        const sharedQuestion = getQuestionById(id);
+        return {
+          id,
+          text: sharedQuestion?.text || localT.questionTexts[id as keyof typeof localT.questionTexts] || id
+        };
+      })
     },
     { 
       key: 'diet',
@@ -1129,10 +1106,13 @@ export default function Profile() {
       icon: questionCategories.diet.icon,
       iconColor: 'text-chart-3',
       bgColor: 'bg-chart-3/10',
-      questions: questionCategories.diet.questionIds.map(id => ({
-        id,
-        text: localT.questionTexts[id as keyof typeof localT.questionTexts] || id
-      }))
+      questions: questionCategories.diet.questionIds.map(id => {
+        const sharedQuestion = getQuestionById(id);
+        return {
+          id,
+          text: sharedQuestion?.text || localT.questionTexts[id as keyof typeof localT.questionTexts] || id
+        };
+      })
     },
     { 
       key: 'sleep',
@@ -1140,10 +1120,13 @@ export default function Profile() {
       icon: questionCategories.sleep.icon,
       iconColor: 'text-chart-2',
       bgColor: 'bg-chart-2/10',
-      questions: questionCategories.sleep.questionIds.map(id => ({
-        id,
-        text: localT.questionTexts[id as keyof typeof localT.questionTexts] || id
-      }))
+      questions: questionCategories.sleep.questionIds.map(id => {
+        const sharedQuestion = getQuestionById(id);
+        return {
+          id,
+          text: sharedQuestion?.text || localT.questionTexts[id as keyof typeof localT.questionTexts] || id
+        };
+      })
     },
     { 
       key: 'stress',
@@ -1151,10 +1134,13 @@ export default function Profile() {
       icon: questionCategories.stress.icon,
       iconColor: 'text-destructive',
       bgColor: 'bg-destructive/10',
-      questions: questionCategories.stress.questionIds.map(id => ({
-        id,
-        text: localT.questionTexts[id as keyof typeof localT.questionTexts] || id
-      }))
+      questions: questionCategories.stress.questionIds.map(id => {
+        const sharedQuestion = getQuestionById(id);
+        return {
+          id,
+          text: sharedQuestion?.text || localT.questionTexts[id as keyof typeof localT.questionTexts] || id
+        };
+      })
     },
   ];
 
