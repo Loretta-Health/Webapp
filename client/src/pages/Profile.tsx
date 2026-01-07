@@ -388,48 +388,52 @@ const questionCategories = {
 };
 
 const questionTypeMap: Record<string, string> = {
-  general_health: 'rating',
-  dental_health: 'rating',
-  hearing_health: 'rating',
   sleep_quality: 'rating',
   stress_level: 'rating',
-  mouth_feel_bad: 'frequency',
   stress_frequency: 'frequency',
   diet_sugar: 'frequency',
   diet_processed_foods: 'frequency',
   diet_snacking: 'frequency',
   sleep_disturbances: 'frequency',
   sleep_naps: 'frequency',
-  alcohol_frequency: 'frequency',
   stress_work: 'level',
   stress_relationships: 'level',
   stress_coping: 'level',
   sleep_consistency: 'level',
   diet_protein: 'level',
-  moderate_activity: 'activity_hours',
-  sedentary_hours: 'sedentary',
-  weekday_sleep: 'sleep_hours',
-  weekend_sleep: 'sleep_hours',
   sleep_duration: 'sleep_hours',
-  wake_time_weekday: 'wake_time',
-  wake_time_weekend: 'wake_time',
-  sleep_time_weekday: 'sleep_time',
-  sleep_time_weekend: 'sleep_time',
-  age: 'age',
-  height: 'height',
-  weight_current: 'weight',
-  weight_year_ago: 'weight',
   diet_fruits_vegetables: 'servings',
   diet_water: 'glasses',
   diet_meals_per_day: 'meals',
-  household_rooms: 'rooms',
-  job_type: 'job',
-  education: 'education',
-  income_poverty_ratio: 'income',
-  monthly_poverty_index: 'income_coverage',
+  sleep_aids: 'yes_no',
+  diet_restrictions: 'yes_no',
 };
 
 const optionSets: Record<string, Array<{ value: string; en: string; de: string; color: string }>> = {
+  yes_no: [
+    { value: 'yes', en: 'Yes', de: 'Ja', color: 'bg-chart-2' },
+    { value: 'no', en: 'No', de: 'Nein', color: 'bg-destructive' },
+  ],
+  ethnicity: [
+    { value: 'white', en: 'White', de: 'Weiß', color: 'bg-primary' },
+    { value: 'black', en: 'Black/African American', de: 'Schwarz/Afroamerikanisch', color: 'bg-primary' },
+    { value: 'hispanic', en: 'Hispanic/Latino', de: 'Hispanisch/Latino', color: 'bg-primary' },
+    { value: 'asian', en: 'Asian', de: 'Asiatisch', color: 'bg-primary' },
+    { value: 'other', en: 'Other/Multi-racial', de: 'Andere/Gemischt', color: 'bg-primary' },
+  ],
+  marital_status: [
+    { value: 'married', en: 'Married', de: 'Verheiratet', color: 'bg-chart-2' },
+    { value: 'single', en: 'Single', de: 'Ledig', color: 'bg-primary' },
+    { value: 'divorced', en: 'Divorced', de: 'Geschieden', color: 'bg-chart-3' },
+    { value: 'widowed', en: 'Widowed', de: 'Verwitwet', color: 'bg-chart-1' },
+    { value: 'separated', en: 'Separated', de: 'Getrennt', color: 'bg-muted-foreground' },
+  ],
+  household_size: [
+    { value: '1', en: '1 person', de: '1 Person', color: 'bg-chart-3' },
+    { value: '2', en: '2 people', de: '2 Personen', color: 'bg-primary' },
+    { value: '3', en: '3-4 people', de: '3-4 Personen', color: 'bg-chart-2' },
+    { value: '5', en: '5+ people', de: '5+ Personen', color: 'bg-chart-1' },
+  ],
   rating: [
     { value: 'excellent', en: 'Excellent', de: 'Ausgezeichnet', color: 'bg-chart-2' },
     { value: 'very_good', en: 'Very Good', de: 'Sehr Gut', color: 'bg-primary' },
@@ -1794,22 +1798,69 @@ export default function Profile() {
                                   <p className="text-sm text-foreground font-medium">{question.text}</p>
                                 </div>
                                 <div className="ml-9">
-                                  <RadioGroup
-                                    value={questionnaireAnswers[question.id] || ''}
-                                    onValueChange={(value) => handleAnswerChange(question.id, value)}
-                                    className="flex flex-wrap gap-2"
-                                  >
-                                    {(() => {
-                                      const getOptionsForQuestion = () => {
-                                        if (ratingQuestions.has(question.id)) return ratingOptions;
-                                        if (frequencyQuestions.has(question.id)) return frequencyOptions;
-                                        if (levelQuestions.has(question.id)) return levelOptions;
-                                        return null;
-                                      };
-                                      const options = getOptionsForQuestion();
-                                      
-                                      if (options) {
-                                        return options.map((option) => (
+                                  {(() => {
+                                    const sharedQuestion = getQuestionById(question.id);
+                                    
+                                    if (sharedQuestion?.type === 'number') {
+                                      return (
+                                        <div className="flex items-center gap-2">
+                                          <Input
+                                            type="number"
+                                            placeholder={sharedQuestion.placeholder || (language === 'en' ? 'Enter value' : 'Wert eingeben')}
+                                            value={questionnaireAnswers[question.id] || ''}
+                                            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                            min={sharedQuestion.min}
+                                            max={sharedQuestion.max}
+                                            className="w-32"
+                                            data-testid={`input-${question.id}`}
+                                          />
+                                          {sharedQuestion.unit && (
+                                            <span className="text-sm text-muted-foreground">{sharedQuestion.unit}</span>
+                                          )}
+                                        </div>
+                                      );
+                                    }
+                                    
+                                    if (sharedQuestion?.type === 'time') {
+                                      return (
+                                        <Input
+                                          type="time"
+                                          placeholder={sharedQuestion.placeholder || ''}
+                                          value={questionnaireAnswers[question.id] || ''}
+                                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                          className="w-32"
+                                          data-testid={`input-${question.id}`}
+                                        />
+                                      );
+                                    }
+                                    
+                                    const getOptionsForQuestion = () => {
+                                      if (sharedQuestion?.options && sharedQuestion.options.length > 0) {
+                                        return sharedQuestion.options.map(opt => ({
+                                          value: opt.value,
+                                          en: opt.label,
+                                          de: opt.label,
+                                          color: 'bg-primary'
+                                        }));
+                                      }
+                                      const questionType = questionTypeMap[question.id];
+                                      if (questionType && optionSets[questionType]) {
+                                        return optionSets[questionType];
+                                      }
+                                      return [
+                                        { value: 'yes', en: 'Yes', de: 'Ja', color: 'bg-chart-2' },
+                                        { value: 'no', en: 'No', de: 'Nein', color: 'bg-destructive' },
+                                      ];
+                                    };
+                                    const options = getOptionsForQuestion();
+                                    
+                                    return (
+                                      <RadioGroup
+                                        value={questionnaireAnswers[question.id] || ''}
+                                        onValueChange={(value) => handleAnswerChange(question.id, value)}
+                                        className="flex flex-wrap gap-2"
+                                      >
+                                        {options.map((option) => (
                                           <div key={option.value} className="flex items-center">
                                             <RadioGroupItem 
                                               value={option.value} 
@@ -1828,70 +1879,10 @@ export default function Profile() {
                                               {language === 'en' ? option.en : option.de}
                                             </Label>
                                           </div>
-                                        ));
-                                      }
-                                      
-                                      return (
-                                        <>
-                                          <div className="flex items-center">
-                                            <RadioGroupItem 
-                                              value="yes" 
-                                              id={`${question.id}-yes`}
-                                              className="peer sr-only"
-                                            />
-                                            <Label
-                                              htmlFor={`${question.id}-yes`}
-                                              className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
-                                                questionnaireAnswers[question.id] === 'yes'
-                                                  ? 'bg-chart-2 text-white border-chart-2'
-                                                  : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                              }`}
-                                              data-testid={`answer-${question.id}-yes`}
-                                            >
-                                              {language === 'en' ? 'Yes' : 'Ja'}
-                                            </Label>
-                                          </div>
-                                          <div className="flex items-center">
-                                            <RadioGroupItem 
-                                              value="no" 
-                                              id={`${question.id}-no`}
-                                              className="peer sr-only"
-                                            />
-                                            <Label
-                                              htmlFor={`${question.id}-no`}
-                                              className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
-                                                questionnaireAnswers[question.id] === 'no'
-                                                  ? 'bg-destructive text-white border-destructive'
-                                                  : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                              }`}
-                                              data-testid={`answer-${question.id}-no`}
-                                            >
-                                              {language === 'en' ? 'No' : 'Nein'}
-                                            </Label>
-                                          </div>
-                                          <div className="flex items-center">
-                                            <RadioGroupItem 
-                                              value="skipped" 
-                                              id={`${question.id}-skipped`}
-                                              className="peer sr-only"
-                                            />
-                                            <Label
-                                              htmlFor={`${question.id}-skipped`}
-                                              className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border flex items-center gap-1 ${
-                                                questionnaireAnswers[question.id] === 'skipped'
-                                                  ? 'bg-muted text-foreground border-muted-foreground/30'
-                                                  : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                              }`}
-                                              data-testid={`answer-${question.id}-skip`}
-                                            >
-                                              <Check className="w-3 h-3" />
-                                              {language === 'en' ? 'Skip' : 'Überspringen'}
-                                            </Label>
-                                          </div>
-                                        </>
-                                      );
-                                    })()}
-                                  </RadioGroup>
+                                        ))}
+                                      </RadioGroup>
+                                    );
+                                  })()}
                                 </div>
                               </div>
                             ))}
