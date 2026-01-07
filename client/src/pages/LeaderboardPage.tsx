@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { 
   ArrowLeft, 
@@ -44,6 +44,7 @@ interface TeamMember {
   level: number;
   currentStreak: number;
   consentGiven: boolean;
+  profilePhoto?: string | null;
 }
 
 interface LeaderboardEntry {
@@ -55,6 +56,7 @@ interface LeaderboardEntry {
   change?: number;
   isCurrentUser?: boolean;
   isOwner?: boolean;
+  profilePhoto?: string | null;
 }
 
 interface Friend {
@@ -63,6 +65,7 @@ interface Friend {
   xp: number;
   level: number;
   currentStreak: number;
+  profilePhoto?: string | null;
 }
 
 interface Achievement {
@@ -206,6 +209,7 @@ export default function LeaderboardPage() {
   const [loadingAchievements, setLoadingAchievements] = useState(true);
   const [selectedCommunity, setSelectedCommunity] = useState<CommunityType>(initialCommunity || 'loretta');
   const [userGamification, setUserGamification] = useState<{ xp: number; level: number; currentStreak: number } | null>(null);
+  const [userProfilePhoto, setUserProfilePhoto] = useState<string | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loadingFriends, setLoadingFriends] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
@@ -220,8 +224,23 @@ export default function LeaderboardPage() {
       fetchUserGamification();
       fetchFriends();
       fetchInviteCode();
+      fetchUserProfile();
     }
   }, [user]);
+  
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch('/api/profile', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUserProfilePhoto(data?.profilePhoto || null);
+      }
+    } catch (err) {
+      console.error('Failed to fetch user profile:', err);
+    }
+  };
 
   const fetchUserGamification = async () => {
     if (!user?.id) return;
@@ -381,6 +400,7 @@ export default function LeaderboardPage() {
       streak: member.currentStreak,
       isCurrentUser: member.userId === user?.id,
       isOwner: member.role === 'owner',
+      profilePhoto: member.profilePhoto,
     }));
   };
 
@@ -524,8 +544,9 @@ export default function LeaderboardPage() {
                           level: userGamification.level,
                           currentStreak: userGamification.currentStreak,
                           isCurrentUser: true,
+                          profilePhoto: userProfilePhoto,
                         }] : []),
-                        ...friendsList.map(f => ({ ...f, isCurrentUser: false })),
+                        ...friendsList.map(f => ({ ...f, isCurrentUser: false, profilePhoto: f.profilePhoto })),
                       ].sort((a, b) => b.xp - a.xp);
                       
                       return allParticipants.map((participant, index) => (
@@ -547,6 +568,9 @@ export default function LeaderboardPage() {
                           </div>
                           
                           <Avatar className="w-10 h-10">
+                            {participant.profilePhoto && (
+                              <AvatarImage src={participant.profilePhoto} alt={participant.username} />
+                            )}
                             <AvatarFallback className="bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] text-white font-bold">
                               {participant.username.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
@@ -655,6 +679,9 @@ export default function LeaderboardPage() {
                     </div>
                     
                     <Avatar className="w-10 h-10">
+                      {entry.profilePhoto && (
+                        <AvatarImage src={entry.profilePhoto} alt={entry.name} />
+                      )}
                       <AvatarFallback className="bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] text-white font-bold">
                         {entry.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                       </AvatarFallback>

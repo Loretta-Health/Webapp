@@ -2101,6 +2101,7 @@ IMPORTANT: When discussing risk scores, remember:
           const user = await storage.getUser(member.userId);
           const gamification = await storage.getUserGamification(member.userId);
           const xpRecord = await storage.getUserXp(member.userId);
+          const profile = await storage.getUserProfile(member.userId);
           const xp = xpRecord?.totalXp || 0;
           const level = calculateLevelFromXP(xp);
           return {
@@ -2109,6 +2110,7 @@ IMPORTANT: When discussing risk scores, remember:
             xp,
             level,
             currentStreak: gamification?.currentStreak || 0,
+            profilePhoto: profile?.profilePhoto || null,
           };
         })
       );
@@ -2550,6 +2552,7 @@ IMPORTANT: When discussing risk scores, remember:
           const friend = await storage.getUser(friendship.friendId);
           const gamification = await storage.getUserGamification(friendship.friendId);
           const xpData = await storage.getUserXp(friendship.friendId);
+          const profile = await storage.getUserProfile(friendship.friendId);
           
           const level = xpData ? calculateLevelFromXP(xpData.totalXp) : 1;
           return {
@@ -2558,6 +2561,7 @@ IMPORTANT: When discussing risk scores, remember:
             xp: xpData?.totalXp || 0,
             level,
             currentStreak: gamification?.currentStreak || 0,
+            profilePhoto: profile?.profilePhoto || null,
           };
         })
       );
