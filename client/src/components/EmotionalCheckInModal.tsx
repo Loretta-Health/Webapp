@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Heart, Send, Sparkles, Check, X } from 'lucide-react';
+import { Smile, Send, Sparkles, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import MascotCharacter from './MascotCharacter';
 import { useToast } from '@/hooks/use-toast';
@@ -176,8 +176,8 @@ export default function EmotionalCheckInModal({
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-400 via-pink-500 to-[#CDB6EF] flex items-center justify-center shadow-lg shadow-pink-500/30">
-              <Heart className="w-6 h-6 text-white fill-white" />
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center shadow-lg shadow-[#013DC4]/30">
+              <Smile className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-black bg-gradient-to-r from-[#013DC4] to-[#0150FF] bg-clip-text text-transparent">
               Emotional Check-In

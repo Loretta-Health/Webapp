@@ -267,10 +267,10 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                 </Label>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={addTime}
-                  className="h-8 px-3 rounded-xl bg-white/70 border-[#013DC4]/20 hover:bg-[#013DC4]/10 text-[#013DC4]"
+                  className="h-8 px-3 rounded-xl bg-[#013DC4]/10 hover:bg-[#013DC4]/20 text-[#013DC4] font-semibold"
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   {language === 'en' ? 'Add' : 'Hinzufügen'}
@@ -348,10 +348,10 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
                 </Label>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={addWeeklyTime}
-                  className="h-8 px-3 rounded-xl bg-white/70 border-[#013DC4]/20 hover:bg-[#013DC4]/10 text-[#013DC4]"
+                  className="h-8 px-3 rounded-xl bg-[#013DC4]/10 hover:bg-[#013DC4]/20 text-[#013DC4] font-semibold"
                 >
                   <Plus className="w-3 h-3 mr-1" />
                   {language === 'en' ? 'Add' : 'Hinzufügen'}
