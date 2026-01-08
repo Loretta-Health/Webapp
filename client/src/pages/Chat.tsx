@@ -23,6 +23,7 @@ import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useSearch } from 'wouter';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import { MissionCardView, CheckInConfirmationBanner, MetricCard } from '@/components/chat';
 import type { MetricData } from '@/components/chat';
 import { useChatLogic, type ChatMessage } from '@/hooks/useChatLogic';
@@ -31,6 +32,10 @@ import { trackAIChat, trackPageView } from '@/lib/clarity';
 
 export default function Chat() {
   const { t } = useTranslation('pages');
+  
+  const { data: profileData } = useQuery<{ profilePhoto: string | null }>({
+    queryKey: ['/api/profile'],
+  });
   
   useEffect(() => {
     trackAIChat('opened');
@@ -200,13 +205,17 @@ export default function Chat() {
                         className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
                         data-testid={`chat-message-${message.role}-${message.id}`}
                       >
-                        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+                        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden ${
                           message.role === 'user' 
                             ? 'bg-gradient-to-br from-[#CDB6EF] to-[#9B8AC4]' 
                             : 'bg-gradient-to-br from-[#013DC4] to-[#0150FF]'
                         }`}>
                           {message.role === 'user' ? (
-                            <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                            profileData?.profilePhoto ? (
+                              <img src={profileData.profilePhoto} alt="You" className="w-full h-full object-cover" />
+                            ) : (
+                              <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                            )
                           ) : (
                             <img src={logomarkViolet} alt="Loretta" className="w-4 h-4 sm:w-5 sm:h-5 object-contain brightness-0 invert" />
                           )}
