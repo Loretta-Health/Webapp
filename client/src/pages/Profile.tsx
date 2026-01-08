@@ -53,6 +53,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { 
   baseQuestions, 
   getQuestionById, 
@@ -683,6 +684,19 @@ export default function Profile() {
     }
   }, [lorettaMembership]);
 
+  // Sync local language state with i18n when it changes externally
+  useEffect(() => {
+    const handleLanguageChange = (lng: string) => {
+      if (lng === 'en' || lng === 'de') {
+        setLanguage(lng);
+      }
+    };
+    i18n.on('languageChanged', handleLanguageChange);
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n]);
+
   const updateLorettaConsentMutation = useMutation({
     mutationFn: async (consent: boolean) => {
       const res = await fetch(`/api/teams/loretta-community/members/${userId}/consent`, {
@@ -938,6 +952,7 @@ export default function Profile() {
     const newLang = language === 'en' ? 'de' : 'en';
     setLanguage(newLang);
     localStorage.setItem('loretta_language', newLang);
+    i18n.changeLanguage(newLang);
   };
 
   const openEditModal = () => {
@@ -1416,17 +1431,8 @@ export default function Profile() {
                 <h1 className="text-xl font-black text-white">{localT.profile}</h1>
                 <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
               </div>
-              <div className="flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="text-white hover:bg-white/20 gap-2"
-                  onClick={toggleLanguage}
-                  data-testid="button-language-toggle"
-                >
-                  <Globe className="w-4 h-4" />
-                  {language === 'en' ? 'DE' : 'EN'}
-                </Button>
+              <div className="flex items-center gap-1 [&_button]:text-white [&_button]:hover:bg-white/20">
+                <LanguageSwitcher />
               </div>
             </div>
           </div>
@@ -1573,17 +1579,8 @@ export default function Profile() {
               <h1 className="text-xl font-black text-white">{localT.profile}</h1>
               <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
             </div>
-            <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                className="text-white hover:bg-white/20 gap-2 rounded-2xl"
-                onClick={toggleLanguage}
-                data-testid="button-language-toggle"
-              >
-                <Globe className="w-4 h-4" />
-                {language === 'en' ? 'DE' : 'EN'}
-              </Button>
+            <div className="flex items-center gap-1 [&_button]:text-white [&_button]:hover:bg-white/20 [&_button]:rounded-2xl">
+              <LanguageSwitcher />
               <Button 
                 variant="ghost" 
                 size="icon"
