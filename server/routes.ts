@@ -1712,6 +1712,66 @@ IMPORTANT: When discussing risk scores, remember:
     }
   });
 
+  // Admin endpoint to recalculate adherence for all medications
+  app.post("/api/admin/recalculate-adherence", async (req, res) => {
+    try {
+      console.log("[Admin] Starting adherence recalculation for all medications...");
+      
+      const allMedications = await storage.getAllMedications();
+      let processed = 0;
+      let errors = 0;
+      
+      for (const med of allMedications) {
+        try {
+          // Get all logs for this medication
+          const logs = await storage.getAllMedicationLogsForMedication(med.id);
+          const totalDosesTaken = logs.length;
+          
+          // Calculate last taken date from logs
+          let lastTakenDate: string | null = null;
+          if (logs.length > 0) {
+            // logs are sorted by takenAt desc, so first one is most recent
+            const mostRecentLog = logs[0];
+            lastTakenDate = mostRecentLog.takenAt ? new Date(mostRecentLog.takenAt).toISOString().split('T')[0] : null;
+          }
+          
+          // Calculate scheduled doses based on medication schedule and days since creation
+          const scheduleArray = med.schedule as string[] || [];
+          const dosesPerDay = scheduleArray.length;
+          const createdAt = new Date(med.createdAt);
+          const now = new Date();
+          const daysSinceCreation = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+          
+          // Only count completed days (not including today since user still has time)
+          const completedDays = Math.max(0, daysSinceCreation);
+          const totalDosesScheduled = completedDays * dosesPerDay;
+          
+          // Reset adherence with accurate counts
+          await storage.resetMedicationAdherence(med.id, totalDosesTaken, totalDosesScheduled, lastTakenDate);
+          processed++;
+          
+          console.log(`[Admin] Reset adherence for medication ${med.id}: ${totalDosesTaken} taken, ${totalDosesScheduled} scheduled, lastTaken: ${lastTakenDate}`);
+        } catch (err) {
+          console.error(`[Admin] Error processing medication ${med.id}:`, err);
+          errors++;
+        }
+      }
+      
+      console.log(`[Admin] Adherence recalculation complete: ${processed} processed, ${errors} errors`);
+      
+      res.json({
+        success: true,
+        message: `Recalculated adherence for ${processed} medications`,
+        processed,
+        errors,
+        total: allMedications.length,
+      });
+    } catch (error) {
+      console.error("[Admin] Error recalculating adherence:", error);
+      res.status(500).json({ error: "Failed to recalculate adherence" });
+    }
+  });
+
   // Legacy endpoint for backward compatibility
   app.post("/api/medications/:userId/log-legacy", async (req, res) => {
     if (!req.isAuthenticated()) {
