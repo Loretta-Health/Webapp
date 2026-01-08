@@ -84,7 +84,7 @@ const missionsDatabase: Record<string, MissionData> = {
     frequency: 'daily',
     description: 'Get your heart pumping with quick cardio exercise',
     xpReward: 50,
-    totalSteps: 10,
+    totalSteps: 1,
     icon: Dumbbell,
     color: 'chart-2',
     details: 'Jumping jacks are a full-body cardiovascular exercise that increases your heart rate, improves circulation, and helps wake up your muscles. This simple yet effective exercise is perfect for quick energy boosts throughout the day.',
@@ -94,13 +94,13 @@ const missionsDatabase: Record<string, MissionData> = {
       { icon: Activity, text: 'Improves coordination' },
       { icon: Zap, text: 'Boosts energy levels' },
     ],
-    initialSteps: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, completed: false })),
+    initialSteps: [{ id: 1, completed: false }],
     alternativeMissions: [
       { id: 201, title: 'Gentle stretching for 2 mins', xp: 50, icon: '🌸' },
       { id: 202, title: 'Walk in place for 1 minute', xp: 45, icon: '🚶' },
     ],
-    communityTip: 'Try doing your jumping jacks in sets of 10 with short breaks. This helps maintain form and prevents fatigue!',
-    stepLabel: 'Rep'
+    communityTip: 'Try doing your jumping jacks all at once - it only takes about 30 seconds! Focus on good form for maximum benefit.',
+    stepLabel: 'Session'
   },
   'water-glasses': {
     id: 2,
@@ -132,7 +132,7 @@ const missionsDatabase: Record<string, MissionData> = {
     frequency: 'daily',
     description: 'Calm your mind and reduce stress',
     xpReward: 40,
-    totalSteps: 5,
+    totalSteps: 1,
     icon: Brain,
     color: 'chart-2',
     details: 'Meditation helps reduce stress, improve focus, and promote overall mental well-being. Just 5 minutes a day can make a significant difference in your mental clarity and emotional balance.',
@@ -142,13 +142,13 @@ const missionsDatabase: Record<string, MissionData> = {
       { icon: Zap, text: 'Improves focus and concentration' },
       { icon: Leaf, text: 'Promotes emotional well-being' },
     ],
-    initialSteps: Array.from({ length: 5 }, (_, i) => ({ id: i + 1, completed: false })),
+    initialSteps: [{ id: 1, completed: false }],
     alternativeMissions: [
       { id: 301, title: 'Quiet rest for 3 minutes', xp: 40, icon: '😌' },
       { id: 302, title: 'Listen to calming music', xp: 40, icon: '🎵' },
     ],
     communityTip: 'Find a quiet spot, close your eyes, and focus on your breath. Even 5 minutes can transform your day!',
-    stepLabel: 'Minute'
+    stepLabel: 'Session'
   },
   'walking': {
     id: 4,
@@ -156,7 +156,7 @@ const missionsDatabase: Record<string, MissionData> = {
     frequency: 'daily',
     description: 'Get moving and enjoy some fresh air',
     xpReward: 45,
-    totalSteps: 10,
+    totalSteps: 1,
     icon: Footprints,
     color: 'chart-1',
     details: 'Walking is one of the best forms of exercise for overall health. A 10-minute brisk walk can boost your mood, improve circulation, and help you reach your daily activity goals.',
@@ -166,13 +166,13 @@ const missionsDatabase: Record<string, MissionData> = {
       { icon: Zap, text: 'Increases energy levels' },
       { icon: Wind, text: 'Fresh air and vitamin D' },
     ],
-    initialSteps: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, completed: false })),
+    initialSteps: [{ id: 1, completed: false }],
     alternativeMissions: [
       { id: 401, title: 'Walk gently in place for 2 mins', xp: 45, icon: '🚶' },
       { id: 402, title: 'Look out the window for 5 mins', xp: 40, icon: '🪟' },
     ],
     communityTip: 'Try walking during phone calls or after meals. Every step counts toward your daily goal!',
-    stepLabel: 'Minute',
+    stepLabel: 'Walk',
     isWeatherDependent: true,
     badWeatherAlternatives: [
       { id: 4001, title: 'Walk around your home for 10 mins', xp: 45, icon: '🏠' },
@@ -186,7 +186,7 @@ const missionsDatabase: Record<string, MissionData> = {
     frequency: 'daily',
     description: 'Take 10 slow, deep breaths to relax',
     xpReward: 25,
-    totalSteps: 10,
+    totalSteps: 1,
     icon: Wind,
     color: 'chart-2',
     details: 'Deep breathing exercises activate your parasympathetic nervous system, helping to reduce stress and anxiety. Taking slow, deliberate breaths can lower blood pressure and improve focus.',
@@ -196,19 +196,19 @@ const missionsDatabase: Record<string, MissionData> = {
       { icon: Zap, text: 'Increases mental clarity' },
       { icon: Leaf, text: 'Promotes relaxation' },
     ],
-    initialSteps: Array.from({ length: 10 }, (_, i) => ({ id: i + 1, completed: false })),
+    initialSteps: [{ id: 1, completed: false }],
     alternativeMissions: [
       { id: 501, title: 'Rest and take 3 slow breaths', xp: 25, icon: '🌬️' },
       { id: 502, title: 'Close your eyes for 1 minute', xp: 25, icon: '😌' },
     ],
     communityTip: 'Try the 4-7-8 technique: breathe in for 4 seconds, hold for 7, exhale for 8.',
-    stepLabel: 'Breath'
+    stepLabel: 'Session'
   },
   '1': {
     id: 1,
-    title: 'Drink a cup of water',
+    title: 'Drink 8 glasses of water',
     frequency: 'daily',
-    description: 'Stay hydrated by drinking at least one cup of water to start your day right.',
+    description: 'Stay hydrated by drinking water throughout the day.',
     xpReward: 30,
     totalSteps: 8,
     icon: Droplets,
@@ -388,7 +388,7 @@ const missionsDatabase: Record<string, MissionData> = {
     frequency: 'daily',
     description: 'Stay hydrated with calming herbal tea - a delicious alternative to plain water.',
     xpReward: 25,
-    totalSteps: 6,
+    totalSteps: 2,
     icon: Droplets,
     color: 'chart-2',
     details: 'Herbal teas like chamomile, peppermint, or ginger provide hydration along with additional health benefits. They\'re caffeine-free and can help with relaxation, digestion, and overall wellness.',
@@ -401,10 +401,6 @@ const missionsDatabase: Record<string, MissionData> = {
     initialSteps: [
       { id: 1, completed: false },
       { id: 2, completed: false },
-      { id: 3, completed: false },
-      { id: 4, completed: false },
-      { id: 5, completed: false },
-      { id: 6, completed: false },
     ],
     alternativeMissions: [],
     communityTip: 'Keep a variety of herbal teas at your desk. Peppermint is great for focus, chamomile for relaxation!',
