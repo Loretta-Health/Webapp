@@ -997,14 +997,14 @@ export default function MissionDetails() {
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-1 sm:gap-0 sm:justify-between">
+              <div className="flex justify-between w-full">
                 {steps.map((step, index) => (
                   <motion.div
                     key={step.id}
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all flex-shrink-0 ${
                       step.completed
                         ? colors.stepComplete
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-500 border-2 border-dashed border-[#013DC4]/20'
