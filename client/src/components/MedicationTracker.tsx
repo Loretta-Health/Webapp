@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass-card';
-import { Pill, Check, Clock, ChevronRight, Loader2, X, Undo2 } from 'lucide-react';
+import { Pill, Check, Clock, ChevronRight, Loader2, Undo2 } from 'lucide-react';
 import { Link } from 'wouter';
 import MedicalTerm from './MedicalTerm';
 import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
@@ -181,7 +181,7 @@ export default function MedicationTracker({
                   dose.taken 
                     ? 'bg-gradient-to-r from-green-400/10 to-emerald-400/10' 
                     : dose.missed
-                      ? 'bg-gradient-to-r from-red-400/10 to-red-500/10'
+                      ? 'bg-gradient-to-r from-gray-300/30 to-gray-400/30 dark:from-gray-600/30 dark:to-gray-700/30 opacity-70'
                       : 'bg-white/50 dark:bg-gray-800/50'
                 }`}
               >
@@ -189,13 +189,13 @@ export default function MedicationTracker({
                   dose.taken 
                     ? 'bg-gradient-to-br from-green-400 to-emerald-500 shadow-sm' 
                     : dose.missed
-                      ? 'bg-gradient-to-br from-red-400 to-red-500 shadow-sm'
+                      ? 'bg-gradient-to-br from-gray-400 to-gray-500 shadow-sm'
                       : 'bg-gray-200 dark:bg-gray-700'
                 }`}>
                   {dose.taken ? (
                     <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                   ) : dose.missed ? (
-                    <X className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+                    <span className="text-[10px] sm:text-xs font-bold text-white/70">—</span>
                   ) : (
                     <span className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400">{dose.id}</span>
                   )}
@@ -206,7 +206,7 @@ export default function MedicationTracker({
                     {scheduledTime && (
                       <span className={`text-xs sm:text-sm font-bold ${
                         dose.taken ? 'text-green-600 dark:text-green-400' 
-                        : dose.missed ? 'text-red-600 dark:text-red-400'
+                        : dose.missed ? 'text-gray-500 dark:text-gray-400'
                         : 'text-gray-900 dark:text-white'
                       }`}>
                         {scheduledTime}
@@ -218,10 +218,10 @@ export default function MedicationTracker({
                       </span>
                     )}
                     {dose.missed && (
-                      <span className="text-[10px] sm:text-xs text-red-500">
+                      <span className="text-[10px] sm:text-xs text-gray-500">
                         ({dose.source === 'auto' 
-                          ? (i18n.language === 'de' ? 'automatisch verpasst' : 'auto-missed')
-                          : (i18n.language === 'de' ? 'verpasst' : 'missed')
+                          ? (i18n.language === 'de' ? 'automatisch übersprungen' : 'auto-skipped')
+                          : (i18n.language === 'de' ? 'übersprungen' : 'skipped')
                         })
                       </span>
                     )}
@@ -248,8 +248,8 @@ export default function MedicationTracker({
                   </div>
                 ) : dose.missed ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-red-400 to-red-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-sm">
-                      {i18n.language === 'de' ? 'Verpasst' : 'Missed'}
+                    <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-sm">
+                      {i18n.language === 'de' ? 'Übersprungen' : 'Skipped'}
                     </span>
                     <button
                       onClick={(e) => handleUndoDose(e, dose.id)}
@@ -283,15 +283,12 @@ export default function MedicationTracker({
                     <button
                       onClick={(e) => handleMarkMissed(e, dose.id)}
                       disabled={loggingDose === dose.id || markingMissed === dose.id}
-                      className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-1"
+                      className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-[10px] sm:text-xs font-bold rounded-full hover:bg-gray-300 dark:hover:bg-gray-500 transition-all disabled:opacity-50 flex items-center justify-center gap-1"
                     >
                       {markingMissed === dose.id ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
                       ) : (
-                        <>
-                          <X className="w-3 h-3" />
-                          {i18n.language === 'de' ? 'Verpasst' : 'Missed'}
-                        </>
+                        i18n.language === 'de' ? 'Übersprungen' : 'Skipped'
                       )}
                     </button>
                   </div>
