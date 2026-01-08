@@ -999,7 +999,9 @@ export default function MissionDetails() {
               
               <div className="relative w-full h-8 sm:h-9">
                 {steps.map((step, index) => {
-                  const position = ((index + 1) / missionData.totalSteps) * 100;
+                  const position = missionData.totalSteps === 1 
+                    ? 50 
+                    : ((index + 1) / missionData.totalSteps) * 100;
                   return (
                     <motion.div
                       key={step.id}
@@ -1011,7 +1013,7 @@ export default function MissionDetails() {
                           ? colors.stepComplete
                           : 'bg-gray-100 dark:bg-gray-800 text-gray-500 border-2 border-dashed border-[#013DC4]/20'
                       }`}
-                      style={{ left: `calc(${position}% - ${index === missionData.totalSteps - 1 ? '1.75rem' : '0.875rem'})` }}
+                      style={{ left: `calc(${position}% - 0.875rem)` }}
                       data-testid={`step-indicator-${index}`}
                     >
                       {step.completed ? <Check className="w-3 h-3 sm:w-4 sm:h-4" /> : index + 1}
