@@ -1,6 +1,6 @@
 {
   "consent": {
-    "welcomeTitle": "Welcome to Loretta",
+    "welcomeTitle": "Welcome",
     "subtitle": "Your health companion",
     "privacyTitle": "Privacy & Consent",
     "privacySubtitle": "Before you begin, please review our privacy practices.",
@@ -208,7 +208,7 @@
   },
   "onboarding": {
     "welcome": {
-      "title": "Welcome to Loretta!",
+      "title": "Welcome!",
       "subtitle": "Your personal health companion",
       "description": "Let's set up your health profile and get you started on your wellness journey.",
       "getStarted": "Get Started",
