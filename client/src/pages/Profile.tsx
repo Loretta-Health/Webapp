@@ -1224,48 +1224,6 @@ export default function Profile() {
         };
       })
     },
-    { 
-      key: 'diet',
-      title: localT.questionnaires.diet, 
-      icon: questionCategories.diet.icon,
-      iconColor: 'text-chart-3',
-      bgColor: 'bg-chart-3/10',
-      questions: questionCategories.diet.questionIds.map(id => {
-        const sharedQuestion = getQuestionById(id);
-        return {
-          id,
-          text: sharedQuestion?.text || localT.questionTexts[id as keyof typeof localT.questionTexts] || id
-        };
-      })
-    },
-    { 
-      key: 'sleep',
-      title: localT.questionnaires.sleep, 
-      icon: questionCategories.sleep.icon,
-      iconColor: 'text-chart-2',
-      bgColor: 'bg-chart-2/10',
-      questions: questionCategories.sleep.questionIds.map(id => {
-        const sharedQuestion = getQuestionById(id);
-        return {
-          id,
-          text: sharedQuestion?.text || localT.questionTexts[id as keyof typeof localT.questionTexts] || id
-        };
-      })
-    },
-    { 
-      key: 'stress',
-      title: localT.questionnaires.stress, 
-      icon: questionCategories.stress.icon,
-      iconColor: 'text-destructive',
-      bgColor: 'bg-destructive/10',
-      questions: questionCategories.stress.questionIds.map(id => {
-        const sharedQuestion = getQuestionById(id);
-        return {
-          id,
-          text: sharedQuestion?.text || localT.questionTexts[id as keyof typeof localT.questionTexts] || id
-        };
-      })
-    },
   ];
 
   const getDietSummary = (): string => {
