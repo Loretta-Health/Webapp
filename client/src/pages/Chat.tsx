@@ -19,6 +19,7 @@ import {
   File,
   ArrowLeft
 } from 'lucide-react';
+import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useSearch } from 'wouter';
 import { useTranslation } from 'react-i18next';
@@ -212,7 +213,7 @@ export default function Chat() {
                           {message.role === 'user' ? (
                             <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                           ) : (
-                            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                            <img src={logomarkViolet} alt="Loretta" className="w-5 h-5 sm:w-6 sm:h-6 object-contain brightness-0 invert" />
                           )}
                         </div>
                         <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : ''}`}>
@@ -267,7 +268,7 @@ export default function Chat() {
                   className="flex gap-3"
                 >
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    <img src={logomarkViolet} alt="Loretta" className="w-5 h-5 sm:w-6 sm:h-6 object-contain brightness-0 invert" />
                   </div>
                   <div className="bg-white/80 dark:bg-gray-800/80 p-3 sm:p-4 rounded-2xl rounded-tl-none border border-white/50 dark:border-white/10">
                     <div className="flex gap-1">
