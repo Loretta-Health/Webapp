@@ -1,6 +1,6 @@
 {
   "consent": {
-    "welcomeTitle": "Willkommen bei Loretta",
+    "welcomeTitle": "Willkommen",
     "subtitle": "Dein Gesundheitsbegleiter",
     "privacyTitle": "Datenschutz & Einwilligung",
     "privacySubtitle": "Bevor du beginnst, überprüfe bitte unsere Datenschutzpraktiken.",
@@ -208,7 +208,7 @@
   },
   "onboarding": {
     "welcome": {
-      "title": "Willkommen bei Loretta!",
+      "title": "Willkommen!",
       "subtitle": "Dein persönlicher Gesundheitsbegleiter",
       "description": "Lass uns dein Gesundheitsprofil einrichten und dich auf deine Wellness-Reise bringen.",
       "getStarted": "Los geht's",
