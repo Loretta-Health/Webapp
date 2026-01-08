@@ -2,7 +2,7 @@ import { useState, useEffect, ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
-import { Loader2, Mail, Lock, User, UserPlus } from 'lucide-react';
+import { Loader2, Lock, User, UserPlus, AtSign, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 
@@ -35,7 +35,7 @@ export default function AuthPage() {
   const { t } = useTranslation('auth');
   
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [loginForm, setLoginForm] = useState({ identifier: '', password: '' });
   const [registerForm, setRegisterForm] = useState({ 
     username: '', 
     password: '', 
@@ -135,18 +135,18 @@ export default function AuthPage() {
             {activeTab === 'login' ? (
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-500 uppercase tracking-wider">{t('email')}</label>
+                  <label className="text-xs font-black text-gray-500 uppercase tracking-wider">{t('usernameOrEmail')}</label>
                   <div className="relative">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center">
-                      <Mail className="w-4 h-4 text-white" />
+                      <AtSign className="w-4 h-4 text-white" />
                     </div>
                     <input
-                      id="login-email"
-                      type="email"
-                      autoComplete="email"
-                      placeholder={t('placeholders.email')}
-                      value={loginForm.email}
-                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                      id="login-identifier"
+                      type="text"
+                      autoComplete="username"
+                      placeholder={t('placeholders.usernameOrEmail')}
+                      value={loginForm.identifier}
+                      onChange={(e) => setLoginForm({ ...loginForm, identifier: e.target.value })}
                       required
                       className="w-full pl-16 pr-4 py-4 bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10 rounded-2xl font-medium text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30"
                     />
