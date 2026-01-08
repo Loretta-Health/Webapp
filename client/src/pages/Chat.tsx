@@ -173,15 +173,10 @@ export default function Chat() {
           <h1 className="text-base sm:text-lg font-black truncate">{t('chat.title')}</h1>
         </div>
         
-        <div className="flex items-center gap-2 relative z-10">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/20 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-          </div>
-        </div>
       </header>
 
       <div className="flex-1 max-w-4xl mx-auto w-full p-3 sm:p-4 flex flex-col">
-        <GlassCard className="flex-1 flex flex-col overflow-hidden">
+        <GlassCard className="flex-1 flex flex-col overflow-hidden bg-white/40 dark:bg-gray-900/60">
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
             <div className="space-y-4">
               <AnimatePresence>
@@ -213,7 +208,7 @@ export default function Chat() {
                           {message.role === 'user' ? (
                             <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                           ) : (
-                            <img src={logomarkViolet} alt="Loretta" className="w-5 h-5 sm:w-6 sm:h-6 object-contain brightness-0 invert" />
+                            <img src={logomarkViolet} alt="Loretta" className="w-4 h-4 sm:w-5 sm:h-5 object-contain brightness-0 invert" />
                           )}
                         </div>
                         <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : ''}`}>
@@ -268,7 +263,7 @@ export default function Chat() {
                   className="flex gap-3"
                 >
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg">
-                    <img src={logomarkViolet} alt="Loretta" className="w-5 h-5 sm:w-6 sm:h-6 object-contain brightness-0 invert" />
+                    <img src={logomarkViolet} alt="Loretta" className="w-4 h-4 sm:w-5 sm:h-5 object-contain brightness-0 invert" />
                   </div>
                   <div className="bg-white/80 dark:bg-gray-800/80 p-3 sm:p-4 rounded-2xl rounded-tl-none border border-white/50 dark:border-white/10">
                     <div className="flex gap-1">
