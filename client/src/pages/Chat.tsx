@@ -211,7 +211,7 @@ export default function Chat() {
                             <img src={logomarkViolet} alt="Loretta" className="w-4 h-4 sm:w-5 sm:h-5 object-contain brightness-0 invert" />
                           )}
                         </div>
-                        <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : ''}`}>
+                        <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right ml-auto' : ''}`}>
                           <div className={`p-3 sm:p-4 rounded-2xl ${
                             message.role === 'user'
                               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-tr-none shadow-md border border-gray-200 dark:border-gray-600'
