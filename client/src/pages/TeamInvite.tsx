@@ -1,10 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState, useEffect, ReactNode } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
-  ChevronRight, 
+  ChevronLeft, 
   Users,
   Shield,
   Heart,
@@ -19,7 +16,6 @@ import { motion } from 'framer-motion';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
 interface InviteInfo {
   id: string;
@@ -29,6 +25,28 @@ interface InviteInfo {
   teamName: string;
   inviterUsername: string;
   expiresAt?: string;
+}
+
+function GlassCard({ 
+  children, 
+  className = '',
+  glow = false 
+}: { 
+  children: ReactNode; 
+  className?: string;
+  glow?: boolean;
+}) {
+  return (
+    <div className={`
+      backdrop-blur-xl bg-white/70 dark:bg-gray-900/70
+      border border-white/50 dark:border-white/10
+      rounded-3xl shadow-xl
+      ${glow ? 'shadow-[#013DC4]/20' : ''}
+      ${className}
+    `}>
+      {children}
+    </div>
+  );
 }
 
 export default function TeamInvite() {
@@ -128,10 +146,12 @@ export default function TeamInvite() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading invite...</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-xl shadow-[#013DC4]/20">
+            <Loader2 className="w-8 h-8 animate-spin text-white" />
+          </div>
+          <p className="text-gray-500 font-medium">Loading invite...</p>
         </div>
       </div>
     );
@@ -139,32 +159,20 @@ export default function TeamInvite() {
   
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
-        <div className="bg-gradient-to-r from-destructive via-destructive to-destructive/80 p-4">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <Link href="/my-dashboard">
-              <Button variant="ghost" className="text-white hover:bg-white/20">
-                <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-                Back
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-white" />
-              <h1 className="text-lg font-black text-white">Invalid Invite</h1>
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 p-4">
+        <div className="max-w-md mx-auto pt-8">
+          <GlassCard className="p-8 text-center" glow>
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center mx-auto mb-6 shadow-xl">
+              <AlertCircle className="w-10 h-10 text-white" />
             </div>
-            <div className="w-16" />
-          </div>
-        </div>
-        
-        <div className="max-w-md mx-auto p-4 mt-8">
-          <Card className="p-6 text-center">
-            <AlertCircle className="w-16 h-16 mx-auto mb-4 text-destructive" />
-            <h2 className="text-xl font-black mb-2">Invite Not Found</h2>
-            <p className="text-muted-foreground mb-6">{error}</p>
+            <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">Invite Not Found</h2>
+            <p className="text-gray-500 font-medium mb-6">{error}</p>
             <Link href="/my-dashboard">
-              <Button className="w-full">Go to Dashboard</Button>
+              <button className="w-full py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20 transition-all">
+                Go to Dashboard
+              </button>
             </Link>
-          </Card>
+          </GlassCard>
         </div>
       </div>
     );
@@ -172,32 +180,34 @@ export default function TeamInvite() {
   
   if (joined) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-center"
         >
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-12 h-12 text-white" />
-          </div>
-          <h2 className="text-2xl font-black mb-2">You're In!</h2>
-          <p className="text-muted-foreground mb-4">Welcome to {inviteInfo?.teamName}</p>
-          <p className="text-sm text-muted-foreground">Redirecting to leaderboard...</p>
+          <GlassCard className="p-8 text-center" glow>
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mx-auto mb-6 shadow-xl">
+              <CheckCircle2 className="w-12 h-12 text-white" />
+            </div>
+            <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">You're In!</h2>
+            <p className="text-gray-500 font-medium mb-4">Welcome to {inviteInfo?.teamName}</p>
+            <p className="text-sm text-gray-400">Redirecting to leaderboard...</p>
+          </GlassCard>
         </motion.div>
       </div>
     );
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
-      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] p-4">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
+        <div className="max-w-4xl mx-auto flex items-center justify-between relative z-10">
           <Link href="/my-dashboard">
-            <Button variant="ghost" className="text-white hover:bg-white/20">
-              <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
+            <button className="flex items-center gap-2 text-white/80 hover:text-white font-medium transition-colors">
+              <ChevronLeft className="w-5 h-5" />
               Back
-            </Button>
+            </button>
           </Link>
           <div className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-white" />
@@ -207,25 +217,25 @@ export default function TeamInvite() {
         </div>
       </div>
       
-      <div className="max-w-md mx-auto p-4 space-y-6">
+      <div className="max-w-md mx-auto p-4 space-y-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className="p-6 bg-gradient-to-br from-card to-primary/5 border-0 shadow-xl">
+          <GlassCard className="p-6" glow>
             <div className="text-center mb-6">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center mx-auto mb-4">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-[#013DC4]/20">
                 <Users className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-2xl font-black text-foreground mb-2">
+              <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
                 You're Invited!
               </h2>
-              <p className="text-muted-foreground">
-                <span className="font-bold text-foreground">{inviteInfo?.inviterUsername}</span> invited you to join
+              <p className="text-gray-500 font-medium">
+                <span className="font-bold text-gray-900 dark:text-white">{inviteInfo?.inviterUsername}</span> invited you to join
               </p>
-              <p className="text-xl font-black text-primary mt-2">{inviteInfo?.teamName}</p>
+              <p className="text-xl font-black bg-gradient-to-r from-[#013DC4] to-[#0150FF] bg-clip-text text-transparent mt-2">{inviteInfo?.teamName}</p>
             </div>
-          </Card>
+          </GlassCard>
         </motion.div>
         
         <motion.div
@@ -233,53 +243,61 @@ export default function TeamInvite() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="p-6 border-2 border-amber-200 bg-amber-50/50">
+          <GlassCard className="p-5">
             <div className="flex items-start gap-3 mb-4">
-              <Shield className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-lg flex-shrink-0">
+                <Shield className="w-5 h-5 text-white" />
+              </div>
               <div>
-                <h3 className="font-black text-foreground">Data Sharing Consent</h3>
-                <p className="text-sm text-muted-foreground mt-1">
+                <h3 className="font-bold text-gray-900 dark:text-white">Data Sharing Consent</h3>
+                <p className="text-xs text-gray-500 font-medium mt-1">
                   By joining this team, you agree to share certain information with team members:
                 </p>
               </div>
             </div>
             
-            <div className="space-y-3 mb-6">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/60">
-                <Trophy className="w-5 h-5 text-primary" />
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg">
+                  <Trophy className="w-4 h-4 text-white" />
+                </div>
                 <div>
-                  <p className="font-semibold text-sm">XP & Level</p>
-                  <p className="text-xs text-muted-foreground">Your experience points and current level</p>
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white">XP & Level</p>
+                  <p className="text-xs text-gray-500">Your experience points and current level</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/60">
-                <Flame className="w-5 h-5 text-chart-3" />
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-red-400 flex items-center justify-center shadow-lg">
+                  <Flame className="w-4 h-4 text-white" />
+                </div>
                 <div>
-                  <p className="font-semibold text-sm">Streak</p>
-                  <p className="text-xs text-muted-foreground">Your current check-in streak</p>
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white">Streak</p>
+                  <p className="text-xs text-gray-500">Your current check-in streak</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/60">
-                <Heart className="w-5 h-5 text-destructive" />
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center shadow-lg">
+                  <Heart className="w-4 h-4 text-white" />
+                </div>
                 <div>
-                  <p className="font-semibold text-sm">Activity Status</p>
-                  <p className="text-xs text-muted-foreground">Whether you've completed daily activities</p>
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white">Activity Status</p>
+                  <p className="text-xs text-gray-500">Whether you've completed daily activities</p>
                 </div>
               </div>
             </div>
             
-            <div className="p-3 rounded-lg bg-primary/10 text-sm text-muted-foreground">
-              <p className="font-semibold text-foreground mb-1">What's NOT shared:</p>
-              <ul className="list-disc list-inside space-y-1">
+            <div className="p-3 rounded-2xl bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-sm">
+              <p className="font-bold text-gray-900 dark:text-white mb-1 text-xs">What's NOT shared:</p>
+              <ul className="list-disc list-inside space-y-0.5 text-xs text-gray-500">
                 <li>Your health questionnaire answers</li>
                 <li>Your risk scores or health data</li>
                 <li>Your chat conversations</li>
                 <li>Your medication information</li>
               </ul>
             </div>
-          </Card>
+          </GlassCard>
         </motion.div>
         
         <motion.div
@@ -287,17 +305,19 @@ export default function TeamInvite() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-card border">
-            <Checkbox
-              id="consent"
-              checked={consentChecked}
-              onCheckedChange={(checked) => setConsentChecked(checked === true)}
-              className="mt-0.5"
-            />
-            <label htmlFor="consent" className="text-sm cursor-pointer">
-              I understand and agree to share my XP, level, and streak information with team members. I can leave the team and revoke this consent at any time.
-            </label>
-          </div>
+          <GlassCard className="p-4">
+            <div className="flex items-start gap-3">
+              <Checkbox
+                id="consent"
+                checked={consentChecked}
+                onCheckedChange={(checked) => setConsentChecked(checked === true)}
+                className="mt-0.5"
+              />
+              <label htmlFor="consent" className="text-sm cursor-pointer text-gray-700 dark:text-gray-300 font-medium">
+                I understand and agree to share my XP, level, and streak information with team members. I can leave the team and revoke this consent at any time.
+              </label>
+            </div>
+          </GlassCard>
         </motion.div>
         
         <motion.div
@@ -306,31 +326,30 @@ export default function TeamInvite() {
           transition={{ delay: 0.3 }}
           className="space-y-3"
         >
-          <Button
-            className="w-full h-14 text-lg font-black bg-gradient-to-r from-primary to-chart-2"
+          <button
+            className="w-full py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2 min-h-[56px]"
             disabled={!consentChecked || joining}
             onClick={handleAcceptInvite}
           >
             {joining ? (
               <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
                 Joining...
               </>
             ) : (
               <>
-                <Users className="w-5 h-5 mr-2" />
+                <Users className="w-5 h-5" />
                 Join Team
               </>
             )}
-          </Button>
+          </button>
           
-          <Button
-            variant="outline"
-            className="w-full"
+          <button
+            className="w-full py-3 bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10 hover:bg-white dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-2xl transition-all"
             onClick={handleDecline}
           >
             Decline Invitation
-          </Button>
+          </button>
         </motion.div>
         
         <motion.div
@@ -338,17 +357,19 @@ export default function TeamInvite() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="p-4 bg-gradient-to-r from-primary/10 to-chart-2/10 border-0">
+          <GlassCard className="p-4">
             <div className="flex items-center gap-3">
-              <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center shadow-lg flex-shrink-0">
+                <Trophy className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <p className="font-bold text-foreground">Team Benefits</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-bold text-gray-900 dark:text-white">Team Benefits</p>
+                <p className="text-sm text-gray-500 font-medium">
                   Compete on leaderboards, support each other's health journey, and celebrate achievements together!
                 </p>
               </div>
             </div>
-          </Card>
+          </GlassCard>
         </motion.div>
       </div>
     </div>

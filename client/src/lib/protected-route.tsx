@@ -14,10 +14,12 @@ export function ProtectedRoute({
   if (isLoading) {
     return (
       <Route path={path}>
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-cyan-400 via-teal-400 to-emerald-500">
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
           <div className="flex flex-col items-center gap-4">
-            <Loader2 className="h-12 w-12 animate-spin text-white" />
-            <p className="text-white font-medium">Loading...</p>
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-xl shadow-[#013DC4]/20">
+              <Loader2 className="h-8 w-8 animate-spin text-white" />
+            </div>
+            <p className="text-gray-500 font-medium">Loading...</p>
           </div>
         </div>
       </Route>
