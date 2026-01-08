@@ -226,12 +226,13 @@ export default function Chat() {
                               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-tr-none shadow-md border border-gray-200 dark:border-gray-600'
                               : 'bg-[#E8F0FF] dark:bg-[#1a2744] text-gray-900 dark:text-white rounded-tl-none shadow-md border border-[#013DC4]/20 dark:border-[#013DC4]/30'
                           }`}>
-                            <div className="text-sm whitespace-pre-line prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-strong:font-bold prose-em:italic">
-                              {message.role === 'assistant' 
-                                ? <ReactMarkdown>{message.content}</ReactMarkdown>
-                                : message.content
-                              }
-                            </div>
+                            {message.role === 'assistant' ? (
+                              <div className="text-sm prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-strong:font-bold prose-em:italic">
+                                <ReactMarkdown>{message.content}</ReactMarkdown>
+                              </div>
+                            ) : (
+                              <p className="text-sm">{message.content}</p>
+                            )}
                           </div>
                           <p className="text-xs text-gray-500 mt-1">
                             {formatTime(message.timestamp)}
