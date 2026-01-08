@@ -480,6 +480,7 @@ export const medicationLogs = pgTable("medication_logs", {
   takenAt: timestamp("taken_at").defaultNow(),
   scheduledDate: text("scheduled_date").notNull(), // Date string for the day (YYYY-MM-DD)
   status: text("status").default("taken").notNull(), // "taken" or "missed"
+  source: text("source").default("manual").notNull(), // "manual" or "auto" (auto = system marked as missed at midnight)
   xpAwarded: integer("xp_awarded").default(10),
   createdAt: timestamp("created_at").defaultNow(),
 });
