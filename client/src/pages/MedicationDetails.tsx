@@ -5,15 +5,10 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, 
-  Zap, 
   Check, 
   Sparkles,
-  Heart,
-  Brain,
-  Shield,
   Clock,
   Pill,
-  Flame,
   AlertTriangle,
   Trash2,
   Loader2,
@@ -60,6 +55,20 @@ function formatWeeklySchedule(scheduledTimes: string[], language: string): strin
     
     return `${dayName} ${time}`;
   }).join(', ');
+}
+
+function getScheduledTimeForDose(scheduledTimes: string[], doseIndex: number, frequency: string): string {
+  if (!scheduledTimes || scheduledTimes.length === 0) return '';
+  
+  if (frequency === 'weekly') {
+    const schedule = scheduledTimes[doseIndex];
+    if (!schedule) return '';
+    const parts = schedule.split(':');
+    if (parts.length < 2) return schedule;
+    return parts.slice(1).join(':');
+  }
+  
+  return scheduledTimes[doseIndex] || '';
 }
 
 export default function MedicationDetails() {
@@ -134,13 +143,6 @@ export default function MedicationDetails() {
     await undoLogDose(medicationId, doseNumber);
     setUndoingDose(null);
   };
-  
-  const benefits = [
-    { icon: Heart, text: t('medicationDetails.benefits.maintainsHealth') },
-    { icon: Brain, text: t('medicationDetails.benefits.supportsBody') },
-    { icon: Shield, text: t('medicationDetails.benefits.preventsComplications') },
-    { icon: Zap, text: t('medicationDetails.benefits.keepsWell') },
-  ];
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -267,14 +269,6 @@ export default function MedicationDetails() {
                     }`}>
                       {medication.adherencePercent ?? 100}% {t('medicationDetails.adherence', 'Adherence')}
                     </span>
-                    {medication.streak > 0 && (
-                      <div className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-orange-400 to-red-400 rounded-full shadow-lg">
-                        <Flame className="w-3 h-3 text-white" />
-                        <span className="text-xs font-bold text-white">
-                          {t('medicationDetails.dayStreak', { count: medication.streak })}
-                        </span>
-                      </div>
-                    )}
                   </div>
                   {medication.notes && (
                     <div className="mt-3 p-3 rounded-xl bg-white/50 dark:bg-gray-800/50 text-sm">
@@ -353,58 +347,70 @@ export default function MedicationDetails() {
                 </div>
               </div>
               <div className="p-4 sm:p-5 space-y-2 sm:space-y-3">
-                {(medication.takenToday || []).map((dose: MedicationDose, index: number) => (
-                  <motion.div
-                    key={dose.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`flex items-center gap-3 p-3 sm:p-4 rounded-2xl transition-all ${
-                      dose.taken 
-                        ? 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg shadow-green-500/30' 
-                        : 'bg-white/50 dark:bg-gray-800/50'
-                    }`}
-                    data-testid={`dose-${dose.id}`}
-                  >
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      dose.taken ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700'
-                    }`}>
-                      {dose.taken ? (
-                        <Check className="w-4 h-4 text-white" />
-                      ) : (
-                        <span className="text-xs font-bold text-gray-500">
-                          {dose.id}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <span className={`font-bold ${dose.taken ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
-                        {t('medicationDetails.dose', { id: dose.id })}
-                      </span>
-                      {dose.time && (
-                        <span className={`text-sm ml-2 ${dose.taken ? 'text-white/80' : 'text-gray-500'}`}>
-                          {t('medicationDetails.takenAt', { time: dose.time })}
-                        </span>
-                      )}
-                    </div>
-                    {dose.taken && (
-                      <button
-                        className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUndoDose(dose.id);
-                        }}
-                        disabled={undoingDose === dose.id}
-                      >
-                        {undoingDose === dose.id ? (
-                          <Loader2 className="w-4 h-4 text-white animate-spin" />
+                {(medication.takenToday || []).map((dose: MedicationDose, index: number) => {
+                  const scheduledTime = getScheduledTimeForDose(medication.scheduledTimes || [], index, medication.frequency);
+                  return (
+                    <motion.div
+                      key={dose.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`flex items-center gap-3 p-3 sm:p-4 rounded-2xl transition-all ${
+                        dose.taken 
+                          ? 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg shadow-green-500/30' 
+                          : 'bg-white/50 dark:bg-gray-800/50'
+                      }`}
+                      data-testid={`dose-${dose.id}`}
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        dose.taken ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700'
+                      }`}>
+                        {dose.taken ? (
+                          <Check className="w-4 h-4 text-white" />
                         ) : (
-                          <Undo2 className="w-4 h-4 text-white" />
+                          <span className="text-xs font-bold text-gray-500">
+                            {dose.id}
+                          </span>
                         )}
-                      </button>
-                    )}
-                  </motion.div>
-                ))}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {scheduledTime && (
+                            <span className={`font-bold ${dose.taken ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                              {scheduledTime}
+                            </span>
+                          )}
+                          {!scheduledTime && (
+                            <span className={`font-bold ${dose.taken ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                              {t('medicationDetails.dose', { id: dose.id })}
+                            </span>
+                          )}
+                          {dose.taken && dose.time && (
+                            <span className={`text-sm ${dose.taken ? 'text-white/80' : 'text-gray-500'}`}>
+                              ({i18n.language === 'de' ? 'genommen' : 'taken'} {dose.time})
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {dose.taken && (
+                        <button
+                          className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUndoDose(dose.id);
+                          }}
+                          disabled={undoingDose === dose.id}
+                        >
+                          {undoingDose === dose.id ? (
+                            <Loader2 className="w-4 h-4 text-white animate-spin" />
+                          ) : (
+                            <Undo2 className="w-4 h-4 text-white" />
+                          )}
+                        </button>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
             </GlassCard>
           </motion.div>

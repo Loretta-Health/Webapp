@@ -1426,11 +1426,32 @@ IMPORTANT: When discussing risk scores, remember:
           }
           // For 'as-needed', dosesTakenToday stays 0 (no progress tracking)
           
+          // Calculate actual adherence based on days since creation
           const totalDosesTaken = adherence?.totalDosesTaken || 0;
-          const totalDosesScheduled = adherence?.totalDosesScheduled || 0;
-          const adherencePercent = totalDosesScheduled > 0 
-            ? Math.round((totalDosesTaken / totalDosesScheduled) * 100)
-            : 100;
+          let totalDosesScheduled = 0;
+          let adherencePercent = 100;
+          
+          if (med.frequency === 'daily' && med.createdAt) {
+            // Calculate days since medication was created
+            const createdDate = new Date(med.createdAt);
+            createdDate.setHours(0, 0, 0, 0);
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
+            const daysSinceCreation = Math.floor((todayDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+            totalDosesScheduled = daysSinceCreation * (med.dosesPerDay || 1);
+            adherencePercent = totalDosesScheduled > 0 
+              ? Math.min(100, Math.round((totalDosesTaken / totalDosesScheduled) * 100))
+              : 100;
+          } else if (med.frequency === 'weekly' && med.createdAt) {
+            // Calculate weeks since medication was created
+            const createdDate = new Date(med.createdAt);
+            const weeksSinceCreation = Math.floor((today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24 * 7)) + 1;
+            totalDosesScheduled = weeksSinceCreation * (med.dosesPerDay || 1);
+            adherencePercent = totalDosesScheduled > 0 
+              ? Math.min(100, Math.round((totalDosesTaken / totalDosesScheduled) * 100))
+              : 100;
+          }
+          // For 'as-needed', adherence stays at 100%
           
           return {
             ...med,
