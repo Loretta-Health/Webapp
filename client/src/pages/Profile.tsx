@@ -1661,7 +1661,7 @@ export default function Profile() {
                   <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center text-white shadow-lg">
                     <User className="w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.basicInfo.title}</h3>
+                  <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white">{localT.basicInfo.title}</h3>
                 </div>
                 <Button
                   variant="outline"
@@ -1704,7 +1704,7 @@ export default function Profile() {
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center text-white shadow-lg">
                   <Users className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white">
                   {language === 'en' ? 'Community Settings' : 'Community-Einstellungen'}
                 </h3>
               </div>
@@ -1739,7 +1739,7 @@ export default function Profile() {
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg">
                   <Users className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.socialFactors.title}</h3>
+                <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white">{localT.socialFactors.title}</h3>
               </div>
               <div className="space-y-2">
                 {getSocialFactors().map((factor, index) => (
@@ -1764,7 +1764,7 @@ export default function Profile() {
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center text-white shadow-lg">
                   <ClipboardList className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.questionnaires.title}</h3>
+                <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white">{localT.questionnaires.title}</h3>
               </div>
               <div className="space-y-3">
                 {getQuestionnaires().map((category, index) => {
@@ -1973,7 +1973,7 @@ export default function Profile() {
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white shadow-lg">
                   <Heart className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{localT.behaviors.title}</h3>
+                <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white">{localT.behaviors.title}</h3>
               </div>
               <div className="space-y-3">
                 {getBehaviors().map((behavior, index) => (
