@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass-card';
-import { Pill, Check, Clock, Flame, ChevronRight } from 'lucide-react';
+import { Pill, Check, Clock, Flame, ChevronRight, Loader2 } from 'lucide-react';
 import { Link } from 'wouter';
 import MedicalTerm from './MedicalTerm';
-import { useMedicationProgress } from '@/hooks/useMedicationProgress';
+import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
 import { useTranslation } from 'react-i18next';
 
 const dayNames: Record<string, { en: string; de: string }> = {
@@ -31,6 +32,20 @@ function formatWeeklySchedule(scheduledTimes: string[], language: string): strin
   }).join(', ');
 }
 
+function getScheduledTimeForDose(scheduledTimes: string[], doseIndex: number, frequency: string): string {
+  if (!scheduledTimes || scheduledTimes.length === 0) return '';
+  
+  if (frequency === 'weekly') {
+    const schedule = scheduledTimes[doseIndex];
+    if (!schedule) return '';
+    const parts = schedule.split(':');
+    if (parts.length < 2) return schedule;
+    return parts.slice(1).join(':');
+  }
+  
+  return scheduledTimes[doseIndex] || '';
+}
+
 interface MedicationTrackerProps {
   medicationId: string;
   name: string;
@@ -57,17 +72,28 @@ export default function MedicationTracker({
   className = ''
 }: MedicationTrackerProps) {
   const { t, i18n } = useTranslation('dashboard');
-  const { getProgress, getMedication } = useMedicationProgress();
+  const { getProgress, getMedication, logDose, medications } = useMedicationProgress();
   const progress = getProgress(medicationId);
-  const medication = getMedication(medicationId);
+  const medication = medications.find(m => m.id === medicationId);
   const streak = medication?.streak || 0;
+  const takenToday = medication?.takenToday || [];
+  
+  const [loggingDose, setLoggingDose] = useState<number | null>(null);
   
   const progressPercent = progress.total > 0 ? (progress.taken / progress.total) * 100 : 0;
   
+  const handleLogDose = async (e: React.MouseEvent, doseId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLoggingDose(doseId);
+    await logDose(medicationId, doseId);
+    setLoggingDose(null);
+  };
+  
   return (
-    <Link href={`/medication-details?id=${medicationId}`}>
-      <GlassCard className={`p-3 sm:p-4 hover:shadow-xl transition-shadow cursor-pointer ${className}`} data-testid="medication-tracker">
-        <div className="flex items-start gap-3">
+    <GlassCard className={`p-3 sm:p-4 ${className}`} data-testid="medication-tracker">
+      <Link href={`/medication-details?id=${medicationId}`}>
+        <div className="flex items-start gap-3 cursor-pointer hover:opacity-80 transition-opacity">
           <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
             progress.isComplete 
               ? 'bg-gradient-to-br from-green-400 to-emerald-500 shadow-green-500/30' 
@@ -131,33 +157,99 @@ export default function MedicationTracker({
             <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
           </div>
         </div>
-        
-        {frequency !== 'as-needed' && progress.total > 0 && (
-          <div className="mt-3 space-y-1.5">
-            <div className="flex justify-between text-[10px] sm:text-xs">
-              <span className="text-gray-500 font-medium">
-                {frequency === 'weekly' ? t('medications.thisWeeksProgress', "This week's progress") : t('medications.todaysProgress')}
-              </span>
-              <span className="font-bold text-gray-900 dark:text-white">{progress.taken}/{progress.total}</span>
-            </div>
-            <div className="h-1.5 sm:h-2 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+      </Link>
+      
+      {frequency !== 'as-needed' && takenToday.length > 0 && (
+        <div className="mt-3 space-y-2">
+          {takenToday.map((dose: MedicationDose, index: number) => {
+            const scheduledTime = getScheduledTimeForDose(scheduledTimes, index, frequency);
+            return (
               <div 
-                className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+                key={dose.id}
+                className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl transition-all ${
+                  dose.taken 
+                    ? 'bg-gradient-to-r from-green-400/10 to-emerald-400/10' 
+                    : 'bg-white/50 dark:bg-gray-800/50'
+                }`}
+              >
+                <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  dose.taken 
+                    ? 'bg-gradient-to-br from-green-400 to-emerald-500 shadow-sm' 
+                    : 'bg-gray-200 dark:bg-gray-700'
+                }`}>
+                  {dose.taken ? (
+                    <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+                  ) : (
+                    <span className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400">{dose.id}</span>
+                  )}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    {scheduledTime && (
+                      <span className={`text-xs sm:text-sm font-bold ${dose.taken ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                        {scheduledTime}
+                      </span>
+                    )}
+                    {dose.taken && dose.time && (
+                      <span className="text-[10px] sm:text-xs text-gray-500">
+                        ({i18n.language === 'de' ? 'genommen' : 'taken'} {dose.time})
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                {dose.taken ? (
+                  <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-sm">
+                    {i18n.language === 'de' ? 'Erledigt' : 'Done'}
+                  </span>
+                ) : (
+                  <button
+                    onClick={(e) => handleLogDose(e, dose.id)}
+                    disabled={loggingDose === dose.id}
+                    className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg hover:shadow-xl transition-all disabled:opacity-50 min-w-[60px] sm:min-w-[70px] flex items-center justify-center gap-1"
+                  >
+                    {loggingDose === dose.id ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <>
+                        <Pill className="w-3 h-3" />
+                        {i18n.language === 'de' ? 'Log' : 'Log'}
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      
+      {frequency !== 'as-needed' && progress.total > 0 && (
+        <div className="mt-3 space-y-1.5">
+          <div className="flex justify-between text-[10px] sm:text-xs">
+            <span className="text-gray-500 font-medium">
+              {frequency === 'weekly' ? t('medications.thisWeeksProgress', "This week's progress") : t('medications.todaysProgress')}
+            </span>
+            <span className="font-bold text-gray-900 dark:text-white">{progress.taken}/{progress.total}</span>
           </div>
-        )}
-        
-        {frequency !== 'as-needed' && progress.isComplete && (
-          <div className="mt-3 flex items-center justify-center gap-2 text-xs sm:text-sm font-bold">
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full shadow-lg">
-              <Check className="w-3 h-3 sm:w-4 sm:h-4" />
-              {t('medications.allDosesTaken')}
-            </div>
+          <div className="h-1.5 sm:h-2 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+            <div 
+              className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
-        )}
-      </GlassCard>
-    </Link>
+        </div>
+      )}
+      
+      {frequency !== 'as-needed' && progress.isComplete && (
+        <div className="mt-3 flex items-center justify-center gap-2 text-xs sm:text-sm font-bold">
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full shadow-lg">
+            <Check className="w-3 h-3 sm:w-4 sm:h-4" />
+            {t('medications.allDosesTaken')}
+          </div>
+        </div>
+      )}
+    </GlassCard>
   );
 }
