@@ -80,7 +80,7 @@ export default function MedicationDetails() {
   const medicationId = params.get('id') || 'morning-medication';
   const { user } = useAuth();
   
-  const { medications, logDose, undoLogDose, getProgress, deleteMedication, isLogging, isLoading } = useMedicationProgress();
+  const { medications, logDose, logMissedDose, undoLogDose, getProgress, deleteMedication, isLogging, isLoggingMissed, isLoading } = useMedicationProgress();
   const medication = medications.find(m => m.id === medicationId);
   const progress = getProgress(medicationId);
   
@@ -88,6 +88,8 @@ export default function MedicationDetails() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [undoingDose, setUndoingDose] = useState<number | null>(null);
+  const [loggingDose, setLoggingDose] = useState<number | null>(null);
+  const [markingMissed, setMarkingMissed] = useState<number | null>(null);
   
   if (isLoading) {
     return (
@@ -142,6 +144,22 @@ export default function MedicationDetails() {
     setUndoingDose(doseNumber);
     await undoLogDose(medicationId, doseNumber);
     setUndoingDose(null);
+  };
+
+  const handleLogSpecificDose = async (doseNumber: number) => {
+    setLoggingDose(doseNumber);
+    const { success } = await logDose(medicationId, doseNumber);
+    if (success) {
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 2000);
+    }
+    setLoggingDose(null);
+  };
+
+  const handleMarkMissed = async (doseNumber: number) => {
+    setMarkingMissed(doseNumber);
+    await logMissedDose(medicationId, doseNumber);
+    setMarkingMissed(null);
   };
   
   return (
@@ -358,15 +376,19 @@ export default function MedicationDetails() {
                       className={`flex items-center gap-3 p-3 sm:p-4 rounded-2xl transition-all ${
                         dose.taken 
                           ? 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg shadow-green-500/30' 
-                          : 'bg-white/50 dark:bg-gray-800/50'
+                          : dose.missed
+                            ? 'bg-gradient-to-r from-gray-300 to-gray-400 dark:from-gray-600 dark:to-gray-700 opacity-60'
+                            : 'bg-white/50 dark:bg-gray-800/50'
                       }`}
                       data-testid={`dose-${dose.id}`}
                     >
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        dose.taken ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700'
+                        dose.taken ? 'bg-white/20' : dose.missed ? 'bg-white/30' : 'bg-gray-100 dark:bg-gray-700'
                       }`}>
                         {dose.taken ? (
                           <Check className="w-4 h-4 text-white" />
+                        ) : dose.missed ? (
+                          <span className="text-xs font-bold text-white/70">—</span>
                         ) : (
                           <span className="text-xs font-bold text-gray-500">
                             {dose.id}
@@ -376,23 +398,31 @@ export default function MedicationDetails() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           {scheduledTime && (
-                            <span className={`font-bold ${dose.taken ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                            <span className={`font-bold ${dose.taken ? 'text-white' : dose.missed ? 'text-white/80' : 'text-gray-900 dark:text-white'}`}>
                               {scheduledTime}
                             </span>
                           )}
                           {!scheduledTime && (
-                            <span className={`font-bold ${dose.taken ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
+                            <span className={`font-bold ${dose.taken ? 'text-white' : dose.missed ? 'text-white/80' : 'text-gray-900 dark:text-white'}`}>
                               {t('medicationDetails.dose', { id: dose.id })}
                             </span>
                           )}
                           {dose.taken && dose.time && (
-                            <span className={`text-sm ${dose.taken ? 'text-white/80' : 'text-gray-500'}`}>
+                            <span className="text-sm text-white/80">
                               ({i18n.language === 'de' ? 'genommen' : 'taken'} {dose.time})
+                            </span>
+                          )}
+                          {dose.missed && (
+                            <span className="text-sm text-white/60">
+                              ({dose.source === 'auto' 
+                                ? (i18n.language === 'de' ? 'automatisch übersprungen' : 'auto-skipped')
+                                : (i18n.language === 'de' ? 'übersprungen' : 'skipped')
+                              })
                             </span>
                           )}
                         </div>
                       </div>
-                      {dose.taken && (
+                      {dose.taken ? (
                         <button
                           className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
                           onClick={(e) => {
@@ -400,6 +430,7 @@ export default function MedicationDetails() {
                             handleUndoDose(dose.id);
                           }}
                           disabled={undoingDose === dose.id}
+                          title={i18n.language === 'de' ? 'Rückgängig' : 'Undo'}
                         >
                           {undoingDose === dose.id ? (
                             <Loader2 className="w-4 h-4 text-white animate-spin" />
@@ -407,6 +438,56 @@ export default function MedicationDetails() {
                             <Undo2 className="w-4 h-4 text-white" />
                           )}
                         </button>
+                      ) : dose.missed ? (
+                        <button
+                          className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUndoDose(dose.id);
+                          }}
+                          disabled={undoingDose === dose.id}
+                          title={i18n.language === 'de' ? 'Rückgängig' : 'Undo'}
+                        >
+                          {undoingDose === dose.id ? (
+                            <Loader2 className="w-4 h-4 text-white animate-spin" />
+                          ) : (
+                            <Undo2 className="w-4 h-4 text-white/70" />
+                          )}
+                        </button>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleLogSpecificDose(dose.id);
+                            }}
+                            disabled={loggingDose === dose.id || markingMissed === dose.id}
+                            className="px-3 py-1.5 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white text-xs font-bold rounded-full shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center gap-1"
+                          >
+                            {loggingDose === dose.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <>
+                                <Check className="w-3 h-3" />
+                                {i18n.language === 'de' ? 'Genommen' : 'Taken'}
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkMissed(dose.id);
+                            }}
+                            disabled={loggingDose === dose.id || markingMissed === dose.id}
+                            className="px-3 py-1.5 bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 text-xs font-bold rounded-full hover:bg-gray-300 dark:hover:bg-gray-500 transition-all disabled:opacity-50 flex items-center gap-1"
+                          >
+                            {markingMissed === dose.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              i18n.language === 'de' ? 'Übersprungen' : 'Skipped'
+                            )}
+                          </button>
+                        </div>
                       )}
                     </motion.div>
                   );
