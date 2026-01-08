@@ -724,8 +724,8 @@ export default function MyDashboard() {
                     <Zap className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className="text-xs sm:text-xl font-black text-gray-900 dark:text-white truncate">{xp.toLocaleString()}</div>
-                    <div className="text-[8px] sm:text-xs text-gray-500 font-medium truncate">{t('sidebar.totalXp', 'Total XP')}</div>
+                    <div className="text-xs sm:text-xl font-black text-gray-900 dark:text-white truncate">+{allEmotionalCheckins?.filter(c => isToday(new Date(c.checkedInAt))).reduce((sum, c) => sum + (c.xpAwarded || 0), 0) || 0}</div>
+                    <div className="text-[8px] sm:text-xs text-gray-500 font-medium truncate">{t('sidebar.xpToday', 'XP Today')}</div>
                   </div>
                 </GlassCard>
               </Link>
