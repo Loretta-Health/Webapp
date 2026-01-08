@@ -5,6 +5,7 @@ import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { Loader2, Lock, User, UserPlus, AtSign, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
+import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
 
 function GlassCard({ 
   children, 
@@ -99,9 +100,7 @@ export default function AuthPage() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
             <div className="relative z-10">
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl">
-                  <img src={lorettaLogo} alt="Loretta" className="h-10 object-contain brightness-0 invert" />
-                </div>
+                <img src={lorettaLogoHorizontal} alt="Loretta" className="h-10 sm:h-12 object-contain brightness-0 invert drop-shadow-lg" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">{t('welcome')}</h1>
               <p className="text-white/80 text-sm font-medium">{t('tagline')}</p>

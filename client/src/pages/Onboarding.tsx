@@ -62,6 +62,7 @@ interface QuestionnaireRecord {
   answers: Record<string, string>;
 }
 import lorettaLogo from '@assets/logos/loretta_logo.png';
+import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
 type OnboardingStep = 'welcome' | 'consent' | 'registration' | 'questionnaire' | 'riskScore';
@@ -2192,7 +2193,7 @@ export default function Onboarding() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <div className="flex flex-col items-center gap-6">
-          <img src={lorettaLogo} alt="Loretta" className="h-12 object-contain" />
+          <img src={lorettaLogoHorizontal} alt="Loretta" className="h-10 sm:h-12 object-contain" />
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-xl shadow-[#013DC4]/20">
               <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
@@ -2209,9 +2210,7 @@ export default function Onboarding() {
       <div className="relative overflow-hidden bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] p-4">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
         <div className="max-w-lg mx-auto flex items-center justify-center gap-3 relative z-10">
-          <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-            <img src={lorettaLogo} alt="Loretta" className="h-6 object-contain brightness-0 invert" />
-          </div>
+          <img src={lorettaLogoHorizontal} alt="Loretta" className="h-8 object-contain brightness-0 invert drop-shadow-lg" />
         </div>
       </div>
       
