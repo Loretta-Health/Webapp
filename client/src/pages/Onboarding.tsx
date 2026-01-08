@@ -2191,11 +2191,14 @@ export default function Onboarding() {
   if (allLoading || !initialStepSet) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-xl shadow-[#013DC4]/20">
-            <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+        <div className="flex flex-col items-center gap-6">
+          <img src={lorettaLogo} alt="Loretta" className="h-12 object-contain" />
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-xl shadow-[#013DC4]/20">
+              <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+            </div>
+            <p className="text-gray-500 font-medium text-sm">Preparing your health journey...</p>
           </div>
-          <p className="text-gray-500 font-medium">Loading...</p>
         </div>
       </div>
     );
