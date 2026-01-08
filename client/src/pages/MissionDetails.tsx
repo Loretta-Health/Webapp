@@ -3,7 +3,6 @@ import { useLocation, Link, useSearch } from 'wouter';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -982,7 +981,12 @@ export default function MissionDetails() {
               </div>
               
               <div className="relative">
-                <Progress value={progressPercent} className="h-4" data-testid="mission-progress-bar" />
+                <div className="h-4 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner" data-testid="mission-progress-bar">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg" 
+                    style={{ width: `${progressPercent}%` }} 
+                  />
+                </div>
                 <div 
                   className="absolute top-1/2 -translate-y-1/2 transition-all duration-500"
                   style={{ left: `calc(${progressPercent}% - 12px)` }}
