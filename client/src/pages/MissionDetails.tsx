@@ -976,7 +976,7 @@ export default function MissionDetails() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-gray-500 uppercase">{t('missionDetails.progress')}</span>
                 <span className="text-sm font-bold text-gray-900 dark:text-white" data-testid="mission-progress-text">
-                  {completedCount} of {missionData.totalSteps} steps
+                  {completedCount} of {missionData.totalSteps}
                 </span>
               </div>
               
@@ -992,7 +992,7 @@ export default function MissionDetails() {
                   style={{ left: `calc(${progressPercent}% - 12px)` }}
                 >
                   <div className="w-6 h-6 rounded-full bg-white border-2 border-[#013DC4] flex items-center justify-center shadow-lg">
-                    <MissionIcon className="w-3 h-3 text-[#013DC4]" />
+                    <Target className="w-3 h-3 text-[#013DC4]" />
                   </div>
                 </div>
               </div>
@@ -1022,7 +1022,7 @@ export default function MissionDetails() {
                 <div className="flex items-center gap-2">
                   <Zap className="w-5 h-5 text-[#013DC4] fill-[#013DC4]" />
                   <span className="font-black text-[#013DC4] text-sm sm:text-base" data-testid="mission-xp">
-                    +{missionData.xpReward} XP per step
+                    +{missionData.xpReward} XP each
                   </span>
                 </div>
                 
@@ -1168,7 +1168,7 @@ export default function MissionDetails() {
                         <Target className="w-4 h-4 text-gray-500" />
                       </div>
                       <span className="text-gray-500">
-                        {t('missionDetails.stepsRemaining', { count: steps.filter(s => !s.completed).length })}
+                        {t('missionDetails.remaining', { count: steps.filter(s => !s.completed).length })}
                       </span>
                     </div>
                   )}
