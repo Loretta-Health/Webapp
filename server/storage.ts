@@ -177,6 +177,7 @@ export interface IStorage {
 
   // Medication methods
   getUserMedications(userId: string): Promise<Medication[]>;
+  getAllMedications(): Promise<Medication[]>;
   getMedication(id: string): Promise<Medication | undefined>;
   createMedication(data: InsertMedication): Promise<Medication>;
   updateMedication(id: string, data: UpdateMedication): Promise<Medication | undefined>;
@@ -185,11 +186,13 @@ export interface IStorage {
   // Medication log methods
   getMedicationLogsForDate(userId: string, date: string): Promise<MedicationLog[]>;
   getMedicationLogs(medicationId: string, limit?: number): Promise<MedicationLog[]>;
+  getAllMedicationLogsForMedication(medicationId: string): Promise<MedicationLog[]>;
   logMedicationDose(data: InsertMedicationLog): Promise<MedicationLog>;
 
   // Medication adherence methods
   getMedicationAdherence(medicationId: string): Promise<MedicationAdherence | undefined>;
   updateMedicationAdherence(medicationId: string, userId: string, data: UpdateMedicationAdherence): Promise<MedicationAdherence>;
+  resetMedicationAdherence(medicationId: string, totalDosesTaken: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1273,6 +1276,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(medications.createdAt));
   }
 
+  async getAllMedications(): Promise<Medication[]> {
+    return await db
+      .select()
+      .from(medications)
+      .where(eq(medications.isActive, true))
+      .orderBy(desc(medications.createdAt));
+  }
+
   async getMedication(id: string): Promise<Medication | undefined> {
     const [medication] = await db
       .select()
@@ -1336,6 +1347,14 @@ export class DatabaseStorage implements IStorage {
       .where(eq(medicationLogs.medicationId, medicationId))
       .orderBy(desc(medicationLogs.takenAt))
       .limit(limit);
+  }
+
+  async getAllMedicationLogsForMedication(medicationId: string): Promise<MedicationLog[]> {
+    return await db
+      .select()
+      .from(medicationLogs)
+      .where(eq(medicationLogs.medicationId, medicationId))
+      .orderBy(desc(medicationLogs.takenAt));
   }
 
   async logMedicationDose(data: InsertMedicationLog): Promise<MedicationLog> {
@@ -1476,6 +1495,28 @@ export class DatabaseStorage implements IStorage {
         })
         .returning();
       return created;
+    }
+  }
+
+  async resetMedicationAdherence(
+    medicationId: string, 
+    totalDosesTaken: number, 
+    totalDosesScheduled: number,
+    lastTakenDate: string | null
+  ): Promise<void> {
+    const existing = await this.getMedicationAdherence(medicationId);
+    if (existing) {
+      await db
+        .update(medicationAdherence)
+        .set({
+          totalDosesTaken,
+          totalDosesScheduled,
+          currentStreak: 0,
+          longestStreak: 0,
+          lastTakenDate,
+          updatedAt: new Date(),
+        })
+        .where(eq(medicationAdherence.medicationId, medicationId));
     }
   }
 }
