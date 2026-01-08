@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useLocation, Link, useSearch } from 'wouter';
-import { Card } from '@/components/ui/card';
+import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -49,28 +49,28 @@ interface AlternativeMissionData {
 
 const colorClasses: Record<string, { card: string; iconBg: string; badge: string; button: string }> = {
   'chart-1': {
-    card: 'bg-gradient-to-br from-chart-1/10 via-card to-card border-chart-1/20',
-    iconBg: 'bg-gradient-to-br from-chart-1 to-chart-2 shadow-lg shadow-chart-1/30',
-    badge: 'bg-chart-1/20 text-chart-1 border-chart-1/30',
-    button: 'bg-gradient-to-r from-chart-1 to-chart-2 hover:from-chart-1/90 hover:to-chart-2/90'
+    card: '',
+    iconBg: 'bg-gradient-to-br from-[#013DC4] to-[#0150FF] shadow-lg shadow-[#013DC4]/30',
+    badge: 'bg-[#013DC4]/10 text-[#013DC4] border-[#013DC4]/20',
+    button: 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90'
   },
   'chart-2': {
-    card: 'bg-gradient-to-br from-chart-2/10 via-card to-card border-chart-2/20',
-    iconBg: 'bg-gradient-to-br from-chart-2 to-emerald-500 shadow-lg shadow-chart-2/30',
-    badge: 'bg-chart-2/20 text-chart-2 border-chart-2/30',
-    button: 'bg-gradient-to-r from-chart-2 to-emerald-500 hover:from-chart-2/90 hover:to-emerald-500/90'
+    card: '',
+    iconBg: 'bg-gradient-to-br from-[#CDB6EF] to-[#4B7BE5] shadow-lg shadow-[#CDB6EF]/30',
+    badge: 'bg-[#CDB6EF]/20 text-[#4B7BE5] border-[#CDB6EF]/30',
+    button: 'bg-gradient-to-r from-[#CDB6EF] to-[#4B7BE5] hover:opacity-90'
   },
   'chart-3': {
-    card: 'bg-gradient-to-br from-purple-500/10 via-card to-card border-purple-500/20',
-    iconBg: 'bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30',
-    badge: 'bg-purple-500/20 text-purple-500 border-purple-500/30',
-    button: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-500/90 hover:to-pink-500/90'
+    card: '',
+    iconBg: 'bg-gradient-to-br from-[#0150FF] to-[#CDB6EF] shadow-lg shadow-[#0150FF]/30',
+    badge: 'bg-[#0150FF]/10 text-[#0150FF] border-[#0150FF]/20',
+    button: 'bg-gradient-to-r from-[#0150FF] to-[#CDB6EF] hover:opacity-90'
   },
   'chart-4': {
-    card: 'bg-gradient-to-br from-amber-500/10 via-card to-card border-amber-500/20',
-    iconBg: 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/30',
-    badge: 'bg-amber-500/20 text-amber-500 border-amber-500/30',
-    button: 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-500/90 hover:to-orange-500/90'
+    card: '',
+    iconBg: 'bg-gradient-to-br from-[#4B7BE5] to-[#013DC4] shadow-lg shadow-[#4B7BE5]/30',
+    badge: 'bg-[#4B7BE5]/10 text-[#4B7BE5] border-[#4B7BE5]/20',
+    button: 'bg-gradient-to-r from-[#4B7BE5] to-[#013DC4] hover:opacity-90'
   }
 };
 
@@ -578,13 +578,13 @@ export default function AlternativeMissionDetails() {
   
   if (!missionData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <Card className="p-8 text-center">
-          <p className="text-muted-foreground">{t('alternativeMission.notFound')}</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <GlassCard className="p-8 text-center" glow>
+          <p className="text-gray-500">{t('alternativeMission.notFound')}</p>
           <Link href="/my-dashboard">
-            <Button className="mt-4">{t('alternativeMission.goBack')}</Button>
+            <Button className="mt-4 bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white rounded-xl">{t('alternativeMission.goBack')}</Button>
           </Link>
-        </Card>
+        </GlassCard>
       </div>
     );
   }
@@ -639,30 +639,30 @@ export default function AlternativeMissionDetails() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <AnimatePresence>
         {showSuccess && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center z-50 bg-black/50"
+            className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.5, opacity: 0 }}
-              className="bg-card rounded-2xl p-8 text-center shadow-2xl max-w-sm mx-4"
+              className="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 rounded-3xl p-8 text-center shadow-2xl max-w-sm mx-4 border border-white/50"
             >
               <motion.div
                 animate={{ rotate: [0, -10, 10, -10, 0] }}
                 transition={{ duration: 0.5 }}
-                className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center"
+                className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg shadow-[#013DC4]/30"
               >
                 <Check className="w-10 h-10 text-white" />
               </motion.div>
-              <h3 className="text-xl font-black text-foreground mb-2">Mission Replaced!</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Mission Replaced!</h3>
+              <p className="text-gray-500">
                 "{missionData.title}" is now your active mission
               </p>
             </motion.div>
@@ -670,14 +670,14 @@ export default function AlternativeMissionDetails() {
         )}
       </AnimatePresence>
       
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-card via-card to-primary/5 border-b border-border">
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 shadow-lg shadow-[#013DC4]/5">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
           <Link href={`/mission-details?id=${originalMissionId}`}>
-            <Button size="icon" variant="ghost">
-              <ArrowLeft className="w-5 h-5" />
+            <Button size="icon" variant="ghost" className="rounded-xl hover:bg-[#013DC4]/10">
+              <ArrowLeft className="w-5 h-5 text-[#013DC4]" />
             </Button>
           </Link>
-          <h1 className="text-xl font-black text-foreground">Alternative Mission</h1>
+          <h1 className="text-xl font-black text-gray-900 dark:text-white">Alternative Mission</h1>
         </div>
       </header>
       
@@ -686,7 +686,7 @@ export default function AlternativeMissionDetails() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className={`p-6 ${colors.card}`}>
+          <GlassCard className="p-6" glow>
             <div className="flex items-start gap-4 mb-6">
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${colors.iconBg} text-3xl`}>
                 {missionData.icon}
@@ -694,14 +694,14 @@ export default function AlternativeMissionDetails() {
               
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-2xl font-black text-foreground">
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white">
                     {missionData.title}
                   </h2>
                 </div>
                 <Badge className={colors.badge}>
                   {missionData.frequency}
                 </Badge>
-                <p className="text-muted-foreground mt-2">
+                <p className="text-gray-500 mt-2">
                   {missionData.description}
                 </p>
               </div>
@@ -715,33 +715,33 @@ export default function AlternativeMissionDetails() {
             
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-primary fill-primary" />
-                <span className="font-black text-primary">
+                <Zap className="w-5 h-5 text-[#013DC4] fill-[#013DC4]" />
+                <span className="font-black text-[#013DC4]">
                   +{missionData.xpReward} XP per step
                 </span>
               </div>
-              <Badge variant="outline" className="font-bold">
+              <Badge variant="outline" className="font-bold border-[#013DC4]/20 text-[#013DC4]">
                 {missionData.totalSteps} {missionData.stepLabel}s total
               </Badge>
             </div>
             
-            <div className="p-4 bg-muted/30 rounded-xl border border-dashed border-muted-foreground/20 mb-4">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <RefreshCw className="w-4 h-4" />
-                <span>Replaces: <strong className="text-foreground">{missionData.replacesTitle}</strong> (for today only)</span>
+            <div className="p-4 bg-white/50 dark:bg-gray-800/50 rounded-xl border border-dashed border-[#013DC4]/20 mb-4">
+              <div className="flex items-center gap-2 text-gray-500 text-sm">
+                <RefreshCw className="w-4 h-4 text-[#013DC4]" />
+                <span>Replaces: <strong className="text-gray-900 dark:text-white">{missionData.replacesTitle}</strong> (for today only)</span>
               </div>
             </div>
             
             {error && (
-              <div className="p-3 mb-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <p className="text-sm text-destructive">{error}</p>
+              <div className="p-3 mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
               </div>
             )}
             
             {!alreadyActive ? (
               <Button
                 size="lg"
-                className={`w-full font-black text-white ${colors.button} ${isActivatingAlternative ? '' : 'animate-pulse-glow'}`}
+                className={`w-full font-black text-white rounded-xl ${colors.button} ${isActivatingAlternative ? '' : 'animate-pulse-glow'}`}
                 disabled={isActivatingAlternative}
                 onClick={handleReplaceMission}
               >
@@ -760,15 +760,17 @@ export default function AlternativeMissionDetails() {
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-bold text-foreground">{t('alternativeMission.progress')}</span>
-                  <span className="text-muted-foreground">{currentProgress}/{maxProgress} {missionData.stepLabel}s</span>
+                  <span className="font-bold text-gray-900 dark:text-white">{t('alternativeMission.progress')}</span>
+                  <span className="text-gray-500">{currentProgress}/{maxProgress} {missionData.stepLabel}s</span>
                 </div>
-                <Progress value={progressPercent} className="h-3" />
+                <div className="h-3 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+                  <div className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
+                </div>
                 
                 <div className="flex gap-2">
                   <Button
                     size="lg"
-                    className={`flex-1 font-black text-white ${colors.button}`}
+                    className={`flex-1 font-black text-white rounded-xl ${colors.button}`}
                     disabled={isCompleted}
                     onClick={handleLogStep}
                   >
@@ -791,6 +793,7 @@ export default function AlternativeMissionDetails() {
                     disabled={currentProgress === 0}
                     onClick={handleUndoStep}
                     title={t('alternativeMission.undoStep')}
+                    className="rounded-xl border-gray-200 dark:border-gray-700"
                   >
                     <Undo2 className="w-5 h-5" />
                   </Button>
@@ -799,7 +802,7 @@ export default function AlternativeMissionDetails() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-muted-foreground hover:text-destructive"
+                  className="w-full text-gray-500 hover:text-red-500 rounded-xl"
                   onClick={() => setShowDeactivateConfirm(true)}
                 >
                   <XCircle className="w-4 h-4 mr-2" />
@@ -807,37 +810,37 @@ export default function AlternativeMissionDetails() {
                 </Button>
               </div>
             )}
-          </Card>
+          </GlassCard>
         </motion.div>
         
         {showDeactivateConfirm && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 px-4"
+            className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 backdrop-blur-sm px-4"
           >
-            <Card className="p-6 max-w-sm w-full">
-              <h3 className="text-lg font-bold mb-2">{t('alternativeMission.confirmDeactivate')}</h3>
-              <p className="text-muted-foreground text-sm mb-4">
+            <GlassCard className="p-6 max-w-sm w-full" glow>
+              <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">{t('alternativeMission.confirmDeactivate')}</h3>
+              <p className="text-gray-500 text-sm mb-4">
                 {t('alternativeMission.confirmDeactivateText')}
               </p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 rounded-xl border-gray-200 dark:border-gray-700"
                   onClick={() => setShowDeactivateConfirm(false)}
                 >
                   {t('alternativeMission.cancel')}
                 </Button>
                 <Button
                   variant="destructive"
-                  className="flex-1"
+                  className="flex-1 rounded-xl"
                   onClick={handleDeactivate}
                 >
                   {t('alternativeMission.deactivate')}
                 </Button>
               </div>
-            </Card>
+            </GlassCard>
           </motion.div>
         )}
         
@@ -846,12 +849,12 @@ export default function AlternativeMissionDetails() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="p-5">
-            <h3 className="text-lg font-black text-foreground mb-3">About This Mission</h3>
-            <p className="text-muted-foreground leading-relaxed">
+          <GlassCard className="p-5">
+            <h3 className="text-lg font-black text-gray-900 dark:text-white mb-3">About This Mission</h3>
+            <p className="text-gray-500 leading-relaxed">
               {missionData.details}
             </p>
-          </Card>
+          </GlassCard>
         </motion.div>
         
         <motion.div
@@ -859,8 +862,8 @@ export default function AlternativeMissionDetails() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-5">
-            <h3 className="text-lg font-black text-foreground mb-4">Benefits</h3>
+          <GlassCard className="p-5">
+            <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">Benefits</h3>
             <div className="grid grid-cols-2 gap-3">
               {missionData.benefits.map((benefit, index) => (
                 <motion.div
@@ -868,16 +871,16 @@ export default function AlternativeMissionDetails() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + index * 0.1 }}
-                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-chart-2/10 to-transparent rounded-lg"
+                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-[#013DC4]/10 to-transparent rounded-xl"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-chart-2/20 to-chart-2/10 flex items-center justify-center">
-                    <benefit.icon className="w-5 h-5 text-chart-2" />
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#013DC4]/20 to-[#013DC4]/10 flex items-center justify-center">
+                    <benefit.icon className="w-5 h-5 text-[#013DC4]" />
                   </div>
-                  <span className="text-sm font-semibold text-foreground">{benefit.text}</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{benefit.text}</span>
                 </motion.div>
               ))}
             </div>
-          </Card>
+          </GlassCard>
         </motion.div>
         
         <motion.div
@@ -885,43 +888,43 @@ export default function AlternativeMissionDetails() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="p-5">
-            <h3 className="text-lg font-black text-foreground mb-4">{t('alternativeMission.todaysProgress')}</h3>
+          <GlassCard className="p-5">
+            <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">{t('alternativeMission.todaysProgress')}</h3>
             <div className="space-y-3">
               {Array.from({ length: missionData.totalSteps }).map((_, index) => {
                 const stepCompleted = alreadyActive && index < currentProgress;
                 return (
                   <motion.div 
                     key={index} 
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-all ${
+                    className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
                       stepCompleted 
-                        ? 'bg-gradient-to-r from-chart-2/20 to-emerald-500/10 border border-chart-2/30' 
-                        : 'bg-muted/30'
+                        ? 'bg-gradient-to-r from-[#013DC4]/20 to-[#CDB6EF]/10 border border-[#013DC4]/30' 
+                        : 'bg-white/50 dark:bg-gray-800/50'
                     }`}
                     initial={false}
                     animate={stepCompleted ? { scale: [1, 1.02, 1] } : {}}
                   >
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
                       stepCompleted 
-                        ? 'bg-gradient-to-br from-chart-2 to-emerald-500 text-white' 
-                        : 'bg-muted text-muted-foreground'
+                        ? 'bg-gradient-to-br from-[#013DC4] to-[#0150FF] text-white' 
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
                     }`}>
                       {stepCompleted ? <Check className="w-4 h-4" /> : index + 1}
                     </div>
                     <div className="flex-1">
-                      <span className={`font-bold ${stepCompleted ? 'text-chart-2' : 'text-foreground'}`}>
+                      <span className={`font-bold ${stepCompleted ? 'text-[#013DC4]' : 'text-gray-900 dark:text-white'}`}>
                         {missionData.stepLabel} #{index + 1}
                       </span>
                     </div>
-                    <div className={`flex items-center gap-1 ${stepCompleted ? 'text-chart-2' : 'text-primary'}`}>
-                      <Zap className={`w-4 h-4 ${stepCompleted ? 'fill-chart-2' : 'fill-primary'}`} />
+                    <div className={`flex items-center gap-1 ${stepCompleted ? 'text-[#013DC4]' : 'text-[#013DC4]'}`}>
+                      <Zap className={`w-4 h-4 ${stepCompleted ? 'fill-[#013DC4]' : 'fill-[#013DC4]'}`} />
                       <span className="text-sm font-bold">{stepCompleted ? t('alternativeMission.earned') : `+${missionData.xpReward}`} XP</span>
                     </div>
                   </motion.div>
                 );
               })}
             </div>
-          </Card>
+          </GlassCard>
         </motion.div>
         
         <motion.div
@@ -929,25 +932,25 @@ export default function AlternativeMissionDetails() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Card className="p-5 bg-gradient-to-r from-chart-2/10 to-primary/10 border-chart-2/20">
+          <GlassCard className="p-5 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#013DC4]/30">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h4 className="font-black text-foreground mb-1">Pro Tip</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-black text-gray-900 dark:text-white mb-1">Pro Tip</h4>
+                <p className="text-sm text-gray-500">
                   {missionData.communityTip}
                 </p>
               </div>
             </div>
-          </Card>
+          </GlassCard>
         </motion.div>
         
-        <Card className="p-4 bg-amber-500/10 border-amber-500/20">
+        <GlassCard className="p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-              <Clock className="w-4 h-4 text-amber-600" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-400/30">
+              <Clock className="w-4 h-4 text-white" />
             </div>
             <div>
               <p className="font-bold text-amber-700 dark:text-amber-400 text-sm">Medical Disclaimer</p>
@@ -956,7 +959,7 @@ export default function AlternativeMissionDetails() {
               </p>
             </div>
           </div>
-        </Card>
+        </GlassCard>
       </main>
     </div>
   );

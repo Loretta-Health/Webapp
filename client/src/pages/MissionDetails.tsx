@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation, Link, useSearch } from 'wouter';
-import { Card } from '@/components/ui/card';
+import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -60,18 +60,20 @@ interface MissionData {
   badWeatherAlternatives?: { id: number; title: string; xp: number; icon: string }[];
 }
 
-const colorClasses: Record<string, { card: string; iconBg: string; badge: string; stepComplete: string }> = {
+const colorClasses: Record<string, { card: string; iconBg: string; badge: string; stepComplete: string; button: string }> = {
   'chart-1': {
-    card: 'bg-gradient-to-br from-chart-1/10 via-card to-card border-chart-1/20',
-    iconBg: 'bg-gradient-to-br from-chart-1 to-chart-2 shadow-lg shadow-chart-1/30',
-    badge: 'bg-chart-1/20 text-chart-1 border-chart-1/30',
-    stepComplete: 'bg-gradient-to-br from-chart-1 to-chart-2 text-white shadow-lg shadow-chart-1/30'
+    card: '',
+    iconBg: 'bg-gradient-to-br from-[#013DC4] to-[#0150FF] shadow-lg shadow-[#013DC4]/30',
+    badge: 'bg-[#013DC4]/10 text-[#013DC4] border-[#013DC4]/20',
+    stepComplete: 'bg-gradient-to-br from-[#013DC4] to-[#0150FF] text-white shadow-lg shadow-[#013DC4]/30',
+    button: 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90'
   },
   'chart-2': {
-    card: 'bg-gradient-to-br from-chart-2/10 via-card to-card border-chart-2/20',
-    iconBg: 'bg-gradient-to-br from-chart-2 to-emerald-500 shadow-lg shadow-chart-2/30',
-    badge: 'bg-chart-2/20 text-chart-2 border-chart-2/30',
-    stepComplete: 'bg-gradient-to-br from-chart-2 to-emerald-500 text-white shadow-lg shadow-chart-2/30'
+    card: '',
+    iconBg: 'bg-gradient-to-br from-[#CDB6EF] to-[#4B7BE5] shadow-lg shadow-[#CDB6EF]/30',
+    badge: 'bg-[#CDB6EF]/20 text-[#4B7BE5] border-[#CDB6EF]/30',
+    stepComplete: 'bg-gradient-to-br from-[#CDB6EF] to-[#4B7BE5] text-white shadow-lg shadow-[#CDB6EF]/30',
+    button: 'bg-gradient-to-r from-[#CDB6EF] to-[#4B7BE5] hover:opacity-90'
   }
 };
 
@@ -755,65 +757,67 @@ export default function MissionDetails() {
   // If no specific mission ID, show all missions overview
   if (!urlMissionId) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-        <header className="sticky top-0 z-40 bg-gradient-to-r from-card via-card to-primary/5 border-b border-border">
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+        <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 shadow-lg shadow-[#013DC4]/5">
           <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
             <Link href="/my-dashboard">
-              <Button size="icon" variant="ghost" data-testid="button-back">
-                <ArrowLeft className="w-5 h-5" />
+              <Button size="icon" variant="ghost" className="rounded-xl hover:bg-[#013DC4]/10" data-testid="button-back">
+                <ArrowLeft className="w-5 h-5 text-[#013DC4]" />
               </Button>
             </Link>
-            <h1 className="text-xl font-black text-foreground">{tDashboard('missions.allMissions')}</h1>
+            <h1 className="text-xl font-black text-gray-900 dark:text-white">{tDashboard('missions.allMissions')}</h1>
           </div>
         </header>
         
         <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
           {/* Active Missions */}
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <Flame className="w-5 h-5 text-primary" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Flame className="w-5 h-5 text-[#013DC4]" />
               {tDashboard('missions.activeMissions')} ({activeMissions.length})
             </h2>
             {activeMissions.length === 0 ? (
-              <Card className="p-6 text-center border-dashed">
-                <p className="text-muted-foreground">{tDashboard('missions.noActive')}</p>
-              </Card>
+              <GlassCard className="p-6 text-center border-dashed border-2 border-[#013DC4]/20">
+                <p className="text-gray-500">{tDashboard('missions.noActive')}</p>
+              </GlassCard>
             ) : (
               <div className="space-y-3">
                 {activeMissions.map((mission) => (
-                  <Card key={mission.id} className="p-4 hover:shadow-md transition-all">
+                  <GlassCard key={mission.id} className="p-4 hover:shadow-xl transition-all" glow>
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-foreground">{mission.title}</h3>
-                          <Badge variant="default" className="bg-primary/20 text-primary text-xs">
+                          <h3 className="font-bold text-gray-900 dark:text-white">{mission.title}</h3>
+                          <Badge variant="default" className="bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white text-xs border-0">
                             {tDashboard('missions.active')}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground">{mission.description}</p>
+                        <p className="text-sm text-gray-500">{mission.description}</p>
                         <div className="flex items-center gap-2 mt-2">
-                          <Progress value={(mission.progress / mission.maxProgress) * 100} className="h-2 flex-1" />
-                          <span className="text-xs text-muted-foreground">{mission.progress}/{mission.maxProgress}</span>
-                          <span className="text-xs font-bold text-primary">+{mission.xpReward} XP</span>
+                          <div className="h-2 flex-1 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all" style={{ width: `${(mission.progress / mission.maxProgress) * 100}%` }} />
+                          </div>
+                          <span className="text-xs text-gray-500">{mission.progress}/{mission.maxProgress}</span>
+                          <span className="text-xs font-bold text-[#013DC4]">+{mission.xpReward} XP</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 ml-4">
                         <Link href={`/mission-details?id=${mission.missionKey}`}>
-                          <Button variant="ghost" size="sm">
-                            <ChevronRight className="w-4 h-4" />
+                          <Button variant="ghost" size="sm" className="rounded-xl hover:bg-[#013DC4]/10">
+                            <ChevronRight className="w-4 h-4 text-[#013DC4]" />
                           </Button>
                         </Link>
                         <Button 
                           variant="outline" 
                           size="sm"
                           onClick={() => deactivateMission(mission.id)}
-                          className="text-muted-foreground"
+                          className="text-gray-500 border-gray-200 dark:border-gray-700 rounded-xl"
                         >
                           {tDashboard('missions.deactivateMission')}
                         </Button>
                       </div>
                     </div>
-                  </Card>
+                  </GlassCard>
                 ))}
               </div>
             )}
@@ -821,42 +825,42 @@ export default function MissionDetails() {
 
           {/* Available Missions */}
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <Target className="w-5 h-5 text-muted-foreground" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Target className="w-5 h-5 text-gray-400" />
               {tDashboard('missions.availableMissions')} ({inactiveMissions.length})
             </h2>
             {inactiveMissions.length > 0 && (
               <div className="space-y-3">
                 {inactiveMissions.map((mission) => (
                   <Link key={mission.id} href={`/mission-details?id=${mission.missionKey}`}>
-                    <Card className="p-4 opacity-60 hover:opacity-100 transition-all cursor-pointer hover:shadow-md">
+                    <GlassCard className="p-4 opacity-70 hover:opacity-100 transition-all cursor-pointer hover:shadow-xl">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-foreground">{mission.title}</h3>
-                            <Badge variant="secondary" className="text-xs">
+                            <h3 className="font-bold text-gray-900 dark:text-white">{mission.title}</h3>
+                            <Badge variant="secondary" className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                               {tDashboard('missions.inactive')}
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">{mission.description}</p>
-                          <span className="text-xs font-bold text-primary mt-2 block">+{mission.xpReward} XP</span>
+                          <p className="text-sm text-gray-500">{mission.description}</p>
+                          <span className="text-xs font-bold text-[#013DC4] mt-2 block">+{mission.xpReward} XP</span>
                         </div>
                         <div className="flex items-center gap-2 ml-4">
                           <Button 
-                            variant="default" 
                             size="sm"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                               activateMission(mission.id);
                             }}
+                            className="bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white rounded-xl"
                           >
                             {tDashboard('missions.activateMission')}
                           </Button>
-                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                          <ChevronRight className="w-5 h-5 text-gray-400" />
                         </div>
                       </div>
-                    </Card>
+                    </GlassCard>
                   </Link>
                 ))}
               </div>
@@ -910,7 +914,7 @@ export default function MissionDetails() {
   const isComplete = completedCount >= missionData.totalSteps;
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <AnimatePresence>
         {showCelebration && (
           <motion.div
@@ -919,26 +923,26 @@ export default function MissionDetails() {
             exit={{ opacity: 0, scale: 0.5 }}
             className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
           >
-            <div className="bg-primary/20 backdrop-blur-sm rounded-full p-8">
+            <div className="bg-[#013DC4]/20 backdrop-blur-sm rounded-full p-8">
               <motion.div
                 animate={{ rotate: [0, -10, 10, -10, 0] }}
                 transition={{ duration: 0.5 }}
               >
-                <Sparkles className="w-16 h-16 text-primary" />
+                <Sparkles className="w-16 h-16 text-[#013DC4]" />
               </motion.div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
       
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-card via-card to-primary/5 border-b border-border">
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 shadow-lg shadow-[#013DC4]/5">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
           <Link href="/my-dashboard">
-            <Button size="icon" variant="ghost" data-testid="button-back">
-              <ArrowLeft className="w-5 h-5" />
+            <Button size="icon" variant="ghost" className="rounded-xl hover:bg-[#013DC4]/10" data-testid="button-back">
+              <ArrowLeft className="w-5 h-5 text-[#013DC4]" />
             </Button>
           </Link>
-          <h1 className="text-xl font-black text-foreground">{t('missionDetails.title')}</h1>
+          <h1 className="text-xl font-black text-gray-900 dark:text-white">{t('missionDetails.title')}</h1>
         </div>
       </header>
       
@@ -947,7 +951,7 @@ export default function MissionDetails() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Card className={`p-6 ${colors.card}`}>
+          <GlassCard className="p-6" glow>
             <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
               <div className="flex items-start gap-4 flex-1">
                 <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center flex-shrink-0 ${colors.iconBg}`}>
@@ -955,13 +959,13 @@ export default function MissionDetails() {
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-xl sm:text-2xl font-black text-foreground mb-1" data-testid="mission-title">
+                  <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mb-1" data-testid="mission-title">
                     {missionData.title}
                   </h2>
                   <Badge className={colors.badge} data-testid="mission-frequency">
                     {missionData.frequency}
                   </Badge>
-                  <p className="text-sm sm:text-base text-muted-foreground mt-2" data-testid="mission-description">
+                  <p className="text-sm sm:text-base text-gray-500 mt-2" data-testid="mission-description">
                     {missionData.description}
                   </p>
                 </div>
@@ -977,8 +981,8 @@ export default function MissionDetails() {
             
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-muted-foreground uppercase">{t('missionDetails.progress')}</span>
-                <span className="text-sm font-bold text-foreground" data-testid="mission-progress-text">
+                <span className="text-sm font-bold text-gray-500 uppercase">{t('missionDetails.progress')}</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-white" data-testid="mission-progress-text">
                   {completedCount} of {missionData.totalSteps} steps
                 </span>
               </div>
@@ -989,8 +993,8 @@ export default function MissionDetails() {
                   className="absolute top-1/2 -translate-y-1/2 transition-all duration-500"
                   style={{ left: `calc(${progressPercent}% - 12px)` }}
                 >
-                  <div className="w-6 h-6 rounded-full bg-white border-2 border-primary flex items-center justify-center shadow-lg">
-                    <MissionIcon className="w-3 h-3 text-primary" />
+                  <div className="w-6 h-6 rounded-full bg-white border-2 border-[#013DC4] flex items-center justify-center shadow-lg">
+                    <MissionIcon className="w-3 h-3 text-[#013DC4]" />
                   </div>
                 </div>
               </div>
@@ -1005,7 +1009,7 @@ export default function MissionDetails() {
                     className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${
                       step.completed
                         ? colors.stepComplete
-                        : 'bg-muted/50 text-muted-foreground border-2 border-dashed border-muted-foreground/30'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 border-2 border-dashed border-[#013DC4]/20'
                     }`}
                     data-testid={`step-indicator-${index}`}
                   >
@@ -1018,8 +1022,8 @@ export default function MissionDetails() {
             <div className="mt-6 space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-primary fill-primary" />
-                  <span className="font-black text-primary text-sm sm:text-base" data-testid="mission-xp">
+                  <Zap className="w-5 h-5 text-[#013DC4] fill-[#013DC4]" />
+                  <span className="font-black text-[#013DC4] text-sm sm:text-base" data-testid="mission-xp">
                     +{missionData.xpReward} XP per step
                   </span>
                 </div>
@@ -1046,10 +1050,10 @@ export default function MissionDetails() {
               </div>
               
               {existingMission && (
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-white/50 dark:bg-gray-800/50">
                   <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
+                    <Target className="w-4 h-4 text-gray-500" />
+                    <span className="text-sm text-gray-500">
                       {existingMission.isActive ? tDashboard('missions.active') : tDashboard('missions.inactive')}
                     </span>
                   </div>
@@ -1069,11 +1073,11 @@ export default function MissionDetails() {
                 </div>
               )}
             </div>
-          </Card>
+          </GlassCard>
         </motion.div>
         
         <Tabs defaultValue="main" className="w-full">
-          <TabsList className={`grid w-full bg-muted/50 ${
+          <TabsList className={`grid w-full bg-gray-100 dark:bg-gray-800 ${
             ((hasLowMoodToday && missionData.alternativeMissions.length > 0) || 
              (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length))
               ? 'grid-cols-2' 
@@ -1095,12 +1099,12 @@ export default function MissionDetails() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card className="p-5">
-                <h3 className="text-lg font-black text-foreground mb-3">{t('missionDetails.missionDetails')}</h3>
-                <p className="text-muted-foreground leading-relaxed" data-testid="mission-details-text">
+              <GlassCard className="p-5">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-3">{t('missionDetails.missionDetails')}</h3>
+                <p className="text-gray-500 leading-relaxed" data-testid="mission-details-text">
                   {missionData.details}
                 </p>
-              </Card>
+              </GlassCard>
             </motion.div>
             
             <motion.div
@@ -1108,8 +1112,8 @@ export default function MissionDetails() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="p-5">
-                <h3 className="text-lg font-black text-foreground mb-4">{t('missionDetails.benefits')}</h3>
+              <GlassCard className="p-5">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">{t('missionDetails.benefits')}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {missionData.benefits.map((benefit, index) => (
                     <motion.div
@@ -1117,17 +1121,17 @@ export default function MissionDetails() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.2 + index * 0.1 }}
-                      className="flex items-center gap-3 p-3 bg-gradient-to-r from-chart-2/10 to-transparent rounded-lg"
+                      className="flex items-center gap-3 p-3 bg-gradient-to-r from-[#013DC4]/10 to-transparent rounded-xl"
                       data-testid={`benefit-${index}`}
                     >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-chart-2/20 to-chart-2/10 flex items-center justify-center">
-                        <benefit.icon className="w-5 h-5 text-chart-2" />
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#013DC4]/20 to-[#013DC4]/10 flex items-center justify-center">
+                        <benefit.icon className="w-5 h-5 text-[#013DC4]" />
                       </div>
-                      <span className="text-sm font-semibold text-foreground">{benefit.text}</span>
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{benefit.text}</span>
                     </motion.div>
                   ))}
                 </div>
-              </Card>
+              </GlassCard>
             </motion.div>
             
             <motion.div
@@ -1135,8 +1139,8 @@ export default function MissionDetails() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card className="p-5">
-                <h3 className="text-lg font-black text-foreground mb-4">{t('missionDetails.todaysLog')}</h3>
+              <GlassCard className="p-5">
+                <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">{t('missionDetails.todaysLog')}</h3>
                 <div className="space-y-2">
                   {steps.filter(s => s.completed).map((step, index) => (
                     <motion.div
@@ -1144,16 +1148,16 @@ export default function MissionDetails() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className={`flex items-center gap-3 p-3 rounded-lg ${missionData.color === 'chart-2' ? 'bg-chart-2/5' : 'bg-chart-1/5'}`}
+                      className={`flex items-center gap-3 p-3 rounded-xl ${missionData.color === 'chart-2' ? 'bg-[#CDB6EF]/10' : 'bg-[#013DC4]/5'}`}
                       data-testid={`log-entry-${index}`}
                     >
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${colors.stepComplete}`}>
                         <Check className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1">
-                        <span className="font-bold text-foreground">{missionData.stepLabel} #{step.id}</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{missionData.stepLabel} #{step.id}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-muted-foreground">
+                      <div className="flex items-center gap-1 text-gray-500">
                         <Clock className="w-4 h-4" />
                         <span className="text-sm">{step.time}</span>
                       </div>
@@ -1161,17 +1165,17 @@ export default function MissionDetails() {
                   ))}
                   
                   {steps.filter(s => !s.completed).length > 0 && (
-                    <div className="flex items-center gap-3 p-3 border-2 border-dashed border-muted-foreground/20 rounded-lg">
-                      <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
-                        <Target className="w-4 h-4 text-muted-foreground" />
+                    <div className="flex items-center gap-3 p-3 border-2 border-dashed border-[#013DC4]/20 rounded-xl">
+                      <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        <Target className="w-4 h-4 text-gray-500" />
                       </div>
-                      <span className="text-muted-foreground">
+                      <span className="text-gray-500">
                         {t('missionDetails.stepsRemaining', { count: steps.filter(s => !s.completed).length })}
                       </span>
                     </div>
                   )}
                 </div>
-              </Card>
+              </GlassCard>
             </motion.div>
             
             <motion.div
@@ -1179,19 +1183,19 @@ export default function MissionDetails() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card className="p-5 bg-gradient-to-r from-chart-2/10 to-primary/10 border-chart-2/20">
+              <GlassCard className="p-5 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#013DC4]/30">
                     <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-black text-foreground mb-1">{tDashboard('community.communityTip')}</h4>
-                    <p className="text-sm text-muted-foreground" data-testid="community-tip">
+                    <h4 className="font-black text-gray-900 dark:text-white mb-1">{tDashboard('community.communityTip')}</h4>
+                    <p className="text-sm text-gray-500" data-testid="community-tip">
                       {missionData.communityTip}
                     </p>
                   </div>
                 </div>
-              </Card>
+              </GlassCard>
             </motion.div>
           </TabsContent>
           
@@ -1200,36 +1204,36 @@ export default function MissionDetails() {
             <TabsContent value="alternatives" className="mt-4 space-y-3">
               {/* Mood banner - show when user has low mood today */}
               {hasLowMoodToday && missionData.alternativeMissions.length > 0 && (
-                <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
+                <GlassCard className="p-4 bg-gradient-to-r from-[#CDB6EF]/10 to-[#4B7BE5]/10">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#CDB6EF] to-[#4B7BE5] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#CDB6EF]/30">
                       <Heart className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-black text-foreground mb-1">{t('missionDetails.moodBanner.title')}</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <h4 className="font-black text-gray-900 dark:text-white mb-1">{t('missionDetails.moodBanner.title')}</h4>
+                      <p className="text-sm text-gray-500">
                         {t('missionDetails.moodBanner.description')}
                       </p>
                     </div>
                   </div>
-                </Card>
+                </GlassCard>
               )}
               
               {/* Weather banner - show when weather is bad for outdoor activities */}
               {isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length && (
-                <Card className="p-4 bg-gradient-to-r from-blue-500/10 to-slate-500/10 border-blue-500/20">
+                <GlassCard className="p-4 bg-gradient-to-r from-[#0150FF]/10 to-[#4B7BE5]/10">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-slate-500 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0150FF] to-[#4B7BE5] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#0150FF]/30">
                       <Wind className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <h4 className="font-black text-foreground mb-1">{t('missionDetails.weatherBanner.title')}</h4>
-                      <p className="text-sm text-muted-foreground">
+                      <h4 className="font-black text-gray-900 dark:text-white mb-1">{t('missionDetails.weatherBanner.title')}</h4>
+                      <p className="text-sm text-gray-500">
                         {t('missionDetails.weatherBanner.description')}
                       </p>
                     </div>
                   </div>
-                </Card>
+                </GlassCard>
               )}
               
               {/* Mood-based alternatives */}
@@ -1241,24 +1245,24 @@ export default function MissionDetails() {
                   transition={{ delay: index * 0.1 }}
                 >
                   <Link href={`/alternative-mission?id=${alt.id}&original=${urlMissionId}`}>
-                    <Card 
+                    <GlassCard 
                       className="p-4 hover-elevate cursor-pointer transition-all"
                       data-testid={`alternative-mission-${index}`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center text-2xl">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#CDB6EF]/20 to-[#4B7BE5]/20 flex items-center justify-center text-2xl">
                           {alt.icon}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-bold text-foreground">{alt.title}</h4>
-                          <div className="flex items-center gap-1 text-primary">
-                            <Zap className="w-4 h-4 fill-primary" />
+                          <h4 className="font-bold text-gray-900 dark:text-white">{alt.title}</h4>
+                          <div className="flex items-center gap-1 text-[#013DC4]">
+                            <Zap className="w-4 h-4 fill-[#013DC4]" />
                             <span className="text-sm font-bold">+{alt.xp} XP</span>
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
                       </div>
-                    </Card>
+                    </GlassCard>
                   </Link>
                 </motion.div>
               ))}
@@ -1272,35 +1276,35 @@ export default function MissionDetails() {
                   transition={{ delay: (missionData.alternativeMissions.length + index) * 0.1 }}
                 >
                   <Link href={`/alternative-mission?id=${alt.id}&original=${urlMissionId}&type=weather`}>
-                    <Card 
+                    <GlassCard 
                       className="p-4 hover-elevate cursor-pointer transition-all"
                       data-testid={`weather-alternative-mission-${index}`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-slate-500/20 flex items-center justify-center text-2xl">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0150FF]/20 to-[#4B7BE5]/20 flex items-center justify-center text-2xl">
                           {alt.icon}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-bold text-foreground">{alt.title}</h4>
-                          <div className="flex items-center gap-1 text-primary">
-                            <Zap className="w-4 h-4 fill-primary" />
+                          <h4 className="font-bold text-gray-900 dark:text-white">{alt.title}</h4>
+                          <div className="flex items-center gap-1 text-[#013DC4]">
+                            <Zap className="w-4 h-4 fill-[#013DC4]" />
                             <span className="text-sm font-bold">+{alt.xp} XP</span>
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        <ChevronRight className="w-5 h-5 text-gray-400" />
                       </div>
-                    </Card>
+                    </GlassCard>
                   </Link>
                 </motion.div>
               ))}
               
-              <Card className="p-4 border-dashed border-2 border-muted-foreground/20">
+              <GlassCard className="p-4 border-dashed border-2 border-[#013DC4]/20">
                 <div className="text-center py-4">
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-gray-500 text-sm">
                     {t('missionDetails.alternativesHint')}
                   </p>
                 </div>
-              </Card>
+              </GlassCard>
             </TabsContent>
           )}
         </Tabs>
