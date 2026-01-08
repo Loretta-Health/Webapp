@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -167,6 +168,11 @@ export default function MyDashboard() {
   const [showAddMedicationModal, setShowAddMedicationModal] = useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
+  const [setupChecklistDismissed, setSetupChecklistDismissed] = useState(() => {
+    return localStorage.getItem('loretta_setup_checklist_dismissed') === 'true';
+  });
+  const [isChecklistClosing, setIsChecklistClosing] = useState(false);
+  const previousAllSetupCompleteRef = useRef<boolean | null>(null);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
   const { locationEnabled, toggleLocationEnabled, usingDefault, loading: locationLoading } = useGeolocation();
   const userId = user?.id;
@@ -275,9 +281,27 @@ export default function MyDashboard() {
   const nextLevelXP = level * 100 + 200;
   const xpProgress = ((xp % nextLevelXP) / nextLevelXP) * 100;
   
-  const isNewUser = !allSetupComplete;
-  const showSetupChecklist = !allSetupComplete;
+  const isNewUser = !allSetupComplete && !setupChecklistDismissed;
+  const showSetupChecklist = !setupChecklistDismissed && (!allSetupComplete || isChecklistClosing);
   const displayName = profileData?.firstName || user?.firstName || user?.username || t('common.friend');
+
+  // Detect when all setup steps become complete and trigger closing animation
+  useEffect(() => {
+    if (previousAllSetupCompleteRef.current === false && allSetupComplete && !setupChecklistDismissed) {
+      // All steps just became complete - trigger closing animation
+      setIsChecklistClosing(true);
+      
+      // Wait for animation then permanently dismiss
+      const timer = setTimeout(() => {
+        setSetupChecklistDismissed(true);
+        localStorage.setItem('loretta_setup_checklist_dismissed', 'true');
+        setIsChecklistClosing(false);
+      }, 2000); // 2 seconds for celebration + exit animation
+      
+      return () => clearTimeout(timer);
+    }
+    previousAllSetupCompleteRef.current = allSetupComplete;
+  }, [allSetupComplete, setupChecklistDismissed]);
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -794,137 +818,160 @@ export default function MyDashboard() {
             </Link>
             </div>
             
-            {showSetupChecklist && (
-              <CollapsibleSectionNew
-                title={t('setup.title')}
-                icon={<Sparkles className="w-5 h-5" />}
-                badge={
-                  <span className="ml-2 px-3 py-1 bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white text-xs font-bold rounded-full shadow-lg">
-                    {completedStepsCount}/{setupSteps.length}
-                  </span>
-                }
-                gradient
-              >
-                <div className="space-y-4">
-                  <div className="h-3 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
-                    <div 
-                      className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full shadow-lg transition-all"
-                      style={{ width: `${setupProgress}%` }}
-                    />
-                  </div>
-                  <p className="text-sm text-gray-500 font-medium">
-                    {setupProgress === 100 ? t('setup.allDone') : t('setup.stepsToUnlock')}
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <Link href="/onboarding">
-                      <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                        consentComplete 
-                          ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
-                          : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
-                      }`}>
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
-                          consentComplete 
-                            ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
-                            : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
-                        }`}>
-                          {consentComplete ? <Check className="w-5 h-5 text-white" /> : <Shield className="w-5 h-5 text-white" />}
-                        </div>
-                        <div className="flex-1">
-                          <p className={`font-semibold ${consentComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
-                            {t('setup.consent')}
-                          </p>
-                        </div>
-                        {consentComplete ? (
-                          <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
-                        ) : (
-                          <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+10 XP</span>
-                        )}
-                      </div>
-                    </Link>
-                    
-                    <Link href="/profile">
-                      <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                        profileComplete 
-                          ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
-                          : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
-                      }`}>
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
-                          profileComplete 
-                            ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
-                            : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
-                        }`}>
-                          {profileComplete ? <Check className="w-5 h-5 text-white" /> : <User className="w-5 h-5 text-white" />}
-                        </div>
-                        <div className="flex-1">
-                          <p className={`font-semibold ${profileComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
-                            {t('setup.profile')}
-                          </p>
-                        </div>
-                        {profileComplete ? (
-                          <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
-                        ) : (
-                          <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+25 XP</span>
-                        )}
-                      </div>
-                    </Link>
-                    
-                    <Link href="/onboarding">
-                      <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                        questionnaireComplete 
-                          ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
-                          : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
-                      }`}>
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
-                          questionnaireComplete 
-                            ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
-                            : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
-                        }`}>
-                          {questionnaireComplete ? <Check className="w-5 h-5 text-white" /> : <ClipboardList className="w-5 h-5 text-white" />}
-                        </div>
-                        <div className="flex-1">
-                          <p className={`font-semibold ${questionnaireComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
-                            {t('setup.questionnaire')}
-                          </p>
-                        </div>
-                        {questionnaireComplete ? (
-                          <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
-                        ) : (
-                          <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+50 XP</span>
-                        )}
-                      </div>
-                    </Link>
-                    
-                    <div 
-                      className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
-                        firstCheckInComplete 
-                          ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
-                          : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
-                      }`}
-                      onClick={() => !firstCheckInComplete && setShowCheckInModal(true)}
-                    >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
-                        firstCheckInComplete 
-                          ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
-                          : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
-                      }`}>
-                        {firstCheckInComplete ? <Check className="w-5 h-5 text-white" /> : <Heart className="w-5 h-5 text-white" />}
-                      </div>
-                      <div className="flex-1">
-                        <p className={`font-semibold ${firstCheckInComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
-                          {t('setup.checkin')}
-                        </p>
-                      </div>
-                      {firstCheckInComplete ? (
-                        <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
+            <AnimatePresence>
+              {showSetupChecklist && (
+                <motion.div
+                  initial={{ opacity: 1, scale: 1, y: 0 }}
+                  animate={isChecklistClosing ? {
+                    scale: [1, 1.02, 0.95],
+                    opacity: [1, 1, 0],
+                    y: [0, -10, -30],
+                  } : { opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                  transition={{ duration: isChecklistClosing ? 1.5 : 0.3, ease: "easeInOut" }}
+                >
+                  <CollapsibleSectionNew
+                    title={t('setup.title')}
+                    icon={<Sparkles className="w-5 h-5" />}
+                    badge={
+                      isChecklistClosing ? (
+                        <span className="ml-2 px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg animate-pulse">
+                          {t('setup.complete', 'Complete!')}
+                        </span>
                       ) : (
-                        <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+15 XP</span>
-                      )}
+                        <span className="ml-2 px-3 py-1 bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white text-xs font-bold rounded-full shadow-lg">
+                          {completedStepsCount}/{setupSteps.length}
+                        </span>
+                      )
+                    }
+                    gradient
+                  >
+                    <div className="space-y-4">
+                      <div className="h-3 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+                        <div 
+                          className={`h-full rounded-full shadow-lg transition-all ${
+                            isChecklistClosing 
+                              ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                              : 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF]'
+                          }`}
+                          style={{ width: `${setupProgress}%` }}
+                        />
+                      </div>
+                      <p className={`text-sm font-medium ${isChecklistClosing ? 'text-green-600 dark:text-green-400' : 'text-gray-500'}`}>
+                        {isChecklistClosing ? t('setup.congratulations', 'Congratulations! You\'re all set up!') : (setupProgress === 100 ? t('setup.allDone') : t('setup.stepsToUnlock'))}
+                      </p>
+                      
+                      <div className="space-y-3">
+                        <Link href="/onboarding">
+                          <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                            consentComplete 
+                              ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
+                              : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
+                          }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                              consentComplete 
+                                ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+                                : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
+                            }`}>
+                              {consentComplete ? <Check className="w-5 h-5 text-white" /> : <Shield className="w-5 h-5 text-white" />}
+                            </div>
+                            <div className="flex-1">
+                              <p className={`font-semibold ${consentComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                                {t('setup.consent')}
+                              </p>
+                            </div>
+                            {consentComplete ? (
+                              <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
+                            ) : (
+                              <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+10 XP</span>
+                            )}
+                          </div>
+                        </Link>
+                        
+                        <Link href="/profile">
+                          <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                            profileComplete 
+                              ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
+                              : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
+                          }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                              profileComplete 
+                                ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+                                : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
+                            }`}>
+                              {profileComplete ? <Check className="w-5 h-5 text-white" /> : <User className="w-5 h-5 text-white" />}
+                            </div>
+                            <div className="flex-1">
+                              <p className={`font-semibold ${profileComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                                {t('setup.profile')}
+                              </p>
+                            </div>
+                            {profileComplete ? (
+                              <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
+                            ) : (
+                              <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+25 XP</span>
+                            )}
+                          </div>
+                        </Link>
+                        
+                        <Link href="/onboarding">
+                          <div className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                            questionnaireComplete 
+                              ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
+                              : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
+                          }`}>
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                              questionnaireComplete 
+                                ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+                                : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
+                            }`}>
+                              {questionnaireComplete ? <Check className="w-5 h-5 text-white" /> : <ClipboardList className="w-5 h-5 text-white" />}
+                            </div>
+                            <div className="flex-1">
+                              <p className={`font-semibold ${questionnaireComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                                {t('setup.questionnaire')}
+                              </p>
+                            </div>
+                            {questionnaireComplete ? (
+                              <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
+                            ) : (
+                              <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+50 XP</span>
+                            )}
+                          </div>
+                        </Link>
+                        
+                        <div 
+                          className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${
+                            firstCheckInComplete 
+                              ? 'bg-gradient-to-r from-green-50 to-emerald-50/50 dark:from-green-900/20 dark:to-emerald-900/10' 
+                              : 'bg-white/50 dark:bg-gray-800/50 hover:bg-white dark:hover:bg-gray-800 hover:shadow-lg cursor-pointer'
+                          }`}
+                          onClick={() => !firstCheckInComplete && setShowCheckInModal(true)}
+                        >
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                            firstCheckInComplete 
+                              ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
+                              : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400'
+                          }`}>
+                            {firstCheckInComplete ? <Check className="w-5 h-5 text-white" /> : <Heart className="w-5 h-5 text-white" />}
+                          </div>
+                          <div className="flex-1">
+                            <p className={`font-semibold ${firstCheckInComplete ? 'line-through text-gray-400' : 'text-gray-900 dark:text-white'}`}>
+                              {t('setup.checkin')}
+                            </p>
+                          </div>
+                          {firstCheckInComplete ? (
+                            <span className="px-3 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-xs font-bold rounded-full shadow-lg">{t('setup.done')}</span>
+                          ) : (
+                            <span className="px-3 py-1 bg-gradient-to-r from-[#CDB6EF]/20 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 text-xs font-bold rounded-full">+15 XP</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </CollapsibleSectionNew>
-            )}
+                  </CollapsibleSectionNew>
+                </motion.div>
+              )}
+            </AnimatePresence>
             
             {showLeaderboard ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7">

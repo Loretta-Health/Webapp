@@ -45,7 +45,9 @@
     "checkin": "Ersten Check-In machen",
     "checkinPending": "Beginne damit, deine tägliche Stimmung zu verfolgen",
     "checkinComplete": "Abgeschlossen",
-    "done": "Erledigt"
+    "done": "Erledigt",
+    "complete": "Fertig!",
+    "congratulations": "Glückwunsch! Du bist fertig eingerichtet!"
   },
   "stats": {
     "level": "Stufe {{level}}",
