@@ -297,7 +297,7 @@ export default function Dashboard() {
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center mr-2">
                   <MessageCircle className="w-3 h-3 text-white" />
                 </div>
-                <span className="font-bold">Health Navigator</span>
+                <span className="font-bold">Chat with Loretta</span>
               </Button>
             </Link>
             <Link href="/leaderboard">
