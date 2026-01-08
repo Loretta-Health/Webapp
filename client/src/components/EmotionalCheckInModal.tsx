@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Smile, Send, Sparkles, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MascotCharacter from './MascotCharacter';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { 
@@ -180,20 +179,12 @@ export default function EmotionalCheckInModal({
               <Smile className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-black bg-gradient-to-r from-[#013DC4] to-[#0150FF] bg-clip-text text-transparent">
-              Emotional Check-In
+              Check-In
             </span>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex justify-center mb-2">
-          <MascotCharacter 
-            size="md" 
-            pose={step === 'supportive' ? 'celebrate' : 'encourage'}
-            speech={step === 'supportive' ? "Great job!" : undefined}
-          />
-        </div>
-
-        <ScrollArea className="h-[250px] pr-4" ref={scrollRef}>
+        <ScrollArea className="h-[300px] pr-4" ref={scrollRef}>
           <div className="space-y-3">
             <AnimatePresence>
               {messages.map((message) => (

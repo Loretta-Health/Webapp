@@ -1046,7 +1046,7 @@ export default function MyDashboard() {
                         onClick={() => setShowCheckInModal(true)}
                         className="w-full py-3 sm:py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:shadow-2xl hover:shadow-[#013DC4]/30 transition-all hover:scale-[1.02] min-h-[48px]"
                       >
-                        {t('checkin.startButton', 'Start Check-in')} (+15 XP)
+                        {t('checkin.startButton', 'Start Check-in')} (+10 XP)
                       </button>
                       
                       {allEmotionalCheckins && allEmotionalCheckins.length > 0 && (
