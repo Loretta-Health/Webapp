@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, 
   Check, 
-  Sparkles,
   Clock,
   Pill,
   AlertTriangle,
@@ -26,7 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
 import { useAuth } from '@/hooks/use-auth';
 import AddMedicationModal from '@/components/AddMedicationModal';
@@ -84,7 +83,6 @@ export default function MedicationDetails() {
   const medication = medications.find(m => m.id === medicationId);
   const progress = getProgress(medicationId);
   
-  const [showCelebration, setShowCelebration] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [undoingDose, setUndoingDose] = useState<number | null>(null);
@@ -122,12 +120,7 @@ export default function MedicationDetails() {
   
   const handleLogDose = async () => {
     if (nextDose) {
-      const { success } = await logDose(medicationId, nextDose.id);
-      
-      if (success) {
-        setShowCelebration(true);
-        setTimeout(() => setShowCelebration(false), 2000);
-      }
+      await logDose(medicationId, nextDose.id);
     }
   };
 
@@ -148,11 +141,7 @@ export default function MedicationDetails() {
 
   const handleLogSpecificDose = async (doseNumber: number) => {
     setLoggingDose(doseNumber);
-    const { success } = await logDose(medicationId, doseNumber);
-    if (success) {
-      setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 2000);
-    }
+    await logDose(medicationId, doseNumber);
     setLoggingDose(null);
   };
 
@@ -164,26 +153,6 @@ export default function MedicationDetails() {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-      <AnimatePresence>
-        {showCelebration && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.5 }}
-            className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
-          >
-            <div className="bg-[#013DC4]/20 backdrop-blur-sm rounded-full p-8">
-              <motion.div
-                animate={{ rotate: [0, -10, 10, -10, 0] }}
-                transition={{ duration: 0.5 }}
-              >
-                <Sparkles className="w-16 h-16 text-[#013DC4]" />
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
       <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between shadow-2xl shadow-[#013DC4]/30 relative overflow-hidden sticky top-0 z-40">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
         
