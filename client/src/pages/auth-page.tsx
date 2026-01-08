@@ -99,10 +99,9 @@ export default function AuthPage() {
           <div className="relative overflow-hidden bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] p-6 sm:p-8 text-center">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
             <div className="relative z-10">
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-3">
                 <img src={lorettaLogoHorizontal} alt="Loretta" className="h-10 sm:h-12 object-contain brightness-0 invert drop-shadow-lg" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">{t('welcome')}</h1>
               <p className="text-white/80 text-sm font-medium">{t('tagline')}</p>
             </div>
           </div>
