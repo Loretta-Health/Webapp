@@ -6,6 +6,9 @@ export interface MedicationDose {
   id: number;
   time?: string;
   taken: boolean;
+  missed: boolean;
+  logId?: string;
+  source?: 'manual' | 'auto';
 }
 
 export interface Medication {
@@ -37,6 +40,8 @@ export interface MedicationLog {
   doseNumber: number;
   takenAt: string;
   scheduledDate: string;
+  status: 'taken' | 'missed';
+  source: 'manual' | 'auto';
 }
 
 export interface CreateMedicationInput {
@@ -259,10 +264,15 @@ export function useMedicationProgress() {
       const takenToday: MedicationDose[] = [];
       for (let i = 1; i <= med.dosesPerDay; i++) {
         const log = todayLogs.find(l => l.medicationId === med.id && l.doseNumber === i);
+        const isTaken = log?.status === 'taken';
+        const isMissed = log?.status === 'missed';
         takenToday.push({
           id: i,
-          taken: !!log,
-          time: log ? new Date(log.takenAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : undefined,
+          taken: isTaken,
+          missed: isMissed,
+          logId: log?.id,
+          source: log?.source as 'manual' | 'auto' | undefined,
+          time: log && isTaken ? new Date(log.takenAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : undefined,
         });
       }
       return { ...med, takenToday };

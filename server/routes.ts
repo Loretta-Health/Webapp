@@ -8,6 +8,7 @@ import { setupAuth } from "./auth";
 import { HEALTH_NAVIGATOR_SYSTEM_PROMPT } from "./prompts";
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
 import { processCheckin, processActivityLogged, processXpEarned, processMedicationTaken } from "./lib/achievementManager";
+import { startMedicationAutoMissCron } from "./cron/medication-auto-miss";
 import { 
   insertQuestionnaireSchema, 
   insertUserProfileSchema,
@@ -2801,6 +2802,8 @@ IMPORTANT: When discussing risk scores, remember:
   });
 
   const httpServer = createServer(app);
+
+  startMedicationAutoMissCron();
 
   return httpServer;
 }

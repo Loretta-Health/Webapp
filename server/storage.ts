@@ -187,6 +187,7 @@ export interface IStorage {
   getMedicationLogsForDate(userId: string, date: string): Promise<MedicationLog[]>;
   getMedicationLogs(medicationId: string, limit?: number): Promise<MedicationLog[]>;
   getAllMedicationLogsForMedication(medicationId: string): Promise<MedicationLog[]>;
+  getMedicationLogForDose(medicationId: string, date: string, doseNumber: number): Promise<MedicationLog | undefined>;
   logMedicationDose(data: InsertMedicationLog): Promise<MedicationLog>;
 
   // Medication adherence methods
@@ -1355,6 +1356,18 @@ export class DatabaseStorage implements IStorage {
       .from(medicationLogs)
       .where(eq(medicationLogs.medicationId, medicationId))
       .orderBy(desc(medicationLogs.takenAt));
+  }
+
+  async getMedicationLogForDose(medicationId: string, date: string, doseNumber: number): Promise<MedicationLog | undefined> {
+    const [log] = await db
+      .select()
+      .from(medicationLogs)
+      .where(and(
+        eq(medicationLogs.medicationId, medicationId),
+        eq(medicationLogs.scheduledDate, date),
+        eq(medicationLogs.doseNumber, doseNumber)
+      ));
+    return log;
   }
 
   async logMedicationDose(data: InsertMedicationLog): Promise<MedicationLog> {
