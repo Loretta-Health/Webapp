@@ -1997,7 +1997,7 @@ export default function Onboarding() {
             <Button
               onClick={handleNumberSubmit}
               disabled={!numberInput}
-              className="w-full bg-gradient-to-r from-primary to-chart-2"
+              className="w-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20"
               data-testid="button-submit-number"
             >
               {t('onboarding.questionnaire.continue')}
@@ -2028,7 +2028,7 @@ export default function Onboarding() {
             <Button
               onClick={handleTimeSubmit}
               disabled={!timeInput}
-              className="w-full bg-gradient-to-r from-primary to-chart-2"
+              className="w-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20"
               data-testid="button-submit-time"
             >
               {t('onboarding.questionnaire.continue')}
@@ -2175,14 +2175,14 @@ export default function Onboarding() {
             </Card>
           </div>
 
-          <Button
+          <button
             onClick={handleComplete}
-            className="w-full bg-gradient-to-r from-primary to-chart-2 font-black text-lg py-6"
+            className="w-full py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white font-black text-lg rounded-2xl shadow-lg shadow-[#013DC4]/20 transition-all flex items-center justify-center gap-2 min-h-[56px]"
             data-testid="button-go-to-dashboard"
           >
             Start Your Health Journey
-            <ChevronRight className="w-5 h-5 ml-2" />
-          </Button>
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </>
       )}
     </motion.div>
@@ -2190,24 +2190,37 @@ export default function Onboarding() {
 
   if (allLoading || !initialStepSet) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-secondary/10">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-xl shadow-[#013DC4]/20">
+            <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+          </div>
+          <p className="text-gray-500 font-medium">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
-      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
-        <div className="max-w-lg mx-auto flex items-center justify-center gap-3">
-          <img src={lorettaLogo} alt="Loretta" className="h-8" />
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] p-4">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
+        <div className="max-w-lg mx-auto flex items-center justify-center gap-3 relative z-10">
+          <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+            <img src={lorettaLogo} alt="Loretta" className="h-6 object-contain brightness-0 invert" />
+          </div>
         </div>
       </div>
       
       <div className="max-w-lg mx-auto p-4">
         <div className="mb-6">
-          <Progress value={stepProgress[step]} className="h-2" />
-          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+          <div className="h-3 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner backdrop-blur-xl">
+            <div 
+              className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg" 
+              style={{ width: `${stepProgress[step]}%` }} 
+            />
+          </div>
+          <div className="flex justify-between mt-2 text-xs text-gray-500 font-medium">
             <span>Welcome</span>
             <span>Consent</span>
             <span>Profile</span>
@@ -2216,7 +2229,7 @@ export default function Onboarding() {
           </div>
         </div>
 
-        <Card className="p-6 border-0 shadow-xl">
+        <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl shadow-[#013DC4]/10 p-6">
           <AnimatePresence mode="wait">
             {step === 'welcome' && renderWelcome()}
             {step === 'consent' && renderConsent()}
@@ -2224,7 +2237,7 @@ export default function Onboarding() {
             {step === 'questionnaire' && renderQuestionnaire()}
             {step === 'riskScore' && renderRiskScore()}
           </AnimatePresence>
-        </Card>
+        </div>
       </div>
     </div>
   );
