@@ -131,12 +131,12 @@
     }
   },
   "chat": {
-    "title": "Gesundheits-Navigator",
+    "title": "Chat mit Loretta",
     "subtitle": "Frage mich alles über deine Gesundheit",
     "placeholder": "Frage über deine Gesundheit...",
     "send": "Senden",
     "thinking": "Denke nach...",
-    "welcome": "Hallo! Ich bin der Gesundheits-Navigator. Ich kann dir helfen, deine medizinischen Dokumente zu verstehen, Gesundheitsbegriffe zu erklären und Fragen zu deiner Gesundheitsreise zu beantworten. Wie kann ich dir heute helfen?",
+    "welcome": "Hallo! Ich bin Loretta, deine Gesundheitsassistentin. Ich kann dir helfen, deine medizinischen Dokumente zu verstehen, Gesundheitsbegriffe zu erklären und Fragen zu deiner Gesundheitsreise zu beantworten. Wie kann ich dir heute helfen?",
     "error": "Entschuldigung, ich konnte deine Anfrage nicht verarbeiten. Bitte versuche es erneut.",
     "back": "Zurück",
     "suggestionsTitle": "Frage zu deinen medizinischen Dokumenten:",
@@ -369,7 +369,7 @@
     "lowMoodRequired": "Alternative Missionen sind nur verfügbar, wenn du heute mit einer schlechten Stimmung eingecheckt hast. Versuche zuerst einzuchecken!"
   },
   "activityDetails": {
-    "title": "Gesundheitskompetenz-Navigator",
+    "title": "Chat mit Loretta",
     "subtitle": "Personalisierte Gesundheitsberatung",
     "communityTipContent": "Kleine Schritte zählen - schon 5 Minuten Gehen hilft!"
   },

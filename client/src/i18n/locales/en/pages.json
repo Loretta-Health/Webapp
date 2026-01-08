@@ -131,12 +131,12 @@
     }
   },
   "chat": {
-    "title": "Health Literacy Navigator",
+    "title": "Chat with Loretta",
     "subtitle": "Ask me anything about your health",
     "placeholder": "Ask about your health...",
     "send": "Send",
     "thinking": "Thinking...",
-    "welcome": "Hello! I'm the Health Literacy Navigator. I can help you understand your medical documents, explain health terms, and answer questions about your health journey. How can I help you today?",
+    "welcome": "Hello! I'm Loretta, your health assistant. I can help you understand your medical documents, explain health terms, and answer questions about your health journey. How can I help you today?",
     "error": "Sorry, I couldn't process your request. Please try again.",
     "back": "Back",
     "suggestionsTitle": "Ask about your medical documents:",
@@ -369,7 +369,7 @@
     "lowMoodRequired": "Alternative missions are only available when you check in with a low mood today. Try checking in first!"
   },
   "activityDetails": {
-    "title": "Health Literacy Navigator",
+    "title": "Chat with Loretta",
     "subtitle": "Personalized health guidance",
     "communityTipContent": "Small consistent efforts add up - even a 5-minute walk helps!"
   },
