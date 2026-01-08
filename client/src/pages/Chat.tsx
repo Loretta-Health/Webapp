@@ -221,10 +221,10 @@ export default function Chat() {
                           )}
                         </div>
                         <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right ml-auto' : ''}`}>
-                          <div className={`p-3 sm:p-4 rounded-2xl ${
+                          <div className={`rounded-2xl ${
                             message.role === 'user'
-                              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-tr-none shadow-md border border-gray-200 dark:border-gray-600'
-                              : 'bg-[#E8F0FF] dark:bg-[#1a2744] text-gray-900 dark:text-white rounded-tl-none shadow-md border border-[#013DC4]/20 dark:border-[#013DC4]/30'
+                              ? 'px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-tr-none shadow-md border border-gray-200 dark:border-gray-600'
+                              : 'p-3 sm:p-4 bg-[#E8F0FF] dark:bg-[#1a2744] text-gray-900 dark:text-white rounded-tl-none shadow-md border border-[#013DC4]/20 dark:border-[#013DC4]/30'
                           }`}>
                             {message.role === 'assistant' ? (
                               <div className="text-sm prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-strong:font-bold prose-em:italic">
