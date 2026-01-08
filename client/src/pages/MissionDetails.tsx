@@ -27,7 +27,6 @@ import {
   type LucideIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MascotCharacter from '@/components/MascotCharacter';
 import { useMissions } from '@/hooks/useMissions';
 import { useQuery } from '@tanstack/react-query';
 import { isLowMoodEmotion } from '../../../shared/emotions';
@@ -964,12 +963,6 @@ export default function MissionDetails() {
                 </div>
               </div>
               
-              <MascotCharacter 
-                size="sm" 
-                pose={isComplete ? 'celebrate' : 'encourage'}
-                speech={isComplete ? "Amazing!" : "You can do it!"}
-                className="hidden sm:block"
-              />
             </div>
             
             <div className="space-y-3">

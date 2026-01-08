@@ -27,7 +27,6 @@ import {
   type LucideIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MascotCharacter from '@/components/MascotCharacter';
 import { useMissions } from '@/hooks/useMissions';
 
 interface AlternativeMissionData {
@@ -706,11 +705,6 @@ export default function AlternativeMissionDetails() {
                 </p>
               </div>
               
-              <MascotCharacter 
-                size="sm" 
-                pose="encourage"
-                speech="Try this!"
-              />
             </div>
             
             <div className="flex items-center justify-between mb-4">

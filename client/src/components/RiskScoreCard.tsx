@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { TrendingUp, TrendingDown, ChevronDown, ChevronUp, Beaker, Lightbulb, Brain, GraduationCap, BookOpen, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import MascotCharacter from './MascotCharacter';
 import MedicalTerm from './MedicalTerm';
 
 interface RiskScoreCardProps {
@@ -57,10 +56,6 @@ export default function RiskScoreCard({ score, trend = 'stable', message, classN
               </div>
             </div>
             
-            <MascotCharacter 
-              size="sm" 
-              pose={score >= 70 ? 'celebrate' : score >= 40 ? 'encourage' : 'concerned'}
-            />
           </div>
           
           <div className="flex items-center justify-center mb-4 lg:mb-6">
