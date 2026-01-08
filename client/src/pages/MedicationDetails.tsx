@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLocation, Link, useSearch } from 'wouter';
-import { Card } from '@/components/ui/card';
+import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { useTranslation } from 'react-i18next';
 import { 
   ArrowLeft, 
@@ -34,19 +32,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { motion, AnimatePresence } from 'framer-motion';
-import MascotCharacter from '@/components/MascotCharacter';
 import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
 import { useAuth } from '@/hooks/use-auth';
 import AddMedicationModal from '@/components/AddMedicationModal';
-
-const colorClasses = {
-  primary: {
-    card: 'bg-gradient-to-br from-primary/10 via-card to-card border-primary/20',
-    iconBg: 'bg-gradient-to-br from-primary to-chart-2 shadow-lg shadow-primary/30',
-    badge: 'bg-primary/20 text-primary border-primary/30',
-    stepComplete: 'bg-gradient-to-br from-primary to-chart-2 text-white shadow-lg shadow-primary/30'
-  }
-};
 
 const dayNames: Record<string, { en: string; de: string }> = {
   monday: { en: 'Mon', de: 'Mo' },
@@ -62,12 +50,11 @@ function formatWeeklySchedule(scheduledTimes: string[], language: string): strin
   if (!scheduledTimes || scheduledTimes.length === 0) return language === 'en' ? 'Weekly' : 'Wöchentlich';
   
   return scheduledTimes.map(schedule => {
-    // Format is "day:HH:MM" e.g. "monday:08:00"
     const parts = schedule.split(':');
     if (parts.length < 2) return schedule;
     
     const day = parts[0];
-    const time = parts.slice(1).join(':'); // Rejoin time parts
+    const time = parts.slice(1).join(':');
     
     const dayName = dayNames[day.toLowerCase()]?.[language === 'de' ? 'de' : 'en'] || day;
     
@@ -83,7 +70,6 @@ export default function MedicationDetails() {
   const params = new URLSearchParams(searchString);
   const medicationId = params.get('id') || 'morning-medication';
   const { user } = useAuth();
-  const userId = user?.id;
   
   const { medications, logDose, undoLogDose, getProgress, deleteMedication, isLogging, isLoading } = useMedicationProgress();
   const medication = medications.find(m => m.id === medicationId);
@@ -96,21 +82,26 @@ export default function MedicationDetails() {
   
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">{t('common.loading', 'Loading...')}</div>
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+        <Loader2 className="w-8 h-8 animate-spin text-[#013DC4]" />
       </div>
     );
   }
   
   if (!medication) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <Card className="p-6 text-center">
-          <p className="text-muted-foreground">{t('medicationDetails.notFound')}</p>
+      <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+        <GlassCard className="p-6 text-center max-w-sm">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center shadow-lg">
+            <Pill className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-gray-500 font-medium mb-4">{t('medicationDetails.notFound')}</p>
           <Link href="/my-dashboard">
-            <Button className="mt-4">{t('medicationDetails.backToDashboard')}</Button>
+            <Button className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white font-bold">
+              {t('medicationDetails.backToDashboard')}
+            </Button>
           </Link>
-        </Card>
+        </GlassCard>
       </div>
     );
   }
@@ -152,7 +143,7 @@ export default function MedicationDetails() {
   ];
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <AnimatePresence>
         {showCelebration && (
           <motion.div
@@ -161,53 +152,60 @@ export default function MedicationDetails() {
             exit={{ opacity: 0, scale: 0.5 }}
             className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
           >
-            <div className="bg-primary/20 backdrop-blur-sm rounded-full p-8">
+            <div className="bg-[#013DC4]/20 backdrop-blur-sm rounded-full p-8">
               <motion.div
                 animate={{ rotate: [0, -10, 10, -10, 0] }}
                 transition={{ duration: 0.5 }}
               >
-                <Sparkles className="w-16 h-16 text-primary" />
+                <Sparkles className="w-16 h-16 text-[#013DC4]" />
               </motion.div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
       
-      <header className="sticky top-0 z-40 bg-gradient-to-r from-card via-card to-primary/5 border-b border-border">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+      <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between shadow-2xl shadow-[#013DC4]/30 relative overflow-hidden sticky top-0 z-40">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
+        
+        <div className="flex items-center gap-3 relative z-10">
           <Link href="/my-dashboard">
-            <Button size="icon" variant="ghost" data-testid="button-back">
+            <button className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" data-testid="button-back">
               <ArrowLeft className="w-5 h-5" />
-            </Button>
+            </button>
           </Link>
-          <h1 className="text-xl font-black text-foreground flex-1">{t('medicationDetails.title')}</h1>
-          
-          <Button size="icon" variant="ghost" onClick={() => setIsEditModalOpen(true)}>
+          <h1 className="text-base sm:text-lg font-black truncate">{t('medicationDetails.title')}</h1>
+        </div>
+        
+        <div className="flex items-center gap-1 sm:gap-2 relative z-10">
+          <button 
+            onClick={() => setIsEditModalOpen(true)}
+            className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          >
             <Pencil className="w-5 h-5" />
-          </Button>
+          </button>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button size="icon" variant="ghost" className="text-destructive hover:bg-destructive/10">
+              <button className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
                 <Trash2 className="w-5 h-5" />
-              </Button>
+              </button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="backdrop-blur-xl bg-white/90 dark:bg-gray-900/90 border border-white/50 dark:border-white/10 rounded-3xl">
               <AlertDialogHeader>
-                <AlertDialogTitle>
+                <AlertDialogTitle className="font-black text-gray-900 dark:text-white">
                   {t('medicationDetails.deleteConfirm.title', 'Delete Medication')}
                 </AlertDialogTitle>
-                <AlertDialogDescription>
+                <AlertDialogDescription className="text-gray-500 font-medium">
                   {t('medicationDetails.deleteConfirm.description', 'Are you sure you want to delete this medication? This action cannot be undone and all tracking history will be lost.')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>
+                <AlertDialogCancel className="rounded-xl font-bold">
                   {t('common.cancel', 'Cancel')}
                 </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={handleDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  className="bg-gradient-to-r from-red-400 to-red-500 text-white rounded-xl font-bold hover:opacity-90"
                   disabled={isDeleting}
                 >
                   {isDeleting ? (
@@ -225,91 +223,118 @@ export default function MedicationDetails() {
         </div>
       </header>
       
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-2xl mx-auto p-3 sm:p-5 lg:p-8 space-y-4 sm:space-y-5 lg:space-y-7">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`${colorClasses.primary.card} rounded-xl p-6 border`}
         >
-          <div className="flex items-start gap-3 sm:gap-4 mb-6">
-            <div className={`${colorClasses.primary.iconBg} w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center flex-shrink-0`}>
-              <Pill className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl sm:text-2xl font-black text-foreground mb-1" data-testid="medication-name">
-                {medication.name}
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground mb-2">{medication.dosage}</p>
-              <div className="flex flex-wrap gap-2">
-                <Badge className={colorClasses.primary.badge}>
-                  <Clock className="w-3 h-3 mr-1" />
-                  {medication.frequency === 'as-needed' 
-                    ? t('medicationDetails.asNeeded', 'As needed')
-                    : medication.frequency === 'weekly'
-                      ? formatWeeklySchedule(medication.scheduledTimes || [], i18n.language)
-                      : (medication.scheduledTimes || []).length > 0 
-                        ? medication.scheduledTimes.join(', ')
-                        : t('medicationDetails.daily', 'Daily')}
-                </Badge>
-                <Badge 
-                  variant="secondary"
-                  className={`${(medication.adherencePercent ?? 100) >= 80 ? 'bg-primary/20 text-primary' : (medication.adherencePercent ?? 100) >= 50 ? 'bg-chart-3/20 text-chart-3' : 'bg-destructive/20 text-destructive'}`}
-                >
-                  {medication.adherencePercent ?? 100}% {t('medicationDetails.adherence', 'Adherence')}
-                </Badge>
-                {medication.streak > 0 && (
-                  <Badge variant="secondary">
-                    <Flame className="w-3 h-3 mr-1 text-chart-3" />
-                    {t('medicationDetails.dayStreak', { count: medication.streak })}
-                  </Badge>
-                )}
+          <GlassCard className="overflow-hidden">
+            <div className="relative p-4 sm:p-5 bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg ${
+                  progress.isComplete 
+                    ? 'bg-gradient-to-br from-green-400 to-emerald-500 shadow-green-500/30' 
+                    : 'bg-gradient-to-br from-[#CDB6EF] to-purple-400 shadow-[#CDB6EF]/30'
+                }`}>
+                  {progress.isComplete ? (
+                    <Check className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                  ) : (
+                    <Pill className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-black text-gray-900 dark:text-white mb-1 truncate" data-testid="medication-name">
+                    {medication.name}
+                  </h2>
+                  <p className="text-sm sm:text-base text-gray-500 font-medium mb-2">{medication.dosage}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center px-2.5 py-1 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 text-[#013DC4] dark:text-[#CDB6EF] text-xs font-bold rounded-full">
+                      <Clock className="w-3 h-3 mr-1" />
+                      {medication.frequency === 'as-needed' 
+                        ? t('medicationDetails.asNeeded', 'As needed')
+                        : medication.frequency === 'weekly'
+                          ? formatWeeklySchedule(medication.scheduledTimes || [], i18n.language)
+                          : (medication.scheduledTimes || []).length > 0 
+                            ? medication.scheduledTimes.join(', ')
+                            : t('medicationDetails.daily', 'Daily')}
+                    </span>
+                    <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${
+                      (medication.adherencePercent ?? 100) >= 80 
+                        ? 'bg-gradient-to-r from-green-400/20 to-emerald-400/20 text-green-600 dark:text-green-400' 
+                        : (medication.adherencePercent ?? 100) >= 50 
+                          ? 'bg-gradient-to-r from-amber-400/20 to-orange-400/20 text-amber-600 dark:text-amber-400' 
+                          : 'bg-gradient-to-r from-red-400/20 to-red-500/20 text-red-600 dark:text-red-400'
+                    }`}>
+                      {medication.adherencePercent ?? 100}% {t('medicationDetails.adherence', 'Adherence')}
+                    </span>
+                    {medication.streak > 0 && (
+                      <div className="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-orange-400 to-red-400 rounded-full shadow-lg">
+                        <Flame className="w-3 h-3 text-white" />
+                        <span className="text-xs font-bold text-white">
+                          {t('medicationDetails.dayStreak', { count: medication.streak })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {medication.notes && (
+                    <div className="mt-3 p-3 rounded-xl bg-white/50 dark:bg-gray-800/50 text-sm">
+                      <span className="font-bold text-gray-900 dark:text-white">{t('medicationDetails.notes', 'Notes')}:</span>{' '}
+                      <span className="text-gray-500 font-medium">{medication.notes}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              {medication.notes && (
-                <div className="mt-3 p-3 rounded-lg bg-muted/50 text-sm">
-                  <span className="font-medium">{t('medicationDetails.notes', 'Notes')}:</span>{' '}
-                  <span className="text-muted-foreground">{medication.notes}</span>
+            </div>
+            
+            <div className="p-4 sm:p-5">
+              {medication.frequency !== 'as-needed' && progress.total > 0 && (
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-bold text-gray-900 dark:text-white">
+                      {medication.frequency === 'weekly' 
+                        ? t('medicationDetails.thisWeeksProgress', "This week's progress")
+                        : t('medicationDetails.todaysProgress')}
+                    </span>
+                    <span className="text-gray-500 font-medium">{t('medicationDetails.doses', { taken: progress.taken, total: progress.total })}</span>
+                  </div>
+                  <div className="h-3 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+                    <div 
+                      className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
                 </div>
               )}
+              
+              <button
+                className={`w-full py-4 sm:py-5 rounded-2xl font-black text-base sm:text-lg text-white transition-all min-h-[56px] flex items-center justify-center gap-2 ${
+                  medication.frequency !== 'as-needed' && progress.isComplete
+                    ? 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg shadow-green-500/30'
+                    : 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:shadow-xl shadow-lg shadow-[#013DC4]/30'
+                }`}
+                onClick={handleLogDose}
+                disabled={medication.frequency !== 'as-needed' && progress.isComplete}
+                data-testid="button-log-dose"
+              >
+                {medication.frequency !== 'as-needed' && progress.isComplete ? (
+                  <>
+                    <Check className="w-5 h-5 sm:w-6 sm:h-6" />
+                    {t('medicationDetails.allDosesTaken')}
+                  </>
+                ) : medication.frequency === 'as-needed' ? (
+                  <>
+                    <Pill className="w-5 h-5 sm:w-6 sm:h-6" />
+                    {t('medicationDetails.logDoseAsNeeded', 'Log Dose')}
+                  </>
+                ) : (
+                  <>
+                    <Pill className="w-5 h-5 sm:w-6 sm:h-6" />
+                    {t('medicationDetails.logDose', { current: progress.taken + 1, total: progress.total })}
+                  </>
+                )}
+              </button>
             </div>
-          </div>
-          
-          {medication.frequency !== 'as-needed' && progress.total > 0 && (
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="font-bold text-foreground">
-                  {medication.frequency === 'weekly' 
-                    ? t('medicationDetails.thisWeeksProgress', "This week's progress")
-                    : t('medicationDetails.todaysProgress')}
-                </span>
-                <span className="text-muted-foreground">{t('medicationDetails.doses', { taken: progress.taken, total: progress.total })}</span>
-              </div>
-              <Progress value={progressPercent} className="h-3" />
-            </div>
-          )}
-          
-          <Button
-            className="w-full bg-gradient-to-r from-primary to-chart-2 font-black text-lg py-6"
-            onClick={handleLogDose}
-            disabled={medication.frequency !== 'as-needed' && progress.isComplete}
-            data-testid="button-log-dose"
-          >
-            {medication.frequency !== 'as-needed' && progress.isComplete ? (
-              <>
-                <Check className="w-5 h-5 mr-2" />
-                {t('medicationDetails.allDosesTaken')}
-              </>
-            ) : medication.frequency === 'as-needed' ? (
-              <>
-                <Pill className="w-5 h-5 mr-2" />
-                {t('medicationDetails.logDoseAsNeeded', 'Log Dose')}
-              </>
-            ) : (
-              <>
-                <Pill className="w-5 h-5 mr-2" />
-                {t('medicationDetails.logDose', { current: progress.taken + 1, total: progress.total })}
-              </>
-            )}
-          </Button>
+          </GlassCard>
         </motion.div>
         
         {medication.frequency !== 'as-needed' && (medication.takenToday || []).length > 0 && (
@@ -318,48 +343,53 @@ export default function MedicationDetails() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="p-5">
-              <h3 className="text-lg font-black text-foreground mb-3">{t('medicationDetails.doseLog')}</h3>
-              <div className="space-y-3">
+            <GlassCard className="overflow-hidden">
+              <div className="p-4 sm:p-5 bg-gradient-to-r from-[#013DC4]/5 to-[#CDB6EF]/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white">{t('medicationDetails.doseLog')}</h3>
+                </div>
+              </div>
+              <div className="p-4 sm:p-5 space-y-2 sm:space-y-3">
                 {(medication.takenToday || []).map((dose: MedicationDose, index: number) => (
                   <motion.div
                     key={dose.id}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className={`flex items-center gap-3 p-3 rounded-lg ${
+                    className={`flex items-center gap-3 p-3 sm:p-4 rounded-2xl transition-all ${
                       dose.taken 
-                        ? colorClasses.primary.stepComplete 
-                        : 'bg-muted/50'
+                        ? 'bg-gradient-to-r from-green-400 to-emerald-500 shadow-lg shadow-green-500/30' 
+                        : 'bg-white/50 dark:bg-gray-800/50'
                     }`}
                     data-testid={`dose-${dose.id}`}
                   >
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      dose.taken ? 'bg-white/20' : 'bg-muted'
+                      dose.taken ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700'
                     }`}>
                       {dose.taken ? (
-                        <Check className="w-4 h-4" />
+                        <Check className="w-4 h-4 text-white" />
                       ) : (
-                        <span className={dose.taken ? 'text-white' : 'text-muted-foreground'}>
+                        <span className="text-xs font-bold text-gray-500">
                           {dose.id}
                         </span>
                       )}
                     </div>
                     <div className="flex-1">
-                      <span className={`font-bold ${dose.taken ? 'text-white' : 'text-foreground'}`}>
+                      <span className={`font-bold ${dose.taken ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                         {t('medicationDetails.dose', { id: dose.id })}
                       </span>
                       {dose.time && (
-                        <span className={`text-sm ml-2 ${dose.taken ? 'text-white/80' : 'text-muted-foreground'}`}>
+                        <span className={`text-sm ml-2 ${dose.taken ? 'text-white/80' : 'text-gray-500'}`}>
                           {t('medicationDetails.takenAt', { time: dose.time })}
                         </span>
                       )}
                     </div>
                     {dose.taken && (
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-white/80 hover:text-white hover:bg-white/20"
+                      <button
+                        className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleUndoDose(dose.id);
@@ -367,37 +397,37 @@ export default function MedicationDetails() {
                         disabled={undoingDose === dose.id}
                       >
                         {undoingDose === dose.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-4 h-4 text-white animate-spin" />
                         ) : (
-                          <Undo2 className="w-4 h-4" />
+                          <Undo2 className="w-4 h-4 text-white" />
                         )}
-                      </Button>
+                      </button>
                     )}
                   </motion.div>
                 ))}
               </div>
-            </Card>
+            </GlassCard>
           </motion.div>
         )}
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.2 }}
         >
-          <Card className="p-4 border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-transparent">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                <AlertTriangle className="w-5 h-5 text-amber-600" />
+          <GlassCard className="p-4 sm:p-5 bg-gradient-to-r from-amber-400/10 to-orange-400/10 border-amber-400/20">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/30">
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <p className="font-bold text-foreground mb-1">{t('medicationDetails.medicalDisclaimer')}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="font-bold text-gray-900 dark:text-white mb-1">{t('medicationDetails.medicalDisclaimer')}</p>
+                <p className="text-xs sm:text-sm text-gray-500 font-medium">
                   {t('medicationDetails.disclaimerText')}
                 </p>
               </div>
             </div>
-          </Card>
+          </GlassCard>
         </motion.div>
       </main>
 
