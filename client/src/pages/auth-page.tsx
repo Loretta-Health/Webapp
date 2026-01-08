@@ -17,7 +17,7 @@ export default function AuthPage() {
   const { isOnboardingComplete, isLoading: onboardingLoading } = useOnboardingProgress();
   const { t } = useTranslation('auth');
   
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [registerForm, setRegisterForm] = useState({ 
     username: '', 
     password: '', 
@@ -98,14 +98,14 @@ export default function AuthPage() {
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-username">{t('username')}</Label>
+                    <Label htmlFor="login-email">{t('email')}</Label>
                     <Input
-                      id="login-username"
-                      type="text"
-                      autoComplete="username"
-                      placeholder={t('placeholders.username')}
-                      value={loginForm.username}
-                      onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+                      id="login-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder={t('placeholders.email')}
+                      value={loginForm.email}
+                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
                       required
                     />
                   </div>
