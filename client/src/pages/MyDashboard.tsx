@@ -168,9 +168,6 @@ export default function MyDashboard() {
   const [showAddMedicationModal, setShowAddMedicationModal] = useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
-  const [setupChecklistDismissed, setSetupChecklistDismissed] = useState(() => {
-    return localStorage.getItem('loretta_setup_checklist_dismissed') === 'true';
-  });
   const [isChecklistClosing, setIsChecklistClosing] = useState(false);
   const previousAllSetupCompleteRef = useRef<boolean | null>(null);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
@@ -179,7 +176,7 @@ export default function MyDashboard() {
   const { activeMissions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
   const medicationProgress = getTotalProgress();
-  const { progress: onboardingProgress, isConsentComplete, isQuestionnaireComplete } = useOnboardingProgress();
+  const { progress: onboardingProgress, isConsentComplete, isQuestionnaireComplete, isSetupChecklistDismissed, markSetupChecklistDismissed } = useOnboardingProgress();
   
   const { data: gamificationData } = useQuery<GamificationData>({
     queryKey: ['/api/gamification'],
@@ -281,27 +278,26 @@ export default function MyDashboard() {
   const nextLevelXP = level * 100 + 200;
   const xpProgress = ((xp % nextLevelXP) / nextLevelXP) * 100;
   
-  const isNewUser = !allSetupComplete && !setupChecklistDismissed;
-  const showSetupChecklist = !setupChecklistDismissed && (!allSetupComplete || isChecklistClosing);
+  const isNewUser = !allSetupComplete && !isSetupChecklistDismissed;
+  const showSetupChecklist = !isSetupChecklistDismissed && (!allSetupComplete || isChecklistClosing);
   const displayName = profileData?.firstName || user?.firstName || user?.username || t('common.friend');
 
   // Detect when all setup steps become complete and trigger closing animation
   useEffect(() => {
-    if (previousAllSetupCompleteRef.current === false && allSetupComplete && !setupChecklistDismissed) {
+    if (previousAllSetupCompleteRef.current === false && allSetupComplete && !isSetupChecklistDismissed) {
       // All steps just became complete - trigger closing animation
       setIsChecklistClosing(true);
       
-      // Wait for animation then permanently dismiss
+      // Wait for animation then permanently dismiss and save to database
       const timer = setTimeout(() => {
-        setSetupChecklistDismissed(true);
-        localStorage.setItem('loretta_setup_checklist_dismissed', 'true');
+        markSetupChecklistDismissed();
         setIsChecklistClosing(false);
       }, 2000); // 2 seconds for celebration + exit animation
       
       return () => clearTimeout(timer);
     }
     previousAllSetupCompleteRef.current = allSetupComplete;
-  }, [allSetupComplete, setupChecklistDismissed]);
+  }, [allSetupComplete, isSetupChecklistDismissed, markSetupChecklistDismissed]);
   
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);

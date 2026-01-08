@@ -404,6 +404,8 @@ export const onboardingProgress = pgTable("onboarding_progress", {
   questionnaireCompletedAt: timestamp("questionnaire_completed_at"),
   onboardingComplete: boolean("onboarding_complete").default(false),
   onboardingCompletedAt: timestamp("onboarding_completed_at"),
+  setupChecklistDismissed: boolean("setup_checklist_dismissed").default(false),
+  setupChecklistDismissedAt: timestamp("setup_checklist_dismissed_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -423,6 +425,8 @@ export const updateOnboardingProgressSchema = z.object({
   questionnaireCompletedAt: z.date().optional(),
   onboardingComplete: z.boolean().optional(),
   onboardingCompletedAt: z.date().optional(),
+  setupChecklistDismissed: z.boolean().optional(),
+  setupChecklistDismissedAt: z.date().optional(),
 });
 
 export type InsertOnboardingProgress = z.infer<typeof insertOnboardingProgressSchema>;
