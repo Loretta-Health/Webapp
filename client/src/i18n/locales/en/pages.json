@@ -330,7 +330,7 @@
       "alternatives": "Alternative Missions",
       "weatherAlternatives": "Indoor Options"
     },
-    "stepsRemaining": "{{count}} more to go...",
+    "remaining": "{{count}} more to go...",
     "alternativesHint": "Alternative missions earn XP too! Choose what works best for you.",
     "moodBanner": {
       "title": "Take It Easy Today",
@@ -357,8 +357,8 @@
     "activateForToday": "Activate for Today",
     "progress": "Progress",
     "completed": "Completed!",
-    "logStep": "Log Step",
-    "undoStep": "Undo last step",
+    "logProgress": "Log Progress",
+    "undoLast": "Undo last",
     "returnToMain": "Return to Main Mission",
     "confirmDeactivate": "Return to Main Mission?",
     "confirmDeactivateText": "This will deactivate the alternative mission. Your progress will be saved but you'll return to the original mission.",
