@@ -192,7 +192,7 @@ export interface IStorage {
   // Medication adherence methods
   getMedicationAdherence(medicationId: string): Promise<MedicationAdherence | undefined>;
   updateMedicationAdherence(medicationId: string, userId: string, data: UpdateMedicationAdherence): Promise<MedicationAdherence>;
-  resetMedicationAdherence(medicationId: string, totalDosesTaken: number): Promise<void>;
+  resetMedicationAdherence(medicationId: string, totalDosesTaken: number, totalDosesScheduled: number, lastTakenDate: string | null): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1363,11 +1363,19 @@ export class DatabaseStorage implements IStorage {
       .values(data)
       .returning();
     
-    // Update adherence stats
-    await this.updateMedicationAdherence(data.medicationId, data.userId, {
-      totalDosesTaken: 1, // Will be incremented
-      lastTakenDate: data.scheduledDate,
-    });
+    // Only update adherence for taken doses (not missed)
+    const status = (data as any).status || 'taken';
+    if (status === 'taken') {
+      await this.updateMedicationAdherence(data.medicationId, data.userId, {
+        totalDosesTaken: 1, // Will be incremented
+        lastTakenDate: data.scheduledDate,
+      });
+    } else {
+      // For missed doses, only increment scheduled count
+      await this.updateMedicationAdherence(data.medicationId, data.userId, {
+        totalDosesScheduled: 1, // Will be incremented
+      });
+    }
     
     return log;
   }

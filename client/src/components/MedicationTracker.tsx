@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass-card';
-import { Pill, Check, Clock, ChevronRight, Loader2 } from 'lucide-react';
+import { Pill, Check, Clock, ChevronRight, Loader2, X } from 'lucide-react';
 import { Link } from 'wouter';
 import MedicalTerm from './MedicalTerm';
 import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
@@ -72,12 +72,13 @@ export default function MedicationTracker({
   className = ''
 }: MedicationTrackerProps) {
   const { t, i18n } = useTranslation('dashboard');
-  const { getProgress, logDose, medications } = useMedicationProgress();
+  const { getProgress, logDose, logMissedDose, medications } = useMedicationProgress();
   const progress = getProgress(medicationId);
   const medication = medications.find(m => m.id === medicationId);
   const takenToday = medication?.takenToday || [];
   
   const [loggingDose, setLoggingDose] = useState<number | null>(null);
+  const [markingMissed, setMarkingMissed] = useState<number | null>(null);
   
   const progressPercent = progress.total > 0 ? (progress.taken / progress.total) * 100 : 0;
   
@@ -87,6 +88,14 @@ export default function MedicationTracker({
     setLoggingDose(doseId);
     await logDose(medicationId, doseId);
     setLoggingDose(null);
+  };
+
+  const handleMarkMissed = async (e: React.MouseEvent, doseId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMarkingMissed(doseId);
+    await logMissedDose(medicationId, doseId);
+    setMarkingMissed(null);
   };
   
   return (
@@ -197,20 +206,36 @@ export default function MedicationTracker({
                     {i18n.language === 'de' ? 'Erledigt' : 'Done'}
                   </span>
                 ) : (
-                  <button
-                    onClick={(e) => handleLogDose(e, dose.id)}
-                    disabled={loggingDose === dose.id}
-                    className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg hover:shadow-xl transition-all disabled:opacity-50 min-w-[60px] sm:min-w-[70px] flex items-center justify-center gap-1"
-                  >
-                    {loggingDose === dose.id ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <>
-                        <Pill className="w-3 h-3" />
-                        {i18n.language === 'de' ? 'Log' : 'Log'}
-                      </>
-                    )}
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={(e) => handleLogDose(e, dose.id)}
+                      disabled={loggingDose === dose.id || markingMissed === dose.id}
+                      className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-1"
+                    >
+                      {loggingDose === dose.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Check className="w-3 h-3" />
+                          {i18n.language === 'de' ? 'Genommen' : 'Taken'}
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={(e) => handleMarkMissed(e, dose.id)}
+                      disabled={loggingDose === dose.id || markingMissed === dose.id}
+                      className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-gradient-to-r from-gray-400 to-gray-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg hover:shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-1"
+                    >
+                      {markingMissed === dose.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <>
+                          <X className="w-3 h-3" />
+                          {i18n.language === 'de' ? 'Verpasst' : 'Missed'}
+                        </>
+                      )}
+                    </button>
+                  </div>
                 )}
               </div>
             );
