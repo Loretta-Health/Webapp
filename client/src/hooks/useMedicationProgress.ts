@@ -132,6 +132,18 @@ export function useMedicationProgress() {
     },
   });
 
+  // Log missed dose mutation
+  const logMissedDoseMutation = useMutation({
+    mutationFn: async ({ medicationId, doseNumber }: { medicationId: string; doseNumber?: number }) => {
+      const response = await apiRequest('POST', `/api/medications/${medicationId}/missed`, { doseNumber });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today'] });
+    },
+  });
+
   // Get a specific medication by ID
   const getMedication = (medicationId: string): Medication | undefined => {
     return medications.find(m => m.id === medicationId);
@@ -163,6 +175,19 @@ export function useMedicationProgress() {
       return true;
     } catch (error) {
       console.error('Failed to undo dose:', error);
+      return false;
+    }
+  };
+
+  // Log a missed dose
+  const logMissedDose = async (medicationId: string, doseNumber?: number): Promise<boolean> => {
+    try {
+      await logMissedDoseMutation.mutateAsync({ medicationId, doseNumber });
+      const med = getMedication(medicationId);
+      trackMedication('skipped', med?.name);
+      return true;
+    } catch (error) {
+      console.error('Failed to log missed dose:', error);
       return false;
     }
   };
@@ -253,6 +278,7 @@ export function useMedicationProgress() {
     refetch,
     getMedication,
     logDose,
+    logMissedDose,
     undoLogDose,
     getProgress,
     getTotalProgress,
@@ -261,6 +287,7 @@ export function useMedicationProgress() {
     deleteMedication,
     isCreating: createMedicationMutation.isPending,
     isLogging: logDoseMutation.isPending,
+    isLoggingMissed: logMissedDoseMutation.isPending,
     isUpdating: updateMedicationMutation.isPending,
   };
 }

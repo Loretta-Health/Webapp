@@ -471,7 +471,7 @@ export type InsertMedication = z.infer<typeof insertMedicationSchema>;
 export type UpdateMedication = z.infer<typeof updateMedicationSchema>;
 export type Medication = typeof medications.$inferSelect;
 
-// Medication logs table - tracks when doses are taken
+// Medication logs table - tracks when doses are taken or missed
 export const medicationLogs = pgTable("medication_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   medicationId: text("medication_id").notNull(),
@@ -479,6 +479,7 @@ export const medicationLogs = pgTable("medication_logs", {
   doseNumber: integer("dose_number").default(1).notNull(), // Which dose of the day (1st, 2nd, etc.)
   takenAt: timestamp("taken_at").defaultNow(),
   scheduledDate: text("scheduled_date").notNull(), // Date string for the day (YYYY-MM-DD)
+  status: text("status").default("taken").notNull(), // "taken" or "missed"
   xpAwarded: integer("xp_awarded").default(10),
   createdAt: timestamp("created_at").defaultNow(),
 });

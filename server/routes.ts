@@ -1666,6 +1666,59 @@ IMPORTANT: When discussing risk scores, remember:
     }
   });
 
+  // Mark a medication dose as missed
+  app.post("/api/medications/:id/missed", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      const userId = (req.user as any).id;
+      const { id: medicationId } = req.params;
+      const { doseNumber } = req.body;
+      
+      const medication = await storage.getMedication(medicationId);
+      
+      if (!medication) {
+        return res.status(404).json({ error: "Medication not found" });
+      }
+      
+      if (medication.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+      
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if this dose was already logged today
+      const logsToday = await storage.getMedicationLogsForDate(userId, today);
+      const existingDose = logsToday.find(
+        log => log.medicationId === medicationId && log.doseNumber === (doseNumber || 1)
+      );
+      
+      if (existingDose) {
+        return res.status(400).json({ error: "This dose was already logged today" });
+      }
+      
+      const log = await storage.logMedicationDose({
+        medicationId,
+        userId,
+        doseNumber: doseNumber || 1,
+        scheduledDate: today,
+        status: "missed",
+        xpAwarded: 0,
+      } as any);
+      
+      res.json({
+        success: true,
+        log,
+        message: "Dose marked as missed",
+      });
+    } catch (error) {
+      console.error("Error marking medication dose as missed:", error);
+      res.status(500).json({ error: "Failed to mark dose as missed" });
+    }
+  });
+
   // Undo a medication dose
   app.delete("/api/medications/:medicationId/log/:logId", async (req, res) => {
     if (!req.isAuthenticated()) {
