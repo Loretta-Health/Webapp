@@ -17,7 +17,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import lorettaLogo from '@assets/logos/loretta_logo.png';
+import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
 
 interface ConsentFormProps {
   onAccept: (newsletterOptIn: boolean) => void;
@@ -77,9 +77,7 @@ export default function ConsentForm({ onAccept, onDecline }: ConsentFormProps) {
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
             <div className="relative z-10">
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl">
-                  <img src={lorettaLogo} alt="Loretta" className="h-10 object-contain brightness-0 invert" data-testid="logo-consent" />
-                </div>
+                <img src={lorettaLogoHorizontal} alt="Loretta" className="h-10 sm:h-12 object-contain brightness-0 invert drop-shadow-lg" data-testid="logo-consent" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">{t('consent.welcomeTitle')}</h1>
               <p className="text-white/80 text-sm font-medium">{t('consent.subtitle')}</p>
