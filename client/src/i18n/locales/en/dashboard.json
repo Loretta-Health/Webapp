@@ -45,7 +45,9 @@
     "checkin": "Do Your First Check-In",
     "checkinPending": "Start tracking how you feel each day",
     "checkinComplete": "Completed",
-    "done": "Done"
+    "done": "Done",
+    "complete": "Complete!",
+    "congratulations": "Congratulations! You're all set up!"
   },
   "stats": {
     "level": "Level {{level}}",
