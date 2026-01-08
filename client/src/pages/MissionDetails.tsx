@@ -997,23 +997,27 @@ export default function MissionDetails() {
                 </div>
               </div>
               
-              <div className="flex justify-between w-full">
-                {steps.map((step, index) => (
-                  <motion.div
-                    key={step.id}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all flex-shrink-0 ${
-                      step.completed
-                        ? colors.stepComplete
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 border-2 border-dashed border-[#013DC4]/20'
-                    }`}
-                    data-testid={`step-indicator-${index}`}
-                  >
-                    {step.completed ? <Check className="w-3 h-3 sm:w-4 sm:h-4" /> : index + 1}
-                  </motion.div>
-                ))}
+              <div className="relative w-full h-8 sm:h-9">
+                {steps.map((step, index) => {
+                  const position = ((index + 1) / missionData.totalSteps) * 100;
+                  return (
+                    <motion.div
+                      key={step.id}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`absolute top-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all ${
+                        step.completed
+                          ? colors.stepComplete
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 border-2 border-dashed border-[#013DC4]/20'
+                      }`}
+                      style={{ left: `calc(${position}% - ${index === missionData.totalSteps - 1 ? '1.75rem' : '0.875rem'})` }}
+                      data-testid={`step-indicator-${index}`}
+                    >
+                      {step.completed ? <Check className="w-3 h-3 sm:w-4 sm:h-4" /> : index + 1}
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
             
