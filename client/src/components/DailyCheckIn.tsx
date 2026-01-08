@@ -2,7 +2,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Flame, Zap, Trophy, Target, TrendingUp, Sparkles } from 'lucide-react';
-import MascotCharacter from './MascotCharacter';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 
@@ -71,11 +70,6 @@ export default function DailyCheckIn({
             </p>
           </div>
           
-          <MascotCharacter 
-            size="md" 
-            pose={completed ? 'celebrate' : 'encourage'}
-            speech={completed ? "Well done!" : "Let's go!"}
-          />
         </div>
         
         <div className="bg-muted/30 rounded-lg p-4 mb-4">

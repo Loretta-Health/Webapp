@@ -17,7 +17,6 @@ import lorettaLogo from '@assets/logos/loretta_logo.png';
 import marcPhoto from '@assets/image_1764091454235.png';
 import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
-import MascotCharacter from '@/components/MascotCharacter';
 import XPProgress from '@/components/XPProgress';
 import StreakCounter from '@/components/StreakCounter';
 import LivesIndicator from '@/components/LivesIndicator';
@@ -479,7 +478,6 @@ export default function Dashboard() {
                     You've made great progress today! Keep it up!
                   </p>
                 </div>
-                <MascotCharacter size="sm" pose="celebrate" className="hidden sm:block" />
               </div>
             </div>
             
