@@ -176,7 +176,7 @@ export default function Chat() {
       </header>
 
       <div className="flex-1 max-w-4xl mx-auto w-full p-3 sm:p-4 flex flex-col">
-        <GlassCard className="flex-1 flex flex-col overflow-hidden bg-white/40 dark:bg-gray-900/60">
+        <GlassCard className="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#E8EEFF]/80 to-[#F0F4FF]/80 dark:from-gray-900/80 dark:to-gray-800/80">
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
             <div className="space-y-4">
               <AnimatePresence>
@@ -215,7 +215,7 @@ export default function Chat() {
                           <div className={`p-3 sm:p-4 rounded-2xl ${
                             message.role === 'user'
                               ? 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white rounded-tr-none shadow-lg shadow-[#013DC4]/20'
-                              : 'bg-white/80 dark:bg-gray-800/80 text-gray-900 dark:text-white rounded-tl-none border border-white/50 dark:border-white/10'
+                              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-tl-none border border-[#CDB6EF]/30 dark:border-white/10 shadow-md'
                           }`}>
                             <div className="text-sm whitespace-pre-line prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-strong:font-bold prose-em:italic">
                               {message.role === 'assistant' 
@@ -265,7 +265,7 @@ export default function Chat() {
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg">
                     <img src={logomarkViolet} alt="Loretta" className="w-4 h-4 sm:w-5 sm:h-5 object-contain brightness-0 invert" />
                   </div>
-                  <div className="bg-white/80 dark:bg-gray-800/80 p-3 sm:p-4 rounded-2xl rounded-tl-none border border-white/50 dark:border-white/10">
+                  <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-2xl rounded-tl-none border border-[#CDB6EF]/30 dark:border-white/10 shadow-md">
                     <div className="flex gap-1">
                       <span className="w-2 h-2 bg-[#013DC4] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                       <span className="w-2 h-2 bg-[#0150FF] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
