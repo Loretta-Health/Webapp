@@ -13,6 +13,8 @@ export interface OnboardingProgress {
   questionnaireCompletedAt: string | null;
   onboardingComplete: boolean;
   onboardingCompletedAt: string | null;
+  setupChecklistDismissed: boolean;
+  setupChecklistDismissedAt: string | null;
 }
 
 export type OnboardingStep = 'account' | 'consent' | 'questionnaire' | 'complete';
@@ -56,6 +58,8 @@ export function useOnboardingProgress() {
       questionnaireCompletedAt: string;
       onboardingComplete: boolean;
       onboardingCompletedAt: string;
+      setupChecklistDismissed: boolean;
+      setupChecklistDismissedAt: string;
     }>) => {
       if (!userId) throw new Error('No user ID');
       const response = await apiRequest('POST', `/api/onboarding-progress`, data);
@@ -95,6 +99,18 @@ export function useOnboardingProgress() {
     }
   };
 
+  const markSetupChecklistDismissed = async (): Promise<boolean> => {
+    try {
+      await updateProgressMutation.mutateAsync({
+        setupChecklistDismissed: true,
+        setupChecklistDismissedAt: new Date().toISOString(),
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const getNextIncompleteStep = (): OnboardingStep => {
     if (!user) return 'account';
     if (!progress) return 'consent';
@@ -126,10 +142,12 @@ export function useOnboardingProgress() {
     updateError: updateProgressMutation.error,
     markConsentComplete,
     markQuestionnaireComplete,
+    markSetupChecklistDismissed,
     getNextIncompleteStep,
     getRedirectPath,
     isOnboardingComplete: progress?.onboardingComplete ?? false,
     isConsentComplete: progress?.consentCompleted ?? false,
     isQuestionnaireComplete: progress?.questionnaireCompleted ?? false,
+    isSetupChecklistDismissed: progress?.setupChecklistDismissed ?? false,
   };
 }
