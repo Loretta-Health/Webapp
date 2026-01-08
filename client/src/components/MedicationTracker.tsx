@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass-card';
-import { Pill, Check, Clock, Flame, ChevronRight, Loader2 } from 'lucide-react';
+import { Pill, Check, Clock, ChevronRight, Loader2 } from 'lucide-react';
 import { Link } from 'wouter';
 import MedicalTerm from './MedicalTerm';
 import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
@@ -72,10 +72,9 @@ export default function MedicationTracker({
   className = ''
 }: MedicationTrackerProps) {
   const { t, i18n } = useTranslation('dashboard');
-  const { getProgress, getMedication, logDose, medications } = useMedicationProgress();
+  const { getProgress, logDose, medications } = useMedicationProgress();
   const progress = getProgress(medicationId);
   const medication = medications.find(m => m.id === medicationId);
-  const streak = medication?.streak || 0;
   const takenToday = medication?.takenToday || [];
   
   const [loggingDose, setLoggingDose] = useState<number | null>(null);
@@ -125,12 +124,6 @@ export default function MedicationTracker({
               }`}>
                 {adherencePercent}%
               </span>
-              {streak > 0 && (
-                <div className="flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-orange-400 to-red-400 rounded-full shadow-lg shrink-0">
-                  <Flame className="w-3 h-3 text-white" />
-                  <span className="text-[10px] sm:text-xs font-bold text-white">{streak}</span>
-                </div>
-              )}
             </div>
             {dosage && <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{dosage}</p>}
             <div className="flex items-center gap-2 text-[10px] sm:text-xs text-gray-500 font-medium">
