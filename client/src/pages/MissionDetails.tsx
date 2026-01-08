@@ -81,10 +81,10 @@ const missionsDatabase: Record<string, MissionData> = {
   'jumping-jacks': {
     id: 1,
     title: 'Complete 10 jumping jacks',
-    frequency: 'daily',
+    frequency: '2-3 times daily',
     description: 'Get your heart pumping with quick cardio exercise',
-    xpReward: 50,
-    totalSteps: 1,
+    xpReward: 20,
+    totalSteps: 3,
     icon: Dumbbell,
     color: 'chart-2',
     details: 'Jumping jacks are a full-body cardiovascular exercise that increases your heart rate, improves circulation, and helps wake up your muscles. This simple yet effective exercise is perfect for quick energy boosts throughout the day.',
@@ -94,13 +94,13 @@ const missionsDatabase: Record<string, MissionData> = {
       { icon: Activity, text: 'Improves coordination' },
       { icon: Zap, text: 'Boosts energy levels' },
     ],
-    initialSteps: [{ id: 1, completed: false }],
+    initialSteps: [{ id: 1, completed: false }, { id: 2, completed: false }, { id: 3, completed: false }],
     alternativeMissions: [
-      { id: 201, title: 'Gentle stretching for 2 mins', xp: 50, icon: '🌸' },
-      { id: 202, title: 'Walk in place for 1 minute', xp: 45, icon: '🚶' },
+      { id: 201, title: 'Gentle stretching for 2 mins', xp: 20, icon: '🌸' },
+      { id: 202, title: 'Walk in place for 1 minute', xp: 15, icon: '🚶' },
     ],
-    communityTip: 'Try doing your jumping jacks all at once - it only takes about 30 seconds! Focus on good form for maximum benefit.',
-    stepLabel: 'Session'
+    communityTip: 'Do a quick set of 10 jumping jacks in the morning, after lunch, and in the evening for an energy boost!',
+    stepLabel: 'Set'
   },
   'water-glasses': {
     id: 2,
@@ -183,10 +183,10 @@ const missionsDatabase: Record<string, MissionData> = {
   'deep-breathing': {
     id: 5,
     title: 'Practice deep breathing',
-    frequency: 'daily',
+    frequency: '2-3 times daily',
     description: 'Take 10 slow, deep breaths to relax',
-    xpReward: 25,
-    totalSteps: 1,
+    xpReward: 10,
+    totalSteps: 2,
     icon: Wind,
     color: 'chart-2',
     details: 'Deep breathing exercises activate your parasympathetic nervous system, helping to reduce stress and anxiety. Taking slow, deliberate breaths can lower blood pressure and improve focus.',
@@ -196,10 +196,10 @@ const missionsDatabase: Record<string, MissionData> = {
       { icon: Zap, text: 'Increases mental clarity' },
       { icon: Leaf, text: 'Promotes relaxation' },
     ],
-    initialSteps: [{ id: 1, completed: false }],
+    initialSteps: [{ id: 1, completed: false }, { id: 2, completed: false }],
     alternativeMissions: [
-      { id: 501, title: 'Rest and take 3 slow breaths', xp: 25, icon: '🌬️' },
-      { id: 502, title: 'Close your eyes for 1 minute', xp: 25, icon: '😌' },
+      { id: 501, title: 'Rest and take 3 slow breaths', xp: 10, icon: '🌬️' },
+      { id: 502, title: 'Close your eyes for 1 minute', xp: 10, icon: '😌' },
     ],
     communityTip: 'Try the 4-7-8 technique: breathe in for 4 seconds, hold for 7, exhale for 8.',
     stepLabel: 'Session'
@@ -356,10 +356,10 @@ const missionsDatabase: Record<string, MissionData> = {
   'activity-calories': {
     id: 6,
     title: 'Active break',
-    frequency: 'Every 2 hours',
-    description: 'Take a 10-minute active break with stretching or light movement.',
-    xpReward: 15,
-    totalSteps: 4,
+    frequency: '2 times daily',
+    description: 'Take a 5-minute active break with stretching or light movement.',
+    xpReward: 20,
+    totalSteps: 2,
     icon: Flame,
     color: 'chart-2',
     details: 'Regular movement breaks help prevent the negative effects of prolonged sitting. Even short bursts of activity can boost your metabolism and improve focus.',
@@ -372,14 +372,12 @@ const missionsDatabase: Record<string, MissionData> = {
     initialSteps: [
       { id: 1, completed: false },
       { id: 2, completed: false },
-      { id: 3, completed: false },
-      { id: 4, completed: false },
     ],
     alternativeMissions: [
-      { id: 601, title: 'Stand up and stretch gently', xp: 15, icon: '🌸' },
+      { id: 601, title: 'Stand up and stretch gently', xp: 20, icon: '🌸' },
       { id: 602, title: 'Walk to the window and back', xp: 15, icon: '🚶' },
     ],
-    communityTip: 'Set a timer every 2 hours to remind yourself to move. Your body and mind will perform better!',
+    communityTip: 'Take one break mid-morning and another mid-afternoon. Your body and mind will perform better!',
     stepLabel: 'Break'
   },
   '101': {
