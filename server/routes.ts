@@ -1431,25 +1431,39 @@ IMPORTANT: When discussing risk scores, remember:
           let totalDosesScheduled = 0;
           let adherencePercent = 100;
           
+          // Start at 100% adherence - only calculate if there's history
           if (med.frequency === 'daily' && med.createdAt) {
-            // Calculate days since medication was created
             const createdDate = new Date(med.createdAt);
             createdDate.setHours(0, 0, 0, 0);
             const todayDate = new Date();
             todayDate.setHours(0, 0, 0, 0);
-            const daysSinceCreation = Math.floor((todayDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-            totalDosesScheduled = daysSinceCreation * (med.dosesPerDay || 1);
-            adherencePercent = totalDosesScheduled > 0 
-              ? Math.min(100, Math.round((totalDosesTaken / totalDosesScheduled) * 100))
-              : 100;
+            
+            // Only count completed days (exclude today since user still has time to take doses)
+            const completedDays = Math.floor((todayDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (completedDays > 0) {
+              // Calculate doses that should have been taken on completed days
+              totalDosesScheduled = completedDays * (med.dosesPerDay || 1);
+              // Cap taken doses at scheduled to handle extra doses gracefully
+              const cappedTaken = Math.min(totalDosesTaken, totalDosesScheduled);
+              adherencePercent = Math.round((cappedTaken / totalDosesScheduled) * 100);
+            }
+            // If completedDays is 0 (created today), adherence stays at 100%
           } else if (med.frequency === 'weekly' && med.createdAt) {
-            // Calculate weeks since medication was created
             const createdDate = new Date(med.createdAt);
-            const weeksSinceCreation = Math.floor((today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24 * 7)) + 1;
-            totalDosesScheduled = weeksSinceCreation * (med.dosesPerDay || 1);
-            adherencePercent = totalDosesScheduled > 0 
-              ? Math.min(100, Math.round((totalDosesTaken / totalDosesScheduled) * 100))
-              : 100;
+            createdDate.setHours(0, 0, 0, 0);
+            const todayDate = new Date();
+            todayDate.setHours(0, 0, 0, 0);
+            
+            // Only count completed weeks (exclude current week)
+            const completedWeeks = Math.floor((todayDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24 * 7));
+            
+            if (completedWeeks > 0) {
+              totalDosesScheduled = completedWeeks * (med.dosesPerDay || 1);
+              const cappedTaken = Math.min(totalDosesTaken, totalDosesScheduled);
+              adherencePercent = Math.round((cappedTaken / totalDosesScheduled) * 100);
+            }
+            // If completedWeeks is 0 (created this week), adherence stays at 100%
           }
           // For 'as-needed', adherence stays at 100%
           
