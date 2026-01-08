@@ -214,7 +214,7 @@ export default function Chat() {
                         <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right' : ''}`}>
                           <div className={`p-3 sm:p-4 rounded-2xl ${
                             message.role === 'user'
-                              ? 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white rounded-tr-none shadow-lg shadow-[#013DC4]/20'
+                              ? 'bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white rounded-tr-none shadow-lg shadow-[#013DC4]/20'
                               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-tl-none border border-[#CDB6EF]/30 dark:border-white/10 shadow-md'
                           }`}>
                             <div className="text-sm whitespace-pre-line prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-strong:font-bold prose-em:italic">
