@@ -175,12 +175,12 @@ export default function EmotionalCheckInModal({
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center shadow-lg shadow-[#013DC4]/30">
-              <Smile className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg">
+              <Smile className="w-5 h-5" />
             </div>
-            <span className="text-xl font-black bg-gradient-to-r from-[#013DC4] to-[#0150FF] bg-clip-text text-transparent">
+            <h3 className="font-bold text-gray-900 dark:text-white text-lg">
               Check-In
-            </span>
+            </h3>
           </DialogTitle>
         </DialogHeader>
 
