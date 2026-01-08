@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui/glass-card';
-import { Pill, Check, Clock, ChevronRight, Loader2, X } from 'lucide-react';
+import { Pill, Check, Clock, ChevronRight, Loader2, X, Undo2 } from 'lucide-react';
 import { Link } from 'wouter';
 import MedicalTerm from './MedicalTerm';
 import { useMedicationProgress, type MedicationDose } from '@/hooks/useMedicationProgress';
@@ -72,13 +72,14 @@ export default function MedicationTracker({
   className = ''
 }: MedicationTrackerProps) {
   const { t, i18n } = useTranslation('dashboard');
-  const { getProgress, logDose, logMissedDose, medications } = useMedicationProgress();
+  const { getProgress, logDose, logMissedDose, undoLogDose, medications } = useMedicationProgress();
   const progress = getProgress(medicationId);
   const medication = medications.find(m => m.id === medicationId);
   const takenToday = medication?.takenToday || [];
   
   const [loggingDose, setLoggingDose] = useState<number | null>(null);
   const [markingMissed, setMarkingMissed] = useState<number | null>(null);
+  const [undoingDose, setUndoingDose] = useState<number | null>(null);
   
   const progressPercent = progress.total > 0 ? (progress.taken / progress.total) * 100 : 0;
   
@@ -96,6 +97,14 @@ export default function MedicationTracker({
     setMarkingMissed(doseId);
     await logMissedDose(medicationId, doseId);
     setMarkingMissed(null);
+  };
+
+  const handleUndoDose = async (e: React.MouseEvent, doseId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setUndoingDose(doseId);
+    await undoLogDose(medicationId, doseId);
+    setUndoingDose(null);
   };
   
   return (
@@ -171,16 +180,22 @@ export default function MedicationTracker({
                 className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-xl transition-all ${
                   dose.taken 
                     ? 'bg-gradient-to-r from-green-400/10 to-emerald-400/10' 
-                    : 'bg-white/50 dark:bg-gray-800/50'
+                    : dose.missed
+                      ? 'bg-gradient-to-r from-red-400/10 to-red-500/10'
+                      : 'bg-white/50 dark:bg-gray-800/50'
                 }`}
               >
                 <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
                   dose.taken 
                     ? 'bg-gradient-to-br from-green-400 to-emerald-500 shadow-sm' 
-                    : 'bg-gray-200 dark:bg-gray-700'
+                    : dose.missed
+                      ? 'bg-gradient-to-br from-red-400 to-red-500 shadow-sm'
+                      : 'bg-gray-200 dark:bg-gray-700'
                 }`}>
                   {dose.taken ? (
                     <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+                  ) : dose.missed ? (
+                    <X className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
                   ) : (
                     <span className="text-[10px] sm:text-xs font-bold text-gray-500 dark:text-gray-400">{dose.id}</span>
                   )}
@@ -189,7 +204,11 @@ export default function MedicationTracker({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     {scheduledTime && (
-                      <span className={`text-xs sm:text-sm font-bold ${dose.taken ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                      <span className={`text-xs sm:text-sm font-bold ${
+                        dose.taken ? 'text-green-600 dark:text-green-400' 
+                        : dose.missed ? 'text-red-600 dark:text-red-400'
+                        : 'text-gray-900 dark:text-white'
+                      }`}>
                         {scheduledTime}
                       </span>
                     )}
@@ -198,13 +217,53 @@ export default function MedicationTracker({
                         ({i18n.language === 'de' ? 'genommen' : 'taken'} {dose.time})
                       </span>
                     )}
+                    {dose.missed && (
+                      <span className="text-[10px] sm:text-xs text-red-500">
+                        ({dose.source === 'auto' 
+                          ? (i18n.language === 'de' ? 'automatisch verpasst' : 'auto-missed')
+                          : (i18n.language === 'de' ? 'verpasst' : 'missed')
+                        })
+                      </span>
+                    )}
                   </div>
                 </div>
                 
                 {dose.taken ? (
-                  <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-sm">
-                    {i18n.language === 'de' ? 'Erledigt' : 'Done'}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-sm">
+                      {i18n.language === 'de' ? 'Erledigt' : 'Done'}
+                    </span>
+                    <button
+                      onClick={(e) => handleUndoDose(e, dose.id)}
+                      disabled={undoingDose === dose.id}
+                      className="p-1 sm:p-1.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-all disabled:opacity-50"
+                      title={i18n.language === 'de' ? 'Rückgängig' : 'Undo'}
+                    >
+                      {undoingDose === dose.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Undo2 className="w-3 h-3" />
+                      )}
+                    </button>
+                  </div>
+                ) : dose.missed ? (
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-red-400 to-red-500 text-white text-[10px] sm:text-xs font-bold rounded-full shadow-sm">
+                      {i18n.language === 'de' ? 'Verpasst' : 'Missed'}
+                    </span>
+                    <button
+                      onClick={(e) => handleUndoDose(e, dose.id)}
+                      disabled={undoingDose === dose.id}
+                      className="p-1 sm:p-1.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-all disabled:opacity-50"
+                      title={i18n.language === 'de' ? 'Rückgängig' : 'Undo'}
+                    >
+                      {undoingDose === dose.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Undo2 className="w-3 h-3" />
+                      )}
+                    </button>
+                  </div>
                 ) : (
                   <div className="flex items-center gap-1.5">
                     <button
