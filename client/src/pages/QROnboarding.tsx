@@ -33,7 +33,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'wouter';
 import { Html5Qrcode } from 'html5-qrcode';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
 interface InviteData {
   inviterName: string;
@@ -326,7 +325,9 @@ export default function QROnboarding() {
               
               <Card className="p-6 bg-gradient-to-br from-card to-primary/5 border-primary/20 mb-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <img src={mascotImage} alt="Mascot" className="w-16 h-16 object-contain" />
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center">
+                    <Heart className="w-8 h-8 text-white" />
+                  </div>
                   <div>
                     <p className="font-bold text-foreground">Invited by</p>
                     <p className="text-lg font-black text-primary" data-testid="inviter-name">

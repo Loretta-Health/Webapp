@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'wouter';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
 interface Medication {
   id: string;
@@ -122,7 +121,6 @@ export default function Medications() {
                   <h3 className="text-xl font-black text-foreground">All Medications Taken!</h3>
                   <p className="text-muted-foreground">You earned {totalXpEarned} XP today. Great job staying healthy!</p>
                 </div>
-                <img src={mascotImage} alt="Mascot" className="w-16 h-16 object-contain" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -213,17 +211,6 @@ export default function Medications() {
           </div>
         </Card>
         
-        <Card className="p-4 bg-gradient-to-r from-primary/10 to-chart-2/10 border-0">
-          <div className="flex items-center gap-3">
-            <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
-            <div>
-              <p className="font-bold text-foreground">{tDashboard('community.communityTip')}</p>
-              <p className="text-sm text-muted-foreground">
-                {t('medications.communityTipContent')}
-              </p>
-            </div>
-          </div>
-        </Card>
       </div>
     </div>
   );

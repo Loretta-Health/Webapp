@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'wouter';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 import { trackQuestionnaire, trackPageView } from '@/lib/clarity';
 
 interface Question {
@@ -120,13 +119,6 @@ export default function Questionnaire() {
               <Check className="w-10 h-10 text-white" />
             </motion.div>
             
-            <motion.img
-              src={mascotImage}
-              alt="Mascot"
-              className="w-16 h-16 mx-auto mb-4"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 1, repeat: Infinity }}
-            />
             
             <h1 className="text-2xl font-black text-foreground mb-2">Questionnaire Complete!</h1>
             <p className="text-muted-foreground mb-6">
@@ -194,15 +186,6 @@ export default function Questionnaire() {
               transition={{ duration: 0.3 }}
             >
               <Card className="p-8 border-0 shadow-xl">
-                <div className="flex justify-center mb-6">
-                  <motion.img
-                    src={mascotImage}
-                    alt="Mascot"
-                    className="w-16 h-16"
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </div>
                 
                 <h2 className="text-xl font-black text-foreground text-center mb-8" data-testid="text-question">
                   {question.text}

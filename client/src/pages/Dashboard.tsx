@@ -15,7 +15,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { useQuery } from '@tanstack/react-query';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import marcPhoto from '@assets/image_1764091454235.png';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
 import XPProgress from '@/components/XPProgress';
 import StreakCounter from '@/components/StreakCounter';
@@ -220,13 +219,6 @@ export default function Dashboard() {
                   alt="Marc Lewis" 
                   className="w-full h-full object-cover"
                   data-testid="img-user-avatar"
-                />
-              </div>
-              <div className="absolute -bottom-0 -right-0 w-6 h-6 lg:w-8 lg:h-8">
-                <img 
-                  src={mascotImage} 
-                  alt="Health Mascot" 
-                  className="w-full h-full object-contain drop-shadow-md"
                 />
               </div>
             </div>

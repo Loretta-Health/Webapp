@@ -8,15 +8,11 @@ import {
   Flame, 
   Zap,
   Trophy,
-  Star,
-  Target,
-  Gift,
-  Crown,
+  ChevronRight,
   Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
 interface GamificationData {
   xp: number;
@@ -26,6 +22,19 @@ interface GamificationData {
   lives: number;
   achievements: string[];
   lastCheckIn: string | null;
+}
+
+interface UserAchievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  rarity: string;
+  category: string;
+  unlocked: boolean;
+  progress: number;
+  maxProgress: number;
+  unlockedAt: string | null;
 }
 
 const weekDayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
@@ -40,6 +49,11 @@ export default function StreakDetails() {
     enabled: !!user,
   });
   
+  const { data: achievements } = useQuery<UserAchievement[]>({
+    queryKey: ['/api/achievements/user'],
+    enabled: !!user,
+  });
+  
   const currentStreak = gamificationData?.currentStreak || 0;
   const longestStreak = gamificationData?.longestStreak || 0;
   const maxStreak = 30;
@@ -47,14 +61,8 @@ export default function StreakDetails() {
   const progressPercent = Math.min((currentStreak / maxStreak) * 100, 100);
   const daysRemaining = Math.max(maxStreak - currentStreak, 0);
   
-  const milestoneConfigs = [
-    { days: 7, xp: 100, titleKey: 'weekWarrior', icon: Star, achieved: currentStreak >= 7 },
-    { days: 14, xp: 250, titleKey: 'fortnightFighter', icon: Target, achieved: currentStreak >= 14 },
-    { days: 21, xp: 400, titleKey: 'threeWeekChampion', icon: Trophy, achieved: currentStreak >= 21 },
-    { days: 30, xp: 500, titleKey: 'monthlyMaster', icon: Crown, achieved: currentStreak >= 30 },
-  ];
-  
-  const achievedCount = milestoneConfigs.filter(m => m.achieved).length;
+  const streakAchievements = achievements?.filter(a => a.category === 'streak') || [];
+  const unlockedCount = streakAchievements.filter(a => a.unlocked).length;
   
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const dayIndex = (new Date().getDay() - 6 + i + 7) % 7;
@@ -203,95 +211,95 @@ export default function StreakDetails() {
         >
           <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-black text-foreground">{t('streakDetails.milestones')}</h3>
+              <h3 className="text-xl font-black text-foreground flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-amber-500" />
+                {t('streakDetails.streakAchievements', { defaultValue: 'Streak Achievements' })}
+              </h3>
               <Badge variant="secondary" className="font-bold bg-[#CDB6EF]/30 text-[#013DC4]">
-                <Gift className="w-3 h-3 mr-1" />
-                {t('streakDetails.unlockedCount', { count: achievedCount, total: 4 })}
+                {unlockedCount}/{streakAchievements.length} {t('streakDetails.unlocked', { defaultValue: 'unlocked' })}
               </Badge>
             </div>
             
-            <div className="space-y-4">
-              {milestoneConfigs.map((milestone, index) => {
-                const Icon = milestone.icon;
-                const isNext = !milestone.achieved && (index === 0 || milestoneConfigs[index - 1]?.achieved);
-                
-                return (
+            {streakAchievements.length > 0 ? (
+              <div className="space-y-3">
+                {streakAchievements.map((achievement, index) => (
                   <motion.div
-                    key={milestone.days}
+                    key={achievement.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
                     <div className={`backdrop-blur-xl rounded-2xl p-4 transition-all border ${
-                      milestone.achieved 
+                      achievement.unlocked 
                         ? 'bg-gradient-to-r from-orange-500/10 to-amber-400/10 border-orange-500/30' 
-                        : isNext
-                          ? 'bg-white/50 dark:bg-gray-800/50 border-[#013DC4]/50 border-dashed'
-                          : 'bg-white/30 dark:bg-gray-800/30 border-white/20 opacity-60'
-                    }`}
-                    data-testid={`milestone-${milestone.days}`}
-                    >
+                        : 'bg-white/30 dark:bg-gray-800/30 border-white/20 opacity-70'
+                    }`}>
                       <div className="flex items-center gap-4">
-                        <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
-                          milestone.achieved 
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+                          achievement.unlocked 
                             ? 'bg-gradient-to-br from-orange-500 to-amber-400' 
-                            : 'bg-muted'
+                            : 'bg-muted grayscale'
                         }`}>
-                          <Icon className={`w-7 h-7 ${milestone.achieved ? 'text-white' : 'text-muted-foreground'}`} />
+                          {achievement.icon}
                         </div>
                         
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className={`font-black text-lg ${milestone.achieved ? 'text-foreground' : 'text-muted-foreground'}`}>
-                              {t(`streakDetails.milestoneNames.${milestone.titleKey}`)}
+                            <h4 className={`font-black ${achievement.unlocked ? 'text-foreground' : 'text-muted-foreground'}`}>
+                              {achievement.title}
                             </h4>
-                            {milestone.achieved && (
-                              <Badge className="bg-gradient-to-r from-orange-500 to-amber-400 text-white font-bold text-xs border-0">{t('streakDetails.achieved')}</Badge>
-                            )}
-                            {isNext && (
-                              <Badge variant="outline" className="text-[#013DC4] border-[#013DC4] font-bold text-xs">{t('streakDetails.nextGoal')}</Badge>
+                            {achievement.unlocked && (
+                              <Badge className="bg-gradient-to-r from-orange-500 to-amber-400 text-white font-bold text-xs border-0">
+                                {t('streakDetails.achieved', { defaultValue: 'Achieved' })}
+                              </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {t('streakDetails.maintainStreak', { days: milestone.days })}
-                          </p>
-                        </div>
-                        
-                        <div className="text-right">
-                          <Badge className={`font-black border-0 ${milestone.achieved ? 'bg-[#013DC4] text-white' : 'bg-muted text-muted-foreground'}`}>
-                            <Zap className="w-3 h-3 mr-1" />
-                            +{milestone.xp} XP
-                          </Badge>
-                          {!milestone.achieved && currentStreak < milestone.days && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {t('streakDetails.daysToGo', { count: milestone.days - currentStreak })}
-                            </p>
+                          <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                          
+                          {!achievement.unlocked && achievement.maxProgress > 0 && (
+                            <div className="mt-2">
+                              <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-orange-500/50 to-amber-400/50 rounded-full"
+                                  style={{ width: `${(achievement.progress / achievement.maxProgress) * 100}%` }}
+                                />
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {achievement.progress}/{achievement.maxProgress} {t('streakDetails.days', { defaultValue: 'days' })}
+                              </p>
+                            </div>
                           )}
                         </div>
+                        
+                        {achievement.unlocked && (
+                          <div className="text-right">
+                            <Badge className="font-black border-0 bg-[#013DC4] text-white">
+                              <Zap className="w-3 h-3 mr-1" />
+                              +50 XP
+                            </Badge>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
-                );
-              })}
-            </div>
-          </div>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
-        >
-          <div className="backdrop-blur-xl bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/20 border border-white/50 dark:border-white/10 rounded-3xl p-4 shadow-xl">
-            <div className="flex items-center gap-3">
-              <img src={mascotImage} alt="Loretta Mascot" className="w-12 h-12 object-contain" />
-              <div>
-                <p className="font-bold text-foreground">{t('streakDetails.keepGoing')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('streakDetails.communityTipContent')}
-                </p>
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                <Trophy className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                <p>{t('streakDetails.noStreakAchievements', { defaultValue: 'Keep your streak going to unlock achievements!' })}</p>
+              </div>
+            )}
+            
+            <Link href="/achievements">
+              <Button 
+                variant="ghost" 
+                className="w-full mt-4 text-[#013DC4] hover:bg-[#013DC4]/10 font-bold"
+              >
+                {t('streakDetails.viewAllAchievements', { defaultValue: 'View All Achievements' })}
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
           </div>
         </motion.div>
       </div>

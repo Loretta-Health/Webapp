@@ -25,7 +25,6 @@ import { Link, useSearch, useLocation } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 import { useMissions } from '@/hooks/useMissions';
 
 interface MetricConfig {
@@ -456,7 +455,7 @@ export default function ActivityDetails() {
         >
           <div className="flex-shrink-0">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center">
-              <img src={mascotImage} alt="Navigator" className="w-8 h-8 object-contain" />
+              <Heart className="w-5 h-5 text-white" />
             </div>
           </div>
           <Card className="flex-1 p-4 bg-gradient-to-br from-card to-primary/5 border-primary/20">
@@ -522,23 +521,6 @@ export default function ActivityDetails() {
           </Card>
         </motion.div>
         
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="p-4 bg-gradient-to-r from-chart-3/10 to-chart-1/10 border-0">
-            <div className="flex items-center gap-3">
-              <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
-              <div>
-                <p className="font-bold text-foreground">{tDashboard('community.communityTip')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('activityDetails.communityTipContent')}
-                </p>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
       </div>
     </div>
   );

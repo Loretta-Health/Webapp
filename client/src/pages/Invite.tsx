@@ -34,7 +34,6 @@ import { Link } from 'wouter';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
 interface Team {
   id: string;
@@ -515,23 +514,6 @@ export default function Invite() {
           </Card>
         </motion.div>
         
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="p-4 bg-gradient-to-r from-primary/10 to-chart-2/10 border-0">
-            <div className="flex items-center gap-3">
-              <img src={mascotImage} alt="Health Mascot" className="w-12 h-12 object-contain" />
-              <div>
-                <p className="font-bold text-foreground">{tDashboard('community.communityTip')}</p>
-                <p className="text-sm text-muted-foreground">
-                  {t('invite.communityTipContent')}
-                </p>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}

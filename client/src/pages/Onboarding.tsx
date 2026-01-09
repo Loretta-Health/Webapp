@@ -63,7 +63,6 @@ interface QuestionnaireRecord {
 }
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
-import mascotImage from '@assets/generated_images/transparent_heart_mascot_character.png';
 
 type OnboardingStep = 'welcome' | 'consent' | 'registration' | 'questionnaire' | 'riskScore';
 
@@ -1225,13 +1224,13 @@ export default function Onboarding() {
       exit={{ opacity: 0, y: -20 }}
       className="text-center space-y-6"
     >
-      <motion.img
-        src={mascotImage}
-        alt="Loretta Mascot"
-        className="w-24 h-24 mx-auto"
+      <motion.div
+        className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center"
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 2, repeat: Infinity }}
-      />
+      >
+        <Heart className="w-12 h-12 text-white" />
+      </motion.div>
       
       <div>
         <h1 className="text-3xl font-black text-foreground mb-2">Welcome to Loretta!</h1>
@@ -2095,7 +2094,9 @@ export default function Onboarding() {
 
           <Card className="p-6 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl shadow-lg">
             <div className="flex items-center gap-4">
-              <img src={mascotImage} alt="Mascot" className="w-16 h-16 object-contain" />
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center">
+                <Heart className="w-8 h-8 text-white" />
+              </div>
               <div className="text-left">
                 <p className="font-bold text-foreground mb-1">
                   {riskScore && riskScore.score >= 60 
