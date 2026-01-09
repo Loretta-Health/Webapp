@@ -232,7 +232,7 @@ export default function Chat() {
                               <span className="text-sm">{message.content}</span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                             {formatTime(message.timestamp)}
                           </p>
                         </div>
@@ -290,8 +290,8 @@ export default function Chat() {
               <Collapsible open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
                 <CollapsibleTrigger asChild>
                   <button className="flex items-center justify-between w-full text-left py-2 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-xl px-3 -mx-1 transition-colors gap-2">
-                    <span className="text-xs text-gray-500 dark:text-gray-400 leading-tight font-medium">{t('chat.suggestionsHint', 'Need inspiration? Tap here for conversation starters')}</span>
-                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform flex-shrink-0 ${suggestionsOpen ? 'rotate-180' : ''}`} />
+                    <span className="text-xs text-gray-600 dark:text-gray-300 leading-tight font-medium">{t('chat.suggestionsHint', 'Need inspiration? Tap here for conversation starters')}</span>
+                    <ChevronDown className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform flex-shrink-0 ${suggestionsOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
@@ -303,7 +303,7 @@ export default function Chat() {
                         onClick={() => handleSend(q.text)}
                         data-testid={`button-suggestion-${index}`}
                       >
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center mr-3 flex-shrink-0">
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center mr-3 flex-shrink-0">
                           <q.icon className="w-3.5 h-3.5 text-white" />
                         </div>
                         <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{q.text}</span>
@@ -324,14 +324,14 @@ export default function Chat() {
                   exit={{ opacity: 0, y: 10 }}
                   className="mb-3 p-3 bg-[#013DC4]/10 rounded-xl flex items-center gap-3 border border-[#013DC4]/20"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center shadow-lg">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg">
                     <File className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-900 dark:text-white truncate" data-testid="uploaded-file-name">
                       {uploadedFile.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
                       {(uploadedFile.size / 1024).toFixed(1)} KB
                     </p>
                   </div>
@@ -379,16 +379,16 @@ export default function Chat() {
               <button 
                 type="submit" 
                 disabled={(!inputText.trim() && !uploadedFile) || loading}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#013DC4]/30 hover:shadow-xl transition-all disabled:opacity-50"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-r from-[#013DC4] to-[#0150FF] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#013DC4]/30 hover:shadow-xl transition-all disabled:opacity-50"
                 data-testid="button-send-message"
               >
                 <Send className="w-4 h-4 text-white" />
               </button>
             </form>
-            <p className="text-xs text-gray-500 mt-2 text-center font-medium">
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-2 text-center font-medium">
               {t('chat.uploadHint')}
             </p>
-            <p className="text-xs text-gray-400 mt-3 text-center border-t border-white/30 dark:border-white/10 pt-3">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center border-t border-white/30 dark:border-white/10 pt-3">
               {t('chat.disclaimer')}
             </p>
           </div>
