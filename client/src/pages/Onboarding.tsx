@@ -74,13 +74,13 @@ interface RegistrationData {
 }
 
 const privacyPoints = [
-  { icon: Eye, title: "You control what you share", description: "All identity fields are optional.", color: "text-primary" },
-  { icon: Heart, title: "Personalised insights", description: "We use your data to provide personalised health insights.", color: "text-destructive" },
-  { icon: FileText, title: "Document privacy", description: "Medical documents are deleted immediately after processing.", color: "text-chart-2" },
-  { icon: Watch, title: "Optional integrations", description: "Wearable and location data are only used if you choose.", color: "text-chart-3" },
-  { icon: Lock, title: "Data security", description: "We take appropriate measures to protect your data.", color: "text-primary" },
-  { icon: UserX, title: "Your choice", description: "Withdraw consent at any time.", color: "text-chart-1" },
-  { icon: Ban, title: "No data selling", description: "We never sell your data.", color: "text-destructive" }
+  { icon: Eye, title: "You control what you share", description: "All identity fields are optional.", color: "text-[#013DC4]" },
+  { icon: Heart, title: "Personalised insights", description: "We use your data to provide personalised health insights.", color: "text-[#CDB6EF]" },
+  { icon: FileText, title: "Document privacy", description: "Medical documents are deleted immediately after processing.", color: "text-[#0150FF]" },
+  { icon: Watch, title: "Optional integrations", description: "Wearable and location data are only used if you choose.", color: "text-[#013DC4]" },
+  { icon: Lock, title: "Data security", description: "We take appropriate measures to protect your data.", color: "text-[#CDB6EF]" },
+  { icon: UserX, title: "Your choice", description: "Withdraw consent at any time.", color: "text-[#0150FF]" },
+  { icon: Ban, title: "No data selling", description: "We never sell your data.", color: "text-[#013DC4]" }
 ];
 
 
@@ -351,9 +351,9 @@ function calculateRiskScore(answers: QuestionnaireAnswer[]): { score: number; le
   // Use diabetes risk as the single health risk score
   const healthScore = Math.round(100 - diabetesRisk);
   
-  if (healthScore >= 80) return { score: healthScore, level: 'Excellent', color: 'text-primary' };
-  if (healthScore >= 60) return { score: healthScore, level: 'Good', color: 'text-chart-2' };
-  if (healthScore >= 40) return { score: healthScore, level: 'Moderate', color: 'text-chart-3' };
+  if (healthScore >= 80) return { score: healthScore, level: 'Excellent', color: 'text-emerald-500' };
+  if (healthScore >= 60) return { score: healthScore, level: 'Good', color: 'text-[#013DC4]' };
+  if (healthScore >= 40) return { score: healthScore, level: 'Moderate', color: 'text-amber-500' };
   return { score: healthScore, level: 'Needs Attention', color: 'text-destructive' };
 }
 
@@ -1005,9 +1005,9 @@ export default function Onboarding() {
       let color = 'text-muted-foreground';
       let level = 'Unknown';
       
-      if (score >= 80) { color = 'text-primary'; level = 'Low'; }
-      else if (score >= 60) { color = 'text-chart-2'; level = 'Moderate'; }
-      else if (score >= 40) { color = 'text-chart-3'; level = 'Elevated'; }
+      if (score >= 80) { color = 'text-emerald-500'; level = 'Low'; }
+      else if (score >= 60) { color = 'text-[#013DC4]'; level = 'Moderate'; }
+      else if (score >= 40) { color = 'text-amber-500'; level = 'Elevated'; }
       else { color = 'text-destructive'; level = 'High'; }
       
       const fullScore = {
@@ -1088,9 +1088,9 @@ export default function Onboarding() {
       let color = 'text-muted-foreground';
       let level = 'Unknown';
       
-      if (score >= 80) { color = 'text-primary'; level = 'Low'; }
-      else if (score >= 60) { color = 'text-chart-2'; level = 'Moderate'; }
-      else if (score >= 40) { color = 'text-chart-3'; level = 'Elevated'; }
+      if (score >= 80) { color = 'text-emerald-500'; level = 'Low'; }
+      else if (score >= 60) { color = 'text-[#013DC4]'; level = 'Moderate'; }
+      else if (score >= 40) { color = 'text-amber-500'; level = 'Elevated'; }
       else { color = 'text-destructive'; level = 'High'; }
       
       const fullScore = {
@@ -1237,7 +1237,7 @@ export default function Onboarding() {
         <h1 className="text-3xl font-black text-foreground mb-2">Welcome to Loretta!</h1>
         {inviteData?.inviterName && (
           <p className="text-muted-foreground">
-            You were invited by <span className="font-bold text-primary">{inviteData.inviterName}</span>
+            You were invited by <span className="font-bold text-[#013DC4]">{inviteData.inviterName}</span>
           </p>
         )}
         {inviteData?.code && (
@@ -1247,33 +1247,33 @@ export default function Onboarding() {
         )}
       </div>
 
-      <Card className="p-6 bg-gradient-to-br from-primary/10 to-chart-2/10 border-0">
+      <Card className="p-6 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-lg">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <p className="font-bold text-foreground">Gamified Health Journey</p>
-              <p className="text-sm text-muted-foreground">Earn XP, maintain streaks, unlock achievements</p>
+              <p className="font-bold text-gray-900 dark:text-white">Gamified Health Journey</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Earn XP, maintain streaks, unlock achievements</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-chart-2/20 flex items-center justify-center">
-              <Activity className="w-5 h-5 text-chart-2" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center shadow-lg">
+              <Activity className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <p className="font-bold text-foreground">Personalized Risk Score</p>
-              <p className="text-sm text-muted-foreground">Understand your health with AI-powered insights</p>
+              <p className="font-bold text-gray-900 dark:text-white">Personalized Risk Score</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Understand your health with AI-powered insights</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-chart-3/20 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-chart-3" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0150FF] to-[#013DC4] flex items-center justify-center shadow-lg">
+              <Shield className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <p className="font-bold text-foreground">Privacy First</p>
-              <p className="text-sm text-muted-foreground">Your data stays yours, always</p>
+              <p className="font-bold text-gray-900 dark:text-white">Privacy First</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Your data stays yours, always</p>
             </div>
           </div>
         </div>
@@ -1281,7 +1281,7 @@ export default function Onboarding() {
 
       <Button
         onClick={() => setStep('consent')}
-        className="w-full bg-gradient-to-r from-primary to-chart-2 font-black text-lg py-6"
+        className="w-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white font-black text-lg py-6 rounded-2xl shadow-lg shadow-[#013DC4]/20"
         data-testid="button-start-onboarding"
       >
         Get Started
@@ -1308,12 +1308,12 @@ export default function Onboarding() {
       className="space-y-6"
     >
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-lg">
           <Shield className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-black text-foreground">Privacy & Consent</h2>
-          <p className="text-sm text-muted-foreground">Please review our privacy practices</p>
+          <h2 className="text-xl font-black text-gray-900 dark:text-white">Privacy & Consent</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Please review our privacy practices</p>
         </div>
       </div>
 
@@ -1339,10 +1339,10 @@ export default function Onboarding() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="flex items-start gap-3 p-4 rounded-lg bg-chart-3/10 border border-chart-3/30"
+        className="flex items-start gap-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30"
         data-testid="disclaimer-notice-onboarding"
       >
-        <AlertTriangle className="w-5 h-5 text-chart-3 flex-shrink-0 mt-0.5" />
+        <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
         <div>
           <p className="font-bold text-foreground text-sm">Important Disclaimer</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
@@ -1597,7 +1597,7 @@ export default function Onboarding() {
         )}
       </AnimatePresence>
 
-      <div className="flex items-start gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5">
+      <div className="flex items-start gap-3 p-3 rounded-lg border border-[#013DC4]/30 bg-[#013DC4]/5">
         <Checkbox 
           id="consent" 
           checked={acknowledged}
@@ -1617,7 +1617,7 @@ export default function Onboarding() {
           data-testid="checkbox-newsletter"
         />
         <Label htmlFor="newsletter" className="text-sm cursor-pointer flex items-start gap-2">
-          <Mail className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+          <Mail className="w-4 h-4 text-[#013DC4] flex-shrink-0 mt-0.5" />
           <span>I would like to receive the Loretta newsletter with health tips and updates. You can unsubscribe at any time.</span>
         </Label>
       </div>
@@ -1634,7 +1634,7 @@ export default function Onboarding() {
         <Button
           onClick={handleConsentAccept}
           disabled={!acknowledged}
-          className="flex-1 bg-gradient-to-r from-primary to-chart-2"
+          className="flex-1 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20"
           data-testid="button-accept-consent"
         >
           Accept & Continue
@@ -1661,12 +1661,12 @@ export default function Onboarding() {
       className="space-y-6"
     >
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-chart-2 to-emerald-500 flex items-center justify-center">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center shadow-lg">
           <User className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h2 className="text-xl font-black text-foreground">Create Your Profile</h2>
-          <p className="text-sm text-muted-foreground">Tell us a bit about yourself</p>
+          <h2 className="text-xl font-black text-gray-900 dark:text-white">Create Your Profile</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Tell us a bit about yourself</p>
         </div>
       </div>
 
@@ -1732,8 +1732,8 @@ export default function Onboarding() {
           </Label>
         </div>
 
-        <Card className="p-3 bg-primary/5 border-primary/20">
-          <p className="text-xs text-muted-foreground">
+        <Card className="p-3 bg-[#013DC4]/5 border-[#013DC4]/20 rounded-2xl">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             <Lock className="w-3 h-3 inline mr-1" />
             Your information is never shared without your consent.
           </p>
@@ -1741,7 +1741,7 @@ export default function Onboarding() {
 
         <Button
           type="submit"
-          className="w-full bg-gradient-to-r from-primary to-chart-2 font-bold"
+          className="w-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20"
           disabled={!registration.firstName || !registration.lastName || !registration.email || !contactConsent}
           data-testid="button-submit-registration"
         >
@@ -1767,13 +1767,6 @@ export default function Onboarding() {
     const modules = ['medical', 'lifestyle', 'oral', 'financial'];
     const totalOptionalQuestions = modules.reduce((sum, m) => sum + getModuleInfo(m).questionCount, 0);
     
-    const getLiveScoreColor = (probability: number) => {
-      if (probability >= 0.7) return 'from-red-500 to-red-600';
-      if (probability >= 0.5) return 'from-orange-500 to-orange-600';
-      if (probability >= 0.3) return 'from-yellow-500 to-yellow-600';
-      return 'from-green-500 to-green-600';
-    };
-    
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
@@ -1785,35 +1778,19 @@ export default function Onboarding() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', bounce: 0.5 }}
-            className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-primary via-chart-2 to-chart-3 flex items-center justify-center"
+            className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-xl"
           >
             <Sparkles className="w-10 h-10 text-white" />
           </motion.div>
-          <h2 className="text-2xl font-black text-foreground">Quick Check Complete!</h2>
-          <p className="text-muted-foreground">You've answered the most important questions.</p>
+          <h2 className="text-2xl font-black text-gray-900 dark:text-white">Quick Check Complete!</h2>
+          <p className="text-gray-500 dark:text-gray-400">You've answered the most important questions.</p>
         </div>
 
-        {liveScore && (
-          <Card className={`p-4 bg-gradient-to-r ${getLiveScoreColor(liveScore.probability)} text-white border-0`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Your Preliminary Risk Score</p>
-                <p className="text-3xl font-black">{Math.round(liveScore.probability * 100)}%</p>
-                <p className="text-sm opacity-75">{liveScore.riskLevel}</p>
-              </div>
-              <div className="text-right">
-                <Badge className="bg-white/20 text-white border-0">
-                  Based on {liveScore.answeredCount} answers
-                </Badge>
-              </div>
-            </div>
-          </Card>
-        )}
 
         <div className="space-y-3">
           <Button
             onClick={handleGetEarlyResults}
-            className="w-full bg-gradient-to-r from-primary to-chart-2 font-bold py-6 text-lg"
+            className="w-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white font-bold py-6 text-lg rounded-2xl shadow-lg shadow-[#013DC4]/20"
             data-testid="button-get-early-results"
           >
             <Flame className="w-5 h-5 mr-2" />
@@ -1830,10 +1807,10 @@ export default function Onboarding() {
           </div>
         </div>
 
-        <Card className="p-4 bg-muted/30 space-y-4">
+        <Card className="p-4 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl space-y-4">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary" />
-            <p className="font-bold text-sm">Want a more precise score?</p>
+            <TrendingUp className="w-5 h-5 text-[#013DC4]" />
+            <p className="font-bold text-sm text-gray-900 dark:text-white">Want a more precise score?</p>
           </div>
           <p className="text-sm text-muted-foreground">
             Answer {totalOptionalQuestions} more questions across these optional topics:
@@ -1844,9 +1821,9 @@ export default function Onboarding() {
               const info = getModuleInfo(module);
               const ModuleIcon = info.icon;
               return (
-                <div key={module} className="flex items-center gap-3 p-2 rounded-lg bg-background/50">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <ModuleIcon className="w-4 h-4 text-primary" />
+                <div key={module} className="flex items-center gap-3 p-2 rounded-xl bg-white/50 dark:bg-gray-800/50">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#013DC4]/20 to-[#CDB6EF]/20 flex items-center justify-center flex-shrink-0">
+                    <ModuleIcon className="w-4 h-4 text-[#013DC4]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{info.name}</p>
@@ -1884,13 +1861,6 @@ export default function Onboarding() {
     const isFollowUp = question.followUpFor !== undefined;
     const isInCoreSection = currentQuestion < CORE_QUESTION_COUNT;
     
-    const getLiveScoreColor = (probability: number) => {
-      if (probability >= 0.7) return 'from-red-500 to-red-600';
-      if (probability >= 0.5) return 'from-orange-500 to-orange-600';
-      if (probability >= 0.3) return 'from-yellow-500 to-yellow-600';
-      return 'from-green-500 to-green-600';
-    };
-    
     return (
       <motion.div
         key={currentQuestion}
@@ -1899,28 +1869,6 @@ export default function Onboarding() {
         exit={{ opacity: 0, x: -20 }}
         className="space-y-6 relative"
       >
-        {liveScore && liveScore.answeredCount >= 3 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="absolute -top-2 right-0 z-10"
-          >
-            <Card className={`px-3 py-2 bg-gradient-to-r ${getLiveScoreColor(liveScore.probability)} text-white shadow-lg border-0`}>
-              <div className="flex items-center gap-2">
-                <Activity className={`w-4 h-4 ${liveScore.isLoading ? 'animate-pulse' : ''}`} />
-                <div className="text-right">
-                  <div className="text-xs opacity-90">{t('onboarding.questionnaire.liveRisk')}</div>
-                  <div className="text-lg font-black">
-                    {liveScore.isLoading ? '...' : `${Math.round(liveScore.probability * 100)}%`}
-                  </div>
-                </div>
-              </div>
-              <div className="text-[10px] opacity-75 text-right mt-0.5">
-                {t('onboarding.questionnaire.answers', { count: liveScore.answeredCount })}
-              </div>
-            </Card>
-          </motion.div>
-        )}
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -1928,7 +1876,7 @@ export default function Onboarding() {
               {isFollowUp ? t('onboarding.questionnaire.followUp') : question.category}
             </Badge>
             {isInCoreSection && (
-              <Badge variant="outline" className="text-xs border-primary/50 text-primary">
+              <Badge variant="outline" className="text-xs border-[#013DC4]/50 text-[#013DC4]">
                 {t('onboarding.questionnaire.core')}
               </Badge>
             )}
@@ -1939,10 +1887,10 @@ export default function Onboarding() {
         </div>
 
         <div className="flex items-start gap-3">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${isFollowUp ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-chart-3 to-yellow-500'}`}>
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg ${isFollowUp ? 'bg-gradient-to-br from-[#CDB6EF] to-purple-400' : 'bg-gradient-to-br from-[#013DC4] to-[#0150FF]'}`}>
             <QuestionIcon className="w-6 h-6 text-white" />
           </div>
-          <h2 className="text-lg font-bold text-foreground">{question.text}</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">{question.text}</h2>
         </div>
 
         {question.type === 'choice' && question.options && (
@@ -1956,7 +1904,7 @@ export default function Onboarding() {
               >
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left h-auto py-4 px-4 hover:border-primary hover:bg-primary/5"
+                  className="w-full justify-start text-left h-auto py-4 px-4 hover:border-[#013DC4] hover:bg-[#013DC4]/5"
                   onClick={() => handleChoiceAnswer(option)}
                   data-testid={`option-${option.value}`}
                 >
@@ -2104,7 +2052,7 @@ export default function Onboarding() {
     >
       {isPredicting ? (
         <div className="py-12">
-          <div className="w-16 h-16 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-16 h-16 mx-auto border-4 border-[#013DC4] border-t-transparent rounded-full animate-spin" />
           <p className="mt-4 text-muted-foreground">Analyzing your health data...</p>
         </div>
       ) : (
@@ -2113,7 +2061,7 @@ export default function Onboarding() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', bounce: 0.5 }}
-            className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-primary via-chart-2 to-chart-3 p-1"
+            className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-1 shadow-xl shadow-[#013DC4]/20"
           >
             <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
               <div className="text-center">
@@ -2125,7 +2073,7 @@ export default function Onboarding() {
 
           <div className="space-y-2">
             <Badge 
-              className={`${riskScore?.color === 'text-primary' ? 'bg-primary' : riskScore?.color === 'text-chart-2' ? 'bg-chart-2' : riskScore?.color === 'text-chart-3' ? 'bg-chart-3' : 'bg-destructive'} text-white font-bold text-lg px-4 py-1`}
+              className={`${riskScore?.color === 'text-emerald-500' ? 'bg-emerald-500' : riskScore?.color === 'text-[#013DC4]' ? 'bg-[#013DC4]' : riskScore?.color === 'text-amber-500' ? 'bg-amber-500' : 'bg-destructive'} text-white font-bold text-lg px-4 py-1 rounded-xl`}
               data-testid="badge-risk-level"
             >
               {riskScore?.level} Risk
@@ -2145,7 +2093,7 @@ export default function Onboarding() {
             </Card>
           )}
 
-          <Card className="p-6 bg-gradient-to-br from-card to-primary/5 border-0">
+          <Card className="p-6 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl shadow-lg">
             <div className="flex items-center gap-4">
               <img src={mascotImage} alt="Mascot" className="w-16 h-16 object-contain" />
               <div className="text-left">
@@ -2162,17 +2110,17 @@ export default function Onboarding() {
           </Card>
 
           <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <Card className="p-2 sm:p-3 text-center bg-primary/10 border-0">
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary mx-auto mb-1" />
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Earn XP</p>
+            <Card className="p-2 sm:p-3 text-center backdrop-blur-xl bg-[#013DC4]/10 border border-[#013DC4]/20 rounded-xl">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-[#013DC4] mx-auto mb-1" />
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Earn XP</p>
             </Card>
-            <Card className="p-2 sm:p-3 text-center bg-chart-3/10 border-0">
-              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-chart-3 mx-auto mb-1" />
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Build Streaks</p>
+            <Card className="p-2 sm:p-3 text-center backdrop-blur-xl bg-amber-500/10 border border-amber-500/20 rounded-xl">
+              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 mx-auto mb-1" />
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Build Streaks</p>
             </Card>
-            <Card className="p-2 sm:p-3 text-center bg-chart-2/10 border-0">
-              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-chart-2 mx-auto mb-1" />
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Get Healthier</p>
+            <Card className="p-2 sm:p-3 text-center backdrop-blur-xl bg-[#CDB6EF]/20 border border-[#CDB6EF]/30 rounded-xl">
+              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-[#CDB6EF]" style={{ filter: 'brightness(0.7)' }} />
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Get Healthier</p>
             </Card>
           </div>
 
