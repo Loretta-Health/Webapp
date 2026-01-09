@@ -32,10 +32,10 @@ interface CalendarEvent {
 }
 
 const eventTypeColors = {
-  appointment: 'bg-primary/10 border-primary/30 text-primary',
-  medication: 'bg-chart-2/10 border-chart-2/30 text-chart-2',
-  exercise: 'bg-chart-3/10 border-chart-3/30 text-chart-3',
-  other: 'bg-muted border-border text-muted-foreground',
+  appointment: 'border-l-[#013DC4]',
+  medication: 'border-l-[#CDB6EF]',
+  exercise: 'border-l-[#0150FF]',
+  other: 'border-l-gray-400 dark:border-l-gray-500',
 };
 
 export default function Calendar() {
@@ -136,9 +136,9 @@ export default function Calendar() {
   const weekEndFormatted = format(addDays(currentWeekStart, 6), 'd MMM');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 pb-8">
+      <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-6 pb-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <Link href="/profile">
@@ -168,7 +168,7 @@ export default function Calendar() {
 
       <div className="max-w-4xl mx-auto px-4 -mt-4">
         {/* Week Navigation */}
-        <Card className="p-4 mb-4 border-0 shadow-lg">
+        <Card className="p-4 mb-4 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg">
           <div className="flex items-center justify-between mb-4">
             <Button 
               variant="ghost" 
@@ -195,24 +195,24 @@ export default function Calendar() {
                     className={`
                       relative flex flex-col items-center p-2 sm:p-3 rounded-xl min-w-[40px] sm:min-w-[50px] transition-all
                       ${isSelected 
-                        ? 'bg-gradient-to-b from-primary to-chart-2 text-white shadow-lg' 
+                        ? 'bg-gradient-to-b from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white shadow-lg shadow-[#013DC4]/30' 
                         : isTodayDate 
-                          ? 'bg-primary/10 border-2 border-primary/30' 
-                          : 'bg-muted/30 hover:bg-muted/50'
+                          ? 'bg-[#013DC4]/10 border-2 border-[#013DC4]/30' 
+                          : 'bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200/50 dark:hover:bg-gray-700/50'
                       }
                     `}
                     data-testid={`day-${format(day, 'EEE').toLowerCase()}`}
                   >
-                    <span className={`text-xs font-medium ${isSelected ? 'text-white/80' : 'text-muted-foreground'}`}>
+                    <span className={`text-xs font-medium ${isSelected ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'}`}>
                       {format(day, 'EEE')}
                     </span>
-                    <span className={`text-lg sm:text-xl font-black ${isSelected ? 'text-white' : 'text-foreground'}`}>
+                    <span className={`text-lg sm:text-xl font-black ${isSelected ? 'text-white' : 'text-gray-900 dark:text-white'}`}>
                       {format(day, 'd')}
                     </span>
                     {eventCount > 0 && (
                       <Badge 
                         className={`absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center text-xs ${
-                          isSelected ? 'bg-white text-primary' : 'bg-destructive text-white'
+                          isSelected ? 'bg-white text-[#013DC4]' : 'bg-[#013DC4] text-white'
                         }`}
                       >
                         {eventCount}
@@ -235,27 +235,27 @@ export default function Calendar() {
         </Card>
 
         {/* Selected Date Header */}
-        <Card className="p-4 mb-4 border-0 shadow-lg">
+        <Card className="p-4 mb-4 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-black text-foreground">
+              <CalendarIcon className="w-5 h-5 text-[#013DC4]" />
+              <h2 className="text-lg font-black text-gray-900 dark:text-white">
                 {format(selectedDate, 'EEEE d MMMM', { locale: dateLocale })}
               </h2>
             </div>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
-                  className="bg-gradient-to-r from-primary to-chart-2"
+                  className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20"
                   data-testid="button-add-event"
                 >
                   <Plus className="w-4 h-4 mr-1" />
                   {t('calendar.add')}
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
                 <DialogHeader>
-                  <DialogTitle className="text-xl font-black">{t('calendar.addEvent')}</DialogTitle>
+                  <DialogTitle className="text-xl font-black text-gray-900 dark:text-white">{t('calendar.addEvent')}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
@@ -322,7 +322,7 @@ export default function Calendar() {
                   </div>
                   
                   <Button 
-                    className="w-full bg-gradient-to-r from-primary to-chart-2"
+                    className="w-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20"
                     onClick={handleAddEvent}
                     disabled={!newEvent.title}
                     data-testid="button-save-event"
@@ -338,12 +338,12 @@ export default function Calendar() {
         {/* Events List */}
         <div className="space-y-3 pb-8">
           {selectedDateEvents.length === 0 ? (
-            <Card className="p-8 text-center border-0 shadow-lg">
-              <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">{t('calendar.noEvents')}</p>
+            <Card className="p-8 text-center backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg">
+              <CalendarIcon className="w-12 h-12 mx-auto text-[#CDB6EF] mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">{t('calendar.noEvents')}</p>
               <Button 
                 variant="ghost" 
-                className="mt-2 text-primary"
+                className="mt-2 text-[#013DC4] hover:text-[#0150FF] font-bold"
                 onClick={() => setIsAddDialogOpen(true)}
               >
                 {t('calendar.addFirstEvent')}
@@ -357,16 +357,16 @@ export default function Calendar() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className={`p-4 border-l-4 shadow-lg ${eventTypeColors[event.type]}`} data-testid={`event-${event.id}`}>
+                <Card className={`p-4 border-l-4 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl shadow-lg ${eventTypeColors[event.type]}`} data-testid={`event-${event.id}`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg text-foreground">{event.title}</h3>
-                      <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                      <h3 className="font-bold text-lg text-gray-900 dark:text-white">{event.title}</h3>
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mt-1">
                         <Clock className="w-4 h-4" />
                         <span>{event.startTime} – {event.endTime}</span>
                       </div>
                       {event.notes && (
-                        <p className="text-sm text-muted-foreground mt-2">{event.notes}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{event.notes}</p>
                       )}
                     </div>
                     <Button
