@@ -249,7 +249,7 @@ export default function AuthPage() {
                   </h2>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                     {resetStep === 'email' && t('resetPasswordDesc', 'Enter your email to receive a reset code')}
-                    {resetStep === 'code' && t('enterCodeDesc', 'Check the server console for your 6-digit code')}
+                    {resetStep === 'code' && t('enterCodeDesc', 'Check your email for your 6-digit code')}
                     {resetStep === 'newPassword' && t('setNewPasswordDesc', 'Choose a strong password')}
                   </p>
                 </div>
