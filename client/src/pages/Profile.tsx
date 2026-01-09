@@ -1468,10 +1468,10 @@ export default function Profile() {
         </div>
 
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Edit className="w-5 h-5 text-primary" />
+              <DialogTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                <Edit className="w-5 h-5 text-[#013DC4]" />
                 {localT.editModal.title}
               </DialogTitle>
             </DialogHeader>
@@ -1510,7 +1510,7 @@ export default function Profile() {
                 <X className="w-4 h-4 mr-2" />
                 {localT.editModal.cancel}
               </Button>
-              <Button onClick={handleSave} className="bg-gradient-to-r from-primary to-chart-2">
+              <Button onClick={handleSave} className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20">
                 <Save className="w-4 h-4 mr-2" />
                 {localT.editModal.save}
               </Button>
@@ -1957,25 +1957,25 @@ export default function Profile() {
 
       {/* Share Dialog */}
       <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black">
+            <DialogTitle className="text-xl font-black text-gray-900 dark:text-white">
               {language === 'en' ? 'Share with Family & Friends' : 'Mit Familie & Freunden teilen'}
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6 py-4">
-            <p className="text-muted-foreground">
+            <p className="text-gray-500">
               {language === 'en' ? 'Choose what information to share:' : 'Wählen Sie, welche Informationen geteilt werden sollen:'}
             </p>
             
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
                 <div className="space-y-1">
-                  <p className="font-bold text-foreground">
+                  <p className="font-bold text-gray-900 dark:text-white">
                     {language === 'en' ? 'Medications' : 'Medikamente'}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-500">
                     {language === 'en' 
                       ? 'Share your medication schedule and adherence' 
                       : 'Teilen Sie Ihren Medikamentenplan und die Einhaltung'}
@@ -1990,12 +1990,12 @@ export default function Profile() {
                 />
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
                 <div className="space-y-1">
-                  <p className="font-bold text-foreground">
+                  <p className="font-bold text-gray-900 dark:text-white">
                     {language === 'en' ? 'Missions' : 'Missionen'}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-500">
                     {language === 'en' 
                       ? 'Share your health goals and mission progress' 
                       : 'Teilen Sie Ihre Gesundheitsziele und Missionsfortschritte'}
@@ -2010,12 +2010,12 @@ export default function Profile() {
                 />
               </div>
               
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
                 <div className="space-y-1">
-                  <p className="font-bold text-foreground">
+                  <p className="font-bold text-gray-900 dark:text-white">
                     {language === 'en' ? 'Clinical Data' : 'Klinische Daten'}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-gray-500">
                     {language === 'en' 
                       ? 'Share lab results and health measurements' 
                       : 'Teilen Sie Laborergebnisse und Gesundheitsmessungen'}
@@ -2032,7 +2032,7 @@ export default function Profile() {
             </div>
             
             <Button
-              className="w-full bg-primary hover:bg-primary/90"
+              className="w-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20"
               onClick={async () => {
                 const shareData = Object.entries(shareOptions)
                   .filter(([_, enabled]) => enabled)
@@ -2074,17 +2074,17 @@ export default function Profile() {
 
       {/* Edit Profile Modal */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black">{localT.editModal.title}</DialogTitle>
+            <DialogTitle className="text-xl font-black text-gray-900 dark:text-white">{localT.editModal.title}</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6 py-4">
             {/* Photo Upload Section */}
             <div className="space-y-4">
-              <h4 className="font-bold text-foreground">{language === 'en' ? 'Profile Photo' : 'Profilfoto'}</h4>
+              <h4 className="font-bold text-gray-900 dark:text-white">{language === 'en' ? 'Profile Photo' : 'Profilfoto'}</h4>
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-primary/30 bg-muted flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#013DC4]/30 bg-gradient-to-br from-[#013DC4]/10 to-[#CDB6EF]/10 flex items-center justify-center">
                   {editForm.profilePhoto ? (
                     <img 
                       src={editForm.profilePhoto} 
@@ -2138,7 +2138,7 @@ export default function Profile() {
 
             {/* Name Section */}
             <div className="space-y-4">
-              <h4 className="font-bold text-foreground">{localT.editModal.name}</h4>
+              <h4 className="font-bold text-gray-900 dark:text-white">{localT.editModal.name}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">{localT.editModal.firstName}</Label>
@@ -2172,7 +2172,7 @@ export default function Profile() {
             <Button variant="outline" onClick={() => setIsEditOpen(false)} data-testid="button-cancel-edit">
               {localT.editModal.cancel}
             </Button>
-            <Button onClick={handleSave} className="bg-gradient-to-r from-primary to-chart-2" data-testid="button-save-profile">
+            <Button onClick={handleSave} className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20" data-testid="button-save-profile">
               <Save className="w-4 h-4 mr-2" />
               {localT.editModal.save}
             </Button>
@@ -2182,9 +2182,9 @@ export default function Profile() {
 
       {/* Basic Info Edit Modal */}
       <Dialog open={isBasicInfoEditOpen} onOpenChange={setIsBasicInfoEditOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black flex items-center gap-2">
+            <DialogTitle className="text-xl font-black flex items-center gap-2 text-gray-900 dark:text-white">
               <Edit className="w-5 h-5 text-[#013DC4]" />
               {language === 'en' ? 'Edit Basic Information' : 'Grundinformationen bearbeiten'}
             </DialogTitle>
