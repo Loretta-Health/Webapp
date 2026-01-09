@@ -654,6 +654,27 @@ export class DatabaseStorage implements IStorage {
       existingMissions.push(created);
     }
     
+    // Sync maxProgress for existing missions with catalog values
+    for (let i = 0; i < existingMissions.length; i++) {
+      const userMission = existingMissions[i];
+      const catalogMission = baseMissions.find(m => m.missionKey === userMission.missionKey);
+      const catalogMaxProgress = catalogMission?.maxProgress ?? 1;
+      const userMaxProgress = userMission.maxProgress ?? 1;
+      const userProgress = userMission.progress ?? 0;
+      
+      if (catalogMission && userMaxProgress !== catalogMaxProgress) {
+        // Update maxProgress to match catalog, and recalculate completion status
+        const newCompleted = userProgress >= catalogMaxProgress;
+        const updated = await this.updateUserMission(userMission.id, {
+          maxProgress: catalogMaxProgress,
+          completed: newCompleted,
+        });
+        if (updated) {
+          existingMissions[i] = updated;
+        }
+      }
+    }
+    
     return existingMissions;
   }
 

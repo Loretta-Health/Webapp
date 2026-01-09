@@ -236,6 +236,7 @@ export const insertUserMissionSchema = createInsertSchema(userMissions).omit({
 
 export const updateUserMissionSchema = z.object({
   progress: z.number().optional(),
+  maxProgress: z.number().optional(),
   completed: z.boolean().optional(),
   isActive: z.boolean().optional(),
   activatedAt: z.date().nullable().optional(),
