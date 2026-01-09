@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import { sendPasswordResetEmail, isEmailConfigured } from "./email";
 
 declare global {
   namespace Express {
@@ -172,28 +173,32 @@ export function setupAuth(app: Express) {
       const user = await storage.getUserByEmail(email.toLowerCase());
       
       if (!user) {
-        // Don't reveal if user exists or not for security
         return res.json({ 
           success: true, 
-          message: "If an account with this email exists, a reset code has been generated.",
-          // For demo purposes, we show the token on screen
-          demoMode: true
+          message: "If an account with this email exists, a reset code has been sent.",
+          emailConfigured: isEmailConfigured()
         });
       }
 
-      // Generate a 6-digit code for easy entry
       const token = Math.floor(100000 + Math.random() * 900000).toString();
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
       await storage.createPasswordResetToken(user.id, token, expiresAt);
 
-      // In production, this would send an email
-      // Log the token server-side for demo purposes
-      console.log(`[Password Reset] Code for ${email}: ${token} (expires in 15 minutes)`);
-      
+      const userName = user.firstName || user.username;
+      const emailResult = await sendPasswordResetEmail(
+        user.email!,
+        userName,
+        token,
+        15
+      );
+
       res.json({ 
-        success: true, 
-        message: "If an account exists with this email, a reset code has been generated. Check the server logs for the demo code.",
+        success: emailResult.success, 
+        message: isEmailConfigured() 
+          ? "If an account exists with this email, a reset code has been sent to your inbox."
+          : "Reset code generated. Check the server console for the code (SendGrid not configured).",
+        emailConfigured: isEmailConfigured(),
         expiresIn: "15 minutes"
       });
     } catch (error) {
