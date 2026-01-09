@@ -1104,7 +1104,7 @@ export default function MissionDetails() {
                 {steps.map((step, index) => {
                   const position = missionData.totalSteps === 1 
                     ? 50 
-                    : ((index + 1) / missionData.totalSteps) * 100;
+                    : ((index + 0.5) / missionData.totalSteps) * 100;
                   return (
                     <motion.div
                       key={step.id}
