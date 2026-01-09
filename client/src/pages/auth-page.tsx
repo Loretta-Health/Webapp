@@ -2,10 +2,11 @@ import { useState, useEffect, ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
-import { Loader2, Lock, User, UserPlus, AtSign, Mail } from 'lucide-react';
+import { Loader2, Lock, User, UserPlus, AtSign, Mail, ArrowLeft, KeyRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
+import { apiRequest } from '@/lib/queryClient';
 
 function GlassCard({ 
   children, 
@@ -36,6 +37,16 @@ export default function AuthPage() {
   const { t } = useTranslation('auth');
   
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetStep, setResetStep] = useState<'email' | 'code' | 'newPassword'>('email');
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
+  const [resetError, setResetError] = useState('');
+  
   const [loginForm, setLoginForm] = useState({ identifier: '', password: '' });
   const [registerForm, setRegisterForm] = useState({ 
     username: '', 
@@ -92,6 +103,93 @@ export default function AuthPage() {
     });
   };
 
+  const handleRequestReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+    setResetError('');
+    setResetMessage('');
+    
+    try {
+      const res = await apiRequest('POST', '/api/password-reset/request', { email: resetEmail });
+      const data = await res.json();
+      setResetMessage(data.message);
+      setResetStep('code');
+    } catch (error: any) {
+      setResetError(error.message || 'Failed to request password reset');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+    setResetError('');
+    
+    try {
+      const res = await apiRequest('POST', '/api/password-reset/verify', { token: resetCode });
+      const data = await res.json();
+      if (data.valid) {
+        setResetStep('newPassword');
+      }
+    } catch (error: any) {
+      setResetError(error.message || 'Invalid reset code');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleCompleteReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+    setResetError('');
+    
+    if (newPassword !== confirmNewPassword) {
+      setResetError('Passwords do not match');
+      setResetLoading(false);
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setResetError('Password must be at least 6 characters');
+      setResetLoading(false);
+      return;
+    }
+    
+    try {
+      const res = await apiRequest('POST', '/api/password-reset/complete', { 
+        token: resetCode, 
+        newPassword 
+      });
+      const data = await res.json();
+      setResetMessage(data.message);
+      setTimeout(() => {
+        setShowPasswordReset(false);
+        setResetStep('email');
+        setResetEmail('');
+        setResetCode('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        setResetMessage('');
+      }, 2000);
+    } catch (error: any) {
+      setResetError(error.message || 'Failed to reset password');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleBackToLogin = () => {
+    setShowPasswordReset(false);
+    setResetStep('email');
+    setResetEmail('');
+    setResetCode('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setResetMessage('');
+    setResetError('');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 p-4">
       <div className="w-full max-w-md">
@@ -130,7 +228,162 @@ export default function AuthPage() {
               </button>
             </div>
             
-            {activeTab === 'login' ? (
+            {showPasswordReset ? (
+              <div className="space-y-4">
+                <button
+                  onClick={handleBackToLogin}
+                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-[#013DC4] transition-colors mb-4"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  {t('backToLogin', 'Back to Sign In')}
+                </button>
+                
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center">
+                    <KeyRound className="w-8 h-8 text-white" />
+                  </div>
+                  <h2 className="text-xl font-black text-gray-900 dark:text-white">
+                    {resetStep === 'email' && t('resetPassword', 'Reset Password')}
+                    {resetStep === 'code' && t('enterCode', 'Enter Reset Code')}
+                    {resetStep === 'newPassword' && t('setNewPassword', 'Set New Password')}
+                  </h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    {resetStep === 'email' && t('resetPasswordDesc', 'Enter your email to receive a reset code')}
+                    {resetStep === 'code' && t('enterCodeDesc', 'Check the server console for your 6-digit code')}
+                    {resetStep === 'newPassword' && t('setNewPasswordDesc', 'Choose a strong password')}
+                  </p>
+                </div>
+
+                {resetMessage && (
+                  <div className="p-3 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl">
+                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">{resetMessage}</p>
+                  </div>
+                )}
+
+                {resetError && (
+                  <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl">
+                    <p className="text-sm text-red-600 dark:text-red-400 font-medium">{resetError}</p>
+                  </div>
+                )}
+
+                {resetStep === 'email' && (
+                  <form onSubmit={handleRequestReset} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-black text-gray-500 uppercase tracking-wider">{t('email')}</label>
+                      <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center">
+                          <Mail className="w-4 h-4 text-white" />
+                        </div>
+                        <input
+                          type="email"
+                          placeholder={t('placeholders.email')}
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                          required
+                          className="w-full pl-16 pr-4 py-4 bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10 rounded-2xl font-medium text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30"
+                        />
+                      </div>
+                    </div>
+                    <button 
+                      type="submit" 
+                      className="w-full py-4 bg-gradient-to-r from-[#013DC4] to-[#0150FF] hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20 transition-all disabled:opacity-50 min-h-[56px]"
+                      disabled={resetLoading}
+                    >
+                      {resetLoading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          {t('sending', 'Sending...')}
+                        </span>
+                      ) : (
+                        t('sendResetCode', 'Send Reset Code')
+                      )}
+                    </button>
+                  </form>
+                )}
+
+                {resetStep === 'code' && (
+                  <form onSubmit={handleVerifyCode} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-black text-gray-500 uppercase tracking-wider">{t('resetCode', 'Reset Code')}</label>
+                      <input
+                        type="text"
+                        placeholder="123456"
+                        value={resetCode}
+                        onChange={(e) => setResetCode(e.target.value)}
+                        required
+                        maxLength={6}
+                        className="w-full px-4 py-4 bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10 rounded-2xl font-bold text-2xl text-center text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30 tracking-[0.5em]"
+                      />
+                    </div>
+                    <button 
+                      type="submit" 
+                      className="w-full py-4 bg-gradient-to-r from-[#013DC4] to-[#0150FF] hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20 transition-all disabled:opacity-50 min-h-[56px]"
+                      disabled={resetLoading || resetCode.length < 6}
+                    >
+                      {resetLoading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          {t('verifying', 'Verifying...')}
+                        </span>
+                      ) : (
+                        t('verifyCode', 'Verify Code')
+                      )}
+                    </button>
+                  </form>
+                )}
+
+                {resetStep === 'newPassword' && (
+                  <form onSubmit={handleCompleteReset} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-black text-gray-500 uppercase tracking-wider">{t('newPassword', 'New Password')}</label>
+                      <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center">
+                          <Lock className="w-4 h-4 text-white" />
+                        </div>
+                        <input
+                          type="password"
+                          placeholder="••••••"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                          className="w-full pl-16 pr-4 py-4 bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10 rounded-2xl font-medium text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-black text-gray-500 uppercase tracking-wider">{t('confirmNewPassword', 'Confirm Password')}</label>
+                      <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center">
+                          <Lock className="w-4 h-4 text-white" />
+                        </div>
+                        <input
+                          type="password"
+                          placeholder="••••••"
+                          value={confirmNewPassword}
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          required
+                          className="w-full pl-16 pr-4 py-4 bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10 rounded-2xl font-medium text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#013DC4]/30"
+                        />
+                      </div>
+                    </div>
+                    <button 
+                      type="submit" 
+                      className="w-full py-4 bg-gradient-to-r from-[#013DC4] to-[#0150FF] hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20 transition-all disabled:opacity-50 min-h-[56px]"
+                      disabled={resetLoading}
+                    >
+                      {resetLoading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          {t('resetting', 'Resetting...')}
+                        </span>
+                      ) : (
+                        t('resetPassword', 'Reset Password')
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
+            ) : activeTab === 'login' ? (
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-gray-500 uppercase tracking-wider">{t('usernameOrEmail')}</label>
@@ -181,6 +434,13 @@ export default function AuthPage() {
                   ) : (
                     t('signIn')
                   )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordReset(true)}
+                  className="w-full text-center text-sm text-[#013DC4] hover:text-[#0150FF] font-medium mt-2 transition-colors"
+                >
+                  {t('forgotPassword', 'Forgot your password?')}
                 </button>
               </form>
             ) : (
