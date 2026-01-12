@@ -9,8 +9,27 @@ import {
   Zap,
   Trophy,
   ChevronRight,
-  Loader2
+  Loader2,
+  Target,
+  Crown,
+  Star,
+  Heart,
+  Shield,
+  Award,
+  type LucideIcon
 } from 'lucide-react';
+
+const iconMap: Record<string, LucideIcon> = {
+  target: Target,
+  flame: Flame,
+  crown: Crown,
+  star: Star,
+  zap: Zap,
+  heart: Heart,
+  shield: Shield,
+  award: Award,
+  trophy: Trophy,
+};
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 
@@ -255,12 +274,15 @@ export default function StreakDetails() {
                         : 'bg-white/30 dark:bg-gray-800/30 border-white/20 opacity-70'
                     }`}>
                       <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                           achievement.unlocked 
                             ? 'bg-gradient-to-br from-orange-500 to-amber-400' 
                             : 'bg-muted grayscale'
                         }`}>
-                          {achievement.icon}
+                          {(() => {
+                            const IconComponent = iconMap[achievement.icon.toLowerCase()] || Flame;
+                            return <IconComponent className={`w-6 h-6 ${achievement.unlocked ? 'text-white' : 'text-muted-foreground'}`} />;
+                          })()}
                         </div>
                         
                         <div className="flex-1">
