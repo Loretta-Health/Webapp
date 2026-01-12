@@ -489,6 +489,7 @@ export default function MyDashboard() {
           transform transition-transform duration-500 ease-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           shadow-2xl shadow-[#013DC4]/5
+          safe-area-top safe-area-left
         `}
         data-testid="sidebar"
         onTouchStart={onTouchStart}
@@ -684,7 +685,7 @@ export default function MyDashboard() {
       </aside>
       
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between shadow-2xl shadow-[#013DC4]/30 relative overflow-hidden">
+        <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between shadow-2xl shadow-[#013DC4]/30 relative overflow-hidden safe-area-top">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30" />
           
           <button 

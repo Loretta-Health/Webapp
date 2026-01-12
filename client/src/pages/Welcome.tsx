@@ -84,8 +84,12 @@ export default function Welcome() {
 
   if (allLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a1a] via-[#1a1a2e] to-[#0a0a1a]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-lime-400"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 safe-area-top safe-area-bottom">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-xl shadow-[#013DC4]/20">
+            <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin" />
+          </div>
+        </div>
       </div>
     );
   }

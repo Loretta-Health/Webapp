@@ -428,7 +428,7 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10">
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 safe-area-top">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link href="/my-dashboard">
