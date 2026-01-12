@@ -244,8 +244,23 @@ export function getEmotionByKey(key: string): EmotionDefinition | undefined {
 }
 
 export function detectEmotionFromText(text: string): EmotionCategory | null {
-  const lowerText = text.toLowerCase();
+  const lowerText = text.toLowerCase().trim();
   
+  // First, check if the input exactly matches an emotion name (e.g., user types just "neutral" or "happy")
+  const allEmotionKeys = EMOTION_BANK.map(e => e.key);
+  if (allEmotionKeys.includes(lowerText as EmotionCategory)) {
+    return lowerText as EmotionCategory;
+  }
+  
+  // Check for emotion name as standalone word in the text (e.g., "I feel neutral" or "feeling happy today")
+  for (const emotionKey of allEmotionKeys) {
+    const emotionRegex = new RegExp(`\\b${emotionKey}\\b`, 'i');
+    if (emotionRegex.test(lowerText)) {
+      return emotionKey;
+    }
+  }
+  
+  // Then check keywords for each emotion
   for (const emotion of EMOTION_BANK) {
     for (const keyword of emotion.keywords) {
       const regex = new RegExp(`\\b${keyword.replace(/\s+/g, '\\s+')}\\b`, 'i');
@@ -254,6 +269,7 @@ export function detectEmotionFromText(text: string): EmotionCategory | null {
       }
     }
   }
+  
   return null;
 }
 

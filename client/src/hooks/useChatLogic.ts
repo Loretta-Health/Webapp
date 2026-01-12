@@ -7,6 +7,7 @@ import type { SuggestedMission } from '@/components/chat/MissionCardView';
 import type { MetricData } from '@/components/chat/MetricCard';
 import { useWeatherSimulation } from '@/contexts/WeatherSimulationContext';
 import { getApiUrl } from "@/lib/queryClient";
+import { detectEmotionFromText } from '../../../shared/emotions';
 
 interface WeatherContext {
   isGoodForOutdoor: boolean;
@@ -98,18 +99,7 @@ const suggestedMissions: SuggestedMission[] = [
   },
 ];
 
-const emotionKeywords: Record<string, string[]> = {
-  happy: ['happy', 'great', 'wonderful', 'amazing', 'joyful', 'excited', 'good', 'fantastic'],
-  sad: ['sad', 'down', 'depressed', 'unhappy', 'blue', 'low'],
-  anxious: ['anxious', 'worried', 'nervous', 'stressed', 'overwhelmed', 'panicked'],
-  stressed: ['stressed', 'pressure', 'tense', 'overwhelmed'],
-  calm: ['calm', 'peaceful', 'relaxed', 'serene', 'tranquil'],
-  tired: ['tired', 'exhausted', 'fatigued', 'sleepy', 'drained'],
-  energetic: ['energetic', 'energized', 'pumped', 'active', 'motivated'],
-  frustrated: ['frustrated', 'annoyed', 'irritated', 'angry', 'upset'],
-  grateful: ['grateful', 'thankful', 'appreciative', 'blessed'],
-  hopeful: ['hopeful', 'optimistic', 'positive', 'confident'],
-};
+// Emotion keywords are now managed in shared/emotions.ts for consistency
 
 const missionTriggerPatterns = [
   { pattern: /\[MISSION:(\d+)\]/i, type: 'explicit' },
@@ -201,28 +191,8 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   }, [weatherData, simulateBadWeather]);
 
   const detectEmotion = useCallback((text: string): string | null => {
-    const lowerText = text.toLowerCase();
-    
-    const explicitPatterns = [
-      /i(?:'m| am)\s+feeling\s+(\w+)/i,
-      /i\s+feel\s+(?:so\s+)?(\w+)/i,
-      /feeling\s+(?:really|very|so|quite)\s+(\w+)/i,
-      /i(?:'m| am)\s+(?:so|really|very)\s+(\w+)\s+(?:today|right now|now)/i,
-    ];
-    
-    for (const pattern of explicitPatterns) {
-      const match = text.match(pattern);
-      if (match) {
-        const potentialEmotion = match[1].toLowerCase();
-        for (const [emotion, keywords] of Object.entries(emotionKeywords)) {
-          if (keywords.includes(potentialEmotion) || emotion === potentialEmotion) {
-            return emotion;
-          }
-        }
-      }
-    }
-    
-    return null;
+    // Use the shared emotion detection from shared/emotions.ts
+    return detectEmotionFromText(text);
   }, []);
 
   const cleanAIResponse = useCallback((response: string): string => {
