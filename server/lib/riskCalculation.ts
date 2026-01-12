@@ -66,7 +66,10 @@ export async function calculateAndSaveRiskScore(userId: string): Promise<RiskCal
     const mergedAnswers = await gatherFullFeatureSet(userId);
     const mlFeatures = convertQuestionnaireToMLFeatures(mergedAnswers);
     
-    console.log('[Risk Calculation] Gathered', Object.keys(mergedAnswers).length, 'answers, converted to', mlFeatures.length, 'ML features');
+    console.log('[Risk Calculation] Gathered', Object.keys(mergedAnswers).length, 'questionnaire answers');
+    console.log('[Risk Calculation] Answer keys:', Object.keys(mergedAnswers).join(', '));
+    console.log('[Risk Calculation] Converted to', mlFeatures.length, 'ML features');
+    console.log('[Risk Calculation] Feature IDs:', mlFeatures.map(f => f.ID).join(', '));
     
     if (mlFeatures.length < 5) {
       return {
