@@ -64,13 +64,33 @@ export default function StreakDetails() {
   const streakAchievements = achievements?.filter(a => a.category === 'streak') || [];
   const unlockedCount = streakAchievements.filter(a => a.unlocked).length;
   
+  const lastCheckIn = gamificationData?.lastCheckIn;
+  const hasCheckedInToday = lastCheckIn 
+    ? new Date(lastCheckIn).toDateString() === new Date().toDateString()
+    : false;
+  
   const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const dayIndex = (new Date().getDay() - 6 + i + 7) % 7;
-    const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - i));
+    const dayOfWeek = date.getDay();
+    const adjustedIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    
+    const isToday = i === 6;
+    const daysAgo = 6 - i;
+    
+    let completed = false;
+    if (isToday) {
+      completed = hasCheckedInToday;
+    } else if (hasCheckedInToday) {
+      completed = daysAgo < currentStreak;
+    } else {
+      completed = daysAgo > 0 && daysAgo <= currentStreak;
+    }
+    
     return {
       dayKey: weekDayKeys[adjustedIndex],
-      completed: i < Math.min(currentStreak, 6) && i < 6,
-      isToday: i === 6,
+      completed,
+      isToday,
     };
   });
   
