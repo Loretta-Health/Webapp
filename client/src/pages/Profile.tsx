@@ -1976,15 +1976,9 @@ export default function Profile() {
                             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                               <Button
                                 onClick={() => {
-                                  const categoryAnswers: Record<string, string> = {};
-                                  category.questions.forEach(q => {
-                                    if (questionnaireAnswers[q.id]) {
-                                      categoryAnswers[q.id] = questionnaireAnswers[q.id];
-                                    }
-                                  });
                                   saveAnswersMutation.mutate({
-                                    category: category.key,
-                                    answers: categoryAnswers
+                                    category: 'health_risk_assessment',
+                                    answers: questionnaireAnswers
                                   });
                                   toast({
                                     title: language === 'en' ? 'Saved!' : 'Gespeichert!',
