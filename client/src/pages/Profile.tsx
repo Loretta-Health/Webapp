@@ -47,7 +47,9 @@ import {
   Share2,
   CalendarDays,
   Camera,
-  Upload
+  Upload,
+  MessageSquare,
+  Send
 } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { motion } from 'framer-motion';
@@ -198,6 +200,27 @@ const translations = {
       saved: 'Profile Updated',
       savedDescription: 'Your profile has been updated successfully.',
     },
+    feedback: {
+      title: 'Send Feedback',
+      button: 'Send Feedback',
+      subject: 'Subject',
+      subjectPlaceholder: 'What is this about?',
+      message: 'Message',
+      messagePlaceholder: 'Tell us your thoughts, suggestions, or report an issue...',
+      category: 'Category',
+      categories: {
+        general: 'General Feedback',
+        bug: 'Report a Bug',
+        feature: 'Feature Request',
+        other: 'Other',
+      },
+      send: 'Send Feedback',
+      sending: 'Sending...',
+      success: 'Feedback Sent',
+      successDescription: 'Thank you for your feedback! We appreciate you taking the time to help us improve.',
+      error: 'Failed to Send',
+      errorDescription: 'Something went wrong. Please try again later.',
+    },
   },
   de: {
     back: 'Zurück',
@@ -324,6 +347,27 @@ const translations = {
       save: 'Änderungen speichern',
       saved: 'Profil aktualisiert',
       savedDescription: 'Ihr Profil wurde erfolgreich aktualisiert.',
+    },
+    feedback: {
+      title: 'Feedback senden',
+      button: 'Feedback senden',
+      subject: 'Betreff',
+      subjectPlaceholder: 'Worum geht es?',
+      message: 'Nachricht',
+      messagePlaceholder: 'Teilen Sie uns Ihre Gedanken, Vorschläge oder ein Problem mit...',
+      category: 'Kategorie',
+      categories: {
+        general: 'Allgemeines Feedback',
+        bug: 'Fehler melden',
+        feature: 'Funktionswunsch',
+        other: 'Sonstiges',
+      },
+      send: 'Feedback senden',
+      sending: 'Wird gesendet...',
+      success: 'Feedback gesendet',
+      successDescription: 'Vielen Dank für Ihr Feedback! Wir schätzen es, dass Sie sich die Zeit nehmen, uns zu helfen.',
+      error: 'Senden fehlgeschlagen',
+      errorDescription: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es später erneut.',
     },
   },
 };
@@ -649,6 +693,13 @@ export default function Profile() {
     missions: true,
     clinicalData: false,
   });
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [feedbackForm, setFeedbackForm] = useState({
+    subject: '',
+    message: '',
+    category: 'general',
+  });
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
   const [questionnaireAnswers, setQuestionnaireAnswers] = useState<Record<string, string>>(() => {
     const saved = localStorage.getItem('loretta_questionnaire_answers');
     return saved ? JSON.parse(saved) : {};
@@ -1521,6 +1572,47 @@ export default function Profile() {
     );
   }
 
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackForm.subject.trim() || !feedbackForm.message.trim()) {
+      toast({
+        title: localT.feedback.error,
+        description: language === 'en' ? 'Please fill in all required fields.' : 'Bitte füllen Sie alle Pflichtfelder aus.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmittingFeedback(true);
+    try {
+      const response = await apiRequest('POST', '/api/feedback', {
+        subject: feedbackForm.subject.trim(),
+        message: feedbackForm.message.trim(),
+        category: feedbackForm.category,
+      });
+
+      if (response.ok) {
+        toast({
+          title: localT.feedback.success,
+          description: localT.feedback.successDescription,
+        });
+        setIsFeedbackOpen(false);
+        setFeedbackForm({ subject: '', message: '', category: 'general' });
+      } else {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to send feedback');
+      }
+    } catch (error) {
+      console.error('Feedback submission error:', error);
+      toast({
+        title: localT.feedback.error,
+        description: localT.feedback.errorDescription,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmittingFeedback(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Header */}
@@ -1953,7 +2045,110 @@ export default function Profile() {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Feedback Section */}
+        <div className="mt-6 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl p-5 sm:p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center text-white shadow-lg">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white">
+                  {localT.feedback.title}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {language === 'en' ? 'Help us improve Loretta' : 'Helfen Sie uns, Loretta zu verbessern'}
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setIsFeedbackOpen(true)}
+              className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg"
+              data-testid="button-open-feedback"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              {localT.feedback.button}
+            </Button>
+          </div>
+        </div>
       </div>
+
+      {/* Feedback Dialog */}
+      <Dialog open={isFeedbackOpen} onOpenChange={setIsFeedbackOpen}>
+        <DialogContent className="max-w-md bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black flex items-center gap-2 text-gray-900 dark:text-white">
+              <MessageSquare className="w-5 h-5 text-[#013DC4]" />
+              {localT.feedback.title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="feedback-category">{localT.feedback.category}</Label>
+              <Select
+                value={feedbackForm.category}
+                onValueChange={(value) => setFeedbackForm({ ...feedbackForm, category: value })}
+              >
+                <SelectTrigger id="feedback-category" data-testid="select-feedback-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general">{localT.feedback.categories.general}</SelectItem>
+                  <SelectItem value="bug">{localT.feedback.categories.bug}</SelectItem>
+                  <SelectItem value="feature">{localT.feedback.categories.feature}</SelectItem>
+                  <SelectItem value="other">{localT.feedback.categories.other}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="feedback-subject">{localT.feedback.subject}</Label>
+              <Input
+                id="feedback-subject"
+                value={feedbackForm.subject}
+                onChange={(e) => setFeedbackForm({ ...feedbackForm, subject: e.target.value })}
+                placeholder={localT.feedback.subjectPlaceholder}
+                maxLength={200}
+                data-testid="input-feedback-subject"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="feedback-message">{localT.feedback.message}</Label>
+              <textarea
+                id="feedback-message"
+                value={feedbackForm.message}
+                onChange={(e) => setFeedbackForm({ ...feedbackForm, message: e.target.value })}
+                placeholder={localT.feedback.messagePlaceholder}
+                maxLength={5000}
+                rows={5}
+                className="w-full px-3 py-2 rounded-2xl border border-white/50 dark:border-white/10 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#013DC4] resize-none text-gray-900 dark:text-white placeholder:text-gray-400"
+                data-testid="textarea-feedback-message"
+              />
+              <p className="text-xs text-gray-400 text-right">
+                {feedbackForm.message.length}/5000
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setIsFeedbackOpen(false)}>
+              {localT.editModal.cancel}
+            </Button>
+            <Button 
+              onClick={handleFeedbackSubmit} 
+              className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold"
+              disabled={isSubmittingFeedback || !feedbackForm.subject.trim() || !feedbackForm.message.trim()}
+              data-testid="button-submit-feedback"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {isSubmittingFeedback ? localT.feedback.sending : localT.feedback.send}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Share Dialog */}
       <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>

@@ -30,6 +30,7 @@ import {
 } from "@shared/emotions";
 import { convertQuestionnaireToMLFeatures, type MLFeature } from "./lib/nhanesMapping";
 import { calculateAndSaveRiskScore, gatherFullFeatureSet, callMLPredictionAPI as callMLAPI } from "./lib/riskCalculation";
+import { sendFeedbackEmail } from "./email";
 
 // Scaleway AI configuration
 const SCALEWAY_BASE_URL = 'https://api.scaleway.ai/v1';
@@ -2798,6 +2799,52 @@ IMPORTANT: When discussing risk scores, remember:
     } catch (error) {
       console.error("Error fetching weather assessment:", error);
       res.status(500).json({ error: "Failed to fetch weather assessment" });
+    }
+  });
+
+  // ========================
+  // Feedback Endpoint
+  // ========================
+
+  app.post("/api/feedback", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    try {
+      const { subject, message, category } = req.body;
+      
+      if (!subject || !message) {
+        return res.status(400).json({ error: "Subject and message are required" });
+      }
+      
+      if (subject.length > 200) {
+        return res.status(400).json({ error: "Subject must be less than 200 characters" });
+      }
+      
+      if (message.length > 5000) {
+        return res.status(400).json({ error: "Message must be less than 5000 characters" });
+      }
+      
+      const user = req.user as any;
+      const userEmail = user.email || 'No email provided';
+      const userName = user.firstName || user.username || 'Anonymous User';
+      
+      const result = await sendFeedbackEmail(
+        userEmail,
+        userName,
+        subject,
+        message,
+        category || 'general'
+      );
+      
+      if (result.success) {
+        res.json({ success: true, message: "Feedback submitted successfully" });
+      } else {
+        res.status(500).json({ error: result.message });
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      res.status(500).json({ error: "Failed to submit feedback" });
     }
   });
 
