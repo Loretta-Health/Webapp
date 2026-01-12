@@ -1,11 +1,12 @@
-import sgMail from '@sendgrid/mail';
+import * as Brevo from '@getbrevo/brevo';
 
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@loretta.health';
 const FROM_NAME = process.env.FROM_NAME || 'Loretta';
 
-if (SENDGRID_API_KEY) {
-  sgMail.setApiKey(SENDGRID_API_KEY);
+const apiInstance = new Brevo.TransactionalEmailsApi();
+if (BREVO_API_KEY) {
+  apiInstance.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, BREVO_API_KEY);
 }
 
 function generatePasswordResetEmailHTML(
@@ -129,34 +130,30 @@ export async function sendPasswordResetEmail(
   resetCode: string,
   expiryMinutes: number = 15
 ): Promise<{ success: boolean; message: string }> {
-  if (!SENDGRID_API_KEY) {
-    console.log(`[Password Reset] SendGrid not configured. Code for ${toEmail}: ${resetCode} (expires in ${expiryMinutes} minutes)`);
+  if (!BREVO_API_KEY) {
+    console.log(`[Password Reset] Brevo not configured. Code for ${toEmail}: ${resetCode} (expires in ${expiryMinutes} minutes)`);
     return {
       success: true,
-      message: "SendGrid not configured. Reset code logged to console for demo purposes."
+      message: "Brevo not configured. Reset code logged to console for demo purposes."
     };
   }
 
-  const msg = {
-    to: toEmail,
-    from: {
-      email: FROM_EMAIL,
-      name: FROM_NAME
-    },
-    subject: 'Reset your Loretta password',
-    text: generatePasswordResetEmailText(userName, resetCode, expiryMinutes),
-    html: generatePasswordResetEmailHTML(userName, resetCode, expiryMinutes),
-  };
+  const sendSmtpEmail = new Brevo.SendSmtpEmail();
+  sendSmtpEmail.subject = 'Reset your Loretta password';
+  sendSmtpEmail.htmlContent = generatePasswordResetEmailHTML(userName, resetCode, expiryMinutes);
+  sendSmtpEmail.textContent = generatePasswordResetEmailText(userName, resetCode, expiryMinutes);
+  sendSmtpEmail.sender = { name: FROM_NAME, email: FROM_EMAIL };
+  sendSmtpEmail.to = [{ email: toEmail, name: userName || 'User' }];
 
   try {
-    await sgMail.send(msg);
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log(`[Password Reset] Email sent successfully to ${toEmail}`);
     return {
       success: true,
       message: "Password reset email sent successfully."
     };
   } catch (error: any) {
-    console.error('[Password Reset] Failed to send email:', error?.response?.body || error);
+    console.error('[Password Reset] Failed to send email:', error?.body || error?.message || error);
     return {
       success: false,
       message: "Failed to send password reset email. Please try again later."
@@ -165,5 +162,5 @@ export async function sendPasswordResetEmail(
 }
 
 export function isEmailConfigured(): boolean {
-  return !!SENDGRID_API_KEY;
+  return !!BREVO_API_KEY;
 }
