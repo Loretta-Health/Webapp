@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { getApiUrl } from "@/lib/queryClient";
 import { 
-  detectEmotionFromText, 
   getRandomSupportiveMessage, 
   getEmotionEmoji,
   type EmotionCategory 
@@ -80,21 +79,42 @@ export default function EmotionalCheckInModal({
     setInputText('');
     setLoading(true);
 
-    const emotion = detectEmotionFromText(inputText);
-    
-    await new Promise(resolve => setTimeout(resolve, 800));
+    try {
+      // Use AI-based emotion classification
+      const response = await fetch(getApiUrl('/api/classify-emotion'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ message: inputText }),
+      });
 
-    if (emotion) {
-      setDetectedEmotion(emotion);
-      const emoji = getEmotionEmoji(emotion);
-      const confirmMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: `It sounds like you are feeling ${emotion} ${emoji}`,
-      };
-      setMessages(prev => [...prev, confirmMessage]);
-      setStep('confirming');
-    } else {
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.emotion && !data.unclear) {
+          setDetectedEmotion(data.emotion);
+          const emoji = getEmotionEmoji(data.emotion as EmotionCategory);
+          const confirmMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: `It sounds like you are feeling ${data.emotion} ${emoji}`,
+          };
+          setMessages(prev => [...prev, confirmMessage]);
+          setStep('confirming');
+        } else {
+          const clarifyMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: "I want to understand you better. Can you tell me more about how you're feeling? Are you feeling happy, stressed, tired, or something else?",
+          };
+          setMessages(prev => [...prev, clarifyMessage]);
+          setStep('retry');
+        }
+      } else {
+        throw new Error('Failed to classify emotion');
+      }
+    } catch (error) {
+      console.error('Error classifying emotion:', error);
       const clarifyMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',

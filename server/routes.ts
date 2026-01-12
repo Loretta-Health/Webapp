@@ -5,7 +5,7 @@ import { db } from "./db";
 import { eq, and, or } from "drizzle-orm";
 import { userMissions, userInviteCodes, friendships } from "@shared/schema";
 import { setupAuth } from "./auth";
-import { HEALTH_NAVIGATOR_SYSTEM_PROMPT } from "./prompts";
+import { HEALTH_NAVIGATOR_SYSTEM_PROMPT, EMOTION_CLASSIFICATION_PROMPT } from "./prompts";
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
 import { processCheckin, processActivityLogged, processXpEarned, processMedicationTaken } from "./lib/achievementManager";
 import { startMedicationAutoMissCron } from "./cron/medication-auto-miss";
@@ -59,7 +59,7 @@ async function addXPAndCheckAchievements(userId: string, amount: number): Promis
   };
 }
 
-async function chatWithScaleway(messages: ChatMessage[]): Promise<string> {
+async function chatWithScaleway(messages: ChatMessage[], options?: { temperature?: number; max_tokens?: number }): Promise<string> {
   const apiKey = process.env.SCALEWAY_API_KEY;
   if (!apiKey) {
     throw new Error('Missing SCALEWAY_API_KEY');
@@ -74,8 +74,8 @@ async function chatWithScaleway(messages: ChatMessage[]): Promise<string> {
     body: JSON.stringify({
       model: SCALEWAY_MODEL,
       messages,
-      temperature: 0.7,
-      max_tokens: 1000,
+      temperature: options?.temperature ?? 0.7,
+      max_tokens: options?.max_tokens ?? 1000,
       stream: false,
     }),
   });
@@ -851,6 +851,73 @@ IMPORTANT: When discussing risk scores, remember:
   // ========================
   // Emotional Check-in Endpoints
   // ========================
+
+  // AI-based emotion classification endpoint
+  app.post("/api/classify-emotion", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    try {
+      const { message } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      console.log("[API] Classifying emotion for message:", message.substring(0, 50) + (message.length > 50 ? '...' : ''));
+
+      const messages: ChatMessage[] = [
+        { role: 'system', content: EMOTION_CLASSIFICATION_PROMPT },
+        { role: 'user', content: message }
+      ];
+
+      // Use low temperature for more consistent single-word responses
+      const aiResponse = await chatWithScaleway(messages, { temperature: 0.1, max_tokens: 50 });
+      const responseText = aiResponse.trim().toLowerCase();
+      
+      console.log("[API] Raw AI response:", responseText);
+      
+      // Valid emotions from EMOTION_BANK
+      const validEmotions = [
+        'happy', 'sad', 'anxious', 'stressed', 'calm', 'peaceful', 'tired',
+        'energetic', 'hyper', 'frustrated', 'angry', 'grateful', 'hopeful',
+        'lonely', 'confused', 'sick', 'overwhelmed', 'motivated', 'bored', 'neutral'
+      ];
+      
+      // First check if the response is exactly a valid emotion
+      if (validEmotions.includes(responseText)) {
+        console.log("[API] AI classified emotion as (exact match):", responseText);
+        res.json({ emotion: responseText, success: true });
+        return;
+      }
+      
+      // If the AI included extra text, try to extract an emotion from the response
+      // Look for the first valid emotion word in the response
+      let foundEmotion: string | null = null;
+      for (const emotion of validEmotions) {
+        // Check for emotion as a standalone word
+        const regex = new RegExp(`\\b${emotion}\\b`, 'i');
+        if (regex.test(responseText)) {
+          foundEmotion = emotion;
+          break;
+        }
+      }
+      
+      if (foundEmotion) {
+        console.log("[API] AI classified emotion as (extracted):", foundEmotion);
+        res.json({ emotion: foundEmotion, success: true });
+      } else if (responseText.includes('unclear') || responseText.includes('not enough') || responseText.includes('cannot determine')) {
+        console.log("[API] AI indicated unclear emotion");
+        res.json({ emotion: null, success: true, unclear: true });
+      } else {
+        console.log("[API] AI could not classify emotion, response was:", responseText);
+        res.json({ emotion: null, success: true, unclear: true });
+      }
+    } catch (error) {
+      console.error("Error classifying emotion:", error);
+      res.status(500).json({ error: "Failed to classify emotion" });
+    }
+  });
 
   app.get("/api/emotional-checkins/latest", async (req, res) => {
     if (!req.isAuthenticated()) {
