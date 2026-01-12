@@ -785,7 +785,7 @@ export default function MyDashboard() {
                 </GlassCard>
               </Link>
               
-              <Link href="/leaderboard">
+              <Link href="/leaderboard?tab=achievements">
                 <GlassCard className="p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer h-full">
                   <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-400 to-orange-400 flex items-center justify-center shadow-lg flex-shrink-0">
                     <Trophy className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
