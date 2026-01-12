@@ -1,12 +1,10 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
 
-const API_BASE_URL = Capacitor.isNativePlatform()
-  ? "https://loretta-care.replit.app"
-  : "";
-
 export function getApiUrl(path: string): string {
-  return `${API_BASE_URL}${path}`;
+  const isNative = Capacitor.getPlatform() !== 'web';
+  const baseUrl = isNative ? "https://loretta-care.replit.app" : "";
+  return `${baseUrl}${path}`;
 }
 
 async function throwIfResNotOk(res: Response) {
