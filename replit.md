@@ -42,6 +42,15 @@ Preferred communication style: Simple, everyday language.
 - Fully responsive design using Tailwind CSS breakpoints, ensuring optimal viewing across devices.
 - Key patterns include responsive grids, scrollable tabs, and accessible touch targets.
 
+### Native Mobile Apps (Capacitor)
+- **Framework**: Capacitor 7.x for wrapping the React web app as native iOS/Android apps.
+- **Bundle ID**: `com.loretta.health`
+- **Platforms**: iOS and Android folders generated in project root.
+- **Plugins**: SplashScreen and StatusBar configured with Loretta brand colors.
+- **Safe Areas**: CSS env() variables handle notches and rounded corners on modern devices.
+- **Build Process**: `npm run build` followed by `npx cap sync` to update native projects.
+- **Setup Guide**: See `MOBILE_SETUP.md` for detailed instructions on running on simulators/devices.
+
 ### Analytics
 - **Microsoft Clarity**: Integrated for user behavior analytics, heatmaps, and session recordings, with custom event tracking for core user actions and gamification.
 
