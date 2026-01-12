@@ -202,6 +202,7 @@ export interface IStorage {
   getMedicationAdherence(medicationId: string): Promise<MedicationAdherence | undefined>;
   updateMedicationAdherence(medicationId: string, userId: string, data: UpdateMedicationAdherence): Promise<MedicationAdherence>;
   resetMedicationAdherence(medicationId: string, totalDosesTaken: number, totalDosesScheduled: number, lastTakenDate: string | null): Promise<void>;
+  getUserMedicationStreak(userId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1593,6 +1594,53 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(medicationAdherence.medicationId, medicationId));
     }
+  }
+
+  async getUserMedicationStreak(userId: string): Promise<number> {
+    // NOTE: This is a simplified implementation that uses per-medication streaks.
+    // Known limitation: For medications with multiple doses per day, the streak 
+    // may advance even if not all doses are taken. A more robust implementation 
+    // would use a daily adherence summary table to track per-day completeness.
+    // Future enhancement: Implement schedule-aware daily adherence tracking.
+    
+    const userMeds = await this.getUserMedications(userId);
+    if (userMeds.length === 0) {
+      return 0;
+    }
+
+    // Only consider daily medications for the adherence achievement
+    const dailyMeds = userMeds.filter(med => med.frequency === 'daily');
+    if (dailyMeds.length === 0) {
+      return 0;
+    }
+
+    // Filter to medications created at least 1 day ago (new meds don't break streak)
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    const eligibleMeds = dailyMeds.filter(med => {
+      if (!med.createdAt) return true;
+      const createdDate = new Date(med.createdAt).toISOString().split('T')[0];
+      return createdDate <= yesterdayStr;
+    });
+    
+    if (eligibleMeds.length === 0) {
+      return 0;
+    }
+
+    // Return minimum per-medication streak among eligible daily medications
+    let minStreak = Infinity;
+    
+    for (const med of eligibleMeds) {
+      const adherence = await this.getMedicationAdherence(med.id);
+      const streak = adherence?.currentStreak ?? 0;
+      if (streak < minStreak) {
+        minStreak = streak;
+      }
+    }
+
+    return minStreak === Infinity ? 0 : minStreak;
   }
 }
 

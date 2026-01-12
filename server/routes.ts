@@ -1722,12 +1722,17 @@ IMPORTANT: When discussing risk scores, remember:
       // Get updated adherence
       const adherence = await storage.getMedicationAdherence(medicationId);
       
+      // Calculate user-wide medication streak and trigger achievement
+      const userMedicationStreak = await storage.getUserMedicationStreak(userId);
+      const achievementResult = await processMedicationTaken(userId, userMedicationStreak);
+      
       res.json({
         success: true,
         log,
         xpAwarded: 0,
+        achievementXpAwarded: achievementResult.totalXpAwarded,
         streak: adherence?.currentStreak || 1,
-        achievementsUnlocked: [],
+        achievementsUnlocked: achievementResult.achievementsUnlocked,
       });
     } catch (error) {
       console.error("Error logging medication dose:", error);
@@ -1777,10 +1782,15 @@ IMPORTANT: When discussing risk scores, remember:
         xpAwarded: 0,
       } as any);
       
+      // Recalculate user-wide medication streak (achievement progress won't decrease but we keep it consistent)
+      const userMedicationStreak = await storage.getUserMedicationStreak(userId);
+      const achievementResult = await processMedicationTaken(userId, userMedicationStreak);
+      
       res.json({
         success: true,
         log,
         message: "Dose marked as missed",
+        achievementsUnlocked: achievementResult.achievementsUnlocked,
       });
     } catch (error) {
       console.error("Error marking medication dose as missed:", error);
