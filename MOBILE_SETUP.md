@@ -152,7 +152,7 @@ dist/public/            # Built web app (synced to native apps)
 
 ## Backend Configuration
 
-The mobile app connects to your deployed Replit backend at `https://loretta-health.replit.app`. 
+The mobile app connects to your deployed Replit backend at `https://loretta-care.replit.app`. 
 
 **Important:** Before distributing the app, make sure your Replit app is deployed (published) so it's always accessible. The mobile app cannot connect to development URLs that change.
 

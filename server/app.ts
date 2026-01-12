@@ -25,7 +25,7 @@ export const app = express();
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
-    "https://loretta-health.replit.app",
+    "https://loretta-care.replit.app",
     "capacitor://localhost",
     "ionic://localhost",
     "http://localhost",

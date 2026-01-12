@@ -48,7 +48,7 @@ Preferred communication style: Simple, everyday language.
 - **Platforms**: iOS and Android folders generated in project root.
 - **Plugins**: SplashScreen and StatusBar configured with Loretta brand colors.
 - **Safe Areas**: CSS env() variables handle notches and rounded corners on modern devices.
-- **API Configuration**: Native apps use `getApiUrl()` from `client/src/lib/queryClient.ts` to route API requests to the deployed Replit backend (`https://loretta-health.replit.app`).
+- **API Configuration**: Native apps use `getApiUrl()` from `client/src/lib/queryClient.ts` to route API requests to the deployed Replit backend (`https://loretta-care.replit.app`).
 - **CORS Support**: Server includes CORS middleware (`server/app.ts`) allowing Capacitor origins and Replit domains.
 - **Build Process**: `npm run build` followed by `npx cap sync` to update native projects.
 - **Setup Guide**: See `MOBILE_SETUP.md` for detailed instructions on running on simulators/devices.
