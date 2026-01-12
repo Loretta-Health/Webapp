@@ -163,6 +163,28 @@ export default function MyDashboard() {
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    if (isLeftSwipe && sidebarOpen) {
+      setSidebarOpen(false);
+    }
+  };
   const [communityType, setCommunityType] = useState<CommunityType>('loretta');
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showAddMedicationModal, setShowAddMedicationModal] = useState(false);
@@ -469,6 +491,9 @@ export default function MyDashboard() {
           shadow-2xl shadow-[#013DC4]/5
         `}
         data-testid="sidebar"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         <div className="p-5 lg:p-7 space-y-5 lg:space-y-6">
           <div className="flex items-center justify-between lg:hidden">
