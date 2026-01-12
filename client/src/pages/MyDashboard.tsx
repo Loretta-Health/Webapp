@@ -538,7 +538,7 @@ export default function MyDashboard() {
             <div className="grid grid-cols-3 gap-2">
               {[
                 { label: t('sidebar.xpEarned'), value: `+${allEmotionalCheckins?.filter(c => isToday(new Date(c.checkedInAt))).reduce((sum, c) => sum + (c.xpAwarded || 0), 0) || 0}`, color: 'from-[#013DC4] to-[#0150FF]', href: null },
-                { label: t('sidebar.achievements'), value: `${userAchievements?.filter(a => a.unlocked).length || 0}`, color: 'from-amber-400 to-orange-400', href: '/achievements' },
+                { label: t('sidebar.achievements'), value: `${userAchievements?.filter(a => a.unlocked).length || 0}`, color: 'from-amber-400 to-orange-400', href: '/leaderboard?tab=achievements' },
                 { label: t('sidebar.missions'), value: `${completedCount}/${activeMissions.length}`, color: 'from-[#CDB6EF] to-purple-400', href: '/missions' },
               ].map((stat) => (
                 stat.href ? (
