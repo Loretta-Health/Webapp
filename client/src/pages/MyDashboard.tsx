@@ -539,7 +539,7 @@ export default function MyDashboard() {
               {[
                 { label: t('sidebar.xpEarned'), value: `+${allEmotionalCheckins?.filter(c => isToday(new Date(c.checkedInAt))).reduce((sum, c) => sum + (c.xpAwarded || 0), 0) || 0}`, color: 'from-[#013DC4] to-[#0150FF]', href: null },
                 { label: t('sidebar.achievements'), value: `${userAchievements?.filter(a => a.unlocked).length || 0}`, color: 'from-amber-400 to-orange-400', href: '/leaderboard?tab=achievements' },
-                { label: t('sidebar.missions'), value: `${completedCount}/${activeMissions.length}`, color: 'from-[#CDB6EF] to-purple-400', href: '/missions' },
+                { label: t('sidebar.missions'), value: `${completedCount}/${activeMissions.length}`, color: 'from-[#CDB6EF] to-purple-400', href: '/mission-details' },
               ].map((stat) => (
                 stat.href ? (
                   <Link key={stat.label} href={stat.href}>
@@ -773,7 +773,7 @@ export default function MyDashboard() {
                 </GlassCard>
               </Link>
               
-              <Link href="/missions">
+              <Link href="/mission-details">
                 <GlassCard className="p-2 sm:p-4 flex items-center gap-1.5 sm:gap-3 hover:shadow-xl transition-shadow cursor-pointer h-full">
                   <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-[#CDB6EF] to-purple-400 flex items-center justify-center shadow-lg flex-shrink-0">
                     <Target className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
