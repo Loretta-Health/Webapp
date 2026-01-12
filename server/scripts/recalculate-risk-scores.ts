@@ -70,13 +70,18 @@ async function recalculateAllRiskScores() {
       }
       
       const mlFeatures = convertQuestionnaireToMLFeatures(allAnswers);
+      console.log(`  - Answer keys: ${Object.keys(allAnswers).join(', ')}`);
       console.log(`  - Converted ${Object.keys(allAnswers).length} answers to ${mlFeatures.length} ML features`);
+      console.log(`  - Feature IDs: ${mlFeatures.map(f => f.ID).join(', ')}`);
       
       if (mlFeatures.length < 5) {
         console.log(`  - SKIPPED: Not enough features (${mlFeatures.length} < 5)`);
         skipCount++;
         continue;
       }
+      
+      // Throttle API calls to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       const mlResult = await callMLPredictionAPI(mlFeatures);
       
