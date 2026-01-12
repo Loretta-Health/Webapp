@@ -34,6 +34,7 @@ import { Link } from 'wouter';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { getApiUrl } from "@/lib/queryClient";
 
 interface Team {
   id: string;
@@ -96,7 +97,7 @@ export default function Invite() {
   
   const fetchTeams = async () => {
     try {
-      const response = await fetch(`/api/teams/user/${user?.id}`, {
+      const response = await fetch(getApiUrl(`/api/teams/user/${user?.id}`), {
         credentials: 'include',
       });
       const data = await response.json();
@@ -114,8 +115,8 @@ export default function Invite() {
   const fetchTeamDetails = async (teamId: string) => {
     try {
       const [membersRes, invitesRes] = await Promise.all([
-        fetch(`/api/teams/${teamId}/members`, { credentials: 'include' }),
-        fetch(`/api/teams/${teamId}/invites`, { credentials: 'include' }),
+        fetch(getApiUrl(`/api/teams/${teamId}/members`), { credentials: 'include' }),
+        fetch(getApiUrl(`/api/teams/${teamId}/invites`), { credentials: 'include' }),
       ]);
       
       const members = await membersRes.json();
@@ -133,7 +134,7 @@ export default function Invite() {
     
     setCreatingTeam(true);
     try {
-      const response = await fetch('/api/teams', {
+      const response = await fetch(getApiUrl('/api/teams'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -174,7 +175,7 @@ export default function Invite() {
     
     setCreatingInvite(true);
     try {
-      const response = await fetch(`/api/teams/${selectedTeam.id}/invites`, {
+      const response = await fetch(getApiUrl(`/api/teams/${selectedTeam.id}/invites`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -203,7 +204,7 @@ export default function Invite() {
   
   const deleteInvite = async (inviteId: string) => {
     try {
-      await fetch(`/api/invites/${inviteId}`, { 
+      await fetch(getApiUrl(`/api/invites/${inviteId}`), { 
         method: 'DELETE',
         credentials: 'include',
       });

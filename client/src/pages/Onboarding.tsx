@@ -47,7 +47,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { apiRequest, queryClient, getApiUrl } from '@/lib/queryClient';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { useAuth } from '@/hooks/use-auth';
 import { 
@@ -790,7 +790,7 @@ export default function Onboarding() {
   const initializeAchievementsMutation = useMutation({
     mutationFn: async () => {
       console.log('Initializing achievements:', { userId });
-      const response = await fetch(`/api/achievements/${userId}`, {
+      const response = await fetch(getApiUrl(`/api/achievements/${userId}`), {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -810,7 +810,7 @@ export default function Onboarding() {
   const initializeMissionsMutation = useMutation({
     mutationFn: async () => {
       console.log('Initializing missions:', { userId });
-      const response = await fetch(`/api/missions/${userId}`, {
+      const response = await fetch(getApiUrl(`/api/missions/${userId}`), {
         credentials: 'include',
       });
       if (!response.ok) {
