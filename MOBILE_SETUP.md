@@ -150,6 +150,25 @@ dist/public/            # Built web app (synced to native apps)
 
 ---
 
+## Backend Configuration
+
+The mobile app connects to your deployed Replit backend at `https://loretta-health.replit.app`. 
+
+**Important:** Before distributing the app, make sure your Replit app is deployed (published) so it's always accessible. The mobile app cannot connect to development URLs that change.
+
+To update the backend URL:
+1. Open `client/src/lib/queryClient.ts`
+2. Find the `API_BASE_URL` constant
+3. Update the URL to your deployed Replit app URL
+
+```typescript
+const API_BASE_URL = Capacitor.isNativePlatform()
+  ? "https://your-app-name.replit.app"  // <-- Change this
+  : "";
+```
+
+---
+
 ## App Store Submission (Later)
 
 When you're ready to publish:

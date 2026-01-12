@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
+import { getApiUrl } from "@/lib/queryClient";
 
 interface InviteInfo {
   id: string;
@@ -75,7 +76,7 @@ export default function TeamInvite() {
   
   const fetchInviteInfo = async () => {
     try {
-      const response = await fetch(`/api/invites/${inviteCode}`);
+      const response = await fetch(getApiUrl(`/api/invites/${inviteCode}`));
       
       if (!response.ok) {
         const data = await response.json();
@@ -99,7 +100,7 @@ export default function TeamInvite() {
     setJoining(true);
     
     try {
-      const response = await fetch(`/api/invites/${inviteCode}/accept`, {
+      const response = await fetch(getApiUrl(`/api/invites/${inviteCode}/accept`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

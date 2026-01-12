@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './use-auth';
-import { apiRequest } from '../lib/queryClient';
+import { apiRequest, getApiUrl } from '../lib/queryClient';
 import { trackMission, trackGamification } from '../lib/clarity';
 
 export interface CatalogMission {
@@ -61,7 +61,7 @@ export function useMissions() {
   const { data: catalogMissions = [], isLoading: catalogLoading } = useQuery<CatalogMission[]>({
     queryKey: ['/api/missions-catalog'],
     queryFn: async () => {
-      const response = await fetch('/api/missions-catalog', {
+      const response = await fetch(getApiUrl('/api/missions-catalog'), {
         credentials: 'include',
       });
       if (!response.ok) {
@@ -75,7 +75,7 @@ export function useMissions() {
     queryKey: ['/api/missions'],
     queryFn: async () => {
       if (!userId) return [];
-      const response = await fetch(`/api/missions`, {
+      const response = await fetch(getApiUrl('/api/missions'), {
         credentials: 'include',
       });
       if (!response.ok) {

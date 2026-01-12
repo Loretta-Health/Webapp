@@ -7,6 +7,7 @@ import { Smile, Send, Sparkles, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import { getApiUrl } from "@/lib/queryClient";
 import { 
   detectEmotionFromText, 
   getRandomSupportiveMessage, 
@@ -120,7 +121,7 @@ export default function EmotionalCheckInModal({
       setStep('supportive');
 
       try {
-        const response = await fetch('/api/emotional-checkins', {
+        const response = await fetch(getApiUrl('/api/emotional-checkins'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',

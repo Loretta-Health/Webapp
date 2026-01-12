@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
 import { UserPlus, Check, X, Loader2, ArrowLeft, Users } from 'lucide-react';
 import { Link } from 'wouter';
+import { getApiUrl } from "@/lib/queryClient";
 
 function GlassCard({ 
   children, 
@@ -50,7 +51,7 @@ export default function JoinFriend() {
 
   const acceptInvite = async () => {
     try {
-      const response = await fetch(`/api/friends/accept/${code}`, {
+      const response = await fetch(getApiUrl(`/api/friends/accept/${code}`), {
         method: 'POST',
         credentials: 'include',
       });

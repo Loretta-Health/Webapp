@@ -6,6 +6,7 @@ import type { CommunityType } from './CommunitySelector';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/use-auth';
+import { getApiUrl } from "@/lib/queryClient";
 
 interface TeamMember {
   id: string;
@@ -74,10 +75,10 @@ export default function Leaderboard({
     setLoading(true);
     try {
       const [teamsRes, gamificationRes, friendsRes, profileRes] = await Promise.all([
-        fetch('/api/teams/me', { credentials: 'include' }),
-        fetch('/api/gamification', { credentials: 'include' }),
-        fetch('/api/friends', { credentials: 'include' }),
-        fetch('/api/profile', { credentials: 'include' }),
+        fetch(getApiUrl('/api/teams/me'), { credentials: 'include' }),
+        fetch(getApiUrl('/api/gamification'), { credentials: 'include' }),
+        fetch(getApiUrl('/api/friends'), { credentials: 'include' }),
+        fetch(getApiUrl('/api/profile'), { credentials: 'include' }),
       ]);
 
       if (gamificationRes.ok) {
@@ -102,7 +103,7 @@ export default function Leaderboard({
       if (teamsRes.ok) {
         const teams = await teamsRes.json();
         if (teams.length > 0) {
-          const membersRes = await fetch(`/api/teams/${teams[0].id}/members`, {
+          const membersRes = await fetch(getApiUrl(`/api/teams/${teams[0].id}/members`), {
             credentials: 'include',
           });
           if (membersRes.ok) {
