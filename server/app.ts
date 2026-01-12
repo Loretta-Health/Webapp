@@ -26,6 +26,7 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
     "https://loretta-care.replit.app",
+    "https://localhost",
     "capacitor://localhost",
     "ionic://localhost",
     "http://localhost",
