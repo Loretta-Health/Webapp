@@ -193,10 +193,11 @@ export default function LeaderboardPage() {
   const searchString = useSearch();
   const urlParams = new URLSearchParams(searchString);
   const initialCommunity = urlParams.get('community') as CommunityType | null;
+  const initialTab = urlParams.get('tab') as 'leaderboard' | 'achievements' | null;
   
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'leaderboard' | 'achievements'>('leaderboard');
+  const [activeTab, setActiveTab] = useState<'leaderboard' | 'achievements'>(initialTab === 'achievements' ? 'achievements' : 'leaderboard');
   
   useEffect(() => {
     trackPageView('leaderboard');
