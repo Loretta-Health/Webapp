@@ -2,7 +2,7 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
 
 const API_BASE_URL = Capacitor.isNativePlatform()
-  ? "https://loretta-health.replit.app"
+  ? "https://loretta-care.replit.app"
   : "";
 
 export function getApiUrl(path: string): string {
