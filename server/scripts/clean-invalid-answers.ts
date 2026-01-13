@@ -1,10 +1,8 @@
 import { db } from '../db';
-import { users, questionnaireAnswers, userProfiles, riskScores } from '../../shared/schema';
-import { convertQuestionnaireToMLFeatures, type MLFeature } from '../lib/nhanesMapping';
+import { users, questionnaireAnswers, riskScores } from '../../shared/schema';
+import { gatherFullFeatureSet, callMLPredictionAPI } from '../lib/riskCalculation';
+import { convertQuestionnaireToMLFeatures } from '../lib/nhanesMapping';
 import { eq } from 'drizzle-orm';
-
-const PREDICTION_API_BASE_URL = process.env.PREDICTION_API_URL || 'https://loretta-predict.replit.app';
-const ML_API_KEY = process.env.ML_API_KEY;
 
 const VALIDATION_LIMITS: Record<string, { min: number; max: number }> = {
   age: { min: 18, max: 120 },
@@ -18,33 +16,6 @@ const VALIDATION_LIMITS: Record<string, { min: number; max: number }> = {
   household_size: { min: 1, max: 20 },
   household_rooms: { min: 1, max: 50 },
 };
-
-async function callMLPredictionAPI(features: MLFeature[], username: string): Promise<{ diabetes_probability: number; risk_level: string } | null> {
-  if (!ML_API_KEY) {
-    console.warn('[ML API] No ML_API_KEY configured, skipping ML prediction');
-    return null;
-  }
-  
-  const predictUrl = `${PREDICTION_API_BASE_URL}/predict`;
-  
-  const response = await fetch(predictUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': ML_API_KEY,
-    },
-    body: JSON.stringify({ username, features }),
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('[ML API] Error:', response.status, errorText);
-    throw new Error(`ML API error: ${response.status} - ${errorText}`);
-  }
-  
-  const result = await response.json();
-  return result;
-}
 
 function isValueOutOfRange(questionId: string, value: string): boolean {
   const limits = VALIDATION_LIMITS[questionId];
@@ -106,27 +77,10 @@ async function cleanInvalidAnswersAndRecalculate() {
       
       totalInvalidRemoved += userInvalidCount;
       
-      const cleanedAnswerRecords = await db.select().from(questionnaireAnswers).where(
-        eq(questionnaireAnswers.userId, user.id)
-      );
-      const [profile] = await db.select().from(userProfiles).where(
-        eq(userProfiles.userId, user.id)
-      );
-      
-      const allAnswers: Record<string, any> = {};
-      cleanedAnswerRecords.forEach(a => {
-        if (a.answers && typeof a.answers === 'object') {
-          Object.assign(allAnswers, a.answers);
-        }
-      });
-      
-      if (profile) {
-        if (profile.age && !allAnswers.age) allAnswers.age = profile.age;
-        if (profile.height && !allAnswers.height) allAnswers.height = profile.height;
-        if (profile.weight && !allAnswers.weight_current) allAnswers.weight_current = profile.weight;
-      }
-      
+      const allAnswers = await gatherFullFeatureSet(user.id);
       const mlFeatures = convertQuestionnaireToMLFeatures(allAnswers);
+      
+      console.log(`  - Answer keys: ${Object.keys(allAnswers).join(', ')}`);
       console.log(`  - Converted ${Object.keys(allAnswers).length} answers to ${mlFeatures.length} ML features`);
       
       if (mlFeatures.length < 5) {
