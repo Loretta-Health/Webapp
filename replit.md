@@ -53,6 +53,11 @@ Preferred communication style: Simple, everyday language.
 - **Build Process**: `npm run build` followed by `npx cap sync` to update native projects.
 - **Setup Guide**: See `MOBILE_SETUP.md` for detailed instructions on running on simulators/devices.
 
+### Mobile Build History
+| Date | Platform | Commit | Notes |
+|------|----------|--------|-------|
+| 2026-01-13 | Android | b2970d7 | Full rebuild with safe area support, swipe-to-close menu, achievement fixes |
+
 ### Analytics
 - **Microsoft Clarity**: Integrated for user behavior analytics, heatmaps, and session recordings, with custom event tracking for core user actions and gamification.
 
