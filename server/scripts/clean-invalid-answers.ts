@@ -19,7 +19,7 @@ const VALIDATION_LIMITS: Record<string, { min: number; max: number }> = {
   household_rooms: { min: 1, max: 50 },
 };
 
-async function callMLPredictionAPI(features: MLFeature[]): Promise<{ diabetes_probability: number; risk_level: string } | null> {
+async function callMLPredictionAPI(features: MLFeature[], username: string): Promise<{ diabetes_probability: number; risk_level: string } | null> {
   if (!ML_API_KEY) {
     console.warn('[ML API] No ML_API_KEY configured, skipping ML prediction');
     return null;
@@ -33,7 +33,7 @@ async function callMLPredictionAPI(features: MLFeature[]): Promise<{ diabetes_pr
       'Content-Type': 'application/json',
       'X-API-Key': ML_API_KEY,
     },
-    body: JSON.stringify({ features }),
+    body: JSON.stringify({ username, features }),
   });
   
   if (!response.ok) {
@@ -135,7 +135,7 @@ async function cleanInvalidAnswersAndRecalculate() {
         continue;
       }
       
-      const mlResult = await callMLPredictionAPI(mlFeatures);
+      const mlResult = await callMLPredictionAPI(mlFeatures, user.username);
       
       if (!mlResult || typeof mlResult.diabetes_probability !== 'number') {
         console.log(`  - SKIPPED: ML API returned no result`);

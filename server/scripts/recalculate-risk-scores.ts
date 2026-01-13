@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 const PREDICTION_API_BASE_URL = process.env.PREDICTION_API_URL || 'https://loretta-predict.replit.app';
 const ML_API_KEY = process.env.ML_API_KEY;
 
-async function callMLPredictionAPI(features: MLFeature[]): Promise<{ diabetes_probability: number; risk_level: string } | null> {
+async function callMLPredictionAPI(features: MLFeature[], username: string): Promise<{ diabetes_probability: number; risk_level: string } | null> {
   if (!ML_API_KEY) {
     console.warn('[ML API] No ML_API_KEY configured, skipping ML prediction');
     return null;
@@ -20,7 +20,7 @@ async function callMLPredictionAPI(features: MLFeature[]): Promise<{ diabetes_pr
       'Content-Type': 'application/json',
       'X-API-Key': ML_API_KEY,
     },
-    body: JSON.stringify({ features }),
+    body: JSON.stringify({ username, features }),
   });
   
   if (!response.ok) {
@@ -83,7 +83,7 @@ async function recalculateAllRiskScores() {
       // Throttle API calls to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      const mlResult = await callMLPredictionAPI(mlFeatures);
+      const mlResult = await callMLPredictionAPI(mlFeatures, user.username);
       
       if (!mlResult || typeof mlResult.diabetes_probability !== 'number') {
         console.log(`  - SKIPPED: ML API returned no result`);

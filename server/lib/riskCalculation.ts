@@ -26,14 +26,14 @@ export async function gatherFullFeatureSet(userId: string): Promise<Record<strin
   return mergedAnswers;
 }
 
-export async function callMLPredictionAPI(features: MLFeature[]): Promise<{ diabetes_probability: number; risk_level: string } | null> {
+export async function callMLPredictionAPI(features: MLFeature[], username: string): Promise<{ diabetes_probability: number; risk_level: string } | null> {
   if (!ML_API_KEY) {
     console.warn('[ML API] No ML_API_KEY configured, skipping ML prediction');
     return null;
   }
   
   const predictUrl = `${PREDICTION_API_BASE_URL}/predict`;
-  console.log('[ML API] Calling:', predictUrl, 'with', features.length, 'features');
+  console.log('[ML API] Calling:', predictUrl, 'with', features.length, 'features for user:', username);
   
   const response = await fetch(predictUrl, {
     method: 'POST',
@@ -41,7 +41,7 @@ export async function callMLPredictionAPI(features: MLFeature[]): Promise<{ diab
       'Content-Type': 'application/json',
       'X-API-Key': ML_API_KEY,
     },
-    body: JSON.stringify({ features }),
+    body: JSON.stringify({ username, features }),
   });
   
   if (!response.ok) {
@@ -63,6 +63,14 @@ export interface RiskCalculationResult {
 
 export async function calculateAndSaveRiskScore(userId: string): Promise<RiskCalculationResult> {
   try {
+    const user = await storage.getUser(userId);
+    if (!user) {
+      return {
+        success: false,
+        error: 'User not found'
+      };
+    }
+    
     const mergedAnswers = await gatherFullFeatureSet(userId);
     const mlFeatures = convertQuestionnaireToMLFeatures(mergedAnswers);
     
@@ -79,7 +87,7 @@ export async function calculateAndSaveRiskScore(userId: string): Promise<RiskCal
       };
     }
     
-    const mlResult = await callMLPredictionAPI(mlFeatures);
+    const mlResult = await callMLPredictionAPI(mlFeatures, user.username);
     
     if (!mlResult || typeof mlResult.diabetes_probability !== 'number') {
       return {

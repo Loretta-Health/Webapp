@@ -359,6 +359,16 @@ IMPORTANT: When discussing risk scores, remember:
     };
     
     try {
+      if (!req.isAuthenticated()) {
+        metadata.error_message = 'Not authenticated';
+        return res.status(401).json({ 
+          error: "Not authenticated",
+          _metadata: metadata
+        });
+      }
+      
+      const user = req.user as any;
+      const username = user?.username || 'unknown';
       const { features } = req.body;
       
       if (!features || !Array.isArray(features)) {
@@ -372,7 +382,7 @@ IMPORTANT: When discussing risk scores, remember:
       metadata.features_received = features.length;
       metadata.features_sent = features;
 
-      console.log('[Prediction API] Calling ML service with features:', JSON.stringify(features, null, 2));
+      console.log('[Prediction API] Calling ML service for user:', username, 'with features:', JSON.stringify(features, null, 2));
       console.log('[Prediction API] ML API URL:', PREDICTION_API_BASE_URL);
 
       const predictUrl = `${PREDICTION_API_BASE_URL}/predict`;
@@ -386,7 +396,7 @@ IMPORTANT: When discussing risk scores, remember:
       const response = await fetch(predictUrl, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ features }),
+        body: JSON.stringify({ username, features }),
       });
 
       metadata.ml_response_status = response.status;
