@@ -1,37 +1,8 @@
 import { db } from '../db';
-import { users, questionnaireAnswers, userProfiles, riskScores } from '../../shared/schema';
-import { convertQuestionnaireToMLFeatures, type MLFeature } from '../lib/nhanesMapping';
+import { users, riskScores } from '../../shared/schema';
+import { gatherFullFeatureSet, callMLPredictionAPI } from '../lib/riskCalculation';
+import { convertQuestionnaireToMLFeatures } from '../lib/nhanesMapping';
 import { eq } from 'drizzle-orm';
-
-const PREDICTION_API_BASE_URL = process.env.PREDICTION_API_URL || 'https://loretta-predict.replit.app';
-const ML_API_KEY = process.env.ML_API_KEY;
-
-async function callMLPredictionAPI(features: MLFeature[], username: string): Promise<{ diabetes_probability: number; risk_level: string } | null> {
-  if (!ML_API_KEY) {
-    console.warn('[ML API] No ML_API_KEY configured, skipping ML prediction');
-    return null;
-  }
-  
-  const predictUrl = `${PREDICTION_API_BASE_URL}/predict`;
-  
-  const response = await fetch(predictUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': ML_API_KEY,
-    },
-    body: JSON.stringify({ username, features }),
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('[ML API] Error:', response.status, errorText);
-    throw new Error(`ML API error: ${response.status} - ${errorText}`);
-  }
-  
-  const result = await response.json();
-  return result;
-}
 
 async function recalculateAllRiskScores() {
   console.log('='.repeat(60));
@@ -49,27 +20,9 @@ async function recalculateAllRiskScores() {
     console.log(`\nProcessing user: ${user.username} (${user.id})`);
     
     try {
-      const answers = await db.select().from(questionnaireAnswers).where(
-        eq(questionnaireAnswers.userId, user.id)
-      );
-      const [profile] = await db.select().from(userProfiles).where(
-        eq(userProfiles.userId, user.id)
-      );
-      
-      const allAnswers: Record<string, any> = {};
-      answers.forEach(a => {
-        if (a.answers && typeof a.answers === 'object') {
-          Object.assign(allAnswers, a.answers);
-        }
-      });
-      
-      if (profile) {
-        if (profile.age && !allAnswers.age) allAnswers.age = profile.age;
-        if (profile.height && !allAnswers.height) allAnswers.height = profile.height;
-        if (profile.weight && !allAnswers.weight_current) allAnswers.weight_current = profile.weight;
-      }
-      
+      const allAnswers = await gatherFullFeatureSet(user.id);
       const mlFeatures = convertQuestionnaireToMLFeatures(allAnswers);
+      
       console.log(`  - Answer keys: ${Object.keys(allAnswers).join(', ')}`);
       console.log(`  - Converted ${Object.keys(allAnswers).length} answers to ${mlFeatures.length} ML features`);
       console.log(`  - Feature IDs: ${mlFeatures.map(f => f.ID).join(', ')}`);
@@ -80,7 +33,6 @@ async function recalculateAllRiskScores() {
         continue;
       }
       
-      // Throttle API calls to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, 200));
       
       const mlResult = await callMLPredictionAPI(mlFeatures, user.username);

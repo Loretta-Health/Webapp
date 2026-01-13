@@ -334,104 +334,58 @@ IMPORTANT: When discussing risk scores, remember:
     }
   });
 
-  // ML Prediction API endpoint (constants used by /api/predict)
-  const PREDICTION_API_BASE_URL = process.env.PREDICTION_API_URL || 'https://loretta-predict.replit.app';
-  const ML_API_KEY = process.env.ML_API_KEY;
-  
+  // ML Prediction API endpoint - uses full feature set from database
   app.post("/api/predict", async (req, res) => {
     const startTime = Date.now();
-    const metadata: {
-      method: 'ml_api' | 'error';
-      success: boolean;
-      ml_api_url: string;
-      features_received: number;
-      features_sent: { ID: string; Value: string }[];
-      response_time_ms?: number;
-      ml_response_status?: number;
-      error_message?: string;
-      error_details?: string;
-    } = {
-      method: 'ml_api',
-      success: false,
-      ml_api_url: PREDICTION_API_BASE_URL,
-      features_received: 0,
-      features_sent: [],
-    };
     
     try {
       if (!req.isAuthenticated()) {
-        metadata.error_message = 'Not authenticated';
-        return res.status(401).json({ 
-          error: "Not authenticated",
-          _metadata: metadata
-        });
+        return res.status(401).json({ error: "Not authenticated" });
       }
       
       const user = req.user as any;
-      const username = user?.username || 'unknown';
-      const { features } = req.body;
+      const userId = user.id;
+      const username = user.username;
       
-      if (!features || !Array.isArray(features)) {
-        metadata.error_message = 'Features array is required';
+      // Gather full feature set from database (questionnaire + profile)
+      const mergedAnswers = await gatherFullFeatureSet(userId);
+      const mlFeatures = convertQuestionnaireToMLFeatures(mergedAnswers);
+      
+      console.log('[Prediction API] Gathered', Object.keys(mergedAnswers).length, 'answers for user:', username);
+      console.log('[Prediction API] Converted to', mlFeatures.length, 'ML features');
+      
+      if (mlFeatures.length < 5) {
         return res.status(400).json({ 
-          error: "Features array is required",
-          _metadata: metadata
+          error: "Not enough features for prediction",
+          features_count: mlFeatures.length,
+          minimum_required: 5
         });
       }
-
-      metadata.features_received = features.length;
-      metadata.features_sent = features;
-
-      console.log('[Prediction API] Calling ML service for user:', username, 'with features:', JSON.stringify(features, null, 2));
-      console.log('[Prediction API] ML API URL:', PREDICTION_API_BASE_URL);
-
-      const predictUrl = `${PREDICTION_API_BASE_URL}/predict`;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (ML_API_KEY) {
-        headers['X-API-Key'] = ML_API_KEY;
+      
+      const mlResult = await callMLAPI(mlFeatures, username);
+      
+      if (!mlResult) {
+        return res.status(500).json({ error: "ML API not configured or returned no result" });
       }
       
-      const response = await fetch(predictUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ username, features }),
-      });
-
-      metadata.ml_response_status = response.status;
-      metadata.response_time_ms = Date.now() - startTime;
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[Prediction API] Error from ML service:', response.status, errorText);
-        metadata.error_message = 'ML service returned error';
-        metadata.error_details = errorText;
-        return res.status(response.status).json({ 
-          error: "Prediction service error", 
-          details: errorText,
-          _metadata: metadata
-        });
-      }
-
-      const prediction = await response.json();
-      console.log('[Prediction API] Received prediction:', prediction);
-      
-      metadata.success = true;
+      const responseTime = Date.now() - startTime;
+      console.log('[Prediction API] Received prediction:', mlResult, 'in', responseTime, 'ms');
       
       res.json({
-        ...prediction,
-        _metadata: metadata
+        ...mlResult,
+        _metadata: {
+          method: 'ml_api',
+          success: true,
+          features_used: mlFeatures.length,
+          response_time_ms: responseTime
+        }
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error("[Prediction API] Error:", error);
-      metadata.method = 'error';
-      metadata.error_message = errorMessage;
-      metadata.response_time_ms = Date.now() - startTime;
       res.status(500).json({ 
         error: "Failed to get prediction from ML service",
-        _metadata: metadata
+        details: errorMessage
       });
     }
   });
