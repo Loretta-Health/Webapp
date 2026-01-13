@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.loretta.health',
+  appId: 'com.lorettahealth.healthnavigator',
   appName: 'Loretta',
   webDir: 'dist/public',
   server: {
