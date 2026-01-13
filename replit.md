@@ -54,9 +54,13 @@ Preferred communication style: Simple, everyday language.
 - **Setup Guide**: See `MOBILE_SETUP.md` for detailed instructions on running on simulators/devices.
 
 ### Mobile Build History
-| Date | Platform | Commit | Notes |
-|------|----------|--------|-------|
-| 2026-01-13 | Android | b2970d7 | Full rebuild with safe area support, swipe-to-close menu, achievement fixes |
+**Last Capacitor-affecting commit synced:** `3ab6a2a` (Safe area support) - 2026-01-13
+
+Any commits after `3ab6a2a` that touch `client/` or `capacitor.config.ts` will require a rebuild.
+
+| Date | Platform | Last Synced Commit | Notes |
+|------|----------|-------------------|-------|
+| 2026-01-13 | Android | 3ab6a2a | Safe area support, swipe-to-close menu |
 
 ### Analytics
 - **Microsoft Clarity**: Integrated for user behavior analytics, heatmaps, and session recordings, with custom event tracking for core user actions and gamification.
