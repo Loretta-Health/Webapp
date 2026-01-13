@@ -44,7 +44,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Native Mobile Apps (Capacitor)
 - **Framework**: Capacitor 7.x for wrapping the React web app as native iOS/Android apps.
-- **Bundle ID**: `com.loretta.health`
+- **Bundle ID**: `com.lorettahealth.healthnavigator`
 - **Platforms**: iOS and Android folders generated in project root.
 - **Plugins**: SplashScreen and StatusBar configured with Loretta brand colors.
 - **Safe Areas**: CSS env() variables handle notches and rounded corners on modern devices.
