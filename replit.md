@@ -54,12 +54,13 @@ Preferred communication style: Simple, everyday language.
 - **Setup Guide**: See `MOBILE_SETUP.md` for detailed instructions on running on simulators/devices.
 
 ### Mobile Build History
-**Last Capacitor-affecting commit synced:** `3ab6a2a` (Safe area support) - 2026-01-13
+**Last Capacitor-affecting commit synced:** `ba6e33b` (Questionnaire fix) - 2026-01-13
 
-Any commits after `3ab6a2a` that touch `client/` or `capacitor.config.ts` will require a rebuild.
+Any commits after `ba6e33b` that touch `client/` or `capacitor.config.ts` will require a rebuild.
 
 | Date | Platform | Last Synced Commit | Notes |
 |------|----------|-------------------|-------|
+| 2026-01-13 | iOS & Android | ba6e33b | Questionnaire state fix, ML API updates |
 | 2026-01-13 | Android | 3ab6a2a | Safe area support, swipe-to-close menu |
 
 ### Analytics
