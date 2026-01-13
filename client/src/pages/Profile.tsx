@@ -920,9 +920,8 @@ export default function Profile() {
   };
 
   const handleAnswerChange = useCallback((questionId: string, value: string) => {
-    const newAnswers = { ...questionnaireAnswers, [questionId]: value };
-    setQuestionnaireAnswers(newAnswers);
-  }, [questionnaireAnswers]);
+    setQuestionnaireAnswers(prev => ({ ...prev, [questionId]: value }));
+  }, []);
 
   const validateAndSaveAnswer = useCallback((questionId: string, value: string) => {
     const sharedQuestion = getQuestionById(questionId);
