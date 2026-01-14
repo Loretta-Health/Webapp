@@ -9,6 +9,7 @@ import { HEALTH_NAVIGATOR_SYSTEM_PROMPT, EMOTION_CLASSIFICATION_PROMPT } from ".
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
 import { processCheckin, processActivityLogged, processXpEarned, processMedicationTaken } from "./lib/achievementManager";
 import { startMedicationAutoMissCron } from "./cron/medication-auto-miss";
+import { resetMissionsForUser } from "./missionReset";
 import { 
   insertQuestionnaireSchema, 
   insertUserProfileSchema,
@@ -1238,6 +1239,9 @@ IMPORTANT: When discussing risk scores, remember:
     }
     try {
       const userId = (req.user as any).id;
+      
+      await resetMissionsForUser(userId);
+      
       const userMissions = await storage.ensureDefaultMissionsForUser(userId);
       
       const latestCheckin = await storage.getLatestEmotionalCheckin(userId);
