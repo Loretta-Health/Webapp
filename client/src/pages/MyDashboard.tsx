@@ -851,17 +851,21 @@ export default function MyDashboard() {
             </Link>
             </div>
             
-            <AnimatePresence>
-              {showSetupChecklist && (
+            {showSetupChecklist && (
+              <AnimatePresence mode="sync">
                 <motion.div
-                  initial={{ opacity: 1, scale: 1, y: 0 }}
+                  key="setup-checklist"
+                  initial={{ opacity: 1, scale: 1, y: 0, height: 'auto' }}
                   animate={isChecklistClosing ? {
                     scale: [1, 1.02, 0.95],
                     opacity: [1, 1, 0],
                     y: [0, -10, -30],
-                  } : { opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                    height: ['auto', 'auto', 0],
+                    marginBottom: [undefined, undefined, 0],
+                  } : { opacity: 1, scale: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, scale: 0.95, y: -20, height: 0, marginBottom: 0 }}
                   transition={{ duration: isChecklistClosing ? 1.5 : 0.3, ease: "easeInOut" }}
+                  style={{ overflow: 'hidden' }}
                 >
                   <CollapsibleSectionNew
                     title={t('setup.title')}
@@ -1003,8 +1007,8 @@ export default function MyDashboard() {
                     </div>
                   </CollapsibleSectionNew>
                 </motion.div>
-              )}
-            </AnimatePresence>
+              </AnimatePresence>
+            )}
             
             {showLeaderboard ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7">
