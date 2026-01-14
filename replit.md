@@ -30,6 +30,15 @@ Preferred communication style: Simple, everyday language.
 - **Data Sync**: Bidirectional synchronization between user profile and questionnaire data.
 - **Auto-Recalculation**: Risk score automatically updates when relevant profile or questionnaire data changes, triggered solely by the ML API.
 
+### Mission System with Automatic Resets
+- **Mission Categories**: Daily and weekly missions with automatic progress tracking.
+- **Timezone-Aware Resets**: Missions reset based on the user's configured timezone (stored in user_preferences).
+- **Daily Missions**: Reset at midnight in the user's local timezone (when a new calendar day starts).
+- **Weekly Missions**: Reset on Monday at midnight in the user's local timezone (when a new week begins).
+- **Reset Tracking**: Each mission has a `lastResetAt` timestamp to track when it was last reset.
+- **Reset Trigger**: Resets are checked and applied on each `GET /api/missions` request.
+- **Implementation**: See `server/missionReset.ts` for the reset logic.
+
 ### Friend System
 - **Invite Mechanism**: Users generate unique 8-character invite codes to invite friends.
 - **Bidirectional Friendships**: Friendships are established in both directions upon acceptance.
