@@ -1,60 +1,55 @@
 import { db } from './db';
 import { userMissions, userPreferences } from '../shared/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
-function getUserLocalDate(timezone: string): Date {
-  const now = new Date();
-  const formatter = new Intl.DateTimeFormat('en-CA', {
+function formatDateInTimezone(date: Date, timezone: string): string {
+  return new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  });
-  const parts = formatter.formatToParts(now);
-  const year = parseInt(parts.find(p => p.type === 'year')?.value || '2024');
-  const month = parseInt(parts.find(p => p.type === 'month')?.value || '1') - 1;
-  const day = parseInt(parts.find(p => p.type === 'day')?.value || '1');
-  return new Date(year, month, day, 0, 0, 0, 0);
+  }).format(date);
 }
 
-function getUserLocalDayOfWeek(timezone: string): number {
-  const now = new Date();
+function getWeekNumberInTimezone(date: Date, timezone: string): string {
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
     weekday: 'short',
   });
-  const dayName = formatter.format(now);
+  const parts = formatter.formatToParts(date);
+  const year = parts.find(p => p.type === 'year')?.value || '2024';
+  const month = parts.find(p => p.type === 'month')?.value || '01';
+  const day = parseInt(parts.find(p => p.type === 'day')?.value || '1');
+  const weekday = parts.find(p => p.type === 'weekday')?.value || 'Mon';
+  
   const days: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
-  return days[dayName] || 0;
-}
-
-function getStartOfWeek(date: Date, timezone: string): Date {
-  const dayOfWeek = getUserLocalDayOfWeek(timezone);
-  const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  const startOfWeek = new Date(date);
-  startOfWeek.setDate(startOfWeek.getDate() - daysToSubtract);
-  startOfWeek.setHours(0, 0, 0, 0);
-  return startOfWeek;
+  const dayOfWeek = days[weekday] || 1;
+  
+  const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  const mondayDay = day - daysFromMonday;
+  
+  return `${year}-W${month}-${mondayDay}`;
 }
 
 function shouldResetDaily(lastResetAt: Date | null, timezone: string): boolean {
   if (!lastResetAt) return true;
   
-  const todayStart = getUserLocalDate(timezone);
-  const lastResetDate = new Date(lastResetAt);
-  lastResetDate.setHours(0, 0, 0, 0);
+  const todayStr = formatDateInTimezone(new Date(), timezone);
+  const lastResetStr = formatDateInTimezone(lastResetAt, timezone);
   
-  return todayStart.getTime() > lastResetDate.getTime();
+  return todayStr !== lastResetStr;
 }
 
 function shouldResetWeekly(lastResetAt: Date | null, timezone: string): boolean {
   if (!lastResetAt) return true;
   
-  const todayStart = getUserLocalDate(timezone);
-  const thisWeekStart = getStartOfWeek(todayStart, timezone);
-  const lastResetDate = new Date(lastResetAt);
+  const thisWeekStr = getWeekNumberInTimezone(new Date(), timezone);
+  const lastResetWeekStr = getWeekNumberInTimezone(lastResetAt, timezone);
   
-  return thisWeekStart.getTime() > lastResetDate.getTime();
+  return thisWeekStr !== lastResetWeekStr;
 }
 
 export async function resetMissionsForUser(userId: string): Promise<void> {
