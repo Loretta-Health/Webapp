@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { BackButton } from '@/components/BackButton';
 import { useTranslation } from 'react-i18next';
 import { 
   ChevronLeft, 
@@ -141,12 +142,12 @@ export default function Calendar() {
       <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-6 pb-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <Link href="/profile">
-              <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-profile">
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                {tCommon('common.back')}
-              </Button>
-            </Link>
+            <BackButton 
+              href="/profile" 
+              className="text-white" 
+              iconClassName="text-white"
+              data-testid="button-back-profile" 
+            />
             <div className="text-center">
               <h1 className="text-xl font-black text-white">{t('calendar.title')}</h1>
               <p className="text-white/70 text-sm">{weekStartFormatted} – {weekEndFormatted}</p>

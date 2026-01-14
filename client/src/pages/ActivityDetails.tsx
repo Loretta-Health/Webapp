@@ -3,9 +3,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { BackButton } from '@/components/BackButton';
 import { useTranslation } from 'react-i18next';
 import { 
-  ChevronRight, 
   Footprints,
   Heart,
   Moon,
@@ -355,12 +355,10 @@ export default function ActivityDetails() {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
       <div className={`bg-gradient-to-r ${metric.bgGradient} border-b border-border p-4 safe-area-top`}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/my-dashboard">
-            <Button variant="ghost" className="hover:bg-white/20" data-testid="button-back-dashboard">
-              <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-              {tCommon('common.back')}
-            </Button>
-          </Link>
+          <BackButton 
+            href="/my-dashboard" 
+            data-testid="button-back-dashboard" 
+          />
           <div className="flex items-center gap-2">
             <Icon className={`w-5 h-5 ${metric.color}`} />
             <h1 className="text-lg font-black text-foreground">{t('activityDetails.title')}</h1>

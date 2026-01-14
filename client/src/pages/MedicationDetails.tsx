@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useLocation, Link, useSearch } from 'wouter';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/BackButton';
 import { useTranslation } from 'react-i18next';
 import { 
-  ArrowLeft, 
   Check, 
   Clock,
   Pill,
@@ -157,11 +157,10 @@ export default function MedicationDetails() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30" />
         
         <div className="flex items-center gap-3 relative z-10">
-          <Link href="/my-dashboard">
-            <button className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" data-testid="button-back">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          </Link>
+          <BackButton 
+            href="/my-dashboard" 
+            data-testid="button-back" 
+          />
           <h1 className="text-base sm:text-lg font-black truncate">{t('medicationDetails.title')}</h1>
         </div>
         

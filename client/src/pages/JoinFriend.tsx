@@ -2,8 +2,9 @@ import { useState, useEffect, ReactNode } from 'react';
 import { useParams, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from 'react-i18next';
-import { UserPlus, Check, X, Loader2, ArrowLeft, Users } from 'lucide-react';
+import { UserPlus, Check, X, Loader2, Users } from 'lucide-react';
 import { Link } from 'wouter';
+import { BackButton } from '@/components/BackButton';
 import { getApiUrl } from "@/lib/queryClient";
 
 function GlassCard({ 
@@ -142,12 +143,11 @@ export default function JoinFriend() {
             </div>
             <h2 className="text-xl font-black text-gray-900 dark:text-white mb-2">{t('joinFriend.error.title')}</h2>
             <p className="text-gray-500 font-medium mb-6">{errorMessage}</p>
-            <Link href="/leaderboard">
-              <button className="w-full py-4 bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10 hover:bg-white dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-2xl transition-all flex items-center justify-center gap-2">
-                <ArrowLeft className="w-5 h-5" />
-                {t('joinFriend.error.goBack')}
-              </button>
-            </Link>
+            <BackButton 
+              href="/leaderboard" 
+              className="w-full py-4 bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10 hover:bg-white dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold rounded-2xl"
+              data-testid="button-back" 
+            />
           </>
         )}
       </GlassCard>

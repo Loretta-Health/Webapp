@@ -4,10 +4,10 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { BackButton } from '@/components/BackButton';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  ArrowLeft, 
   Zap, 
   Droplets, 
   Check, 
@@ -851,11 +851,12 @@ export default function MissionDetails() {
       <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 shadow-lg shadow-[#013DC4]/5 safe-area-top">
           <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-            <Link href="/my-dashboard">
-              <Button size="icon" variant="ghost" className="rounded-xl hover:bg-[#013DC4]/10" data-testid="button-back">
-                <ArrowLeft className="w-5 h-5 text-[#013DC4]" />
-              </Button>
-            </Link>
+            <BackButton 
+              href="/my-dashboard" 
+              className="hover:bg-[#013DC4]/10"
+              iconClassName="text-[#013DC4]"
+              data-testid="button-back" 
+            />
             <h1 className="text-xl font-black text-gray-900 dark:text-white">{tDashboard('missions.allMissions')}</h1>
           </div>
         </header>
@@ -1028,11 +1029,12 @@ export default function MissionDetails() {
       
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 shadow-lg shadow-[#013DC4]/5 safe-area-top">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href="/my-dashboard">
-            <Button size="icon" variant="ghost" className="rounded-xl hover:bg-[#013DC4]/10" data-testid="button-back">
-              <ArrowLeft className="w-5 h-5 text-[#013DC4]" />
-            </Button>
-          </Link>
+          <BackButton 
+            href="/my-dashboard" 
+            className="hover:bg-[#013DC4]/10"
+            iconClassName="text-[#013DC4]"
+            data-testid="button-back" 
+          />
           <h1 className="text-xl font-black text-gray-900 dark:text-white">{t('missionDetails.title')}</h1>
         </div>
       </header>

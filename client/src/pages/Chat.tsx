@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { GlassCard } from '@/components/ui/glass-card';
+import { BackButton } from '@/components/BackButton';
 import { 
   Send, 
   User, 
@@ -16,8 +17,7 @@ import {
   Activity,
   Upload,
   X,
-  File,
-  ArrowLeft
+  File
 } from 'lucide-react';
 import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -169,11 +169,10 @@ export default function Chat() {
       <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between relative overflow-hidden sticky top-0 z-40 safe-area-top">
         
         <div className="flex items-center gap-3 relative z-10">
-          <Link href="/my-dashboard">
-            <button className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" data-testid="button-back-dashboard">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          </Link>
+          <BackButton 
+            href="/my-dashboard" 
+            data-testid="button-back-dashboard" 
+          />
           <h1 className="text-base sm:text-lg font-black truncate">{t('chat.title')}</h1>
         </div>
         

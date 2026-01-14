@@ -1,7 +1,7 @@
 import { Link, Redirect } from 'wouter';
 import { Badge } from '@/components/ui/badge';
+import { BackButton } from '@/components/BackButton';
 import { 
-  ChevronRight, 
   AlertCircle, 
   CheckCircle2, 
   AlertTriangle,
@@ -218,11 +218,12 @@ export default function RiskScoreDetails() {
       <div className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] p-4 sm:p-6 pb-28 sm:pb-32">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <Link href="/my-dashboard">
-              <button className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center text-white" data-testid="button-back-dashboard">
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 rotate-180" />
-              </button>
-            </Link>
+            <BackButton 
+              href="/my-dashboard" 
+              className="text-white" 
+              iconClassName="text-white"
+              data-testid="button-back-dashboard" 
+            />
             <div className="text-center">
               <h1 className="text-lg sm:text-xl font-black text-white">Health Score</h1>
               <p className="text-white/70 text-xs sm:text-sm">Your Health Overview</p>

@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient, getApiUrl } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
+import { BackButton } from '@/components/BackButton';
 import { Check } from 'lucide-react';
 import { 
   User, 
@@ -29,7 +30,6 @@ import {
   Home,
   Users,
   ClipboardList,
-  ChevronRight,
   ChevronDown,
   Utensils,
   Moon,
@@ -1429,12 +1429,12 @@ export default function Profile() {
         <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-6 pb-20">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-4">
-              <Link href="/my-dashboard">
-                <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
-                  <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-                  {localT.back}
-                </Button>
-              </Link>
+              <BackButton 
+                href="/my-dashboard" 
+                className="text-white" 
+                iconClassName="text-white"
+                data-testid="button-back-dashboard" 
+              />
               <div className="text-center">
                 <h1 className="text-xl font-black text-white">{localT.profile}</h1>
                 <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
@@ -1618,12 +1618,12 @@ export default function Profile() {
       <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-6 pb-20 safe-area-top">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <Link href="/my-dashboard">
-              <Button variant="ghost" className="text-white hover:bg-white/20 rounded-2xl" data-testid="button-back-dashboard">
-                <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-                {localT.back}
-              </Button>
-            </Link>
+            <BackButton 
+              href="/my-dashboard" 
+              className="text-white rounded-2xl" 
+              iconClassName="text-white"
+              data-testid="button-back-dashboard" 
+            />
             <div className="text-center">
               <h1 className="text-xl font-black text-white">{localT.profile}</h1>
               <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { BackButton } from '@/components/BackButton';
 import { 
   ChevronRight, 
   ChevronLeft,
@@ -149,12 +150,12 @@ export default function Questionnaire() {
       {/* Header */}
       <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <Link href="/profile">
-            <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back">
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Back
-            </Button>
-          </Link>
+          <BackButton 
+            href="/profile" 
+            className="text-white" 
+            iconClassName="text-white"
+            data-testid="button-back" 
+          />
           <div className="flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-white" />
             <h1 className="text-lg font-black text-white">Onboarding Questionnaire</h1>

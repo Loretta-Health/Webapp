@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { BackButton } from '@/components/BackButton';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
 import { 
-  ChevronLeft, 
   Flame, 
   Zap,
   Trophy,
@@ -127,12 +127,12 @@ export default function StreakDetails() {
     <div className="min-h-screen bg-gradient-to-br from-[#013DC4]/5 via-background to-[#CDB6EF]/10">
       <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-4 safe-area-top">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/my-dashboard">
-            <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              {tCommon('common.back')}
-            </Button>
-          </Link>
+          <BackButton 
+            href="/my-dashboard" 
+            className="text-white" 
+            iconClassName="text-white"
+            data-testid="button-back-dashboard" 
+          />
           <div className="flex items-center gap-2">
             <Flame className="w-5 h-5 text-white fill-white" />
             <h1 className="text-lg font-black text-white">{t('streakDetails.title')}</h1>

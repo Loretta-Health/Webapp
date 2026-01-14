@@ -1,7 +1,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { BackButton } from '@/components/BackButton';
 import { 
-  ChevronLeft, 
   Users,
   Shield,
   Heart,
@@ -204,12 +204,12 @@ export default function TeamInvite() {
       <div className="relative overflow-hidden bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] p-4">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
         <div className="max-w-4xl mx-auto flex items-center justify-between relative z-10">
-          <Link href="/my-dashboard">
-            <button className="flex items-center gap-2 text-white/80 hover:text-white font-medium transition-colors">
-              <ChevronLeft className="w-5 h-5" />
-              Back
-            </button>
-          </Link>
+          <BackButton 
+            href="/my-dashboard" 
+            className="text-white/80 hover:text-white" 
+            iconClassName="text-white"
+            data-testid="button-back" 
+          />
           <div className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-white" />
             <h1 className="text-lg font-black text-white">Team Invite</h1>
