@@ -263,7 +263,7 @@ export default function Invite() {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
-      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
+      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4 safe-area-top">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <BackButton 
             href="/my-dashboard" 
