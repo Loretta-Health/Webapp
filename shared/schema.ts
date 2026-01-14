@@ -91,6 +91,7 @@ export const userPreferences = pgTable("user_preferences", {
   newsletterSubscribed: boolean("newsletter_subscribed").default(false),
   theme: text("theme").default("light"), // 'light' or 'dark'
   language: text("language").default("en"), // 'en' or 'de'
+  timezone: text("timezone").default("UTC"), // user's timezone (e.g., 'America/New_York', 'Europe/Berlin')
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
@@ -238,6 +239,7 @@ export const userMissions = pgTable("user_missions", {
   missionId: text("mission_id"), // references missions.id (optional for legacy)
   activatedAt: timestamp("activated_at"), // when user activated the mission
   completedAt: timestamp("completed_at"), // when mission was completed
+  lastResetAt: timestamp("last_reset_at"), // when this mission was last reset (for daily/weekly resets)
 });
 
 export const insertUserMissionSchema = createInsertSchema(userMissions).omit({
