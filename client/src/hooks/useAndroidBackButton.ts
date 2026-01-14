@@ -9,10 +9,10 @@ export function useAndroidBackButton() {
     const handleBackButton = App.addListener('backButton', ({ canGoBack }) => {
       if (canGoBack) {
         window.history.back();
-      } else if (location === '/' || location === '/dashboard') {
+      } else if (location === '/' || location === '/my-dashboard') {
         App.minimizeApp();
       } else {
-        setLocation('/dashboard');
+        setLocation('/my-dashboard');
       }
     });
 
