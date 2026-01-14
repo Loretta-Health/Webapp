@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { 
   Trophy, 
   Users, 
@@ -191,6 +192,7 @@ export default function LeaderboardPage() {
   const { t } = useTranslation('pages');
   const { t: tDashboard } = useTranslation('dashboard');
   const { user } = useAuth();
+  useSwipeBack({ backPath: '/my-dashboard' });
   const searchString = useSearch();
   const urlParams = new URLSearchParams(searchString);
   const initialCommunity = urlParams.get('community') as CommunityType | null;

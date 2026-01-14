@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useTranslation } from 'react-i18next';
 import { 
   Zap, 
@@ -566,6 +567,7 @@ export default function AlternativeMissionDetails() {
   const params = new URLSearchParams(searchString);
   const altId = params.get('id') || '101';
   const originalMissionId = params.get('original') || '1';
+  useSwipeBack({ backPath: `/mission-details?id=${originalMissionId}` });
   
   const { activateAlternativeMission, isActivatingAlternative, missions, logMissionStep, undoMissionStep, deactivateMission } = useMissions();
   const [showSuccess, setShowSuccess] = useState(false);

@@ -18,6 +18,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient, getApiUrl } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { Check } from 'lucide-react';
 import { 
   User, 
@@ -668,6 +669,7 @@ type Language = 'en' | 'de';
 
 export default function Profile() {
   const { t, i18n } = useTranslation('profile');
+  useSwipeBack({ backPath: '/my-dashboard' });
   const [language, setLanguage] = useState<Language>(() => {
     const saved = localStorage.getItem('loretta_language');
     return saved === 'de' ? 'de' : 'en';

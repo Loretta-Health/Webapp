@@ -2,10 +2,12 @@ import { Card } from '@/components/ui/card';
 import { Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 
 export default function Declined() {
   const { t } = useTranslation('pages');
+  useSwipeBack({ backPath: '/welcome' });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4">

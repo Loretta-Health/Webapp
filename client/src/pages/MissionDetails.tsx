@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -781,6 +782,7 @@ export default function MissionDetails() {
   const { t } = useTranslation('pages');
   const { t: tDashboard } = useTranslation('dashboard');
   const [, navigate] = useLocation();
+  useSwipeBack({ backPath: '/my-dashboard' });
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const urlMissionId = params.get('id');

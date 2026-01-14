@@ -1,6 +1,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { 
   Users,
   Shield,
@@ -54,6 +55,7 @@ export default function TeamInvite() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
+  useSwipeBack({ backPath: '/my-dashboard' });
   const [inviteInfo, setInviteInfo] = useState<InviteInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

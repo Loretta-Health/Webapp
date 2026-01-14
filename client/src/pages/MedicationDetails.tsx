@@ -3,6 +3,7 @@ import { useLocation, Link, useSearch } from 'wouter';
 import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useTranslation } from 'react-i18next';
 import { 
   Check, 
@@ -74,6 +75,7 @@ export default function MedicationDetails() {
   const { t, i18n } = useTranslation('pages');
   const { t: tDashboard } = useTranslation('dashboard');
   const [, navigate] = useLocation();
+  useSwipeBack({ backPath: '/my-dashboard' });
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const medicationId = params.get('id') || 'morning-medication';

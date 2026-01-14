@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useTranslation } from 'react-i18next';
 import { 
   ChevronLeft, 
@@ -42,6 +43,7 @@ const eventTypeColors = {
 export default function Calendar() {
   const { t, i18n } = useTranslation('pages');
   const { t: tCommon } = useTranslation('common');
+  useSwipeBack({ backPath: '/profile' });
   const dateLocale = i18n.language === 'de' ? de : enUS;
   const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [selectedDate, setSelectedDate] = useState(new Date());

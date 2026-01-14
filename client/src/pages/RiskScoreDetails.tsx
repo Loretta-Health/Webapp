@@ -1,6 +1,7 @@
 import { Link, Redirect } from 'wouter';
 import { Badge } from '@/components/ui/badge';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { 
   AlertCircle, 
   CheckCircle2, 
@@ -129,6 +130,7 @@ const getIconComponent = (iconName: string, size = 'w-4 h-4') => {
 
 export default function RiskScoreDetails() {
   const { user, isLoading: isAuthLoading } = useAuth();
+  useSwipeBack({ backPath: '/my-dashboard' });
 
   const { data: riskScoreData, isLoading: isScoreLoading } = useQuery<RiskScoreData>({
     queryKey: ['/api/risk-scores/latest'],
