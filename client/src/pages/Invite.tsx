@@ -16,7 +16,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { 
-  ChevronRight, 
   Share2,
   Copy,
   Check,
@@ -29,6 +28,7 @@ import {
   Trash2,
   Loader2
 } from 'lucide-react';
+import { BackButton } from '@/components/BackButton';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { QRCodeSVG } from 'qrcode.react';
@@ -263,12 +263,12 @@ export default function Invite() {
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10">
       <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/my-dashboard">
-            <Button variant="ghost" className="text-white hover:bg-white/20" data-testid="button-back-dashboard">
-              <ChevronRight className="w-4 h-4 mr-1 rotate-180" />
-              Back
-            </Button>
-          </Link>
+          <BackButton 
+            href="/my-dashboard" 
+            className="text-white" 
+            iconClassName="text-white"
+            data-testid="button-back-dashboard" 
+          />
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-white" />
             <h1 className="text-lg font-black text-white">My Teams</h1>

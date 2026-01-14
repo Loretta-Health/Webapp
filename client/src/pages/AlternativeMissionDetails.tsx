@@ -4,9 +4,9 @@ import { GlassCard } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { BackButton } from '@/components/BackButton';
 import { useTranslation } from 'react-i18next';
 import { 
-  ArrowLeft, 
   Zap, 
   Check, 
   Sparkles,
@@ -671,11 +671,12 @@ export default function AlternativeMissionDetails() {
       
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 shadow-lg shadow-[#013DC4]/5">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link href={`/mission-details?id=${originalMissionId}`}>
-            <Button size="icon" variant="ghost" className="rounded-xl hover:bg-[#013DC4]/10">
-              <ArrowLeft className="w-5 h-5 text-[#013DC4]" />
-            </Button>
-          </Link>
+          <BackButton 
+            href={`/mission-details?id=${originalMissionId}`} 
+            className="hover:bg-[#013DC4]/10"
+            iconClassName="text-[#013DC4]"
+            data-testid="button-back" 
+          />
           <h1 className="text-xl font-black text-gray-900 dark:text-white">Alternative Mission</h1>
         </div>
       </header>

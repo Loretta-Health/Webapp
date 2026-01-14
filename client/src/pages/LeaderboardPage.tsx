@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { BackButton } from '@/components/BackButton';
 import { 
-  ArrowLeft, 
   Trophy, 
   Users, 
   Award,
@@ -431,11 +431,12 @@ export default function LeaderboardPage() {
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 safe-area-top">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/my-dashboard">
-              <button className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-              </button>
-            </Link>
+            <BackButton 
+              href="/my-dashboard" 
+              className="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
+              iconClassName="text-gray-600 dark:text-gray-300"
+              data-testid="button-back-dashboard" 
+            />
             <div className="flex items-center gap-2">
               <img src={logomarkViolet} alt="Loretta" className="w-8 h-8" />
               <div>

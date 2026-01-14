@@ -1,17 +1,11 @@
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Heart, ArrowLeft } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { Heart } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { BackButton } from '@/components/BackButton';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 
 export default function Declined() {
-  const [, setLocation] = useLocation();
   const { t } = useTranslation('pages');
-
-  const handleGoBack = () => {
-    setLocation('/welcome');
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4">
@@ -29,15 +23,11 @@ export default function Declined() {
           {t('declined.message')}
         </p>
         
-        <Button
-          variant="outline"
-          onClick={handleGoBack}
-          className="w-full"
-          data-testid="button-go-back"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          {t('declined.goBack')}
-        </Button>
+        <BackButton 
+          href="/welcome" 
+          className="w-full justify-center" 
+          data-testid="button-go-back" 
+        />
       </Card>
     </div>
   );
