@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { WeatherSimulationProvider } from "@/contexts/WeatherSimulationContext";
 import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
+import { useAndroidBackButton } from "@/hooks/useAndroidBackButton";
 import Dashboard from "@/pages/Dashboard";
 import MyDashboard from "@/pages/MyDashboard";
 import Welcome from "@/pages/Welcome";
@@ -85,6 +86,8 @@ function HomeRoute() {
 }
 
 function Router() {
+  useAndroidBackButton();
+  
   return (
     <Switch>
       <Route path="/" component={HomeRoute} />
