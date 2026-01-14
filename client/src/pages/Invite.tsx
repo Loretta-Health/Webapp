@@ -29,6 +29,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
 import { QRCodeSVG } from 'qrcode.react';
@@ -71,6 +72,7 @@ export default function Invite() {
   const { t: tCommon } = useTranslation('common');
   const { user } = useAuth();
   const { toast } = useToast();
+  useSwipeBack({ backPath: '/my-dashboard' });
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);

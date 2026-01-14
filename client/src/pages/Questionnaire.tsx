@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { 
   ChevronRight, 
   ChevronLeft,
@@ -67,6 +68,7 @@ const questions: Question[] = [
 ];
 
 export default function Questionnaire() {
+  useSwipeBack({ backPath: '/profile' });
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [completed, setCompleted] = useState(false);

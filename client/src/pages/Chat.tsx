@@ -5,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { GlassCard } from '@/components/ui/glass-card';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { 
   Send, 
   User, 
@@ -32,6 +33,7 @@ import { trackAIChat, trackPageView } from '@/lib/clarity';
 
 export default function Chat() {
   const { t } = useTranslation('pages');
+  useSwipeBack({ backPath: '/my-dashboard' });
   
   const { data: profileData } = useQuery<{ profilePhoto: string | null }>({
     queryKey: ['/api/profile'],

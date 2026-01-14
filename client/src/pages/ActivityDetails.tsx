@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useTranslation } from 'react-i18next';
 import { 
   Footprints,
@@ -158,6 +159,7 @@ export default function ActivityDetails() {
   const { t: tDashboard } = useTranslation('dashboard');
   const { t: tCommon } = useTranslation('common');
   const [, navigate] = useLocation();
+  useSwipeBack({ backPath: '/my-dashboard' });
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const metricType = params.get('type') || 'steps';

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { UserPlus, Check, X, Loader2, Users } from 'lucide-react';
 import { Link } from 'wouter';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { getApiUrl } from "@/lib/queryClient";
 
 function GlassCard({ 
@@ -34,6 +35,7 @@ export default function JoinFriend() {
   const { code } = useParams<{ code: string }>();
   const { user, isLoading: authLoading } = useAuth();
   const [, navigate] = useLocation();
+  useSwipeBack({ backPath: '/leaderboard' });
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'already_friends'>('loading');
   const [friendUsername, setFriendUsername] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

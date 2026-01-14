@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useTranslation } from 'react-i18next';
 import { 
   Pill, 
@@ -34,6 +35,7 @@ export default function Medications() {
   const { t } = useTranslation('pages');
   const { t: tDashboard } = useTranslation('dashboard');
   const { t: tCommon } = useTranslation('common');
+  useSwipeBack({ backPath: '/my-dashboard' });
   const [medications, setMedications] = useState<Medication[]>([
     { id: '1', name: 'Morning Medication', dosage: 'Omeprazole 20mg', time: 'Before breakfast', timeIcon: Sun, taken: false, xpReward: 25 },
     { id: '2', name: 'Afternoon Medication', dosage: 'Vitamin D 1000IU', time: 'With lunch', timeIcon: Sunset, taken: false, xpReward: 15 },

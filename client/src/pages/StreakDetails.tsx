@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BackButton } from '@/components/BackButton';
+import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
@@ -62,6 +63,7 @@ export default function StreakDetails() {
   const { t } = useTranslation('pages');
   const { t: tCommon } = useTranslation('common');
   const { user } = useAuth();
+  useSwipeBack({ backPath: '/my-dashboard' });
   
   const { data: gamificationData, isLoading } = useQuery<GamificationData>({
     queryKey: ['/api/gamification'],
