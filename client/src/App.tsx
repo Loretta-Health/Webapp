@@ -9,7 +9,6 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import { WeatherSimulationProvider } from "@/contexts/WeatherSimulationContext";
 import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
 import { useAndroidBackButton } from "@/hooks/useAndroidBackButton";
-import Dashboard from "@/pages/Dashboard";
 import MyDashboard from "@/pages/MyDashboard";
 import Welcome from "@/pages/Welcome";
 import Declined from "@/pages/Declined";
@@ -92,7 +91,6 @@ function Router() {
     <Switch>
       <Route path="/" component={HomeRoute} />
       <Route path="/auth" component={AuthPage} />
-      <Route path="/dashboard" component={Dashboard} />
       <ProtectedRoute path="/my-dashboard" component={MyDashboard} />
       <ProtectedRoute path="/welcome" component={Welcome} />
       <ProtectedRoute path="/profile" component={() => (
