@@ -1671,7 +1671,7 @@ export default function Profile() {
               <h2 className="text-2xl font-black text-gray-900 dark:text-white" data-testid="text-profile-name">{profileData.firstName} {profileData.lastName}</h2>
               <button 
                 onClick={openEditModal}
-                className="text-[#013DC4] text-sm flex items-center gap-1 justify-center sm:justify-start hover:underline font-semibold"
+                className="text-[#013DC4] text-sm flex items-center gap-1 justify-center hover:underline font-semibold mx-auto sm:mx-0"
                 data-testid="button-edit-profile"
               >
                 <Edit className="w-3 h-3" />
@@ -1866,113 +1866,133 @@ export default function Profile() {
                           </div>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <div className="px-4 pb-4 space-y-4">
-                            {category.questions.map((question, qIndex) => (
-                              <div
-                                key={question.id}
-                                className={`p-4 rounded-lg border transition-colors ${
-                                  questionnaireAnswers[question.id] 
-                                    ? 'bg-chart-2/5 border-chart-2/30' 
-                                    : 'bg-background/50 border-transparent'
-                                }`}
-                                data-testid={`question-${category.key}-${qIndex}`}
-                              >
-                                <div className="flex items-start gap-3 mb-3">
-                                  <span className={`text-xs font-bold min-w-6 ${
-                                    questionnaireAnswers[question.id] ? category.iconColor : 'text-muted-foreground'
-                                  }`}>
-                                    {qIndex + 1}.
-                                  </span>
-                                  <p className="text-sm text-foreground font-medium">{question.text}</p>
-                                </div>
-                                <div className="ml-9">
-                                  {(() => {
-                                    const sharedQuestion = getQuestionById(question.id);
-                                    
-                                    if (sharedQuestion?.type === 'number') {
-                                      return (
-                                        <div className="flex items-center gap-2">
-                                          <Input
-                                            type="number"
-                                            placeholder={sharedQuestion.placeholder || (language === 'en' ? 'Enter value' : 'Wert eingeben')}
-                                            value={questionnaireAnswers[question.id] || ''}
-                                            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                                            onBlur={(e) => validateAndSaveAnswer(question.id, e.target.value)}
-                                            className="w-32"
-                                            data-testid={`input-${question.id}`}
-                                          />
-                                          {sharedQuestion.unit && (
-                                            <span className="text-sm text-muted-foreground">{sharedQuestion.unit}</span>
-                                          )}
-                                        </div>
-                                      );
-                                    }
-                                    
-                                    if (sharedQuestion?.type === 'time') {
-                                      return (
-                                        <Input
-                                          type="time"
-                                          placeholder={sharedQuestion.placeholder || ''}
-                                          value={questionnaireAnswers[question.id] || ''}
-                                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                                          className="w-32"
-                                          data-testid={`input-${question.id}`}
-                                        />
-                                      );
-                                    }
-                                    
-                                    const getOptionsForQuestion = () => {
-                                      if (sharedQuestion?.options && sharedQuestion.options.length > 0) {
-                                        return sharedQuestion.options.map(opt => ({
-                                          value: opt.value,
-                                          en: opt.label,
-                                          de: opt.label,
-                                          color: 'bg-primary'
-                                        }));
-                                      }
-                                      const questionType = questionTypeMap[question.id];
-                                      if (questionType && optionSets[questionType]) {
-                                        return optionSets[questionType];
-                                      }
-                                      return [
-                                        { value: 'yes', en: 'Yes', de: 'Ja', color: 'bg-chart-2' },
-                                        { value: 'no', en: 'No', de: 'Nein', color: 'bg-destructive' },
-                                      ];
-                                    };
-                                    const options = getOptionsForQuestion();
-                                    
-                                    return (
-                                      <RadioGroup
-                                        value={questionnaireAnswers[question.id] || ''}
-                                        onValueChange={(value) => handleAnswerChange(question.id, value)}
-                                        className="flex flex-wrap gap-2"
-                                      >
-                                        {options.map((option) => (
-                                          <div key={option.value} className="flex items-center">
-                                            <RadioGroupItem 
-                                              value={option.value} 
-                                              id={`${question.id}-${option.value}`}
-                                              className="peer sr-only"
+                          <div className="px-4 pb-4 space-y-3">
+                            {category.questions.map((question, qIndex) => {
+                              const isAnswered = !!questionnaireAnswers[question.id];
+                              const sharedQuestion = getQuestionById(question.id);
+                              const displayAnswer = isAnswered ? formatAnswerDisplay(question.id, questionnaireAnswers[question.id], language) : '';
+                              
+                              return (
+                                <Collapsible
+                                  key={question.id}
+                                  defaultOpen={!isAnswered}
+                                  className={`rounded-lg border transition-colors ${
+                                    isAnswered 
+                                      ? 'bg-chart-2/5 border-chart-2/30' 
+                                      : 'bg-background/50 border-border'
+                                  }`}
+                                  data-testid={`question-${category.key}-${qIndex}`}
+                                >
+                                  <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-white/30 dark:hover:bg-gray-800/30 transition-colors rounded-lg">
+                                    <div className="flex items-start gap-3 flex-1 text-left">
+                                      <span className={`text-xs font-bold min-w-6 ${
+                                        isAnswered ? category.iconColor : 'text-muted-foreground'
+                                      }`}>
+                                        {qIndex + 1}.
+                                      </span>
+                                      <div className="flex-1">
+                                        <p className="text-sm text-foreground font-medium">{question.text}</p>
+                                        {isAnswered && (
+                                          <p className="text-xs text-chart-2 font-semibold mt-1 flex items-center gap-1">
+                                            <Check className="w-3 h-3" />
+                                            {displayAnswer}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform ${isAnswered ? 'bg-chart-2/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                                      <ChevronDown className={`w-4 h-4 ${isAnswered ? 'text-chart-2' : 'text-gray-500'}`} />
+                                    </div>
+                                  </CollapsibleTrigger>
+                                  <CollapsibleContent>
+                                    <div className="px-4 pb-4 ml-9">
+                                      {(() => {
+                                        if (sharedQuestion?.type === 'number') {
+                                          return (
+                                            <div className="flex items-center gap-2">
+                                              <Input
+                                                type="number"
+                                                placeholder={sharedQuestion.placeholder || (language === 'en' ? 'Enter value' : 'Wert eingeben')}
+                                                value={questionnaireAnswers[question.id] || ''}
+                                                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                                onBlur={(e) => validateAndSaveAnswer(question.id, e.target.value)}
+                                                className="w-32"
+                                                data-testid={`input-${question.id}`}
+                                              />
+                                              {sharedQuestion.unit && (
+                                                <span className="text-sm text-muted-foreground">{sharedQuestion.unit}</span>
+                                              )}
+                                            </div>
+                                          );
+                                        }
+                                        
+                                        if (sharedQuestion?.type === 'time') {
+                                          return (
+                                            <Input
+                                              type="time"
+                                              placeholder={sharedQuestion.placeholder || ''}
+                                              value={questionnaireAnswers[question.id] || ''}
+                                              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                                              className="w-32"
+                                              data-testid={`input-${question.id}`}
                                             />
-                                            <Label
-                                              htmlFor={`${question.id}-${option.value}`}
-                                              className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
-                                                questionnaireAnswers[question.id] === option.value
-                                                  ? `${option.color} text-white border-transparent`
-                                                  : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
-                                              }`}
-                                              data-testid={`answer-${question.id}-${option.value}`}
-                                            >
-                                              {language === 'en' ? option.en : option.de}
-                                            </Label>
-                                          </div>
-                                        ))}
-                                      </RadioGroup>
-                                    );
-                                  })()}
-                                </div>
-                              </div>
-                            ))}
+                                          );
+                                        }
+                                        
+                                        const getOptionsForQuestion = () => {
+                                          if (sharedQuestion?.options && sharedQuestion.options.length > 0) {
+                                            return sharedQuestion.options.map(opt => ({
+                                              value: opt.value,
+                                              en: opt.label,
+                                              de: opt.label,
+                                              color: 'bg-primary'
+                                            }));
+                                          }
+                                          const questionType = questionTypeMap[question.id];
+                                          if (questionType && optionSets[questionType]) {
+                                            return optionSets[questionType];
+                                          }
+                                          return [
+                                            { value: 'yes', en: 'Yes', de: 'Ja', color: 'bg-chart-2' },
+                                            { value: 'no', en: 'No', de: 'Nein', color: 'bg-destructive' },
+                                          ];
+                                        };
+                                        const options = getOptionsForQuestion();
+                                        
+                                        return (
+                                          <RadioGroup
+                                            value={questionnaireAnswers[question.id] || ''}
+                                            onValueChange={(value) => handleAnswerChange(question.id, value)}
+                                            className="flex flex-wrap gap-2"
+                                          >
+                                            {options.map((option) => (
+                                              <div key={option.value} className="flex items-center">
+                                                <RadioGroupItem 
+                                                  value={option.value} 
+                                                  id={`${question.id}-${option.value}`}
+                                                  className="peer sr-only"
+                                                />
+                                                <Label
+                                                  htmlFor={`${question.id}-${option.value}`}
+                                                  className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-colors border ${
+                                                    questionnaireAnswers[question.id] === option.value
+                                                      ? `${option.color} text-white border-transparent`
+                                                      : 'bg-muted/50 text-muted-foreground border-border hover:bg-muted'
+                                                  }`}
+                                                  data-testid={`answer-${question.id}-${option.value}`}
+                                                >
+                                                  {language === 'en' ? option.en : option.de}
+                                                </Label>
+                                              </div>
+                                            ))}
+                                          </RadioGroup>
+                                        );
+                                      })()}
+                                    </div>
+                                  </CollapsibleContent>
+                                </Collapsible>
+                              );
+                            })}
                             
                             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                               <Button
