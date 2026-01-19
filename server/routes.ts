@@ -1406,12 +1406,12 @@ IMPORTANT: When discussing risk scores, remember:
         return res.status(404).json({ error: "Mission not found" });
       }
       
-      // Award XP when mission is newly completed
+      // Award XP when mission is newly completed (use helper that also checks achievements)
       if (isBeingCompleted && currentMission) {
         const catalogMission = await storage.getMissionByKey(currentMission.missionKey);
         if (catalogMission && catalogMission.xpReward > 0) {
-          await storage.addXP(userId, catalogMission.xpReward);
-          console.log(`[Missions] Awarded ${catalogMission.xpReward} XP to user ${userId} for completing mission ${currentMission.missionKey}`);
+          const xpResult = await addXPAndCheckAchievements(userId, catalogMission.xpReward);
+          console.log(`[Missions] Awarded ${catalogMission.xpReward} XP to user ${userId} for completing mission ${currentMission.missionKey}. Achievements unlocked: ${xpResult.achievementsUnlocked.length}`);
         }
       }
       
