@@ -33,6 +33,7 @@ import JoinFriend from "@/pages/JoinFriend";
 import UIMockup1 from "@/pages/UIMockup1";
 import UIMockup2 from "@/pages/UIMockup2";
 import UIMockup3 from "@/pages/UIMockup3";
+import AdminFeedback from "@/pages/AdminFeedback";
 import NotFound from "@/pages/not-found";
 
 function ConsentGuard({ children }: { children: React.ReactNode }) {
@@ -139,6 +140,7 @@ function Router() {
       <Route path="/mockup-1" component={UIMockup1} />
       <Route path="/mockup-2" component={UIMockup2} />
       <Route path="/mockup-3" component={UIMockup3} />
+      <Route path="/admin/feedback" component={AdminFeedback} />
       <ProtectedRoute path="/team-invite" component={() => (
         <ConsentGuard><TeamInvite /></ConsentGuard>
       )} />

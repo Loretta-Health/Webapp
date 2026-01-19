@@ -575,3 +575,26 @@ export const insertFriendshipSchema = createInsertSchema(friendships).omit({
 
 export type InsertFriendship = z.infer<typeof insertFriendshipSchema>;
 export type Friendship = typeof friendships.$inferSelect;
+
+// User feedback - stores feedback submissions from users
+export const userFeedback = pgTable("user_feedback", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  username: text("username"),
+  email: text("email"),
+  category: text("category").notNull().default("general"),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  status: text("status").notNull().default("new"), // 'new', 'reviewed', 'resolved'
+  createdAt: timestamp("created_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+});
+
+export const insertUserFeedbackSchema = createInsertSchema(userFeedback).omit({
+  id: true,
+  createdAt: true,
+  reviewedAt: true,
+});
+
+export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
+export type UserFeedback = typeof userFeedback.$inferSelect;
