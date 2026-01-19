@@ -482,14 +482,14 @@ export default function MyDashboard() {
       <aside 
         className={`
           fixed lg:relative inset-y-0 left-0 z-50
-          w-80 lg:w-[340px]
+          w-[85vw] max-w-[320px] sm:w-80 lg:w-[340px]
           bg-gradient-to-b from-white/90 to-white/70 dark:from-gray-900/90 dark:to-gray-900/70 backdrop-blur-2xl
           border-r border-white/50 dark:border-white/10
           flex flex-col overflow-y-auto
           transform transition-transform duration-500 ease-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           shadow-2xl shadow-[#013DC4]/5
-          safe-area-top safe-area-left
+          safe-area-top safe-area-left safe-area-bottom
         `}
         data-testid="sidebar"
         onTouchStart={onTouchStart}
@@ -743,7 +743,7 @@ export default function MyDashboard() {
           </div>
         </header>
         
-        <div className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 safe-area-bottom">
           <div className="max-w-6xl mx-auto space-y-4 sm:space-y-5 lg:space-y-7">
             <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-5 bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] shadow-xl shadow-[#013DC4]/20">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
@@ -1340,14 +1340,14 @@ export default function MyDashboard() {
       />
       
       <Dialog open={showPrivacyPolicy} onOpenChange={setShowPrivacyPolicy}>
-        <DialogContent className="max-w-4xl max-h-[80vh]">
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[80vh] rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black">{t('dialogs.privacyPolicy')}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl sm:text-2xl font-black">{t('dialogs.privacyPolicy')}</DialogTitle>
+            <DialogDescription className="text-sm">
               {t('dialogs.privacyDescription')}
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="h-[60vh] pr-4">
+          <ScrollArea className="h-[50vh] sm:h-[60vh] pr-4">
             <div className="space-y-4 text-sm text-muted-foreground">
               <p>{t('dialogs.privacyContent1')}</p>
               <p>{t('dialogs.privacyContent2')}</p>
@@ -1357,14 +1357,14 @@ export default function MyDashboard() {
       </Dialog>
       
       <Dialog open={showAccessibilityPolicy} onOpenChange={setShowAccessibilityPolicy}>
-        <DialogContent className="max-w-4xl max-h-[80vh]">
+        <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[80vh] rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-black">{t('dialogs.accessibilityPolicy')}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-xl sm:text-2xl font-black">{t('dialogs.accessibilityPolicy')}</DialogTitle>
+            <DialogDescription className="text-sm">
               {t('dialogs.accessibilityDescription')}
             </DialogDescription>
           </DialogHeader>
-          <ScrollArea className="h-[60vh] pr-4">
+          <ScrollArea className="h-[50vh] sm:h-[60vh] pr-4">
             <div className="space-y-4 text-sm text-muted-foreground">
               <p>{t('dialogs.accessibilityContent1')}</p>
               <p>{t('dialogs.accessibilityContent2')}</p>
