@@ -1630,12 +1630,12 @@ export default function Profile() {
               <h1 className="text-xl font-black text-white">{localT.profile}</h1>
               <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
             </div>
-            <div className="flex items-center gap-1 [&_button]:text-white [&_button]:hover:bg-white/20 [&_button]:rounded-2xl">
+            <div className="flex items-center gap-1 [&_button]:text-white [&_button]:hover:bg-white/20 [&_button]:rounded-2xl [&_button]:min-w-[44px] [&_button]:min-h-[44px]">
               <LanguageSwitcher />
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="text-white hover:bg-white/20 rounded-2xl"
+                className="text-white hover:bg-white/20 rounded-2xl min-w-[44px] min-h-[44px] active:scale-95 transition-transform"
                 onClick={() => setIsShareOpen(true)}
                 data-testid="button-share-profile"
               >
@@ -1671,10 +1671,10 @@ export default function Profile() {
               <h2 className="text-2xl font-black text-gray-900 dark:text-white" data-testid="text-profile-name">{profileData.firstName} {profileData.lastName}</h2>
               <button 
                 onClick={openEditModal}
-                className="text-[#013DC4] text-sm flex items-center gap-1 justify-center hover:underline font-semibold mx-auto sm:mx-0"
+                className="text-[#013DC4] text-sm flex items-center gap-1.5 justify-center hover:underline font-semibold mx-auto sm:mx-0 min-h-[44px] px-3 rounded-xl hover:bg-[#013DC4]/10 active:scale-95 transition-all"
                 data-testid="button-edit-profile"
               >
-                <Edit className="w-3 h-3" />
+                <Edit className="w-4 h-4" />
                 {localT.editProfile}
               </button>
               <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
@@ -1683,7 +1683,7 @@ export default function Profile() {
               </div>
             </div>
             <Link href="/calendar">
-              <Button size="icon" variant="outline" className="rounded-2xl border-[#013DC4]/30 hover:bg-[#013DC4]/10 bg-white/50" data-testid="button-calendar">
+              <Button size="icon" variant="outline" className="rounded-2xl border-[#013DC4]/30 hover:bg-[#013DC4]/10 bg-white/50 min-w-[44px] min-h-[44px] active:scale-95 transition-transform" data-testid="button-calendar">
                 <CalendarDays className="w-5 h-5 text-[#013DC4]" />
               </Button>
             </Link>
@@ -1694,10 +1694,10 @@ export default function Profile() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-4 sm:w-full backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl p-1" data-testid="profile-tabs">
-              <TabsTrigger value="basic" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
-              <TabsTrigger value="social" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
-              <TabsTrigger value="questionnaires" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
-              <TabsTrigger value="behaviors" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
+              <TabsTrigger value="basic" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold min-h-[44px] px-4" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
+              <TabsTrigger value="social" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold min-h-[44px] px-4" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
+              <TabsTrigger value="questionnaires" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold min-h-[44px] px-4" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
+              <TabsTrigger value="behaviors" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold min-h-[44px] px-4" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
             </TabsList>
           </div>
 
@@ -1713,12 +1713,11 @@ export default function Profile() {
                 </div>
                 <Button
                   variant="outline"
-                  size="sm"
                   onClick={openBasicInfoEdit}
-                  className="rounded-xl border-[#013DC4]/30 hover:bg-[#013DC4]/10"
+                  className="rounded-xl border-[#013DC4]/30 hover:bg-[#013DC4]/10 min-h-[44px] px-4 active:scale-95 transition-transform"
                   data-testid="button-edit-basic-info"
                 >
-                  <Edit className="w-4 h-4 mr-1" />
+                  <Edit className="w-4 h-4 mr-1.5" />
                   {language === 'en' ? 'Edit' : 'Bearbeiten'}
                 </Button>
               </div>
