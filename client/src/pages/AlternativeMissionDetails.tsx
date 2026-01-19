@@ -672,7 +672,7 @@ export default function AlternativeMissionDetails() {
       </AnimatePresence>
       
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 shadow-lg shadow-[#013DC4]/5 safe-area-top">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+        <div className="max-w-2xl mx-auto px-4 pt-6 pb-4 flex items-center gap-4">
           <BackButton 
             href={`/mission-details?id=${originalMissionId}`} 
             className="hover:bg-[#013DC4]/10"

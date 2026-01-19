@@ -217,7 +217,7 @@ export default function RiskScoreDetails() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#013DC4]/5 via-white to-[#CDB6EF]/10 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] p-4 sm:p-6 pb-28 sm:pb-32 safe-area-top">
+      <div className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] pt-8 px-4 sm:px-6 pb-28 sm:pb-32 safe-area-top">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <BackButton 

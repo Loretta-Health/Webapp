@@ -150,7 +150,7 @@ export default function Questionnaire() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex flex-col">
       {/* Header */}
-      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4 safe-area-top">
+      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 pt-8 px-4 pb-4 safe-area-top">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <BackButton 
             href="/profile" 
