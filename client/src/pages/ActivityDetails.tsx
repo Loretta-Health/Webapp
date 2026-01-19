@@ -396,10 +396,9 @@ export default function ActivityDetails() {
                     data-testid="manual-entry-input"
                   />
                   <Button 
-                    size="sm" 
                     onClick={handleSave}
                     disabled={saveActivityMutation.isPending}
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-primary hover:bg-primary/90 min-h-[44px] min-w-[44px]"
                     data-testid="button-save-value"
                   >
                     {saveActivityMutation.isPending ? (
@@ -422,13 +421,12 @@ export default function ActivityDetails() {
                     <span className="text-xl text-muted-foreground">{metric.unit}</span>
                   </div>
                   <Button
-                    size="sm"
                     variant="ghost"
                     onClick={() => setIsEditing(true)}
-                    className="ml-2"
+                    className="ml-2 min-h-[44px] min-w-[44px]"
                     data-testid="button-edit-value"
                   >
-                    <Pencil className="w-4 h-4" />
+                    <Pencil className="w-5 h-5" />
                   </Button>
                 </div>
               )}

@@ -897,15 +897,14 @@ export default function MissionDetails() {
                       </div>
                       <div className="flex items-center gap-2 ml-4">
                         <Link href={`/mission-details?id=${mission.missionKey}`}>
-                          <Button variant="ghost" size="sm" className="rounded-xl hover:bg-[#013DC4]/10">
-                            <ChevronRight className="w-4 h-4 text-[#013DC4]" />
+                          <Button variant="ghost" className="rounded-xl hover:bg-[#013DC4]/10 min-w-[44px] min-h-[44px]">
+                            <ChevronRight className="w-5 h-5 text-[#013DC4]" />
                           </Button>
                         </Link>
                         <Button 
                           variant="outline" 
-                          size="sm"
                           onClick={() => deactivateMission(mission.id)}
-                          className="text-gray-500 border-gray-200 dark:border-gray-700 rounded-xl"
+                          className="text-gray-500 border-gray-200 dark:border-gray-700 rounded-xl min-h-[44px]"
                         >
                           {tDashboard('missions.deactivateMission')}
                         </Button>
@@ -941,13 +940,12 @@ export default function MissionDetails() {
                         </div>
                         <div className="flex items-center gap-2 ml-4">
                           <Button 
-                            size="sm"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                               activateMission(mission.id);
                             }}
-                            className="bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white rounded-xl"
+                            className="bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white rounded-xl min-h-[44px]"
                           >
                             {tDashboard('missions.activateMission')}
                           </Button>
@@ -1159,11 +1157,11 @@ export default function MissionDetails() {
                   </div>
                   <Button
                     variant={existingMission.isActive ? "outline" : "default"}
-                    size="sm"
                     onClick={() => existingMission.isActive 
                       ? deactivateMission(existingMission.id) 
                       : activateMission(existingMission.id)
                     }
+                    className="min-h-[44px] rounded-xl"
                   >
                     {existingMission.isActive 
                       ? tDashboard('missions.deactivateMission') 

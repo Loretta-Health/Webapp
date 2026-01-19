@@ -2330,8 +2330,7 @@ export default function Profile() {
                     <Button 
                       type="button" 
                       variant="ghost" 
-                      size="sm"
-                      className="text-destructive hover:text-destructive w-full"
+                      className="text-destructive hover:text-destructive w-full min-h-[44px]"
                       onClick={() => setEditForm({ ...editForm, profilePhoto: '' })}
                     >
                       <X className="w-4 h-4 mr-1" />

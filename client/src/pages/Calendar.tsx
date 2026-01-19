@@ -376,9 +376,8 @@ export default function Calendar() {
                     </div>
                     <Button
                       variant="outline"
-                      size="sm"
                       onClick={() => handleDeleteEvent(event.id)}
-                      className="shrink-0"
+                      className="shrink-0 min-h-[44px] rounded-xl"
                       data-testid={`button-delete-event-${event.id}`}
                     >
                       {tCommon('common.delete')}

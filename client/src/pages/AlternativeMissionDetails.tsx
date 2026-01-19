@@ -798,8 +798,7 @@ export default function AlternativeMissionDetails() {
                 
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="w-full text-gray-500 hover:text-red-500 rounded-xl"
+                  className="w-full text-gray-500 hover:text-red-500 rounded-xl min-h-[44px]"
                   onClick={() => setShowDeactivateConfirm(true)}
                 >
                   <XCircle className="w-4 h-4 mr-2" />
