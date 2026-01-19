@@ -30,8 +30,8 @@ export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className={`gap-2 ${className || ''}`}>
-          <Globe className="h-4 w-4" />
+        <Button variant="ghost" className={`gap-2 min-h-[44px] min-w-[44px] ${className || ''}`}>
+          <Globe className="h-5 w-5" />
           <span className="hidden sm:inline">{currentLanguage.flag} {currentLanguage.name}</span>
           <span className="sm:hidden">{currentLanguage.flag}</span>
         </Button>

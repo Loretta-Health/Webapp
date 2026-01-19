@@ -409,7 +409,7 @@ export default function Invite() {
                   <Card className="p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-black">Team Invites</h3>
-                      <Button size="sm" onClick={createInvite} disabled={creatingInvite}>
+                      <Button onClick={createInvite} disabled={creatingInvite} className="min-h-[44px] rounded-xl">
                         {creatingInvite ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
@@ -450,8 +450,7 @@ export default function Invite() {
                             <div className="flex gap-2">
                               <Button
                                 variant="outline"
-                                size="sm"
-                                className="flex-1"
+                                className="flex-1 min-h-[44px] rounded-xl"
                                 onClick={() => handleCopy(invite.inviteCode)}
                               >
                                 {copied ? (
@@ -467,8 +466,7 @@ export default function Invite() {
                                 )}
                               </Button>
                               <Button
-                                size="sm"
-                                className="flex-1"
+                                className="flex-1 min-h-[44px] rounded-xl"
                                 onClick={() => handleShare(invite.inviteCode, selectedTeam.name)}
                               >
                                 <Share2 className="w-4 h-4 mr-1" />
@@ -476,7 +474,7 @@ export default function Invite() {
                               </Button>
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                className="min-w-[44px] min-h-[44px] rounded-xl"
                                 onClick={() => deleteInvite(invite.id)}
                               >
                                 <Trash2 className="w-4 h-4 text-destructive" />
