@@ -338,7 +338,7 @@ export default function StreakDetails() {
             <Link href="/achievements">
               <Button 
                 variant="ghost" 
-                className="w-full mt-4 text-[#013DC4] hover:bg-[#013DC4]/10 font-bold"
+                className="w-full mt-4 text-[#013DC4] hover:bg-[#013DC4]/10 font-bold min-h-[48px] active:scale-95 transition-transform"
               >
                 {t('streakDetails.viewAllAchievements', { defaultValue: 'View All Achievements' })}
                 <ChevronRight className="w-4 h-4 ml-1" />

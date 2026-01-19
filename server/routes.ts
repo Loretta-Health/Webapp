@@ -1388,16 +1388,31 @@ IMPORTANT: When discussing risk scores, remember:
     }
     try {
       const { id } = req.params;
+      const userId = (req.user as any).id;
       const validatedData = updateUserMissionSchema.parse(req.body);
       
       if (validatedData.isActive === true && !validatedData.activatedAt) {
         validatedData.activatedAt = new Date();
       }
       
+      // Get current mission state to check if it's being newly completed
+      const [currentMission] = await db.select().from(userMissions).where(eq(userMissions.id, id));
+      const wasCompleted = currentMission?.completed ?? false;
+      const isBeingCompleted = validatedData.completed === true && !wasCompleted;
+      
       const updated = await storage.updateUserMission(id, validatedData);
       
       if (!updated) {
         return res.status(404).json({ error: "Mission not found" });
+      }
+      
+      // Award XP when mission is newly completed
+      if (isBeingCompleted && currentMission) {
+        const catalogMission = await storage.getMissionByKey(currentMission.missionKey);
+        if (catalogMission && catalogMission.xpReward > 0) {
+          await storage.addXP(userId, catalogMission.xpReward);
+          console.log(`[Missions] Awarded ${catalogMission.xpReward} XP to user ${userId} for completing mission ${currentMission.missionKey}`);
+        }
       }
       
       res.json(updated);

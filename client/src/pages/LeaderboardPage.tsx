@@ -449,7 +449,7 @@ export default function LeaderboardPage() {
           </div>
           <button 
             onClick={toggleDarkMode}
-            className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            className="min-w-[44px] min-h-[44px] rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors active:scale-95"
           >
             {darkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-gray-600" />}
           </button>
@@ -462,7 +462,7 @@ export default function LeaderboardPage() {
           <div className="grid grid-cols-2 gap-1">
             <button
               onClick={() => setActiveTab('leaderboard')}
-              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold transition-all ${
+              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold transition-all min-h-[48px] active:scale-95 ${
                 activeTab === 'leaderboard'
                   ? 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white shadow-lg'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -473,7 +473,7 @@ export default function LeaderboardPage() {
             </button>
             <button
               onClick={() => setActiveTab('achievements')}
-              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold transition-all ${
+              className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl font-bold transition-all min-h-[48px] active:scale-95 ${
                 activeTab === 'achievements'
                   ? 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white shadow-lg'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
@@ -517,7 +517,7 @@ export default function LeaderboardPage() {
                   <button
                     key={team.id}
                     onClick={() => setSelectedTeamId(team.id)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all min-h-[44px] active:scale-95 ${
                       selectedTeamId === team.id
                         ? 'bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white shadow-lg'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
