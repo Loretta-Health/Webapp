@@ -127,19 +127,21 @@ export default function StreakDetails() {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#013DC4]/5 via-background to-[#CDB6EF]/10">
-      <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] pt-8 px-4 pb-4 safe-area-top">
+      <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] pt-12 px-4 pb-4 safe-area-top">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <BackButton 
-            href="/my-dashboard" 
-            className="text-white" 
-            iconClassName="text-white"
-            data-testid="button-back-dashboard" 
-          />
-          <div className="flex items-center gap-2">
+          <div className="w-[44px] flex justify-start">
+            <BackButton 
+              href="/my-dashboard" 
+              className="text-white" 
+              iconClassName="text-white"
+              data-testid="button-back-dashboard" 
+            />
+          </div>
+          <div className="flex items-center gap-2 flex-1 justify-center">
             <Flame className="w-5 h-5 text-white fill-white" />
             <h1 className="text-lg font-black text-white">{t('streakDetails.title')}</h1>
           </div>
-          <div className="w-16" />
+          <div className="w-[44px]" />
         </div>
       </div>
       
