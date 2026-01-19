@@ -8,14 +8,17 @@ import { User as SelectUser, InsertUser } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { trackAuth, identifyUser } from "@/lib/clarity";
+import { setAuthToken, clearAuthToken } from "@/lib/nativeAuth";
+
+type AuthResponse = { user: SelectUser; authToken?: string };
 
 type AuthContextType = {
   user: SelectUser | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
+  loginMutation: UseMutationResult<AuthResponse, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+  registerMutation: UseMutationResult<AuthResponse, Error, InsertUser>;
 };
 
 type LoginData = { identifier: string; password: string };
@@ -38,7 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/login", credentials);
       return await res.json();
     },
-    onSuccess: (user: SelectUser) => {
+    onSuccess: async (data: AuthResponse) => {
+      const user = data.user;
+      if (data.authToken) {
+        await setAuthToken(data.authToken);
+      }
       queryClient.clear();
       queryClient.setQueryData(["/api/user"], user);
       trackAuth('login');
@@ -62,7 +69,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/register", credentials);
       return await res.json();
     },
-    onSuccess: (user: SelectUser) => {
+    onSuccess: async (data: AuthResponse) => {
+      const user = data.user;
+      if (data.authToken) {
+        await setAuthToken(data.authToken);
+      }
       queryClient.clear();
       queryClient.setQueryData(["/api/user"], user);
       trackAuth('signup');
@@ -85,7 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mutationFn: async () => {
       await apiRequest("POST", "/api/logout");
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await clearAuthToken();
       queryClient.clear();
       trackAuth('logout');
       toast({
