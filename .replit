@@ -45,3 +45,4 @@ waitForPort = 5000
 SCALEWAY_API_KEY = "a3501cc3-1561-41e9-800a-17370f9b62f2"
 VITE_CLARITY_PROJECT_ID = "uwqkwf3ff1"
 PREDICTION_API_URL = "https://loretta-predict.replit.app"
+ADMIN_PASSWORD = "loretta-admin-2026"

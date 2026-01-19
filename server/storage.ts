@@ -43,6 +43,8 @@ import {
   type InsertMedicationAdherence,
   type UpdateMedicationAdherence,
   type PasswordResetToken,
+  type UserFeedback,
+  type InsertUserFeedback,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -64,6 +66,7 @@ import {
   medicationLogs,
   medicationAdherence,
   passwordResetTokens,
+  userFeedback,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -1641,6 +1644,36 @@ export class DatabaseStorage implements IStorage {
     }
 
     return minStreak === Infinity ? 0 : minStreak;
+  }
+
+  // ========================
+  // Feedback Methods
+  // ========================
+
+  async createFeedback(data: InsertUserFeedback): Promise<UserFeedback> {
+    const [feedback] = await db.insert(userFeedback).values(data).returning();
+    return feedback;
+  }
+
+  async getAllFeedback(): Promise<UserFeedback[]> {
+    return db.select().from(userFeedback).orderBy(desc(userFeedback.createdAt));
+  }
+
+  async updateFeedbackStatus(feedbackId: string, status: string): Promise<UserFeedback | null> {
+    const [updated] = await db
+      .update(userFeedback)
+      .set({ 
+        status, 
+        reviewedAt: status === 'reviewed' || status === 'resolved' ? new Date() : null 
+      })
+      .where(eq(userFeedback.id, feedbackId))
+      .returning();
+    return updated || null;
+  }
+
+  async deleteFeedback(feedbackId: string): Promise<boolean> {
+    const result = await db.delete(userFeedback).where(eq(userFeedback.id, feedbackId));
+    return true;
   }
 }
 

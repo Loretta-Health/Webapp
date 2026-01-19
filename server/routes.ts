@@ -3172,7 +3172,7 @@ IMPORTANT: When discussing risk scores, remember:
   });
 
   // ========================
-  // Feedback Endpoint
+  // Feedback Endpoints
   // ========================
 
   app.post("/api/feedback", async (req, res) => {
@@ -3198,23 +3198,129 @@ IMPORTANT: When discussing risk scores, remember:
       const userEmail = user.email || 'No email provided';
       const userName = user.firstName || user.username || 'Anonymous User';
       
-      const result = await sendFeedbackEmail(
-        userEmail,
-        userName,
+      // Save feedback to database
+      await storage.createFeedback({
+        userId: user.id,
+        username: user.username,
+        email: userEmail,
+        category: category || 'general',
         subject,
         message,
-        category || 'general'
-      );
+        status: 'new',
+      });
       
-      if (result.success) {
-        res.json({ success: true, message: "Feedback submitted successfully" });
-      } else {
-        res.status(500).json({ error: result.message });
+      // Also send email notification (optional, can fail silently)
+      try {
+        await sendFeedbackEmail(
+          userEmail,
+          userName,
+          subject,
+          message,
+          category || 'general'
+        );
+      } catch (emailError) {
+        console.error("Failed to send feedback email notification:", emailError);
+        // Continue - we saved to database successfully
       }
+      
+      res.json({ success: true, message: "Feedback submitted successfully" });
     } catch (error) {
       console.error("Error submitting feedback:", error);
       res.status(500).json({ error: "Failed to submit feedback" });
     }
+  });
+
+  // Admin endpoints for feedback management
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'loretta-admin-2026';
+
+  app.post("/api/admin/login", (req, res) => {
+    const { password } = req.body;
+    if (password === ADMIN_PASSWORD) {
+      res.json({ success: true, token: Buffer.from(`admin:${Date.now()}`).toString('base64') });
+    } else {
+      res.status(401).json({ error: "Invalid password" });
+    }
+  });
+
+  app.get("/api/admin/feedback", (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8');
+      if (!decoded.startsWith('admin:')) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+    } catch {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    
+    storage.getAllFeedback().then(feedback => {
+      res.json(feedback);
+    }).catch(error => {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ error: "Failed to fetch feedback" });
+    });
+  });
+
+  app.patch("/api/admin/feedback/:id", (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8');
+      if (!decoded.startsWith('admin:')) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+    } catch {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    
+    const { status } = req.body;
+    if (!['new', 'reviewed', 'resolved'].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+    
+    storage.updateFeedbackStatus(req.params.id, status).then(feedback => {
+      if (feedback) {
+        res.json(feedback);
+      } else {
+        res.status(404).json({ error: "Feedback not found" });
+      }
+    }).catch(error => {
+      console.error("Error updating feedback:", error);
+      res.status(500).json({ error: "Failed to update feedback" });
+    });
+  });
+
+  app.delete("/api/admin/feedback/:id", (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8');
+      if (!decoded.startsWith('admin:')) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+    } catch {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    
+    storage.deleteFeedback(req.params.id).then(() => {
+      res.json({ success: true });
+    }).catch(error => {
+      console.error("Error deleting feedback:", error);
+      res.status(500).json({ error: "Failed to delete feedback" });
+    });
   });
 
   const httpServer = createServer(app);
