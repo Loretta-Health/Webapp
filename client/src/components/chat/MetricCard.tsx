@@ -48,31 +48,31 @@ export default function MetricCard({ metric }: MetricCardProps) {
       className="my-2"
     >
       <Card className="overflow-hidden border border-border/50 bg-gradient-to-br from-muted/30 to-muted/10">
-        <div className="p-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colorGradient} flex items-center justify-center shadow-lg`}>
-              <Icon className="w-6 h-6 text-white" />
+        <div className="p-3 sm:p-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${colorGradient} flex items-center justify-center shadow-lg flex-shrink-0`}>
+              <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground uppercase font-semibold">{metric.label}</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black text-foreground">
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase font-semibold truncate">{metric.label}</p>
+              <div className="flex items-baseline gap-1 sm:gap-2">
+                <span className="text-xl sm:text-2xl font-black text-foreground">
                   {typeof metric.value === 'number' ? metric.value.toLocaleString() : metric.value}
                 </span>
-                <span className="text-sm text-muted-foreground">{metric.unit}</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">{metric.unit}</span>
               </div>
             </div>
 
             {metric.trend !== undefined && (
               <Badge 
                 variant="secondary" 
-                className={`${metric.trend >= 0 ? 'bg-chart-2/20 text-chart-2' : 'bg-destructive/20 text-destructive'}`}
+                className={`flex-shrink-0 text-[10px] sm:text-xs ${metric.trend >= 0 ? 'bg-chart-2/20 text-chart-2' : 'bg-destructive/20 text-destructive'}`}
               >
                 {metric.trend >= 0 ? (
-                  <TrendingUp className="w-3 h-3 mr-1" />
+                  <TrendingUp className="w-3 h-3 mr-0.5 sm:mr-1" />
                 ) : (
-                  <TrendingDown className="w-3 h-3 mr-1" />
+                  <TrendingDown className="w-3 h-3 mr-0.5 sm:mr-1" />
                 )}
                 {Math.abs(metric.trend)}%
               </Badge>
@@ -80,12 +80,12 @@ export default function MetricCard({ metric }: MetricCardProps) {
           </div>
 
           {metric.goal && (
-            <div className="mt-3 space-y-1">
-              <div className="flex justify-between text-xs text-muted-foreground">
+            <div className="mt-2 sm:mt-3 space-y-1">
+              <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground">
                 <span>Progress</span>
                 <span>{Math.round(progress)}% of goal</span>
               </div>
-              <Progress value={Math.min(progress, 100)} className="h-2" />
+              <Progress value={Math.min(progress, 100)} className="h-1.5 sm:h-2" />
             </div>
           )}
         </div>

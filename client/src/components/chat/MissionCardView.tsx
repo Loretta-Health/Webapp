@@ -85,34 +85,34 @@ export default function MissionCardView({
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-3 border-t border-border">
-              <div className="flex items-center gap-1 text-primary font-black">
-                <Zap className="w-4 h-4 fill-primary" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-border">
+              <div className="flex items-center gap-1 text-primary font-black text-sm sm:text-base">
+                <Zap className="w-4 h-4 sm:w-5 sm:h-5 fill-primary" />
                 <span>+{suggestedMission.xpReward} XP</span>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full sm:w-auto">
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={onView}
-                  className="text-xs"
+                  className="text-xs sm:text-sm min-h-[40px] flex-1 sm:flex-none"
                 >
                   {t('chat.missionCard.viewDetails')}
-                  <ChevronRight className="w-3 h-3 ml-1" />
+                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                 </Button>
                 {missionActivated ? (
-                  <Badge className="bg-chart-2 text-white border-0 py-2 px-3">
-                    <Check className="w-3 h-3 mr-1" />
+                  <Badge className="bg-chart-2 text-white border-0 py-2 px-3 min-h-[40px] flex items-center">
+                    <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     {t('chat.missionCard.activated')}
                   </Badge>
                 ) : (
                   <Button
                     size="sm"
                     onClick={onActivate}
-                    className="bg-gradient-to-r from-primary to-chart-2 text-white text-xs"
+                    className="bg-gradient-to-r from-primary to-chart-2 text-white text-xs sm:text-sm min-h-[40px] flex-1 sm:flex-none active:scale-95"
                   >
-                    <Target className="w-3 h-3 mr-1" />
+                    <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     {t('chat.missionCard.activateMission')}
                   </Button>
                 )}
