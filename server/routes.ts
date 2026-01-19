@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
 import { eq, and, or } from "drizzle-orm";
-import { userMissions, userInviteCodes, friendships } from "@shared/schema";
+import { userMissions, userInviteCodes, friendships, users } from "@shared/schema";
 import { setupAuth } from "./auth";
 import { HEALTH_NAVIGATOR_SYSTEM_PROMPT, EMOTION_CLASSIFICATION_PROMPT } from "./prompts";
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
@@ -2029,6 +2029,163 @@ IMPORTANT: When discussing risk scores, remember:
     } catch (error) {
       console.error("Error updating achievement progress:", error);
       res.status(500).json({ error: "Failed to update achievement progress" });
+    }
+  });
+
+  // Recalculate all achievements for all users based on their actual data
+  // This endpoint requires authentication and is intended for admin use
+  app.post("/api/achievements/recalculate-all", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      console.log("[Achievements] Starting full recalculation for all users...");
+      
+      // Get all users
+      const allUsers = await db.select().from(users);
+      const results: { userId: string; username: string; updates: Record<string, { oldProgress: number; newProgress: number; unlocked: boolean }> }[] = [];
+      
+      for (const user of allUsers) {
+        const userId = user.id;
+        const updates: Record<string, { oldProgress: number; newProgress: number; unlocked: boolean }> = {};
+        
+        // Ensure user has all achievements
+        await storage.ensureUserHasAllAchievements(userId);
+        const userAchievements = await storage.getUserAchievements(userId);
+        
+        // 1. daily-dedication: Check if user has done any check-in (maxProgress: 1)
+        const gamification = await storage.getUserGamification(userId);
+        const dailyDedicationProgress = gamification?.lastCheckIn ? 1 : 0;
+        const dailyDed = userAchievements.find(a => a.achievementId === 'daily-dedication');
+        if (dailyDed && dailyDedicationProgress > (dailyDed.progress || 0)) {
+          const result = await storage.updateUserAchievementProgress(userId, 'daily-dedication', dailyDedicationProgress);
+          updates['daily-dedication'] = { oldProgress: dailyDed.progress || 0, newProgress: dailyDedicationProgress, unlocked: result.justUnlocked };
+        }
+        
+        // 2. streak-legend: Current streak value (maxProgress: 30)
+        const streakProgress = gamification?.longestStreak || gamification?.currentStreak || 0;
+        const streakLeg = userAchievements.find(a => a.achievementId === 'streak-legend');
+        if (streakLeg && streakProgress > (streakLeg.progress || 0)) {
+          const result = await storage.updateUserAchievementProgress(userId, 'streak-legend', streakProgress);
+          updates['streak-legend'] = { oldProgress: streakLeg.progress || 0, newProgress: streakProgress, unlocked: result.justUnlocked };
+        }
+        
+        // 3. wellness-warrior: Total XP (maxProgress: 5000)
+        const xpRecord = await storage.getUserXp(userId);
+        const totalXp = xpRecord?.totalXp || 0;
+        const wellnessWarrior = userAchievements.find(a => a.achievementId === 'wellness-warrior');
+        if (wellnessWarrior && totalXp > (wellnessWarrior.progress || 0)) {
+          const result = await storage.updateUserAchievementProgress(userId, 'wellness-warrior', totalXp);
+          updates['wellness-warrior'] = { oldProgress: wellnessWarrior.progress || 0, newProgress: totalXp, unlocked: result.justUnlocked };
+        }
+        
+        // 4. medication-adherence: Check medication logs for consecutive days (maxProgress: 14)
+        const medications = await storage.getUserMedications(userId);
+        let maxConsecutiveDays = 0;
+        for (const med of medications) {
+          const adherence = await storage.getMedicationAdherence(med.id);
+          if (adherence) {
+            // Calculate consecutive days from adherence
+            const consecutiveDays = Math.floor((adherence.totalDosesTaken || 0) / Math.max(1, (adherence.totalDosesScheduled || 1) / 14));
+            maxConsecutiveDays = Math.max(maxConsecutiveDays, Math.min(consecutiveDays, 14));
+          }
+        }
+        const medAch = userAchievements.find(a => a.achievementId === 'medication-adherence');
+        if (medAch && maxConsecutiveDays > (medAch.progress || 0)) {
+          const result = await storage.updateUserAchievementProgress(userId, 'medication-adherence', maxConsecutiveDays);
+          updates['medication-adherence'] = { oldProgress: medAch.progress || 0, newProgress: maxConsecutiveDays, unlocked: result.justUnlocked };
+        }
+        
+        // 5-7. Activity-based achievements: hydration-champion, sleep-master, step-champion
+        // Get all user activities and deduplicate by date (one achievement increment per day)
+        const activities = await storage.getUserActivities(userId, 365); // Get up to a year of activities
+        
+        // Track unique dates for each achievement type
+        const hydrationDates = new Set<string>();
+        const sleepDates = new Set<string>();
+        const stepDates = new Set<string>();
+        
+        for (const activity of activities) {
+          // Get goals from activity record (defaults if not set)
+          const waterGoal = activity.waterGoal || 8;
+          const stepsGoal = activity.stepsGoal || 10000;
+          
+          if (activity.water !== null && activity.water >= waterGoal) {
+            hydrationDates.add(activity.date);
+          }
+          if (activity.sleepHours !== null && activity.sleepHours >= 7 && activity.sleepHours <= 8) {
+            sleepDates.add(activity.date);
+          }
+          if (activity.steps !== null && activity.steps >= stepsGoal) {
+            stepDates.add(activity.date);
+          }
+        }
+        
+        const hydrationDays = hydrationDates.size;
+        const sleepDays = sleepDates.size;
+        const stepDays = stepDates.size;
+        
+        const hydrationAch = userAchievements.find(a => a.achievementId === 'hydration-champion');
+        if (hydrationAch && hydrationDays > (hydrationAch.progress || 0)) {
+          const result = await storage.updateUserAchievementProgress(userId, 'hydration-champion', hydrationDays);
+          updates['hydration-champion'] = { oldProgress: hydrationAch.progress || 0, newProgress: hydrationDays, unlocked: result.justUnlocked };
+        }
+        
+        const sleepAch = userAchievements.find(a => a.achievementId === 'sleep-master');
+        if (sleepAch && sleepDays > (sleepAch.progress || 0)) {
+          const result = await storage.updateUserAchievementProgress(userId, 'sleep-master', sleepDays);
+          updates['sleep-master'] = { oldProgress: sleepAch.progress || 0, newProgress: sleepDays, unlocked: result.justUnlocked };
+        }
+        
+        const stepAch = userAchievements.find(a => a.achievementId === 'step-champion');
+        if (stepAch && stepDays > (stepAch.progress || 0)) {
+          const result = await storage.updateUserAchievementProgress(userId, 'step-champion', stepDays);
+          updates['step-champion'] = { oldProgress: stepAch.progress || 0, newProgress: stepDays, unlocked: result.justUnlocked };
+        }
+        
+        // 8. community-star: Check if user is in top 3 of loretta-community with 5+ members
+        const lorettaMember = await storage.getTeamMember('loretta-community', userId);
+        if (lorettaMember) {
+          const members = await storage.getTeamMembers('loretta-community');
+          const consentingMembers = members.filter(m => m.consentGiven === true);
+          
+          if (consentingMembers.length >= 5) {
+            // Build leaderboard
+            const leaderboardEntries = await Promise.all(
+              consentingMembers.map(async (member) => {
+                const memberXp = await storage.getUserXp(member.userId);
+                return { userId: member.userId, xp: memberXp?.totalXp || 0 };
+              })
+            );
+            leaderboardEntries.sort((a, b) => b.xp - a.xp);
+            const userRank = leaderboardEntries.findIndex(e => e.userId === userId) + 1;
+            
+            if (userRank > 0 && userRank <= 3) {
+              const communityAch = userAchievements.find(a => a.achievementId === 'community-star');
+              if (communityAch && !communityAch.unlocked) {
+                const result = await storage.updateUserAchievementProgress(userId, 'community-star', 1);
+                updates['community-star'] = { oldProgress: 0, newProgress: 1, unlocked: result.justUnlocked };
+              }
+            }
+          }
+        }
+        
+        if (Object.keys(updates).length > 0) {
+          results.push({ userId, username: user.username, updates });
+        }
+      }
+      
+      console.log(`[Achievements] Recalculation complete. Updated ${results.length} users.`);
+      res.json({ 
+        success: true, 
+        message: `Recalculated achievements for ${allUsers.length} users`,
+        usersUpdated: results.length,
+        details: results
+      });
+    } catch (error) {
+      console.error("Error recalculating achievements:", error);
+      res.status(500).json({ error: "Failed to recalculate achievements" });
     }
   });
 
