@@ -1409,7 +1409,7 @@ IMPORTANT: When discussing risk scores, remember:
       // Award XP when mission is newly completed (use helper that also checks achievements)
       if (isBeingCompleted && currentMission) {
         const catalogMission = await storage.getMissionByKey(currentMission.missionKey);
-        if (catalogMission && catalogMission.xpReward > 0) {
+        if (catalogMission && catalogMission.xpReward && catalogMission.xpReward > 0) {
           const xpResult = await addXPAndCheckAchievements(userId, catalogMission.xpReward);
           console.log(`[Missions] Awarded ${catalogMission.xpReward} XP to user ${userId} for completing mission ${currentMission.missionKey}. Achievements unlocked: ${xpResult.achievementsUnlocked.length}`);
         }
@@ -2186,6 +2186,74 @@ IMPORTANT: When discussing risk scores, remember:
     } catch (error) {
       console.error("Error recalculating achievements:", error);
       res.status(500).json({ error: "Failed to recalculate achievements" });
+    }
+  });
+
+  // Recalculate XP for all users based on their actual activities
+  // This resets XP and recalculates from missions, emotional check-ins, etc.
+  app.post("/api/xp/recalculate-all", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    
+    try {
+      console.log("[XP] Starting XP recalculation for all users...");
+      
+      const allUsers = await db.select().from(users);
+      const results: { userId: string; username: string; oldXp: number; newXp: number }[] = [];
+      
+      for (const user of allUsers) {
+        const userId = user.id;
+        let calculatedXp = 0;
+        
+        // Get old XP
+        const oldXpRecord = await storage.getUserXp(userId);
+        const oldXp = oldXpRecord?.totalXp || 0;
+        
+        // 1. XP from completed missions (use mission catalog xpReward values)
+        const userMissions = await storage.getUserMissions(userId);
+        const completedMissions = userMissions.filter(m => m.completed);
+        for (const mission of completedMissions) {
+          const catalogMission = await storage.getMissionByKey(mission.missionKey);
+          if (catalogMission && catalogMission.xpReward && catalogMission.xpReward > 0) {
+            calculatedXp += catalogMission.xpReward;
+          }
+        }
+        
+        // 2. XP from emotional check-ins (10 XP each)
+        const emotionalCheckins = await storage.getAllEmotionalCheckins(userId);
+        calculatedXp += emotionalCheckins.length * 10;
+        
+        // 3. XP from onboarding steps (consent: 25, questionnaire: 100)
+        const onboardingProgress = await storage.getOnboardingProgress(userId);
+        if (onboardingProgress) {
+          if (onboardingProgress.consentCompleted) calculatedXp += 25;
+          if (onboardingProgress.questionnaireCompleted) calculatedXp += 100;
+        }
+        
+        // 4. XP from daily streak updates (5 XP per day of current streak, capped)
+        const gamification = await storage.getUserGamification(userId);
+        const streakXp = Math.min((gamification?.currentStreak || 0) * 5, 150);
+        calculatedXp += streakXp;
+        
+        // Set the new XP value
+        await storage.setUserXp(userId, calculatedXp);
+        
+        if (oldXp !== calculatedXp) {
+          results.push({ userId, username: user.username, oldXp, newXp: calculatedXp });
+        }
+      }
+      
+      console.log(`[XP] Recalculation complete. Updated ${results.length} users.`);
+      res.json({ 
+        success: true, 
+        message: `Recalculated XP for ${allUsers.length} users`,
+        usersUpdated: results.length,
+        details: results.sort((a, b) => b.newXp - a.newXp)
+      });
+    } catch (error) {
+      console.error("Error recalculating XP:", error);
+      res.status(500).json({ error: "Failed to recalculate XP" });
     }
   });
 

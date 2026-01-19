@@ -80,6 +80,7 @@ interface Achievement {
   unlockedDate?: string;
   progress?: number;
   maxProgress?: number;
+  xpReward: number;
 }
 
 interface FlatAchievement {
@@ -146,6 +147,7 @@ function mapFlatToAchievement(flat: FlatAchievement, t: (key: string, options?: 
     unlockedDate: formatRelativeDate(flat.unlockedAt, t),
     progress: flat.progress,
     maxProgress: flat.maxProgress,
+    xpReward: flat.xpReward,
   };
 }
 
@@ -813,6 +815,10 @@ export default function LeaderboardPage() {
                                 }`}
                               >
                                 {achievement.rarity}
+                              </Badge>
+                              <Badge className={`text-xs font-bold border-0 ${achievement.xpReward > 0 ? 'bg-[#013DC4] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-500'}`}>
+                                <Zap className="w-3 h-3 mr-0.5" />
+                                {achievement.xpReward > 0 ? `+${achievement.xpReward}` : '0'} XP
                               </Badge>
                             </div>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{achievement.description}</p>

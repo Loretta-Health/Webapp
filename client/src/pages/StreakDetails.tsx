@@ -55,6 +55,7 @@ interface UserAchievement {
   progress: number;
   maxProgress: number;
   unlockedAt: string | null;
+  xpReward: number;
 }
 
 const weekDayKeys = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
@@ -317,14 +318,12 @@ export default function StreakDetails() {
                           )}
                         </div>
                         
-                        {achievement.unlocked && (
-                          <div className="text-right">
-                            <Badge className="font-black border-0 bg-[#013DC4] text-white">
-                              <Zap className="w-3 h-3 mr-1" />
-                              +50 XP
-                            </Badge>
-                          </div>
-                        )}
+                        <div className="text-right">
+                          <Badge className={`font-black border-0 ${achievement.unlocked ? 'bg-[#013DC4] text-white' : 'bg-gray-200 dark:bg-gray-700 text-muted-foreground'}`}>
+                            <Zap className="w-3 h-3 mr-1" />
+                            {achievement.xpReward > 0 ? `+${achievement.xpReward} XP` : t('streakDetails.noXp', { defaultValue: 'No XP' })}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   </motion.div>
