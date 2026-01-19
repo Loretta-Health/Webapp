@@ -215,7 +215,7 @@ export default function MyDashboard() {
     enabled: !!user,
   });
 
-  const { data: preferencesData } = useQuery<{ consentGiven: boolean; consentDate: string | null }>({
+  const { data: preferencesData } = useQuery<{ consentAccepted: boolean; consentDate: string | null }>({
     queryKey: ['/api/preferences'],
     enabled: !!user,
   });
@@ -260,7 +260,7 @@ export default function MyDashboard() {
   const savedAnswerIds = getSavedAnswerIds();
   const allCoreQuestionsAnswered = coreQuestionIds.every(id => savedAnswerIds.includes(id));
 
-  const consentComplete = isConsentComplete || preferencesData?.consentGiven === true;
+  const consentComplete = isConsentComplete || preferencesData?.consentAccepted === true;
   const profileComplete = !!(profileData?.firstName && profileData?.lastName) || !!(user?.firstName && user?.lastName && user?.email);
   const questionnaireComplete = isQuestionnaireComplete || allCoreQuestionsAnswered;
   const firstCheckInComplete = Array.isArray(allEmotionalCheckins) && allEmotionalCheckins.length > 0;
