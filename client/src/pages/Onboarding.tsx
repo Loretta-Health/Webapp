@@ -2156,7 +2156,7 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] p-4 safe-area-top">
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] pt-8 px-4 pb-4 safe-area-top">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
         <div className="max-w-lg mx-auto flex items-center justify-center gap-3 relative z-10">
           <img src={lorettaLogoHorizontal} alt="Loretta" className="h-8 object-contain brightness-0 invert drop-shadow-lg" />
