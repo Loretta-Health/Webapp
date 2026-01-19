@@ -59,16 +59,18 @@ Preferred communication style: Simple, everyday language.
 - **Safe Areas**: CSS env() variables handle notches and rounded corners on modern devices.
 - **API Configuration**: Native apps use `getApiUrl()` from `client/src/lib/queryClient.ts` to route API requests to the deployed Replit backend (`https://loretta-care.replit.app`).
 - **CORS Support**: Server includes CORS middleware (`server/app.ts`) allowing Capacitor origins and Replit domains.
+- **Token-Based Auth**: Native apps use token-based authentication stored in Capacitor Preferences to handle iOS cookie limitations. Tokens are sent via `X-Auth-Token` header and validated by the server.
 - **Build Process**: `npm run build` followed by `npx cap sync` to update native projects.
 - **Setup Guide**: See `MOBILE_SETUP.md` for detailed instructions on running on simulators/devices.
 
 ### Mobile Build History
-**Last Capacitor-affecting commit synced:** `ba6e33b` (Questionnaire fix) - 2026-01-13
+**Last Capacitor-affecting commit synced:** `e35f192` (Token-based auth for iOS) - 2026-01-19
 
-Any commits after `ba6e33b` that touch `client/` or `capacitor.config.ts` will require a rebuild.
+Any commits after the last synced commit that touch `client/` or `capacitor.config.ts` will require a rebuild.
 
 | Date | Platform | Last Synced Commit | Notes |
 |------|----------|-------------------|-------|
+| 2026-01-19 | iOS & Android | e35f192 | Token-based auth to fix iOS login persistence |
 | 2026-01-13 | iOS & Android | ba6e33b | Questionnaire state fix, ML API updates |
 | 2026-01-13 | Android | 3ab6a2a | Safe area support, swipe-to-close menu |
 

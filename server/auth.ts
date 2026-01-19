@@ -1,12 +1,28 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { sendPasswordResetEmail, isEmailConfigured } from "./email";
+
+const authTokens: Map<string, string> = new Map();
+
+function generateAuthToken(userId: string): string {
+  const token = randomBytes(32).toString("hex");
+  authTokens.set(token, userId);
+  return token;
+}
+
+export function validateAuthToken(token: string): string | null {
+  return authTokens.get(token) || null;
+}
+
+export function invalidateAuthToken(token: string): void {
+  authTokens.delete(token);
+}
 
 declare global {
   namespace Express {
@@ -52,6 +68,25 @@ export function setupAuth(app: Express) {
   app.use(session(sessionSettings));
   app.use(passport.initialize());
   app.use(passport.session());
+
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    
+    const authToken = req.headers['x-auth-token'] as string | undefined;
+    if (authToken) {
+      const userId = validateAuthToken(authToken);
+      if (userId) {
+        const user = await storage.getUser(userId);
+        if (user) {
+          (req as any).user = user;
+          (req as any).isAuthenticated = () => true;
+        }
+      }
+    }
+    next();
+  });
 
   passport.use(
     new LocalStrategy(
@@ -128,7 +163,8 @@ export function setupAuth(app: Express) {
 
       req.login(user, (err) => {
         if (err) return next(err);
-        res.status(201).json(sanitizeUser(user));
+        const authToken = generateAuthToken(user.id);
+        res.status(201).json({ user: sanitizeUser(user), authToken });
       });
     } catch (error) {
       console.error("Registration error:", error);
@@ -144,21 +180,40 @@ export function setupAuth(app: Express) {
       }
       req.login(user, (err) => {
         if (err) return next(err);
-        res.status(200).json(sanitizeUser(user));
+        const authToken = generateAuthToken(user.id);
+        res.status(200).json({ user: sanitizeUser(user), authToken });
       });
     })(req, res, next);
   });
 
   app.post("/api/logout", (req, res, next) => {
+    const authToken = req.headers['x-auth-token'] as string | undefined;
+    if (authToken) {
+      invalidateAuthToken(authToken);
+    }
     req.logout((err) => {
       if (err) return next(err);
       res.sendStatus(200);
     });
   });
 
-  app.get("/api/user", (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(sanitizeUser(req.user!));
+  app.get("/api/user", async (req, res) => {
+    if (req.isAuthenticated()) {
+      return res.json(sanitizeUser(req.user!));
+    }
+    
+    const authToken = req.headers['x-auth-token'] as string | undefined;
+    if (authToken) {
+      const userId = validateAuthToken(authToken);
+      if (userId) {
+        const user = await storage.getUser(userId);
+        if (user) {
+          return res.json(sanitizeUser(user));
+        }
+      }
+    }
+    
+    return res.sendStatus(401);
   });
 
   // Password reset endpoints
