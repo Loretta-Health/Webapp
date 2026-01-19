@@ -127,7 +127,7 @@ export default function StreakDetails() {
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#013DC4]/5 via-background to-[#CDB6EF]/10">
-      <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] pt-12 px-4 pb-4 safe-area-top">
+      <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] pt-14 px-4 pb-4 safe-area-top">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="w-[44px] flex justify-start">
             <BackButton 
