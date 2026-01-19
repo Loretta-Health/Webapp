@@ -36,7 +36,6 @@ const scienceData = {
     ],
     sources: [
       { name: "American Diabetes Association Standards of Care (2024)", url: "https://diabetesjournals.org/care/issue/47/Supplement_1" },
-      { name: "Journal of Applied Physiology - Exercise and Glucose Uptake", url: "https://journals.physiology.org/doi/full/10.1152/japplphysiol.00608.2013" },
       { name: "Harvard Health - Walking After Meals Study", url: "https://www.health.harvard.edu/staying-healthy/the-importance-of-exercise-when-you-have-diabetes" }
     ] as Source[]
   },
