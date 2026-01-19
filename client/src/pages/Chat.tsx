@@ -168,7 +168,7 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex flex-col safe-area-bottom">
-      <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-3 sm:px-4 py-3 sm:py-5 flex items-center justify-between relative overflow-hidden sticky top-0 z-40 safe-area-top">
+      <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-4 pt-6 pb-4 sm:pt-8 sm:pb-5 flex items-center justify-between relative overflow-hidden sticky top-0 z-40 safe-area-top">
         
         <div className="flex items-center gap-3 relative z-10">
           <BackButton 

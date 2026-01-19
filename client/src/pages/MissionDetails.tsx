@@ -852,7 +852,7 @@ export default function MissionDetails() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 shadow-lg shadow-[#013DC4]/5 safe-area-top">
-          <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+          <div className="max-w-2xl mx-auto px-4 pt-6 pb-4 flex items-center gap-4">
             <BackButton 
               href="/my-dashboard" 
               className="hover:bg-[#013DC4]/10"
@@ -1030,7 +1030,7 @@ export default function MissionDetails() {
       </AnimatePresence>
       
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/50 dark:border-white/10 shadow-lg shadow-[#013DC4]/5 safe-area-top">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+        <div className="max-w-2xl mx-auto px-4 pt-6 pb-4 flex items-center gap-4">
           <BackButton 
             href="/my-dashboard" 
             className="hover:bg-[#013DC4]/10"
