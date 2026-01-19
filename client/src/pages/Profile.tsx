@@ -1631,7 +1631,7 @@ export default function Profile() {
               <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
             </div>
             <div className="flex items-center gap-1">
-              <LanguageSwitcher />
+              <LanguageSwitcher className="text-white hover:bg-white/20 rounded-2xl min-w-[44px] min-h-[44px]" />
               <Button 
                 variant="ghost" 
                 size="icon"
