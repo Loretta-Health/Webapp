@@ -217,27 +217,31 @@ export default function RiskScoreDetails() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#013DC4]/5 via-white to-[#CDB6EF]/10 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] pt-8 px-4 sm:px-6 pb-28 sm:pb-32 safe-area-top">
+      <div className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] pt-12 px-4 sm:px-6 pb-28 sm:pb-32 safe-area-top">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <BackButton 
-              href="/my-dashboard" 
-              className="text-white" 
-              iconClassName="text-white"
-              data-testid="button-back-dashboard" 
-            />
-            <div className="text-center">
+            <div className="w-[44px] flex justify-start">
+              <BackButton 
+                href="/my-dashboard" 
+                className="text-white" 
+                iconClassName="text-white"
+                data-testid="button-back-dashboard" 
+              />
+            </div>
+            <div className="text-center flex-1">
               <h1 className="text-lg sm:text-xl font-black text-white">Health Score</h1>
               <p className="text-white/70 text-xs sm:text-sm">Your Health Overview</p>
             </div>
-            <button 
-              className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center text-white disabled:opacity-50" 
-              onClick={() => recalculateMutation.mutate()}
-              disabled={recalculateMutation.isPending}
-              data-testid="button-recalculate"
-            >
-              <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${recalculateMutation.isPending ? 'animate-spin' : ''}`} />
-            </button>
+            <div className="w-[44px] flex justify-end">
+              <button 
+                className="p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center text-white disabled:opacity-50" 
+                onClick={() => recalculateMutation.mutate()}
+                disabled={recalculateMutation.isPending}
+                data-testid="button-recalculate"
+              >
+                <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${recalculateMutation.isPending ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
