@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, SwipeableDialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/swipeable-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -186,7 +186,10 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
+      <SwipeableDialogContent 
+        onSwipeClose={() => onOpenChange(false)}
+        className="sm:max-w-md max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10 p-6"
+      >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-lg shadow-[#013DC4]/30">
@@ -494,7 +497,7 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
             </Button>
           </div>
         </form>
-      </DialogContent>
+      </SwipeableDialogContent>
     </Dialog>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, SwipeableDialogContent, DialogHeader, DialogTitle } from '@/components/ui/swipeable-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -190,8 +190,9 @@ export default function EmotionalCheckInModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent 
-        className="sm:max-w-md bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10" 
+      <SwipeableDialogContent 
+        onSwipeClose={onClose}
+        className="sm:max-w-md bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10 p-6" 
         data-testid="emotional-checkin-modal"
       >
         <DialogHeader>
@@ -308,7 +309,7 @@ export default function EmotionalCheckInModal({
             </Button>
           </motion.div>
         )}
-      </DialogContent>
+      </SwipeableDialogContent>
     </Dialog>
   );
 }
