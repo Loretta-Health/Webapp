@@ -370,13 +370,20 @@ export default function LeaderboardPage() {
   const fetchTeamMembers = async (teamId: string) => {
     setLoadingMembers(true);
     try {
-      const response = await fetch(getApiUrl(`/api/teams/${teamId}/members`), {
+      // Call leaderboard endpoint to trigger achievement checks (e.g., community-star for top 3)
+      const response = await fetch(getApiUrl(`/api/teams/${teamId}/leaderboard?sortBy=xp&limit=50`), {
         credentials: 'include',
       });
       const data = await response.json();
-      setTeamMembers(data);
+      // Leaderboard endpoint returns { leaderboard: [...], teamId, teamName }
+      if (data.leaderboard) {
+        setTeamMembers(data.leaderboard);
+      } else {
+        // Fallback for backwards compatibility
+        setTeamMembers(data);
+      }
     } catch (err) {
-      console.error('Failed to fetch team members:', err);
+      console.error('Failed to fetch team leaderboard:', err);
     } finally {
       setLoadingMembers(false);
     }

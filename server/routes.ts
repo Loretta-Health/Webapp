@@ -2443,6 +2443,7 @@ IMPORTANT: When discussing risk scores, remember:
           const user = await storage.getUser(member.userId);
           const gamification = await storage.getUserGamification(member.userId);
           const xpRecord = await storage.getUserXp(member.userId);
+          const userProfile = await storage.getUserProfile(member.userId);
           const xp = xpRecord?.totalXp || 0;
           const level = calculateLevelFromXP(xp);
           
@@ -2456,6 +2457,8 @@ IMPORTANT: When discussing risk scores, remember:
             longestStreak: gamification?.longestStreak || 0,
             role: member.role,
             joinedAt: member.joinedAt,
+            profilePhoto: userProfile?.profilePhoto || null,
+            consentGiven: true, // Already filtered by consent
           };
         })
       );
