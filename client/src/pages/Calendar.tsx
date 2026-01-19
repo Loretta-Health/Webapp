@@ -177,6 +177,7 @@ export default function Calendar() {
               variant="ghost" 
               size="icon"
               onClick={handlePreviousWeek}
+              className="min-w-[44px] min-h-[44px] active:scale-95"
               data-testid="button-prev-week"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -196,7 +197,7 @@ export default function Calendar() {
                     transition={{ delay: index * 0.05 }}
                     onClick={() => setSelectedDate(day)}
                     className={`
-                      relative flex flex-col items-center p-2 sm:p-3 rounded-xl min-w-[40px] sm:min-w-[50px] transition-all
+                      relative flex flex-col items-center p-2 sm:p-3 rounded-xl min-w-[44px] sm:min-w-[50px] min-h-[60px] transition-all active:scale-95
                       ${isSelected 
                         ? 'bg-gradient-to-b from-[#013DC4] via-[#0150FF] to-[#CDB6EF] text-white shadow-lg shadow-[#013DC4]/30' 
                         : isTodayDate 
@@ -230,6 +231,7 @@ export default function Calendar() {
               variant="ghost" 
               size="icon"
               onClick={handleNextWeek}
+              className="min-w-[44px] min-h-[44px] active:scale-95"
               data-testid="button-next-week"
             >
               <ChevronRight className="w-5 h-5" />

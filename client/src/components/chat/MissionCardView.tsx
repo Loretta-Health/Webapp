@@ -96,13 +96,13 @@ export default function MissionCardView({
                   size="sm"
                   variant="outline"
                   onClick={onView}
-                  className="text-xs sm:text-sm min-h-[40px] flex-1 sm:flex-none"
+                  className="text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none active:scale-95"
                 >
                   {t('chat.missionCard.viewDetails')}
                   <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                 </Button>
                 {missionActivated ? (
-                  <Badge className="bg-chart-2 text-white border-0 py-2 px-3 min-h-[40px] flex items-center">
+                  <Badge className="bg-chart-2 text-white border-0 py-2 px-3 min-h-[44px] flex items-center">
                     <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     {t('chat.missionCard.activated')}
                   </Badge>
@@ -110,7 +110,7 @@ export default function MissionCardView({
                   <Button
                     size="sm"
                     onClick={onActivate}
-                    className="bg-gradient-to-r from-primary to-chart-2 text-white text-xs sm:text-sm min-h-[40px] flex-1 sm:flex-none active:scale-95"
+                    className="bg-gradient-to-r from-primary to-chart-2 text-white text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none active:scale-95"
                   >
                     <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     {t('chat.missionCard.activateMission')}
