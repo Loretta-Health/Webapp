@@ -1615,7 +1615,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 pb-6 safe-area-bottom">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-6 pb-20 safe-area-top">
         <div className="max-w-4xl mx-auto">
@@ -1756,7 +1756,7 @@ export default function Profile() {
                 </h3>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-br from-[#CDB6EF]/10 to-[#D2EDFF]/10">
+                <div className="flex items-center justify-between p-4 min-h-[60px] rounded-2xl bg-gradient-to-br from-[#CDB6EF]/10 to-[#D2EDFF]/10">
                   <div className="space-y-1 flex-1 pr-4">
                     <p className="font-bold text-gray-900 dark:text-white">
                       {language === 'en' ? 'Loretta Community Leaderboard' : 'Loretta Community Rangliste'}
@@ -1832,14 +1832,14 @@ export default function Profile() {
                         open={expandedCategories[category.key]}
                         onOpenChange={() => toggleCategory(category.key)}
                       >
-                        <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors">
+                        <CollapsibleTrigger className="w-full p-4 min-h-[56px] flex items-center justify-between hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors active:bg-white/70 dark:active:bg-gray-800/70">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center shadow-lg">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center shadow-lg flex-shrink-0">
                               <category.icon className="w-5 h-5 text-white" />
                             </div>
                             <div className="text-left">
                               <p className="font-bold text-gray-900 dark:text-white">{category.title}</p>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <p className="text-sm text-gray-500">
                                   {answeredCount}/{totalCount} {localT.questionnaires.questions}
                                 </p>
@@ -1852,15 +1852,15 @@ export default function Profile() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-16 h-2 bg-white/50 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="w-16 h-2 bg-white/50 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner hidden sm:block">
                               <div 
                                 className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg"
                                 style={{ width: `${(answeredCount / totalCount) * 100}%` }}
                               />
                             </div>
-                            <div className={`w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-transform ${expandedCategories[category.key] ? 'rotate-180' : ''}`}>
-                              <ChevronDown className="w-4 h-4 text-gray-500" />
+                            <div className={`w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-transform ${expandedCategories[category.key] ? 'rotate-180' : ''}`}>
+                              <ChevronDown className="w-5 h-5 text-gray-500" />
                             </div>
                           </div>
                         </CollapsibleTrigger>
@@ -1882,9 +1882,9 @@ export default function Profile() {
                                   }`}
                                   data-testid={`question-${category.key}-${qIndex}`}
                                 >
-                                  <CollapsibleTrigger className="w-full p-4 flex items-center justify-between hover:bg-white/30 dark:hover:bg-gray-800/30 transition-colors rounded-lg">
-                                    <div className="flex items-start gap-3 flex-1 text-left">
-                                      <span className={`text-xs font-bold min-w-6 ${
+                                  <CollapsibleTrigger className="w-full p-4 min-h-[52px] flex items-center justify-between hover:bg-white/30 dark:hover:bg-gray-800/30 transition-colors rounded-lg active:bg-white/50 dark:active:bg-gray-800/50">
+                                    <div className="flex items-start gap-3 flex-1 text-left pr-2">
+                                      <span className={`text-xs font-bold min-w-6 pt-0.5 ${
                                         isAnswered ? category.iconColor : 'text-muted-foreground'
                                       }`}>
                                         {qIndex + 1}.
@@ -1899,7 +1899,7 @@ export default function Profile() {
                                         )}
                                       </div>
                                     </div>
-                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center transition-transform ${isAnswered ? 'bg-chart-2/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform flex-shrink-0 ${isAnswered ? 'bg-chart-2/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
                                       <ChevronDown className={`w-4 h-4 ${isAnswered ? 'text-chart-2' : 'text-gray-500'}`} />
                                     </div>
                                   </CollapsibleTrigger>
@@ -2078,7 +2078,7 @@ export default function Profile() {
             </div>
             <Button
               onClick={() => setIsFeedbackOpen(true)}
-              className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg"
+              className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg min-h-[44px] active:scale-95 transition-transform"
               data-testid="button-open-feedback"
             >
               <MessageSquare className="w-4 h-4 mr-2" />
@@ -2148,12 +2148,12 @@ export default function Profile() {
           </div>
 
           <div className="flex gap-3 justify-end">
-            <Button variant="outline" onClick={() => setIsFeedbackOpen(false)}>
+            <Button variant="outline" onClick={() => setIsFeedbackOpen(false)} className="min-h-[44px] active:scale-95 transition-transform">
               {localT.editModal.cancel}
             </Button>
             <Button 
               onClick={handleFeedbackSubmit} 
-              className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold"
+              className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold min-h-[44px] active:scale-95 transition-transform"
               disabled={isSubmittingFeedback || !feedbackForm.subject.trim() || !feedbackForm.message.trim()}
               data-testid="button-submit-feedback"
             >
@@ -2178,9 +2178,9 @@ export default function Profile() {
               {language === 'en' ? 'Choose what information to share:' : 'Wählen Sie, welche Informationen geteilt werden sollen:'}
             </p>
             
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
-                <div className="space-y-1">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 min-h-[60px] rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
+                <div className="space-y-1 flex-1 pr-4">
                   <p className="font-bold text-gray-900 dark:text-white">
                     {language === 'en' ? 'Medications' : 'Medikamente'}
                   </p>
@@ -2199,8 +2199,8 @@ export default function Profile() {
                 />
               </div>
               
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
-                <div className="space-y-1">
+              <div className="flex items-center justify-between p-4 min-h-[60px] rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
+                <div className="space-y-1 flex-1 pr-4">
                   <p className="font-bold text-gray-900 dark:text-white">
                     {language === 'en' ? 'Missions' : 'Missionen'}
                   </p>
@@ -2219,8 +2219,8 @@ export default function Profile() {
                 />
               </div>
               
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
-                <div className="space-y-1">
+              <div className="flex items-center justify-between p-4 min-h-[60px] rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
+                <div className="space-y-1 flex-1 pr-4">
                   <p className="font-bold text-gray-900 dark:text-white">
                     {language === 'en' ? 'Clinical Data' : 'Klinische Daten'}
                   </p>
@@ -2241,7 +2241,7 @@ export default function Profile() {
             </div>
             
             <Button
-              className="w-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20"
+              className="w-full min-h-[48px] bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20 active:scale-[0.98] transition-transform"
               onClick={async () => {
                 const shareData = Object.entries(shareOptions)
                   .filter(([_, enabled]) => enabled)
@@ -2378,10 +2378,10 @@ export default function Profile() {
           </div>
 
           <div className="flex gap-3 justify-end">
-            <Button variant="outline" onClick={() => setIsEditOpen(false)} data-testid="button-cancel-edit">
+            <Button variant="outline" onClick={() => setIsEditOpen(false)} className="min-h-[44px] active:scale-95 transition-transform" data-testid="button-cancel-edit">
               {localT.editModal.cancel}
             </Button>
-            <Button onClick={handleSave} className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20" data-testid="button-save-profile">
+            <Button onClick={handleSave} className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20 min-h-[44px] active:scale-95 transition-transform" data-testid="button-save-profile">
               <Save className="w-4 h-4 mr-2" />
               {localT.editModal.save}
             </Button>
@@ -2471,10 +2471,10 @@ export default function Profile() {
           </div>
 
           <div className="flex gap-3 justify-end">
-            <Button variant="outline" onClick={() => setIsBasicInfoEditOpen(false)}>
+            <Button variant="outline" onClick={() => setIsBasicInfoEditOpen(false)} className="min-h-[44px] active:scale-95 transition-transform">
               {localT.editModal.cancel}
             </Button>
-            <Button onClick={handleBasicInfoSave} className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF]">
+            <Button onClick={handleBasicInfoSave} className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold min-h-[44px] active:scale-95 transition-transform">
               <Save className="w-4 h-4 mr-2" />
               {localT.editModal.save}
             </Button>
