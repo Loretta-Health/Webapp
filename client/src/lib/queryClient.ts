@@ -13,7 +13,18 @@ export function getApiUrl(path: string): string {
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    let errorMessage = text;
+    
+    try {
+      const jsonError = JSON.parse(text);
+      if (jsonError.message) {
+        errorMessage = jsonError.message;
+      }
+    } catch {
+      errorMessage = text || res.statusText || 'An error occurred';
+    }
+    
+    throw new Error(errorMessage);
   }
 }
 
