@@ -849,10 +849,80 @@ IMPORTANT: When discussing risk scores, remember:
         'lonely', 'confused', 'sick', 'overwhelmed', 'motivated', 'bored', 'neutral'
       ];
       
+      // Keyword-to-emotion fallback map for when AI responds with synonyms
+      // Covers all 20 emotion categories with common synonyms from EMOTION_BANK
+      const keywordToEmotion: Record<string, string> = {
+        // neutral keywords
+        'okay': 'neutral', 'ok': 'neutral', 'fine': 'neutral', 'alright': 'neutral',
+        'so-so': 'neutral', 'normal': 'neutral', 'average': 'neutral', 'meh': 'neutral',
+        // happy keywords  
+        'great': 'happy', 'good': 'happy', 'wonderful': 'happy', 'amazing': 'happy',
+        'fantastic': 'happy', 'excellent': 'happy', 'joyful': 'happy', 'excited': 'happy',
+        'thrilled': 'happy', 'delighted': 'happy', 'cheerful': 'happy', 'pleased': 'happy',
+        // sad keywords
+        'down': 'sad', 'depressed': 'sad', 'unhappy': 'sad', 'blue': 'sad', 'low': 'sad',
+        'miserable': 'sad', 'gloomy': 'sad', 'heartbroken': 'sad', 'melancholy': 'sad',
+        // anxious keywords
+        'worried': 'anxious', 'nervous': 'anxious', 'panicked': 'anxious', 'uneasy': 'anxious',
+        'tense': 'anxious', 'apprehensive': 'anxious', 'fearful': 'anxious', 'jittery': 'anxious',
+        // stressed keywords
+        'pressure': 'stressed', 'swamped': 'stressed', 'strained': 'stressed', 'frazzled': 'stressed',
+        // calm keywords
+        'relaxed': 'calm', 'serene': 'calm', 'chill': 'calm', 'tranquil': 'calm',
+        'composed': 'calm', 'collected': 'calm', 'mellow': 'calm',
+        // peaceful keywords
+        'harmonious': 'peaceful', 'balanced': 'peaceful', 'centered': 'peaceful', 'grounded': 'peaceful',
+        'still': 'peaceful',
+        // tired keywords
+        'exhausted': 'tired', 'fatigued': 'tired', 'sleepy': 'tired', 'drained': 'tired',
+        'weary': 'tired', 'lethargic': 'tired', 'sluggish': 'tired',
+        // energetic keywords
+        'pumped': 'energetic', 'active': 'energetic', 'vibrant': 'energetic', 'lively': 'energetic',
+        'spirited': 'energetic', 'dynamic': 'energetic', 'alive': 'energetic',
+        // hyper keywords
+        'hyperactive': 'hyper', 'wired': 'hyper', 'buzzing': 'hyper', 'restless': 'hyper',
+        'fidgety': 'hyper', 'amped': 'hyper', 'overstimulated': 'hyper',
+        // frustrated keywords
+        'annoyed': 'frustrated', 'irritated': 'frustrated', 'aggravated': 'frustrated', 'exasperated': 'frustrated',
+        // angry keywords
+        'mad': 'angry', 'furious': 'angry', 'upset': 'angry', 'enraged': 'angry',
+        'livid': 'angry', 'irate': 'angry', 'fuming': 'angry',
+        // grateful keywords
+        'thankful': 'grateful', 'appreciative': 'grateful', 'blessed': 'grateful', 'fortunate': 'grateful',
+        // hopeful keywords
+        'optimistic': 'hopeful', 'positive': 'hopeful', 'confident': 'hopeful', 'encouraged': 'hopeful',
+        'upbeat': 'hopeful', 'expectant': 'hopeful',
+        // lonely keywords
+        'isolated': 'lonely', 'alone': 'lonely', 'disconnected': 'lonely', 'solitary': 'lonely',
+        'abandoned': 'lonely',
+        // confused keywords
+        'uncertain': 'confused', 'puzzled': 'confused', 'unsure': 'confused', 'lost': 'confused',
+        'bewildered': 'confused', 'perplexed': 'confused',
+        // sick keywords
+        'ill': 'sick', 'unwell': 'sick', 'nauseous': 'sick', 'feverish': 'sick',
+        'achy': 'sick', 'queasy': 'sick', 'poorly': 'sick',
+        // overwhelmed keywords
+        'overloaded': 'overwhelmed', 'drowning': 'overwhelmed', 'buried': 'overwhelmed', 'snowed': 'overwhelmed',
+        // motivated keywords
+        'driven': 'motivated', 'determined': 'motivated', 'inspired': 'motivated', 'eager': 'motivated',
+        'focused': 'motivated', 'ambitious': 'motivated',
+        // bored keywords
+        'uninterested': 'bored', 'dull': 'bored', 'listless': 'bored', 'apathetic': 'bored',
+        'disengaged': 'bored',
+      };
+      
       // First check if the response is exactly a valid emotion
       if (validEmotions.includes(responseText)) {
         console.log("[API] AI classified emotion as (exact match):", responseText);
         res.json({ emotion: responseText, success: true });
+        return;
+      }
+      
+      // Check if the response is a known keyword that maps to an emotion
+      if (keywordToEmotion[responseText]) {
+        const mappedEmotion = keywordToEmotion[responseText];
+        console.log("[API] AI classified emotion as (keyword mapping):", responseText, "->", mappedEmotion);
+        res.json({ emotion: mappedEmotion, success: true });
         return;
       }
       
@@ -875,6 +945,17 @@ IMPORTANT: When discussing risk scores, remember:
         console.log("[API] AI indicated unclear emotion");
         res.json({ emotion: null, success: true, unclear: true });
       } else {
+        // Last resort: check if any word in the response is a known keyword
+        const words = responseText.split(/\s+/);
+        for (const word of words) {
+          if (keywordToEmotion[word]) {
+            const mappedEmotion = keywordToEmotion[word];
+            console.log("[API] AI classified emotion as (word keyword mapping):", word, "->", mappedEmotion);
+            res.json({ emotion: mappedEmotion, success: true });
+            return;
+          }
+        }
+        
         console.log("[API] AI could not classify emotion, response was:", responseText);
         res.json({ emotion: null, success: true, unclear: true });
       }
