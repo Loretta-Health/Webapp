@@ -79,17 +79,17 @@ export default function CheckInConfirmationBanner({
                 size="sm"
                 variant="outline"
                 onClick={onDeny}
-                className="text-xs text-muted-foreground hover:text-destructive hover:border-destructive"
+                className="text-xs sm:text-sm text-muted-foreground hover:text-destructive hover:border-destructive min-h-[40px] active:scale-95"
               >
-                <X className="w-3 h-3 mr-1" />
+                <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Not quite
               </Button>
               <Button
                 size="sm"
                 onClick={onConfirm}
-                className="bg-gradient-to-r from-chart-2 to-emerald-500 text-white text-xs"
+                className="bg-gradient-to-r from-chart-2 to-emerald-500 text-white text-xs sm:text-sm min-h-[40px] active:scale-95"
               >
-                <Check className="w-3 h-3 mr-1" />
+                <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Yes, that's right
               </Button>
             </div>

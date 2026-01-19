@@ -167,8 +167,8 @@ export default function Chat() {
   const visibleMessages = messages.filter(m => m.role !== 'system');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex flex-col">
-      <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-3 sm:px-4 py-4 sm:py-5 flex items-center justify-between relative overflow-hidden sticky top-0 z-40 safe-area-top">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 flex flex-col safe-area-bottom">
+      <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-3 sm:px-4 py-3 sm:py-5 flex items-center justify-between relative overflow-hidden sticky top-0 z-40 safe-area-top">
         
         <div className="flex items-center gap-3 relative z-10">
           <BackButton 
@@ -179,9 +179,9 @@ export default function Chat() {
         </div>
         
       </header>
-      <div className="flex-1 max-w-4xl mx-auto w-full p-3 sm:p-4 flex flex-col">
+      <div className="flex-1 max-w-4xl mx-auto w-full p-2 sm:p-4 flex flex-col">
         <GlassCard className="flex-1 flex flex-col overflow-hidden bg-gradient-to-b from-[#E8EEFF]/80 to-[#F0F4FF]/80 dark:from-gray-900/80 dark:to-gray-800/80">
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+          <ScrollArea className="flex-1 p-3 sm:p-4" ref={scrollRef}>
             <div className="space-y-4">
               <AnimatePresence>
                 {visibleMessages.map((message, idx) => (
@@ -219,21 +219,21 @@ export default function Chat() {
                             <img src={logomarkViolet} alt="Loretta" className="w-4 h-4 sm:w-5 sm:h-5 object-contain brightness-0 invert" />
                           )}
                         </div>
-                        <div className={`max-w-[80%] ${message.role === 'user' ? 'text-right ml-auto' : ''}`}>
+                        <div className={`max-w-[85%] sm:max-w-[80%] ${message.role === 'user' ? 'text-right ml-auto' : ''}`}>
                           <div className={`rounded-2xl ${
                             message.role === 'user'
-                              ? 'inline-block px-3 py-1.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-tr-none shadow-md border border-gray-200 dark:border-gray-600'
+                              ? 'inline-block px-3 sm:px-4 py-2 sm:py-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-tr-none shadow-md border border-gray-200 dark:border-gray-600'
                               : 'p-3 sm:p-4 bg-[#E8F0FF] dark:bg-[#1a2744] text-gray-900 dark:text-white rounded-tl-none shadow-md border border-[#013DC4]/20 dark:border-[#013DC4]/30'
                           }`}>
                             {message.role === 'assistant' ? (
-                              <div className="text-sm prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-strong:font-bold prose-em:italic">
+                              <div className="text-sm sm:text-base prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-strong:font-bold prose-em:italic">
                                 <ReactMarkdown>{message.content}</ReactMarkdown>
                               </div>
                             ) : (
-                              <span className="text-sm">{message.content}</span>
+                              <span className="text-sm sm:text-base">{message.content}</span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 mt-1">
                             {formatTime(message.timestamp)}
                           </p>
                         </div>
@@ -290,24 +290,24 @@ export default function Chat() {
             <div className="p-3 sm:p-4 border-t border-white/30 dark:border-white/10">
               <Collapsible open={suggestionsOpen} onOpenChange={setSuggestionsOpen}>
                 <CollapsibleTrigger asChild>
-                  <button className="flex items-center justify-between w-full text-left py-2 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-xl px-3 -mx-1 transition-colors gap-2">
-                    <span className="text-xs text-gray-600 dark:text-gray-300 leading-tight font-medium">{t('chat.suggestionsHint', 'Need inspiration? Tap here for conversation starters')}</span>
-                    <ChevronDown className={`w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform flex-shrink-0 ${suggestionsOpen ? 'rotate-180' : ''}`} />
+                  <button className="flex items-center justify-between w-full text-left py-3 hover:bg-white/50 dark:hover:bg-gray-800/50 rounded-xl px-3 -mx-1 transition-colors gap-2 min-h-[44px]">
+                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-tight font-medium">{t('chat.suggestionsHint', 'Need inspiration? Tap here for conversation starters')}</span>
+                    <ChevronDown className={`w-5 h-5 text-gray-600 dark:text-gray-300 transition-transform flex-shrink-0 ${suggestionsOpen ? 'rotate-180' : ''}`} />
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                     {suggestedQuestions.map((q, index) => (
                       <button
                         key={index}
-                        className="flex items-center justify-start text-left h-auto py-3 px-4 bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80 border border-white/50 dark:border-white/10 rounded-xl transition-all shadow-sm hover:shadow-md overflow-hidden"
+                        className="flex items-center justify-start text-left min-h-[48px] py-3 px-4 bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80 border border-white/50 dark:border-white/10 rounded-xl transition-all shadow-sm hover:shadow-md overflow-hidden active:scale-[0.98]"
                         onClick={() => handleSend(q.text)}
                         data-testid={`button-suggestion-${index}`}
                       >
-                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center mr-3 flex-shrink-0">
-                          <q.icon className="w-3.5 h-3.5 text-white" />
+                        <div className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center mr-3 flex-shrink-0">
+                          <q.icon className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-white" />
                         </div>
-                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{q.text}</span>
+                        <span className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 line-clamp-2">{q.text}</span>
                       </button>
                     ))}
                   </div>
@@ -337,11 +337,11 @@ export default function Chat() {
                     </p>
                   </div>
                   <button
-                    className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center transition-colors"
+                    className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center transition-colors flex-shrink-0 active:scale-95"
                     onClick={handleRemoveFile}
                     data-testid="button-remove-file"
                   >
-                    <X className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                    <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </button>
                 </motion.div>
               )}
@@ -349,7 +349,7 @@ export default function Chat() {
 
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-              className="flex gap-2"
+              className="flex gap-2 sm:gap-3"
             >
               <input
                 type="file"
@@ -363,27 +363,27 @@ export default function Chat() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-white/50 dark:border-white/10 flex items-center justify-center flex-shrink-0 hover:bg-white dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/80 dark:bg-gray-800/80 border border-white/50 dark:border-white/10 flex items-center justify-center flex-shrink-0 hover:bg-white dark:hover:bg-gray-700 transition-colors disabled:opacity-50 active:scale-95"
                 data-testid="button-upload-file"
               >
-                <Upload className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <Upload className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               </button>
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder={t('chat.placeholder')}
-                className="flex-1 h-10 sm:h-11 px-4 bg-white/80 dark:bg-gray-800/80 border border-white/50 dark:border-white/10 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#013DC4]/50 disabled:opacity-50"
+                className="flex-1 h-11 sm:h-12 px-4 bg-white/80 dark:bg-gray-800/80 border border-white/50 dark:border-white/10 rounded-xl text-sm sm:text-base text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#013DC4]/50 disabled:opacity-50"
                 disabled={loading}
                 data-testid="input-chat-message"
               />
               <button 
                 type="submit" 
                 disabled={(!inputText.trim() && !uploadedFile) || loading}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-r from-[#013DC4] to-[#0150FF] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#013DC4]/30 hover:shadow-xl transition-all disabled:opacity-50"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-[#013DC4] to-[#0150FF] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#013DC4]/30 hover:shadow-xl transition-all disabled:opacity-50 active:scale-95"
                 data-testid="button-send-message"
               >
-                <Send className="w-4 h-4 text-white" />
+                <Send className="w-5 h-5 text-white" />
               </button>
             </form>
             <p className="text-xs text-gray-600 dark:text-gray-300 mt-2 text-center font-medium">
