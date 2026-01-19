@@ -564,24 +564,24 @@ export default function MyDashboard() {
             <div className="grid grid-cols-3 gap-2">
               {[
                 { label: t('sidebar.xpEarned'), value: `+${allEmotionalCheckins?.filter(c => isToday(new Date(c.checkedInAt))).reduce((sum, c) => sum + (c.xpAwarded || 0), 0) || 0}`, color: 'from-[#013DC4] to-[#0150FF]', href: null },
-                { label: t('sidebar.achievements'), value: `${userAchievements?.filter(a => a.unlocked).length || 0}`, color: 'from-amber-400 to-orange-400', href: '/leaderboard?tab=achievements' },
+                { label: t('sidebar.badges', 'Badges'), value: `${userAchievements?.filter(a => a.unlocked).length || 0}`, color: 'from-amber-400 to-orange-400', href: '/leaderboard?tab=achievements' },
                 { label: t('sidebar.missions'), value: `${completedCount}/${activeMissions.length}`, color: 'from-[#CDB6EF] to-purple-400', href: '/mission-details' },
               ].map((stat) => (
                 stat.href ? (
                   <Link key={stat.label} href={stat.href}>
-                    <div className="text-center p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-700/50 transition-all cursor-pointer">
-                      <div className={`text-lg font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
+                    <div className="text-center p-2 sm:p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 hover:bg-white/80 dark:hover:bg-gray-700/50 transition-all cursor-pointer">
+                      <div className={`text-base sm:text-lg font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
                         {stat.value}
                       </div>
-                      <div className="text-xs text-gray-500 font-medium">{stat.label}</div>
+                      <div className="text-[10px] sm:text-xs text-gray-500 font-medium truncate">{stat.label}</div>
                     </div>
                   </Link>
                 ) : (
-                  <div key={stat.label} className="text-center p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50">
-                    <div className={`text-lg font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
+                  <div key={stat.label} className="text-center p-2 sm:p-3 rounded-2xl bg-white/50 dark:bg-gray-800/50">
+                    <div className={`text-base sm:text-lg font-black bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
                       {stat.value}
                     </div>
-                    <div className="text-xs text-gray-500 font-medium">{stat.label}</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 font-medium truncate">{stat.label}</div>
                   </div>
                 )
               ))}
