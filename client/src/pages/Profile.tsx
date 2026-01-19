@@ -1617,20 +1617,20 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 pb-6 safe-area-bottom">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-6 pb-20 safe-area-top">
+      <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] pt-8 pb-20 px-4 safe-area-top">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <BackButton 
               href="/my-dashboard" 
-              className="text-white rounded-2xl" 
+              className="text-white rounded-2xl min-w-[44px]" 
               iconClassName="text-white"
               data-testid="button-back-dashboard" 
             />
-            <div className="text-center">
-              <h1 className="text-xl font-black text-white">{localT.profile}</h1>
+            <div className="text-center flex-1 px-2">
+              <h1 className="text-xl sm:text-2xl font-black text-white">{localT.profile}</h1>
               <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
             </div>
-            <div className="flex items-center gap-1 [&_button]:text-white [&_button]:hover:bg-white/20 [&_button]:rounded-2xl [&_button]:min-w-[44px] [&_button]:min-h-[44px]">
+            <div className="flex items-center gap-1">
               <LanguageSwitcher />
               <Button 
                 variant="ghost" 
@@ -1693,11 +1693,11 @@ export default function Profile() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-4 sm:w-full backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl p-1.5" data-testid="profile-tabs">
-              <TabsTrigger value="basic" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold min-h-[40px] px-4" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
-              <TabsTrigger value="social" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold min-h-[40px] px-4" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
-              <TabsTrigger value="questionnaires" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold min-h-[40px] px-4" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
-              <TabsTrigger value="behaviors" className="whitespace-nowrap text-xs sm:text-sm rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:shadow-lg font-semibold min-h-[40px] px-4" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
+            <TabsList className="inline-flex w-auto min-w-full sm:grid sm:grid-cols-4 sm:w-full backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl p-2 gap-2" data-testid="profile-tabs">
+              <TabsTrigger value="basic" className="whitespace-nowrap text-xs sm:text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-white/30 dark:border-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-lg font-semibold min-h-[40px] px-4 transition-all" data-testid="tab-basic">{localT.tabs.basic}</TabsTrigger>
+              <TabsTrigger value="social" className="whitespace-nowrap text-xs sm:text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-white/30 dark:border-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-lg font-semibold min-h-[40px] px-4 transition-all" data-testid="tab-social">{localT.tabs.social}</TabsTrigger>
+              <TabsTrigger value="questionnaires" className="whitespace-nowrap text-xs sm:text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-white/30 dark:border-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-lg font-semibold min-h-[40px] px-4 transition-all" data-testid="tab-questionnaires">{localT.tabs.questionnaires}</TabsTrigger>
+              <TabsTrigger value="behaviors" className="whitespace-nowrap text-xs sm:text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-white/30 dark:border-white/10 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#013DC4] data-[state=active]:to-[#0150FF] data-[state=active]:text-white data-[state=active]:border-transparent data-[state=active]:shadow-lg font-semibold min-h-[40px] px-4 transition-all" data-testid="tab-behaviors">{localT.tabs.behaviors}</TabsTrigger>
             </TabsList>
           </div>
 
