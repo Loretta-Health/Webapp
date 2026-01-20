@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './use-auth';
-import { apiRequest, getApiUrl } from '../lib/queryClient';
+import { apiRequest, authenticatedFetch } from '../lib/queryClient';
 import { trackMission, trackGamification } from '../lib/clarity';
 
 export interface CatalogMission {
@@ -61,9 +61,7 @@ export function useMissions() {
   const { data: catalogMissions = [], isLoading: catalogLoading } = useQuery<CatalogMission[]>({
     queryKey: ['/api/missions-catalog'],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/missions-catalog'), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/missions-catalog');
       if (!response.ok) {
         throw new Error('Failed to fetch missions catalog');
       }
@@ -75,9 +73,7 @@ export function useMissions() {
     queryKey: ['/api/missions'],
     queryFn: async () => {
       if (!userId) return [];
-      const response = await fetch(getApiUrl('/api/missions'), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/missions');
       if (!response.ok) {
         throw new Error('Failed to fetch missions');
       }

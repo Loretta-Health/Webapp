@@ -6,7 +6,7 @@ import { useQueryClient, useQuery } from '@tanstack/react-query';
 import type { SuggestedMission } from '@/components/chat/MissionCardView';
 import type { MetricData } from '@/components/chat/MetricCard';
 import { useWeatherSimulation } from '@/contexts/WeatherSimulationContext';
-import { getApiUrl } from "@/lib/queryClient";
+import { authenticatedFetch } from "@/lib/queryClient";
 import { detectEmotionFromText } from '../../../shared/emotions';
 
 interface WeatherContext {
@@ -160,9 +160,8 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     queryKey: ['/api/weather/outdoor-assessment', userLocation?.lat, userLocation?.lon],
     queryFn: async () => {
       if (!userLocation) return null;
-      const response = await fetch(
-        getApiUrl(`/api/weather/outdoor-assessment?latitude=${userLocation.lat}&longitude=${userLocation.lon}`),
-        { credentials: 'include' }
+      const response = await authenticatedFetch(
+        `/api/weather/outdoor-assessment?latitude=${userLocation.lat}&longitude=${userLocation.lon}`
       );
       if (!response.ok) return null;
       return response.json();
@@ -207,10 +206,9 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
 
   const fetchSuggestedMission = useCallback(async (context: string) => {
     try {
-      const response = await fetch(getApiUrl('/api/missions/suggest'), {
+      const response = await authenticatedFetch('/api/missions/suggest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ 
           context, 
           language: i18n.language.startsWith('de') ? 'de' : 'en' 
@@ -383,7 +381,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         };
       });
 
-      const response = await fetch(getApiUrl('/api/chat'), {
+      const response = await authenticatedFetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -446,20 +444,18 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       let response;
       
       if (suggestedMission.isAlternative && suggestedMission.parentMissionKey && suggestedMission.missionKey) {
-        response = await fetch(getApiUrl('/api/missions/activate-alternative'), {
+        response = await authenticatedFetch('/api/missions/activate-alternative', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
             parentMissionKey: suggestedMission.parentMissionKey,
             alternativeMissionKey: suggestedMission.missionKey,
           }),
         });
       } else if (suggestedMission.userMissionId) {
-        response = await fetch(getApiUrl(`/api/missions/${suggestedMission.userMissionId}`), {
+        response = await authenticatedFetch(`/api/missions/${suggestedMission.userMissionId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({ isActive: true }),
         });
       } else {

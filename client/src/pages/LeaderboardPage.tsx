@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { type CommunityType } from '@/components/CommunitySelector';
 import { trackEvent, trackPageView, ClarityEvents } from '@/lib/clarity';
 import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
-import { getApiUrl } from "@/lib/queryClient";
+import { authenticatedFetch } from "@/lib/queryClient";
 
 interface Team {
   id: string;
@@ -236,9 +236,7 @@ export default function LeaderboardPage() {
   
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch(getApiUrl('/api/profile'), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/profile');
       if (response.ok) {
         const data = await response.json();
         setUserProfilePhoto(data?.profilePhoto || null);
@@ -251,9 +249,7 @@ export default function LeaderboardPage() {
   const fetchUserGamification = async () => {
     if (!user?.id) return;
     try {
-      const response = await fetch(getApiUrl('/api/gamification'), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/gamification');
       if (response.ok) {
         const data = await response.json();
         setUserGamification({
@@ -270,9 +266,7 @@ export default function LeaderboardPage() {
   const fetchFriends = async () => {
     setLoadingFriends(true);
     try {
-      const response = await fetch(getApiUrl('/api/friends'), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/friends');
       if (response.ok) {
         const data: Friend[] = await response.json();
         setFriends(data);
@@ -286,9 +280,7 @@ export default function LeaderboardPage() {
 
   const fetchInviteCode = async () => {
     try {
-      const response = await fetch(getApiUrl('/api/friends/invite-code'), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/friends/invite-code');
       if (response.ok) {
         const data = await response.json();
         setInviteCode(data.inviteCode);
@@ -322,9 +314,7 @@ export default function LeaderboardPage() {
     if (!user?.id) return;
     setLoadingAchievements(true);
     try {
-      const response = await fetch(getApiUrl('/api/achievements/user'), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/achievements/user');
       if (response.ok) {
         const data: FlatAchievement[] = await response.json();
         const mapped = data.map(d => mapFlatToAchievement(d, t));
@@ -345,9 +335,7 @@ export default function LeaderboardPage() {
 
   const fetchTeams = async () => {
     try {
-      const response = await fetch(getApiUrl('/api/teams/me'), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/teams/me');
       const data = await response.json();
       setTeams(data);
       
@@ -373,9 +361,7 @@ export default function LeaderboardPage() {
     setLoadingMembers(true);
     try {
       // Call leaderboard endpoint to trigger achievement checks (e.g., community-star for top 3)
-      const response = await fetch(getApiUrl(`/api/teams/${teamId}/leaderboard?sortBy=xp&limit=50`), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch(`/api/teams/${teamId}/leaderboard?sortBy=xp&limit=50`);
       const data = await response.json();
       // Leaderboard endpoint returns { leaderboard: [...], teamId, teamName }
       if (data.leaderboard) {

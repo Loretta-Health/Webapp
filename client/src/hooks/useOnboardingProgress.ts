@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './use-auth';
-import { apiRequest, getApiUrl } from '../lib/queryClient';
+import { apiRequest, authenticatedFetch } from '../lib/queryClient';
 
 export interface OnboardingProgress {
   id: string;
@@ -28,9 +28,7 @@ export function useOnboardingProgress() {
     queryKey: ['/api/onboarding-progress'],
     queryFn: async () => {
       if (!userId) return null;
-      const response = await fetch(getApiUrl('/api/onboarding-progress'), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch('/api/onboarding-progress');
       if (!response.ok) {
         if (response.status === 401) {
           logoutMutation.mutate();

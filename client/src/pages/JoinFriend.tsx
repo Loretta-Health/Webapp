@@ -6,7 +6,7 @@ import { UserPlus, Check, X, Loader2, Users } from 'lucide-react';
 import { Link } from 'wouter';
 import { BackButton } from '@/components/BackButton';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
-import { getApiUrl } from "@/lib/queryClient";
+import { authenticatedFetch } from "@/lib/queryClient";
 
 function GlassCard({ 
   children, 
@@ -54,9 +54,8 @@ export default function JoinFriend() {
 
   const acceptInvite = async () => {
     try {
-      const response = await fetch(getApiUrl(`/api/friends/accept/${code}`), {
+      const response = await authenticatedFetch(`/api/friends/accept/${code}`, {
         method: 'POST',
-        credentials: 'include',
       });
 
       const data = await response.json();

@@ -18,6 +18,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { getApiUrl } from '@/lib/queryClient';
 
 interface Feedback {
   id: string;
@@ -57,7 +58,7 @@ export default function AdminFeedback() {
     setLoginLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/admin/login', {
+      const response = await fetch(getApiUrl('/api/admin/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -87,7 +88,7 @@ export default function AdminFeedback() {
     if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/feedback', {
+      const response = await fetch(getApiUrl('/api/admin/feedback'), {
         headers: { 'Authorization': `Bearer ${token}` },
       });
       
@@ -107,7 +108,7 @@ export default function AdminFeedback() {
   const updateStatus = async (id: string, status: string) => {
     if (!token) return;
     try {
-      const response = await fetch(`/api/admin/feedback/${id}`, {
+      const response = await fetch(getApiUrl(`/api/admin/feedback/${id}`), {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
@@ -127,7 +128,7 @@ export default function AdminFeedback() {
   const deleteFeedback = async (id: string) => {
     if (!token || !confirm('Are you sure you want to delete this feedback?')) return;
     try {
-      const response = await fetch(`/api/admin/feedback/${id}`, {
+      const response = await fetch(getApiUrl(`/api/admin/feedback/${id}`), {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });

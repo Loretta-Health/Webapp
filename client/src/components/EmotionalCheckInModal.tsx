@@ -7,7 +7,7 @@ import { Smile, Send, Sparkles, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { getApiUrl } from "@/lib/queryClient";
+import { authenticatedFetch } from "@/lib/queryClient";
 import { 
   getRandomSupportiveMessage, 
   getEmotionEmoji,
@@ -81,10 +81,9 @@ export default function EmotionalCheckInModal({
 
     try {
       // Use AI-based emotion classification
-      const response = await fetch(getApiUrl('/api/classify-emotion'), {
+      const response = await authenticatedFetch('/api/classify-emotion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ message: inputText }),
       });
 
@@ -141,10 +140,9 @@ export default function EmotionalCheckInModal({
       setStep('supportive');
 
       try {
-        const response = await fetch(getApiUrl('/api/emotional-checkins'), {
+        const response = await authenticatedFetch('/api/emotional-checkins', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
             emotion: detectedEmotion,
             userMessage: userResponse,

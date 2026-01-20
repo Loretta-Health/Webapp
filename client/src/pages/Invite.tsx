@@ -35,7 +35,7 @@ import { Link } from 'wouter';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import { getApiUrl } from "@/lib/queryClient";
+import { authenticatedFetch } from "@/lib/queryClient";
 
 interface Team {
   id: string;
@@ -99,9 +99,7 @@ export default function Invite() {
   
   const fetchTeams = async () => {
     try {
-      const response = await fetch(getApiUrl(`/api/teams/user/${user?.id}`), {
-        credentials: 'include',
-      });
+      const response = await authenticatedFetch(`/api/teams/user/${user?.id}`);
       const data = await response.json();
       setTeams(data);
       if (data.length > 0) {
@@ -117,8 +115,8 @@ export default function Invite() {
   const fetchTeamDetails = async (teamId: string) => {
     try {
       const [membersRes, invitesRes] = await Promise.all([
-        fetch(getApiUrl(`/api/teams/${teamId}/members`), { credentials: 'include' }),
-        fetch(getApiUrl(`/api/teams/${teamId}/invites`), { credentials: 'include' }),
+        authenticatedFetch(`/api/teams/${teamId}/members`),
+        authenticatedFetch(`/api/teams/${teamId}/invites`),
       ]);
       
       const members = await membersRes.json();
@@ -136,10 +134,9 @@ export default function Invite() {
     
     setCreatingTeam(true);
     try {
-      const response = await fetch(getApiUrl('/api/teams'), {
+      const response = await authenticatedFetch('/api/teams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           name: newTeamName,
           description: newTeamDescription,
@@ -177,10 +174,9 @@ export default function Invite() {
     
     setCreatingInvite(true);
     try {
-      const response = await fetch(getApiUrl(`/api/teams/${selectedTeam.id}/invites`), {
+      const response = await authenticatedFetch(`/api/teams/${selectedTeam.id}/invites`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({}),
       });
       
@@ -206,9 +202,8 @@ export default function Invite() {
   
   const deleteInvite = async (inviteId: string) => {
     try {
-      await fetch(getApiUrl(`/api/invites/${inviteId}`), { 
+      await authenticatedFetch(`/api/invites/${inviteId}`, { 
         method: 'DELETE',
-        credentials: 'include',
       });
       setTeamInvites(teamInvites.filter(inv => inv.id !== inviteId));
     } catch (err) {
