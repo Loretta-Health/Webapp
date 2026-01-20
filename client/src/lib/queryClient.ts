@@ -32,15 +32,18 @@ export async function authenticatedFetch(
   }
   
   try {
+    console.log('[authenticatedFetch] Requesting:', fullUrl);
     const res = await originalFetch(fullUrl, {
       ...options,
       headers,
       credentials: "include",
     });
+    console.log('[authenticatedFetch] Response status:', res.status);
     return res;
   } catch (error: any) {
+    console.error('[authenticatedFetch] Network error:', error.name, error.message);
     if (error.message === 'Load failed' || error.message === 'Failed to fetch' || error.name === 'TypeError') {
-      throw new Error('Unable to connect to server. Please check your internet connection and try again.');
+      throw new Error(`Unable to connect to server (${error.message}). Please check your internet connection and try again.`);
     }
     throw error;
   }
@@ -137,6 +140,7 @@ export async function apiRequest(
   const headers = await getRequestHeaders(!!data);
   
   try {
+    console.log('[apiRequest] Requesting:', method, fullUrl);
     const res = await fetch(fullUrl, {
       method,
       headers,
@@ -144,11 +148,13 @@ export async function apiRequest(
       credentials: "include",
     });
 
+    console.log('[apiRequest] Response status:', res.status);
     await throwIfResNotOk(res);
     return res;
   } catch (error: any) {
+    console.error('[apiRequest] Error:', error.name, error.message);
     if (error.message === 'Load failed' || error.message === 'Failed to fetch' || error.name === 'TypeError') {
-      throw new Error('Unable to connect to server. Please check your internet connection and try again.');
+      throw new Error(`Unable to connect to server (${error.message}). Please check your internet connection and try again.`);
     }
     throw error;
   }
@@ -164,11 +170,13 @@ export const getQueryFn: <T>(options: {
     const headers = await getRequestHeaders(false);
     
     try {
+      console.log('[getQueryFn] Requesting:', url);
       const res = await fetch(url, {
         credentials: "include",
         headers,
       });
 
+      console.log('[getQueryFn] Response status:', res.status);
       if (res.status === 401) {
         // Clear any invalid stored token on native platforms
         if (isNativePlatform()) {
@@ -193,8 +201,9 @@ export const getQueryFn: <T>(options: {
       await throwIfResNotOk(res);
       return await res.json();
     } catch (error: any) {
+      console.error('[getQueryFn] Error:', error.name, error.message);
       if (error.message === 'Load failed' || error.message === 'Failed to fetch' || error.name === 'TypeError') {
-        throw new Error('Unable to connect to server. Please check your internet connection and try again.');
+        throw new Error(`Unable to connect to server (${error.message}). Please check your internet connection and try again.`);
       }
       throw error;
     }
