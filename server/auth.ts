@@ -8,20 +8,19 @@ import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import { sendPasswordResetEmail, isEmailConfigured } from "./email";
 
-const authTokens: Map<string, string> = new Map();
-
-function generateAuthToken(userId: string): string {
+async function generateAuthToken(userId: string): Promise<string> {
   const token = randomBytes(32).toString("hex");
-  authTokens.set(token, userId);
+  await storage.createAuthToken(userId, token);
   return token;
 }
 
-export function validateAuthToken(token: string): string | null {
-  return authTokens.get(token) || null;
+export async function validateAuthToken(token: string): Promise<string | null> {
+  const authToken = await storage.getAuthToken(token);
+  return authToken?.userId || null;
 }
 
-export function invalidateAuthToken(token: string): void {
-  authTokens.delete(token);
+export async function invalidateAuthToken(token: string): Promise<void> {
+  await storage.deleteAuthToken(token);
 }
 
 declare global {
@@ -84,7 +83,7 @@ export function setupAuth(app: Express) {
     
     const authToken = req.headers['x-auth-token'] as string | undefined;
     if (authToken) {
-      const userId = validateAuthToken(authToken);
+      const userId = await validateAuthToken(authToken);
       if (userId) {
         const user = await storage.getUser(userId);
         if (user) {
@@ -93,7 +92,7 @@ export function setupAuth(app: Express) {
           console.log(`[Auth Debug] Token auth successful for user ${user.username}`);
         }
       } else {
-        console.log(`[Auth Debug] Token validation failed - token not found in memory`);
+        console.log(`[Auth Debug] Token validation failed - token not found in database`);
       }
     }
     next();
@@ -172,9 +171,9 @@ export function setupAuth(app: Express) {
       // Add user to the Loretta community
       await storage.addUserToLorettaCommunity(user.id);
 
-      req.login(user, (err) => {
+      req.login(user, async (err) => {
         if (err) return next(err);
-        const authToken = generateAuthToken(user.id);
+        const authToken = await generateAuthToken(user.id);
         res.status(201).json({ user: sanitizeUser(user), authToken });
       });
     } catch (error) {
@@ -189,18 +188,18 @@ export function setupAuth(app: Express) {
       if (!user) {
         return res.status(401).json({ message: info?.message || "Invalid credentials" });
       }
-      req.login(user, (err) => {
+      req.login(user, async (err) => {
         if (err) return next(err);
-        const authToken = generateAuthToken(user.id);
+        const authToken = await generateAuthToken(user.id);
         res.status(200).json({ user: sanitizeUser(user), authToken });
       });
     })(req, res, next);
   });
 
-  app.post("/api/logout", (req, res, next) => {
+  app.post("/api/logout", async (req, res, next) => {
     const authToken = req.headers['x-auth-token'] as string | undefined;
     if (authToken) {
-      invalidateAuthToken(authToken);
+      await invalidateAuthToken(authToken);
     }
     req.logout((err) => {
       if (err) return next(err);
@@ -215,7 +214,7 @@ export function setupAuth(app: Express) {
     
     const authToken = req.headers['x-auth-token'] as string | undefined;
     if (authToken) {
-      const userId = validateAuthToken(authToken);
+      const userId = await validateAuthToken(authToken);
       if (userId) {
         const user = await storage.getUser(userId);
         if (user) {

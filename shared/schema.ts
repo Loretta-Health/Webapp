@@ -36,6 +36,17 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 
+// Auth tokens table - for native mobile app authentication (survives server restarts)
+export const authTokens = pgTable("auth_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastUsedAt: timestamp("last_used_at").defaultNow(),
+});
+
+export type AuthToken = typeof authTokens.$inferSelect;
+
 // Questionnaire answers table - stores user responses
 export const questionnaireAnswers = pgTable("questionnaire_answers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
