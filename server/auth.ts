@@ -69,12 +69,14 @@ export function setupAuth(app: Express) {
   app.use(passport.session());
 
   app.use(async (req: Request, res: Response, next: NextFunction) => {
-    // Debug logging for native app auth troubleshooting
-    if (req.path.startsWith('/api') && req.path !== '/api/login' && req.path !== '/api/register') {
-      const origin = req.headers.origin || 'no-origin';
-      const hasAuthToken = !!req.headers['x-auth-token'];
-      const hasSession = req.isAuthenticated();
-      console.log(`[Auth Debug] ${req.method} ${req.path} | Origin: ${origin} | Session: ${hasSession} | X-Auth-Token: ${hasAuthToken}`);
+    // Debug logging for native app auth troubleshooting (development only)
+    if (process.env.NODE_ENV !== 'production') {
+      if (req.path.startsWith('/api') && req.path !== '/api/login' && req.path !== '/api/register') {
+        const origin = req.headers.origin || 'no-origin';
+        const hasAuthToken = !!req.headers['x-auth-token'];
+        const hasSession = req.isAuthenticated();
+        console.log(`[Auth Debug] ${req.method} ${req.path} | Origin: ${origin} | Session: ${hasSession} | X-Auth-Token: ${hasAuthToken}`);
+      }
     }
     
     if (req.isAuthenticated()) {
@@ -89,10 +91,14 @@ export function setupAuth(app: Express) {
         if (user) {
           (req as any).user = user;
           (req as any).isAuthenticated = () => true;
-          console.log(`[Auth Debug] Token auth successful for user ${user.username}`);
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`[Auth Debug] Token auth successful for user ${user.username}`);
+          }
         }
       } else {
-        console.log(`[Auth Debug] Token validation failed - token not found in database`);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`[Auth Debug] Token validation failed - token not found in database`);
+        }
       }
     }
     next();
