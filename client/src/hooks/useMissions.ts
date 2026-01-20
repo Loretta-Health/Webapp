@@ -141,7 +141,9 @@ export function useMissions() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      // Immediately refresh XP/gamification data when mission is completed
       if (variables.data.completed) {
+        queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
         const mission = missions.find(m => m.id === variables.id);
         if (mission) {
           trackMission('completed', mission.title, mission.xpReward);
