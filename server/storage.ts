@@ -45,6 +45,7 @@ import {
   type PasswordResetToken,
   type UserFeedback,
   type InsertUserFeedback,
+  type AuthToken,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -67,6 +68,7 @@ import {
   medicationAdherence,
   passwordResetTokens,
   userFeedback,
+  authTokens,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -90,6 +92,12 @@ export interface IStorage {
   createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
   getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
   markPasswordResetTokenUsed(tokenId: string): Promise<void>;
+
+  // Auth token methods (for native mobile app authentication)
+  createAuthToken(userId: string, token: string): Promise<AuthToken>;
+  getAuthToken(token: string): Promise<AuthToken | undefined>;
+  deleteAuthToken(token: string): Promise<void>;
+  deleteAllUserAuthTokens(userId: string): Promise<void>;
 
   // Questionnaire methods
   getQuestionnaireAnswers(userId: string, category: string): Promise<QuestionnaireAnswers | undefined>;
@@ -262,6 +270,39 @@ export class DatabaseStorage implements IStorage {
 
   async markPasswordResetTokenUsed(tokenId: string): Promise<void> {
     await db.update(passwordResetTokens).set({ used: true }).where(eq(passwordResetTokens.id, tokenId));
+  }
+
+  // Auth token methods (for native mobile app authentication)
+  async createAuthToken(userId: string, token: string): Promise<AuthToken> {
+    const [authToken] = await db
+      .insert(authTokens)
+      .values({ userId, token })
+      .returning();
+    return authToken;
+  }
+
+  async getAuthToken(token: string): Promise<AuthToken | undefined> {
+    const [authToken] = await db
+      .select()
+      .from(authTokens)
+      .where(eq(authTokens.token, token));
+    
+    if (authToken) {
+      await db
+        .update(authTokens)
+        .set({ lastUsedAt: new Date() })
+        .where(eq(authTokens.token, token));
+    }
+    
+    return authToken;
+  }
+
+  async deleteAuthToken(token: string): Promise<void> {
+    await db.delete(authTokens).where(eq(authTokens.token, token));
+  }
+
+  async deleteAllUserAuthTokens(userId: string): Promise<void> {
+    await db.delete(authTokens).where(eq(authTokens.userId, userId));
   }
 
   // Questionnaire methods

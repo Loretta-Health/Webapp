@@ -1,6 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
-import { getAuthToken } from "./nativeAuth";
+import { getAuthToken, clearAuthToken } from "./nativeAuth";
 
 export const isNativePlatform = () => Capacitor.getPlatform() !== 'web';
 
@@ -168,8 +168,19 @@ export const getQueryFn: <T>(options: {
         headers,
       });
 
-      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-        return null;
+      if (res.status === 401) {
+        // Clear any invalid stored token on native platforms
+        if (isNativePlatform()) {
+          const hadToken = await getAuthToken();
+          if (hadToken) {
+            console.log('[Auth] Clearing invalid token after 401 response');
+            await clearAuthToken();
+          }
+        }
+        
+        if (unauthorizedBehavior === "returnNull") {
+          return null;
+        }
       }
 
       await throwIfResNotOk(res);
