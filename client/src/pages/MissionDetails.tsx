@@ -825,12 +825,16 @@ export default function MissionDetails() {
   );
   const initialProgress = existingMission?.progress || 0;
   
+  // Use actual maxProgress from database (via useMissions) as the source of truth
+  const actualMaxProgress = existingMission?.maxProgress || missionData.totalSteps;
+  
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const [steps, setSteps] = useState<MissionStep[]>(() => {
-    const stepsWithProgress = missionData.initialSteps.map((step, index) => ({
-      ...step,
+    // Generate steps based on actual maxProgress from database
+    const stepsWithProgress = Array.from({ length: actualMaxProgress }, (_, index) => ({
+      id: index + 1,
       completed: index < initialProgress,
-      time: index < initialProgress ? step.time : undefined,
+      time: index < initialProgress ? undefined : undefined,
     }));
     return stepsWithProgress;
   });
@@ -838,14 +842,15 @@ export default function MissionDetails() {
   
   useEffect(() => {
     if (existingMission && urlMissionId) {
-      const currentMissionData = missionsDatabase[urlMissionId] || missionsDatabase['1'];
-      setSteps(currentMissionData.initialSteps.map((step, index) => ({
-        ...step,
+      // Use actual maxProgress from the mission data (database) as source of truth
+      const maxSteps = existingMission.maxProgress || missionData.totalSteps;
+      setSteps(Array.from({ length: maxSteps }, (_, index) => ({
+        id: index + 1,
         completed: index < existingMission.progress,
-        time: index < existingMission.progress ? step.time : undefined,
+        time: index < existingMission.progress ? undefined : undefined,
       })));
     }
-  }, [existingMission?.progress, urlMissionId]);
+  }, [existingMission?.progress, existingMission?.maxProgress, urlMissionId, missionData.totalSteps]);
 
   // If no specific mission ID, show all missions overview
   if (!urlMissionId) {
@@ -969,7 +974,7 @@ export default function MissionDetails() {
   const dbMissionId = existingMission?.id;
   
   const completedCount = steps.filter(s => s.completed).length;
-  const progressPercent = (completedCount / missionData.totalSteps) * 100;
+  const progressPercent = (completedCount / actualMaxProgress) * 100;
   const nextStep = steps.find(s => !s.completed);
   
   const handleLogCompletion = () => {
@@ -1003,7 +1008,7 @@ export default function MissionDetails() {
     }
   };
   
-  const isComplete = completedCount >= missionData.totalSteps;
+  const isComplete = completedCount >= actualMaxProgress;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -1070,7 +1075,7 @@ export default function MissionDetails() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-bold text-gray-500 uppercase">{t('missionDetails.progress')}</span>
                 <span className="text-sm font-bold text-gray-900 dark:text-white" data-testid="mission-progress-text">
-                  {completedCount} of {missionData.totalSteps}
+                  {completedCount} of {actualMaxProgress}
                 </span>
               </div>
               
@@ -1093,9 +1098,9 @@ export default function MissionDetails() {
               
               <div className="relative w-full h-8 sm:h-9">
                 {steps.map((step, index) => {
-                  const position = missionData.totalSteps === 1 
+                  const position = actualMaxProgress === 1 
                     ? 50 
-                    : ((index + 0.5) / missionData.totalSteps) * 100;
+                    : ((index + 0.5) / actualMaxProgress) * 100;
                   return (
                     <motion.div
                       key={step.id}
