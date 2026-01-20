@@ -169,7 +169,108 @@ const API_BASE_URL = Capacitor.isNativePlatform()
 
 ---
 
-## App Store Submission (Later)
+## TestFlight Deployment (iOS Beta Testing)
+
+### Prerequisites
+1. **Apple Developer Account** - $99/year at [developer.apple.com](https://developer.apple.com)
+2. **Xcode** - Latest version from Mac App Store
+3. **CocoaPods** - Run `sudo gem install cocoapods` in Terminal
+
+### Step 1: Prepare the Build
+
+```bash
+# On your Mac, download the project from Replit (Download as ZIP)
+# Extract and open Terminal in that folder
+
+npm install
+npm run build
+npx cap sync ios
+cd ios/App && pod install && cd ../..
+```
+
+### Step 2: Open in Xcode
+
+```bash
+npx cap open ios
+```
+
+### Step 3: Configure Signing
+
+1. Click on **App** in the left sidebar (blue icon)
+2. Select the **Signing & Capabilities** tab
+3. Check **"Automatically manage signing"**
+4. Under **Team**, select your Apple Developer account
+5. **Bundle Identifier**: `com.lorettahealth.healthnavigator`
+
+### Step 4: Set Version Numbers
+
+In the **General** tab:
+- **Version**: `1.0.0` (user-facing)
+- **Build**: `1` (increment each upload: 1 → 2 → 3)
+
+### Step 5: Create App in App Store Connect
+
+1. Go to [appstoreconnect.apple.com](https://appstoreconnect.apple.com)
+2. Click **My Apps** → **+** → **New App**
+3. Fill in:
+   - **Platform**: iOS
+   - **Name**: Loretta Health
+   - **Primary Language**: English
+   - **Bundle ID**: Select the one from Xcode
+   - **SKU**: `loretta-health-001`
+4. Click **Create**
+
+### Step 6: Archive the App
+
+1. In Xcode, select **Any iOS Device (arm64)** from the device dropdown
+2. Go to **Product** → **Archive**
+3. Wait for build (5-10 minutes)
+4. **Organizer** window opens automatically
+
+### Step 7: Upload to App Store Connect
+
+1. In Organizer, select your archive
+2. Click **Distribute App**
+3. Select **App Store Connect** → **Next**
+4. Select **Upload** → **Next**
+5. Keep defaults → **Next**
+6. Click **Upload** (wait 10-20 minutes)
+
+### Step 8: Configure TestFlight
+
+1. Go to [App Store Connect](https://appstoreconnect.apple.com)
+2. Open your app → **TestFlight** tab
+3. Wait for **Processing** (5-30 minutes)
+4. Click build number → **Export Compliance** → Select **No**
+
+### Step 9: Add Testers
+
+**Internal Testers** (up to 100, immediate):
+- Go to **Internal Testing** → Add testers
+
+**External Testers** (up to 10,000, requires review):
+- Create group → Add build → Add emails → Submit for Beta Review
+
+### Step 10: Testers Install
+
+Testers receive email invitation to:
+1. Download **TestFlight** app from App Store
+2. Accept invitation
+3. Install Loretta
+
+### Updating the App
+
+For each new version:
+```bash
+npm run build
+npx cap sync ios
+npx cap open ios
+```
+Then increment Build number and archive again.
+
+---
+
+## App Store Submission (Full Release)
 
 When you're ready to publish:
 - **iOS**: Requires $99/year Apple Developer account
