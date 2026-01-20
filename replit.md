@@ -59,7 +59,8 @@ Preferred communication style: Simple, everyday language.
 - **Safe Areas**: CSS env() variables handle notches and rounded corners on modern devices.
 - **API Configuration**: Native apps use `getApiUrl()` from `client/src/lib/queryClient.ts` to route API requests to the deployed Replit backend (`https://loretta-care.replit.app`).
 - **CORS Support**: Server includes CORS middleware (`server/app.ts`) allowing Capacitor origins and Replit domains. `X-Auth-Token` is included in `Access-Control-Allow-Headers`.
-- **Token-Based Auth**: Native apps use token-based authentication stored in Capacitor Preferences to handle iOS cookie limitations. Tokens are sent via `X-Auth-Token` header and validated by the server.
+- **Token-Based Auth**: Native apps use token-based authentication stored in Capacitor Preferences to handle iOS cookie limitations. Tokens are sent via `X-Auth-Token` header and validated by the server. Tokens are persisted in the database (`auth_tokens` table) to survive server restarts and deployments.
+- **401 Handling**: The client automatically clears invalid tokens on 401 responses (native platforms only), ensuring stale tokens don't cause login loops.
 - **Unified Fetch Helper**: Use `authenticatedFetch()` from `client/src/lib/queryClient.ts` for ALL API calls. This helper automatically adds auth tokens for native apps, handles URL prefixing, and provides consistent error handling.
 - **Global Fetch Interceptor (Safety Net)**: A global fetch interceptor in `queryClient.ts` automatically patches `window.fetch` to add auth tokens for any API calls that might have been missed. This ensures native app authentication works even if a developer accidentally uses direct `fetch()` calls.
 - **Build Process**: `npm run build` followed by `npx cap sync` to update native projects.
