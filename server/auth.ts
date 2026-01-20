@@ -96,9 +96,8 @@ export function setupAuth(app: Express) {
           }
         }
       } else {
-        if (process.env.NODE_ENV !== 'production') {
-          console.log(`[Auth Debug] Token validation failed - token not found in database`);
-        }
+        // Production-safe logging (no token value exposed)
+        console.log(`[Auth] Token validation failed for ${req.method} ${req.path}`);
       }
     }
     next();

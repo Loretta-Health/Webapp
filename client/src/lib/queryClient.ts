@@ -1,6 +1,7 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { Capacitor } from "@capacitor/core";
 import { getAuthToken, clearAuthToken } from "./nativeAuth";
+import { toast } from "@/hooks/use-toast";
 
 export const isNativePlatform = () => Capacitor.getPlatform() !== 'web';
 
@@ -175,6 +176,12 @@ export const getQueryFn: <T>(options: {
           if (hadToken) {
             console.log('[Auth] Clearing invalid token after 401 response');
             await clearAuthToken();
+            // Show user-friendly message about session expiry
+            toast({
+              title: "Session expired",
+              description: "Please log in again to continue.",
+              variant: "destructive",
+            });
           }
         }
         
