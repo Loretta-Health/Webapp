@@ -189,6 +189,7 @@ export async function authenticatedFetch(
   options: RequestInit = {}
 ): Promise<Response> {
   const fullUrl = url.startsWith('/api') ? getApiUrl(url) : url;
+  const method = options.method || 'GET';
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string> || {}),
   };
@@ -198,8 +199,48 @@ export async function authenticatedFetch(
     if (token) {
       headers["X-Auth-Token"] = token;
     }
+    
+    // Use native HTTP for native platforms (bypasses WKWebView CORS issues)
+    console.log('[authenticatedFetch] Using CapacitorHttp for native platform');
+    try {
+      const nativeResponse = await CapacitorHttp.request({
+        url: fullUrl,
+        method,
+        headers,
+        data: options.body ? JSON.parse(options.body as string) : undefined,
+      });
+      
+      console.log('[authenticatedFetch] Native response status:', nativeResponse.status);
+      
+      // Handle 401 on native
+      if (nativeResponse.status === 401) {
+        const hadToken = await getAuthToken();
+        if (hadToken) {
+          console.log('[authenticatedFetch] 401 received - clearing invalid token');
+          await clearAuthToken();
+          toast({
+            title: "Session expired",
+            description: "Please log in again.",
+            variant: "destructive",
+          });
+        }
+      }
+      
+      // Create a Response-like object for compatibility
+      const fakeResponse = new Response(JSON.stringify(nativeResponse.data), {
+        status: nativeResponse.status,
+        headers: new Headers(nativeResponse.headers),
+      });
+      
+      return fakeResponse;
+    } catch (error: any) {
+      const diagnosis = diagnoseNetworkError(error);
+      console.error('[authenticatedFetch] NATIVE FAILURE:', diagnosis);
+      throw new Error(`Network Error: ${diagnosis}`);
+    }
   }
   
+  // Web platform uses regular fetch
   try {
     console.log('[authenticatedFetch] Requesting:', fullUrl);
     console.log('[authenticatedFetch] Platform:', Capacitor.getPlatform());
