@@ -113,7 +113,7 @@ export function setupAuth(app: Express) {
           if (identifier.includes('@')) {
             user = await storage.getUserByEmail(identifier.toLowerCase());
           } else {
-            user = await storage.getUserByUsername(identifier);
+            user = await storage.getUserByUsername(identifier.toLowerCase());
           }
           
           if (!user || !(await comparePasswords(password, user.password))) {
@@ -156,14 +156,14 @@ export function setupAuth(app: Express) {
       }
       
       if (username) {
-        const existingUsername = await storage.getUserByUsername(username);
+        const existingUsername = await storage.getUserByUsername(username.toLowerCase());
         if (existingUsername) {
           return res.status(400).json({ message: "Username already exists" });
         }
       }
 
       const user = await storage.createUser({
-        username: username || email.split('@')[0],
+        username: (username || email.split('@')[0]).toLowerCase(),
         password: await hashPassword(password),
         firstName: firstName || null,
         lastName: lastName || null,
