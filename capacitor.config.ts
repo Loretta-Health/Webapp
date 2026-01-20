@@ -6,7 +6,14 @@ const config: CapacitorConfig = {
   webDir: 'dist/public',
   server: {
     androidScheme: 'https',
-    iosScheme: 'https'
+    iosScheme: 'https',
+    cleartext: false,
+    hostname: 'loretta.app',
+    allowNavigation: [
+      'loretta-care.replit.app',
+      '*.replit.app',
+      '*.replit.dev'
+    ]
   },
   ios: {
     contentInset: 'automatic',
