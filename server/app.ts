@@ -41,9 +41,10 @@ app.use((req, res, next) => {
   }
   
   // Allow requests from native iOS/Android apps (no origin header)
+  // Note: When no origin, we allow the request but don't set credentials
+  // since Access-Control-Allow-Origin: * with credentials is invalid per CORS spec
   if (!origin) {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Credentials", "true");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-Auth-Token");
   }
