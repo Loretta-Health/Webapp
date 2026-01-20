@@ -1,0 +1,72 @@
+The real “will break” risks from your answers
+
+In-memory token store
+
+Any redeploy/server restart invalidates all native tokens.
+
+If Replit ever restarts the process (even without a “deploy”), tokens die.
+
+If you ever add a 2nd instance, logins will randomly fail (no shared state).
+
+This is the #1 reliability risk.
+
+No explicit 401-invalid-token handling
+
+You do route to login via returnNull, which is good.
+
+But you don’t clear the bad token, so the app can repeatedly send an invalid token forever (until user logs in again), and UX will look inconsistent (“it just logged me out” / “login didn’t stick”).
+
+CORS spec violation in one branch
+
+Returning Access-Control-Allow-Origin: * together with Access-Control-Allow-Credentials: true is invalid CORS.
+
+You noted “native apps don’t enforce CORS,” but this can still bite you in unexpected places (some webviews, future changes, proxies, or tooling).
+
+Token storage choice (Preferences)
+
+Not necessarily a functional bug, but it’s a “release risk” if anyone later flags it: Preferences ≠ Keychain.
+
+If you ever have to answer “are auth tokens stored in Keychain,” the honest answer today is “not necessarily.”
+
+What I would require before TestFlight (code-only, fast, high impact)
+A) Make tokens survive restarts (pick one)
+
+Ask them to implement one of these before TestFlight:
+
+JWT (stateless)
+
+Server signs token; validation doesn’t depend on memory.
+
+Add expiry + refresh or longer expiry if you must.
+
+or
+
+Persistent token store
+
+Store tokens in DB/Redis with user id + createdAt + revokedAt.
+
+Works with multiple instances and restarts.
+
+If they do neither, TestFlight feedback will include “random logout / can’t stay logged in,” especially after deployments.
+
+B) Add “invalid token” handling on native
+
+On app startup (the /api/user call):
+
+If a token exists locally and server returns 401:
+
+clear token
+
+show message: “Session expired, please log in again”
+
+route to login
+
+This prevents loops and removes ambiguity.
+
+C) Fix the CORS “* + credentials” branch
+
+When no Origin header:
+
+either don’t send Access-Control-Allow-Credentials: true
+
+or don’t use * (set a specific origin only when present)
