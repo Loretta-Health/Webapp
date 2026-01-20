@@ -263,7 +263,7 @@ export async function authenticatedFetch(
 }
 
 // Global fetch interceptor - safety net for any missed direct fetch() calls
-// This patches window.fetch to automatically add auth tokens for API calls on native platforms
+// This patches window.fetch to automatically use CapacitorHttp for API calls on native platforms
 function setupFetchInterceptor() {
   if (typeof window === 'undefined') return;
   
@@ -276,32 +276,46 @@ function setupFetchInterceptor() {
                       url.includes('loretta-care.replit.app/api');
     
     if (isApiCall && isNativePlatform()) {
-      // Check if X-Auth-Token is already present
-      const existingHeaders = init?.headers as Record<string, string> | undefined;
-      const hasAuthToken = existingHeaders?.['X-Auth-Token'] || existingHeaders?.['x-auth-token'];
+      console.log('[FetchInterceptor] Intercepting API call, redirecting to CapacitorHttp:', url);
       
-      if (!hasAuthToken) {
-        // Add the auth token automatically
+      const existingHeaders = init?.headers as Record<string, string> | undefined;
+      const headers: Record<string, string> = { ...(existingHeaders || {}) };
+      
+      // Add auth token if not present
+      if (!headers['X-Auth-Token'] && !headers['x-auth-token']) {
         const token = await getAuthToken();
         if (token) {
-          const headers: Record<string, string> = {
-            ...(existingHeaders || {}),
-            'X-Auth-Token': token,
-          };
-          
-          // Also fix the URL if it's a relative /api path
-          const fullUrl = url.startsWith('/api') ? getApiUrl(url) : url;
-          
-          return originalFetch(fullUrl, {
-            ...init,
-            headers,
-            credentials: 'include',
-          });
+          headers['X-Auth-Token'] = token;
         }
+      }
+      
+      // Fix URL if it's a relative /api path
+      const fullUrl = url.startsWith('/api') ? getApiUrl(url) : url;
+      const method = init?.method || 'GET';
+      
+      try {
+        // Use CapacitorHttp instead of browser fetch to bypass WKWebView CORS
+        const response = await CapacitorHttp.request({
+          url: fullUrl,
+          method,
+          headers,
+          data: init?.body ? JSON.parse(init.body as string) : undefined,
+        });
+        
+        console.log('[FetchInterceptor] Native response status:', response.status);
+        
+        // Create a Response-like object for compatibility
+        return new Response(JSON.stringify(response.data), {
+          status: response.status,
+          headers: new Headers(response.headers),
+        });
+      } catch (error: any) {
+        console.error('[FetchInterceptor] Native request failed:', error);
+        throw error;
       }
     }
     
-    // For non-API calls or when token is already present, use original fetch
+    // For non-API calls or web platform, use original fetch
     return originalFetch(input, init);
   };
 }
