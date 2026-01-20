@@ -67,12 +67,13 @@ Preferred communication style: Simple, everyday language.
 - **Setup Guide**: See `MOBILE_SETUP.md` for detailed instructions on running on simulators/devices.
 
 ### Mobile Build History
-**Last Capacitor-affecting commit synced:** `d1f2b89` (Mission progress sync) - 2026-01-20
+**Last Capacitor-affecting commit synced:** `bca4103` (Database token storage, 401 handling, Cache-Control) - 2026-01-20
 
 Any commits after the last synced commit that touch `client/` or `capacitor.config.ts` will require a rebuild.
 
 | Date | Platform | Last Synced Commit | Notes |
 |------|----------|-------------------|-------|
+| 2026-01-20 | iOS & Android | bca4103 | Database token storage, 401 handling, session expiry toast, Cache-Control headers |
 | 2026-01-20 | iOS & Android | d1f2b89 | Mission progress sync, database source of truth |
 | 2026-01-19 | iOS & Android | e35f192 | Token-based auth to fix iOS login persistence |
 | 2026-01-13 | iOS & Android | ba6e33b | Questionnaire state fix, ML API updates |
