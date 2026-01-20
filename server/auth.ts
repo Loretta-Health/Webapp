@@ -155,15 +155,17 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Email already exists" });
       }
       
-      if (username) {
-        const existingUsername = await storage.getUserByUsername(username.toLowerCase());
-        if (existingUsername) {
-          return res.status(400).json({ message: "Username already exists" });
-        }
+      // Determine final username (provided or derived from email)
+      const finalUsername = username || email.split('@')[0];
+      
+      // Check for duplicate username (case-insensitive)
+      const existingUsername = await storage.getUserByUsername(finalUsername);
+      if (existingUsername) {
+        return res.status(400).json({ message: "Username already exists" });
       }
 
       const user = await storage.createUser({
-        username: username || email.split('@')[0],
+        username: finalUsername,
         password: await hashPassword(password),
         firstName: firstName || null,
         lastName: lastName || null,
