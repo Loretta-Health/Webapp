@@ -56,6 +56,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Prevent caching of authenticated API responses
+app.use('/api', (req, res, next) => {
+  res.header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.header('Pragma', 'no-cache');
+  res.header('Expires', '0');
+  next();
+});
+
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
