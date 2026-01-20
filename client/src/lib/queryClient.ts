@@ -1,5 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, CapacitorHttp } from "@capacitor/core";
 import { getAuthToken, clearAuthToken } from "./nativeAuth";
 import { toast } from "@/hooks/use-toast";
 
@@ -146,6 +146,40 @@ function diagnoseHttpError(status: number): string {
   return HTTP_STATUS_CODES[status] || `HTTP_${status}: Unknown HTTP error`;
 }
 
+// Native HTTP request using CapacitorHttp (bypasses WKWebView fetch issues)
+async function nativeHttpRequest(
+  url: string, 
+  options: { 
+    method?: string; 
+    headers?: Record<string, string>; 
+    body?: string;
+  } = {}
+): Promise<{ status: number; data: any; headers: Record<string, string> }> {
+  const method = options.method || 'GET';
+  console.log('[nativeHttp] Request:', method, url);
+  console.log('[nativeHttp] Headers:', JSON.stringify(options.headers || {}));
+  
+  try {
+    const response = await CapacitorHttp.request({
+      url,
+      method,
+      headers: options.headers || {},
+      data: options.body ? JSON.parse(options.body) : undefined,
+    });
+    
+    console.log('[nativeHttp] Response status:', response.status);
+    return {
+      status: response.status,
+      data: response.data,
+      headers: response.headers,
+    };
+  } catch (error: any) {
+    const diagnosis = diagnoseNetworkError(error);
+    console.error('[nativeHttp] FAILURE:', diagnosis);
+    throw new Error(`Network Error: ${diagnosis}`);
+  }
+}
+
 // Store the original fetch for use in our wrapper
 const originalFetch = window.fetch.bind(window);
 
@@ -277,6 +311,47 @@ export async function apiRequest(
   const fullUrl = getApiUrl(url);
   const headers = await getRequestHeaders(!!data);
   
+  // Use native HTTP for native platforms (bypasses WKWebView CORS issues)
+  if (isNativePlatform()) {
+    console.log('[apiRequest] Using CapacitorHttp for native platform');
+    const nativeResponse = await nativeHttpRequest(fullUrl, {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+    });
+    
+    // Handle 401 on native
+    if (nativeResponse.status === 401) {
+      const hadToken = await getAuthToken();
+      if (hadToken) {
+        console.log('[apiRequest] 401 received with stored token - clearing invalid token');
+        await clearAuthToken();
+        toast({
+          title: "Session expired",
+          description: "Please log in again.",
+          variant: "destructive",
+        });
+      }
+    }
+    
+    // Create a Response-like object for compatibility
+    const fakeResponse = new Response(JSON.stringify(nativeResponse.data), {
+      status: nativeResponse.status,
+      headers: new Headers(nativeResponse.headers),
+    });
+    
+    if (!fakeResponse.ok) {
+      console.warn('[apiRequest] HTTP Error:', diagnoseHttpError(nativeResponse.status));
+      const errorText = typeof nativeResponse.data === 'string' 
+        ? nativeResponse.data 
+        : JSON.stringify(nativeResponse.data);
+      throw new Error(`${nativeResponse.status}: ${errorText}`);
+    }
+    
+    return fakeResponse;
+  }
+  
+  // Web platform uses regular fetch
   try {
     console.log('[apiRequest] Requesting:', method, fullUrl);
     console.log('[apiRequest] Platform:', Capacitor.getPlatform());
@@ -317,6 +392,42 @@ export const getQueryFn: <T>(options: {
     const url = getApiUrl(queryKey.join("/") as string);
     const headers = await getRequestHeaders(false);
     
+    // Use native HTTP for native platforms (bypasses WKWebView CORS issues)
+    if (isNativePlatform()) {
+      console.log('[getQueryFn] Using CapacitorHttp for native platform');
+      const nativeResponse = await nativeHttpRequest(url, {
+        method: 'GET',
+        headers,
+      });
+      
+      console.log('[getQueryFn] Native response status:', nativeResponse.status);
+      
+      if (nativeResponse.status === 401) {
+        const hadToken = await getAuthToken();
+        if (hadToken) {
+          console.log('[getQueryFn] 401 received - clearing invalid token');
+          await clearAuthToken();
+          toast({
+            title: "Session expired",
+            description: "Please log in again to continue.",
+            variant: "destructive",
+          });
+        }
+        if (unauthorizedBehavior === "returnNull") {
+          return null;
+        }
+        throw new Error('401: Unauthorized');
+      }
+      
+      if (nativeResponse.status >= 400) {
+        console.warn('[getQueryFn] HTTP Error:', diagnoseHttpError(nativeResponse.status));
+        throw new Error(`${nativeResponse.status}: ${JSON.stringify(nativeResponse.data)}`);
+      }
+      
+      return nativeResponse.data;
+    }
+    
+    // Web platform uses regular fetch
     try {
       console.log('[getQueryFn] Requesting:', url);
       console.log('[getQueryFn] Platform:', Capacitor.getPlatform());
@@ -331,21 +442,6 @@ export const getQueryFn: <T>(options: {
         console.warn('[getQueryFn] HTTP Error:', diagnoseHttpError(res.status));
       }
       if (res.status === 401) {
-        // Clear any invalid stored token on native platforms
-        if (isNativePlatform()) {
-          const hadToken = await getAuthToken();
-          if (hadToken) {
-            console.log('[Auth] Clearing invalid token after 401 response');
-            await clearAuthToken();
-            // Show user-friendly message about session expiry
-            toast({
-              title: "Session expired",
-              description: "Please log in again to continue.",
-              variant: "destructive",
-            });
-          }
-        }
-        
         if (unauthorizedBehavior === "returnNull") {
           return null;
         }
