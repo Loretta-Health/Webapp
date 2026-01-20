@@ -163,7 +163,7 @@ export function setupAuth(app: Express) {
       }
 
       const user = await storage.createUser({
-        username: (username || email.split('@')[0]).toLowerCase(),
+        username: username || email.split('@')[0],
         password: await hashPassword(password),
         firstName: firstName || null,
         lastName: lastName || null,
