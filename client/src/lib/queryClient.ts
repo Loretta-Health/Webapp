@@ -10,6 +10,9 @@ export function getApiUrl(path: string): string {
   return `${baseUrl}${path}`;
 }
 
+// Store the original fetch for use in our wrapper
+const originalFetch = window.fetch.bind(window);
+
 // Unified fetch wrapper that includes auth token for native apps
 export async function authenticatedFetch(
   url: string,
@@ -28,7 +31,7 @@ export async function authenticatedFetch(
   }
   
   try {
-    const res = await fetch(fullUrl, {
+    const res = await originalFetch(fullUrl, {
       ...options,
       headers,
       credentials: "include",
@@ -41,6 +44,53 @@ export async function authenticatedFetch(
     throw error;
   }
 }
+
+// Global fetch interceptor - safety net for any missed direct fetch() calls
+// This patches window.fetch to automatically add auth tokens for API calls on native platforms
+function setupFetchInterceptor() {
+  if (typeof window === 'undefined') return;
+  
+  window.fetch = async function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    
+    // Only intercept API calls (starting with /api or the production URL)
+    const isApiCall = url.startsWith('/api') || 
+                      url.includes('/api/') || 
+                      url.includes('loretta-care.replit.app/api');
+    
+    if (isApiCall && isNativePlatform()) {
+      // Check if X-Auth-Token is already present
+      const existingHeaders = init?.headers as Record<string, string> | undefined;
+      const hasAuthToken = existingHeaders?.['X-Auth-Token'] || existingHeaders?.['x-auth-token'];
+      
+      if (!hasAuthToken) {
+        // Add the auth token automatically
+        const token = await getAuthToken();
+        if (token) {
+          const headers: Record<string, string> = {
+            ...(existingHeaders || {}),
+            'X-Auth-Token': token,
+          };
+          
+          // Also fix the URL if it's a relative /api path
+          const fullUrl = url.startsWith('/api') ? getApiUrl(url) : url;
+          
+          return originalFetch(fullUrl, {
+            ...init,
+            headers,
+            credentials: 'include',
+          });
+        }
+      }
+    }
+    
+    // For non-API calls or when token is already present, use original fetch
+    return originalFetch(input, init);
+  };
+}
+
+// Initialize the interceptor immediately
+setupFetchInterceptor();
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
