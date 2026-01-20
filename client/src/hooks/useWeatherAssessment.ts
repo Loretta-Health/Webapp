@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useGeolocation, BERLIN_COORDINATES } from './useGeolocation';
-import { getApiUrl } from '@/lib/queryClient';
+import { authenticatedFetch } from '@/lib/queryClient';
 
 export interface OutdoorActivityAssessment {
   isGoodForOutdoor: boolean;
@@ -37,9 +37,8 @@ export function useWeatherAssessment() {
   const { data: assessment, isLoading, error, refetch } = useQuery<OutdoorActivityAssessment>({
     queryKey: ['weather-assessment', coordinates.latitude, coordinates.longitude],
     queryFn: async () => {
-      const response = await fetch(
-        getApiUrl(`/api/weather/outdoor-assessment?latitude=${coordinates.latitude}&longitude=${coordinates.longitude}`),
-        { credentials: 'include' }
+      const response = await authenticatedFetch(
+        `/api/weather/outdoor-assessment?latitude=${coordinates.latitude}&longitude=${coordinates.longitude}`
       );
       
       if (!response.ok) {

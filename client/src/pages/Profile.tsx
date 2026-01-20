@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient, getApiUrl } from '@/lib/queryClient';
+import { apiRequest, queryClient, authenticatedFetch } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { BackButton } from '@/components/BackButton';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
@@ -724,7 +724,7 @@ export default function Profile() {
   const { data: lorettaMembership } = useQuery<LorettaMembership | null>({
     queryKey: ['/api/teams/loretta-community/membership', userId],
     queryFn: async () => {
-      const res = await fetch(getApiUrl('/api/teams/loretta-community/membership'), { credentials: 'include' });
+      const res = await authenticatedFetch('/api/teams/loretta-community/membership');
       if (!res.ok) return null;
       return res.json();
     },
@@ -752,10 +752,9 @@ export default function Profile() {
 
   const updateLorettaConsentMutation = useMutation({
     mutationFn: async (consent: boolean) => {
-      const res = await fetch(getApiUrl(`/api/teams/loretta-community/members/${userId}/consent`), {
+      const res = await authenticatedFetch(`/api/teams/loretta-community/members/${userId}/consent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ consent }),
       });
       if (!res.ok) throw new Error('Failed to update consent');

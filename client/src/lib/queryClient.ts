@@ -10,6 +10,38 @@ export function getApiUrl(path: string): string {
   return `${baseUrl}${path}`;
 }
 
+// Unified fetch wrapper that includes auth token for native apps
+export async function authenticatedFetch(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const fullUrl = url.startsWith('/api') ? getApiUrl(url) : url;
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string> || {}),
+  };
+  
+  if (isNativePlatform()) {
+    const token = await getAuthToken();
+    if (token) {
+      headers["X-Auth-Token"] = token;
+    }
+  }
+  
+  try {
+    const res = await fetch(fullUrl, {
+      ...options,
+      headers,
+      credentials: "include",
+    });
+    return res;
+  } catch (error: any) {
+    if (error.message === 'Load failed' || error.message === 'Failed to fetch' || error.name === 'TypeError') {
+      throw new Error('Unable to connect to server. Please check your internet connection and try again.');
+    }
+    throw error;
+  }
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
