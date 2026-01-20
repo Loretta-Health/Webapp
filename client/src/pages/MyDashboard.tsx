@@ -293,6 +293,16 @@ export default function MyDashboard() {
     },
   });
 
+  // Refresh all data when dashboard is visited/mounted
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/achievements/user'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] });
+  }, []);
+
   const xp = gamificationData?.xp ?? 0;
   const level = gamificationData?.level ?? 1;
   const streak = gamificationData?.currentStreak ?? 0;
