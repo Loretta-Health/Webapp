@@ -24,7 +24,7 @@ export default function LevelUpModal({
     <Dialog open={open} onOpenChange={onClose}>
       <SwipeableDialogContent 
         onSwipeClose={onClose}
-        className="sm:max-w-lg bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10 p-5 mx-2" 
+        className="sm:max-w-lg bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10" 
         data-testid="level-up-modal"
       >
         <div className="text-center space-y-6 py-8">

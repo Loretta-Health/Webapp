@@ -77,7 +77,7 @@ const SwipeableDialogContent = React.forwardRef<
             className="relative flex flex-col max-h-[85vh]"
           >
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full z-10" />
-            <div className="pt-6 overflow-y-auto flex-1 overscroll-contain">
+            <div className="pt-6 px-5 pb-5 overflow-y-auto flex-1 overscroll-contain">
               {children}
             </div>
             <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
