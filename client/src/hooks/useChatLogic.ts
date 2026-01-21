@@ -15,6 +15,7 @@ interface WeatherContext {
   weatherDescription: string;
   temperature: number;
   warnings: string[];
+  usingDefaultLocation?: boolean;
 }
 
 export interface ChatMessage {
@@ -134,7 +135,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const queryClient = useQueryClient();
   const { simulateBadWeather } = useWeatherSimulation();
   
-  const { coordinates, locationEnabled } = useGeolocation({
+  const { coordinates, locationEnabled, usingDefault } = useGeolocation({
     enableHighAccuracy: false,
     timeout: 10000,
     maximumAge: 300000,
@@ -144,9 +145,11 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   activityContextRef.current = activityContext;
   const lastUserMessageRef = useRef<string>('');
   const weatherContextRef = useRef<WeatherContext | null>(null);
+  const usingDefaultRef = useRef<boolean>(true);
+  usingDefaultRef.current = usingDefault;
 
   const { data: weatherData } = useQuery({
-    queryKey: ['/api/weather/outdoor-assessment', coordinates.latitude, coordinates.longitude],
+    queryKey: ['/api/weather/outdoor-assessment', coordinates.latitude, coordinates.longitude, locationEnabled],
     queryFn: async () => {
       const response = await authenticatedFetch(
         `/api/weather/outdoor-assessment?latitude=${coordinates.latitude}&longitude=${coordinates.longitude}`
@@ -154,6 +157,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       if (!response.ok) return null;
       return response.json();
     },
+    enabled: locationEnabled,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
@@ -165,6 +169,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         weatherDescription: 'Simulated bad weather (testing)',
         temperature: 0,
         warnings: ['Simulated bad weather for testing'],
+        usingDefaultLocation: false,
       };
     } else if (weatherData) {
       weatherContextRef.current = {
@@ -172,7 +177,10 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         weatherDescription: weatherData.weatherData?.weatherDescription || 'Unknown',
         temperature: weatherData.weatherData?.temperature,
         warnings: weatherData.warnings || [],
+        usingDefaultLocation: usingDefaultRef.current,
       };
+    } else {
+      weatherContextRef.current = null;
     }
   }, [weatherData, simulateBadWeather]);
 
