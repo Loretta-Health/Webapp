@@ -24,6 +24,17 @@ Preferred communication style: Simple, everyday language.
 - **Contextual AI**: Integrates real-time weather data (via Open-Meteo API) based on user geolocation to provide context-aware health advice.
 - **Dynamic Recommendations**: AI suggests indoor alternatives for outdoor missions when weather conditions are unsuitable or the user reports not feeling well. This applies only to currently activated outdoor missions.
 
+### Location Services (Geolocation → Weather → AI Flow)
+- **Capacitor Geolocation Plugin**: Uses `@capacitor/geolocation` v7.1.7 for native iOS/Android location access.
+- **Platform-Aware Hook**: `useGeolocation` hook in `client/src/hooks/useGeolocation.ts` handles both native (Capacitor) and web (browser API) platforms.
+- **Permission Handling**: 
+  - iOS: `NSLocationWhenInUseUsageDescription` in Info.plist
+  - Android: `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION` in AndroidManifest.xml
+- **Default Location**: Falls back to Berlin coordinates (52.52, 13.405) when permission is denied or unavailable.
+- **Weather Query Guard**: Weather API is only called when `locationEnabled` is true (user has granted permission).
+- **AI Context Awareness**: The `usingDefaultLocation` flag is passed to the AI, so it knows when weather data is from a default location rather than the user's actual location. Alternative mission suggestions are only triggered when using the user's real location.
+- **Weather Flow**: `useGeolocation` → `useWeatherAssessment` → `/api/weather/outdoor-assessment` → Open-Meteo API → `weatherContext` passed to `/api/chat` → AI response with weather-aware recommendations.
+
 ### Health Questionnaire & Risk Prediction
 - **Questionnaire**: 44 health questions mapped to NHANES-style parameters.
 - **ML Integration**: Connects to an external XGBoost diabetes prediction API (RDP001 model) hosted on Replit for a single, diabetes-based health risk score (0-100).
