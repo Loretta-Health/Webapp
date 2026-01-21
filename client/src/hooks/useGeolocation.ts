@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { Geolocation } from '@capacitor/geolocation';
 
 export const BERLIN_COORDINATES = {
   latitude: 52.52,
@@ -25,6 +27,7 @@ const LOCATION_ENABLED_KEY = 'loretta_location_enabled';
 
 export function useGeolocation(options: GeolocationOptions = {}) {
   const defaultLocation = options.defaultLocation || BERLIN_COORDINATES;
+  const isNative = Capacitor.isNativePlatform();
   
   const [locationEnabled, setLocationEnabled] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
@@ -41,7 +44,58 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     usingDefault: true,
   });
 
-  const requestLocation = useCallback(async (): Promise<{ latitude: number; longitude: number }> => {
+  const requestNativeLocation = useCallback(async (): Promise<{ latitude: number; longitude: number }> => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const permissionStatus = await Geolocation.checkPermissions();
+      
+      if (permissionStatus.location === 'denied') {
+        const requestResult = await Geolocation.requestPermissions();
+        if (requestResult.location === 'denied') {
+          setState({
+            latitude: defaultLocation.latitude,
+            longitude: defaultLocation.longitude,
+            accuracy: null,
+            error: 'Location permission denied. Using default location (Berlin).',
+            loading: false,
+            usingDefault: true,
+          });
+          return defaultLocation;
+        }
+      }
+
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: options.enableHighAccuracy ?? false,
+        timeout: options.timeout ?? 10000,
+        maximumAge: options.maximumAge ?? 300000,
+      });
+
+      const { latitude, longitude, accuracy } = position.coords;
+      setState({
+        latitude,
+        longitude,
+        accuracy,
+        error: null,
+        loading: false,
+        usingDefault: false,
+      });
+      return { latitude, longitude };
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Could not get location. Using default location (Berlin).';
+      setState({
+        latitude: defaultLocation.latitude,
+        longitude: defaultLocation.longitude,
+        accuracy: null,
+        error: errorMessage,
+        loading: false,
+        usingDefault: true,
+      });
+      return defaultLocation;
+    }
+  }, [options.enableHighAccuracy, options.timeout, options.maximumAge, defaultLocation]);
+
+  const requestWebLocation = useCallback(async (): Promise<{ latitude: number; longitude: number }> => {
     if (!navigator.geolocation) {
       setState(prev => ({
         ...prev,
@@ -104,6 +158,13 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     });
   }, [options.enableHighAccuracy, options.timeout, options.maximumAge, defaultLocation]);
 
+  const requestLocation = useCallback(async (): Promise<{ latitude: number; longitude: number }> => {
+    if (isNative) {
+      return requestNativeLocation();
+    }
+    return requestWebLocation();
+  }, [isNative, requestNativeLocation, requestWebLocation]);
+
   const toggleLocationEnabled = useCallback(async () => {
     const newValue = !locationEnabled;
     setLocationEnabled(newValue);
@@ -134,7 +195,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     locationEnabled,
     requestLocation,
     toggleLocationEnabled,
-    isSupported: typeof navigator !== 'undefined' && 'geolocation' in navigator,
+    isSupported: isNative || (typeof navigator !== 'undefined' && 'geolocation' in navigator),
     coordinates: state.latitude && state.longitude 
       ? { latitude: state.latitude, longitude: state.longitude }
       : defaultLocation,
