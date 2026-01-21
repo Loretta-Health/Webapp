@@ -87,10 +87,10 @@ export default function EmotionalCheckInModal({
 
   const detectEmotion = async (text: string): Promise<{ emotion: EmotionCategory; confidence: number }> => {
     try {
-      const response = await authenticatedFetch('/api/detect-emotion', {
+      const response = await authenticatedFetch('/api/classify-emotion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ message: text }),
       });
       if (!response.ok) throw new Error('Failed to detect emotion');
       return await response.json();

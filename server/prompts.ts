@@ -142,7 +142,7 @@ EMOTION CATEGORIES - You MUST respond with EXACTLY ONE of these category names:
 happy, sad, anxious, stressed, calm, peaceful, tired, energetic, hyper, frustrated, angry, grateful, hopeful, lonely, confused, sick, overwhelmed, motivated, bored, neutral
 
 CATEGORY MEANINGS:
-- happy = joy, excitement, great, wonderful, good mood
+- happy = joy, excitement, great, wonderful, good mood, "doing good", "doing well", "feeling good", "feeling great", "I'm good", "all good", "pretty good", "doing great"
 - sad = down, depressed, unhappy, low, blue
 - anxious = worried, nervous, panicked, uneasy, fearful
 - stressed = pressure, burnt out, swamped, strained
@@ -171,6 +171,10 @@ RULES:
 
 EXAMPLES:
 "I'm feeling great!" → happy
+"I'm doing good" → happy
+"Doing well" → happy
+"I'm good" → happy
+"Pretty good" → happy
 "I'm worried about tomorrow" → anxious
 "I feel okay" → neutral
 "fine" → neutral
