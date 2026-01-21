@@ -188,7 +188,7 @@ export default function AddMedicationModal({ open, onOpenChange, medicationToEdi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <SwipeableDialogContent 
         onSwipeClose={() => onOpenChange(false)}
-        className="sm:max-w-md max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10 p-6"
+        className="sm:max-w-md max-h-[90vh] bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10 p-5 mx-2"
       >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
