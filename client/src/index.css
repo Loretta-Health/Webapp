@@ -27,6 +27,29 @@
   padding-right: var(--safe-area-inset-right);
 }
 
+/* Dialog safe area wrapper - platform-specific padding */
+.dialog-safe-area-wrapper {
+  padding: 1rem;
+}
+
+/* iOS: Use safe area directly with minimal extra padding */
+.capacitor-ios .dialog-safe-area-wrapper {
+  padding: 0.5rem;
+  padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(0.5rem + env(safe-area-inset-left, 0px));
+  padding-right: calc(0.5rem + env(safe-area-inset-right, 0px));
+}
+
+/* Android: Use max() with smaller base padding */
+.capacitor-android .dialog-safe-area-wrapper {
+  padding: 0.75rem;
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0.75rem));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
+  padding-left: max(0.5rem, env(safe-area-inset-left, 0.5rem));
+  padding-right: max(0.5rem, env(safe-area-inset-right, 0.5rem));
+}
+
 /* Disable text selection and touch highlights on mobile */
 .capacitor-ios, .capacitor-android {
   -webkit-user-select: none;
