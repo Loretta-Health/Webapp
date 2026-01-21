@@ -229,15 +229,18 @@ Do NOT suggest alternatives for missions the user hasn't activated.
       // Build dynamic context with weather information
       let dynamicContext = '';
       if (weatherContext) {
-        const { isGoodForOutdoor, weatherDescription, temperature, warnings } = weatherContext;
+        const { isGoodForOutdoor, weatherDescription, temperature, warnings, usingDefaultLocation } = weatherContext;
+        const locationNote = usingDefaultLocation 
+          ? '\nNote: User has not enabled location services - this weather is for a default location (Berlin) and may not reflect their actual conditions.'
+          : '';
         dynamicContext = `\n\n=== CURRENT WEATHER CONTEXT ===
-Current weather at user's location:
+Current weather${usingDefaultLocation ? ' (default location - user location unknown)' : ' at user\'s location'}:
 - Conditions: ${weatherDescription || 'Unknown'}
 - Temperature: ${temperature !== undefined ? `${temperature}°C` : 'Unknown'}
 - Suitable for outdoor activities: ${isGoodForOutdoor ? 'YES' : 'NO'}
-${warnings && warnings.length > 0 ? `- Weather warnings: ${warnings.join(', ')}` : ''}
+${warnings && warnings.length > 0 ? `- Weather warnings: ${warnings.join(', ')}` : ''}${locationNote}
 
-${!isGoodForOutdoor ? `IMPORTANT: The weather is currently BAD for outdoor activities. If the user has an outdoor mission activated (like walking or jumping jacks), proactively suggest an indoor alternative. For example:
+${!isGoodForOutdoor && !usingDefaultLocation ? `IMPORTANT: The weather is currently BAD for outdoor activities. If the user has an outdoor mission activated (like walking or jumping jacks), proactively suggest an indoor alternative. For example:
 - If they mention going for a walk, suggest "walking around your home" instead
 - If they mention outdoor exercise, suggest indoor alternatives
 - Be helpful about the weather situation without being overly cautious` : ''}
