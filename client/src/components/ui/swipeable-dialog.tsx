@@ -50,18 +50,19 @@ const SwipeableDialogContent = React.forwardRef<
     <DialogPortal>
       <DialogOverlay />
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
         style={{ 
-          paddingTop: 'max(1rem, env(safe-area-inset-top))', 
-          paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
-          paddingLeft: 'max(0.5rem, env(safe-area-inset-left))',
-          paddingRight: 'max(0.5rem, env(safe-area-inset-right))'
+          padding: '1rem',
+          paddingTop: 'max(1.5rem, env(safe-area-inset-top))', 
+          paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))',
+          paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right))'
         }}
       >
         <DialogPrimitive.Content
           ref={ref}
           className={cn(
-            "relative w-full max-w-lg border bg-background shadow-lg rounded-lg max-h-[85vh] overflow-hidden",
+            "relative w-full max-w-lg border bg-background shadow-lg rounded-lg max-h-[85vh] overflow-hidden pointer-events-auto",
             className
           )}
           asChild
