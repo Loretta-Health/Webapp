@@ -48,34 +48,35 @@ const SwipeableDialogContent = React.forwardRef<
 
   return (
     <DialogPortal>
-      <DialogOverlay />
-      <DialogPrimitive.Content
-        ref={ref}
-        className={cn(
-          "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border bg-background shadow-lg sm:rounded-lg",
-          className
-        )}
-        asChild
-        {...props}
-      >
-        <motion.div
-          style={{ y, opacity, scale }}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0, bottom: 0.5 }}
-          onDragEnd={handleDragEnd}
-          className="relative"
+      <DialogOverlay className="flex items-center justify-center p-4" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))', paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+        <DialogPrimitive.Content
+          ref={ref}
+          className={cn(
+            "relative z-50 grid w-full max-w-lg border bg-background shadow-lg rounded-lg max-h-[85vh] overflow-hidden",
+            className
+          )}
+          asChild
+          {...props}
         >
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
-          <div className="pt-4">
-            {children}
-          </div>
-          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        </motion.div>
-      </DialogPrimitive.Content>
+          <motion.div
+            style={{ y, opacity, scale }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.5 }}
+            onDragEnd={handleDragEnd}
+            className="relative"
+          >
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full z-10" />
+            <div className="pt-4 max-h-[85vh] overflow-y-auto">
+              {children}
+            </div>
+            <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+          </motion.div>
+        </DialogPrimitive.Content>
+      </DialogOverlay>
     </DialogPortal>
   )
 })
