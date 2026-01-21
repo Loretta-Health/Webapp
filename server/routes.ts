@@ -859,6 +859,7 @@ IMPORTANT: When discussing risk scores, remember:
         'great': 'happy', 'good': 'happy', 'wonderful': 'happy', 'amazing': 'happy',
         'fantastic': 'happy', 'excellent': 'happy', 'joyful': 'happy', 'excited': 'happy',
         'thrilled': 'happy', 'delighted': 'happy', 'cheerful': 'happy', 'pleased': 'happy',
+        'well': 'happy', 'awesome': 'happy', 'super': 'happy', 'brilliant': 'happy',
         // sad keywords
         'down': 'sad', 'depressed': 'sad', 'unhappy': 'sad', 'blue': 'sad', 'low': 'sad',
         'miserable': 'sad', 'gloomy': 'sad', 'heartbroken': 'sad', 'melancholy': 'sad',
