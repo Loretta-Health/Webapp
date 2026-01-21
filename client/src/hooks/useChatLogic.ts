@@ -8,6 +8,7 @@ import type { MetricData } from '@/components/chat/MetricCard';
 import { useWeatherSimulation } from '@/contexts/WeatherSimulationContext';
 import { authenticatedFetch } from "@/lib/queryClient";
 import { detectEmotionFromText } from '../../../shared/emotions';
+import { useGeolocation } from './useGeolocation';
 
 interface WeatherContext {
   isGoodForOutdoor: boolean;
@@ -127,46 +128,32 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const [pendingEmotion, setPendingEmotion] = useState<string | null>(null);
   const [isCheckInConfirmationPending, setIsCheckInConfirmationPending] = useState(false);
   const [activityContext, setActivityContext] = useState<ActivityContext | null>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const { toast } = useToast();
   const { i18n, t } = useTranslation();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { simulateBadWeather } = useWeatherSimulation();
   
+  const { coordinates, locationEnabled } = useGeolocation({
+    enableHighAccuracy: false,
+    timeout: 10000,
+    maximumAge: 300000,
+  });
+  
   const activityContextRef = useRef<ActivityContext | null>(null);
   activityContextRef.current = activityContext;
   const lastUserMessageRef = useRef<string>('');
   const weatherContextRef = useRef<WeatherContext | null>(null);
 
-  useEffect(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
-          });
-        },
-        (error) => {
-          console.log('Geolocation not available:', error.message);
-        },
-        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
-      );
-    }
-  }, []);
-
   const { data: weatherData } = useQuery({
-    queryKey: ['/api/weather/outdoor-assessment', userLocation?.lat, userLocation?.lon],
+    queryKey: ['/api/weather/outdoor-assessment', coordinates.latitude, coordinates.longitude],
     queryFn: async () => {
-      if (!userLocation) return null;
       const response = await authenticatedFetch(
-        `/api/weather/outdoor-assessment?latitude=${userLocation.lat}&longitude=${userLocation.lon}`
+        `/api/weather/outdoor-assessment?latitude=${coordinates.latitude}&longitude=${coordinates.longitude}`
       );
       if (!response.ok) return null;
       return response.json();
     },
-    enabled: !!userLocation,
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
