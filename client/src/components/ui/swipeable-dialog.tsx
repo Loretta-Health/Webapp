@@ -52,7 +52,7 @@ const SwipeableDialogContent = React.forwardRef<
         <DialogPrimitive.Content
           ref={ref}
           className={cn(
-            "relative z-50 grid w-full max-w-lg border bg-background shadow-lg rounded-lg max-h-[85vh] overflow-hidden",
+            "relative z-50 w-full max-w-lg border bg-background shadow-lg rounded-lg max-h-[85vh] overflow-hidden",
             className
           )}
           asChild
@@ -64,10 +64,10 @@ const SwipeableDialogContent = React.forwardRef<
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.5 }}
             onDragEnd={handleDragEnd}
-            className="relative"
+            className="relative flex flex-col max-h-[85vh]"
           >
             <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full z-10" />
-            <div className="pt-4 max-h-[85vh] overflow-y-auto">
+            <div className="pt-6 overflow-y-auto flex-1 overscroll-contain">
               {children}
             </div>
             <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
