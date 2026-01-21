@@ -32,14 +32,7 @@ const AlertDialogContent = React.forwardRef<
   <AlertDialogPortal>
     <AlertDialogOverlay />
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
-      style={{ 
-        padding: '1rem',
-        paddingTop: 'max(1.5rem, env(safe-area-inset-top))', 
-        paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))',
-        paddingLeft: 'max(1rem, env(safe-area-inset-left))',
-        paddingRight: 'max(1rem, env(safe-area-inset-right))'
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none dialog-safe-area-wrapper"
     >
       <AlertDialogPrimitive.Content
         ref={ref}
