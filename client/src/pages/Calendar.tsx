@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { BackButton } from '@/components/BackButton';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
@@ -37,12 +36,6 @@ interface CalendarEvent {
   updatedAt?: string;
 }
 
-const eventTypeColors = {
-  appointment: 'border-l-[#013DC4]',
-  medication: 'border-l-[#CDB6EF]',
-  exercise: 'border-l-[#0150FF]',
-  other: 'border-l-gray-400 dark:border-l-gray-500',
-};
 
 export default function Calendar() {
   const { t, i18n } = useTranslation('pages');
@@ -58,7 +51,6 @@ export default function Calendar() {
     startTime: '09:00',
     endTime: '10:00',
     notes: '',
-    type: 'appointment' as CalendarEvent['type'],
   });
 
   const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
@@ -143,7 +135,7 @@ export default function Calendar() {
       startTime: newEvent.startTime,
       endTime: newEvent.endTime,
       notes: newEvent.notes || undefined,
-      type: newEvent.type,
+      type: 'other',
     });
     
     setNewEvent({
@@ -151,7 +143,6 @@ export default function Calendar() {
       startTime: '09:00',
       endTime: '10:00',
       notes: '',
-      type: 'appointment',
     });
     setIsAddDialogOpen(false);
   };
@@ -300,24 +291,6 @@ export default function Calendar() {
                     />
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="type">{t('calendar.eventType')}</Label>
-                    <Select
-                      value={newEvent.type}
-                      onValueChange={(value: CalendarEvent['type']) => setNewEvent({ ...newEvent, type: value })}
-                    >
-                      <SelectTrigger data-testid="select-event-type">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="appointment">{t('calendar.types.appointment')}</SelectItem>
-                        <SelectItem value="medication">{t('calendar.types.medication')}</SelectItem>
-                        <SelectItem value="exercise">{t('calendar.types.exercise')}</SelectItem>
-                        <SelectItem value="other">{t('calendar.types.other')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="startTime">{t('calendar.startTime')}</Label>
@@ -395,7 +368,7 @@ export default function Calendar() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className={`p-4 border-l-4 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl shadow-lg ${eventTypeColors[event.type]}`} data-testid={`event-${event.id}`}>
+                <Card className="p-4 border-l-4 border-l-[#013DC4] backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl shadow-lg" data-testid={`event-${event.id}`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <h3 className="font-bold text-lg text-gray-900 dark:text-white">{event.title}</h3>
