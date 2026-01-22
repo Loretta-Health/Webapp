@@ -272,7 +272,7 @@ const missionsDatabase: Record<string, MissionData> = {
     title: '5 minute outdoor walk',
     frequency: 'daily',
     description: 'Increase your daily activity by taking a brisk 5 minute walk outside.',
-    xpReward: 30,
+    xpReward: 45,
     totalSteps: 2,
     icon: Footprints,
     color: 'chart-1',
@@ -288,16 +288,16 @@ const missionsDatabase: Record<string, MissionData> = {
       { id: 2, completed: false },
     ],
     alternativeMissions: [
-      { id: 301, title: 'Walk gently in place for 2 mins', xp: 30, icon: '🚶' },
-      { id: 302, title: 'Look out the window for 5 mins', xp: 25, icon: '🪟' },
+      { id: 301, title: 'Short Walk (indoor alternative)', xp: 45, icon: '🚶' },
+      { id: 302, title: 'Look out the window for 5 mins', xp: 40, icon: '🪟' },
     ],
     communityTip: 'Try walking during phone calls or after meals. Every step counts toward your daily goal!',
     stepLabel: 'Walk',
     isWeatherDependent: true,
     badWeatherAlternatives: [
-      { id: 3001, title: 'Walk around your home for 5 mins', xp: 30, icon: '🏠' },
-      { id: 3002, title: 'March in place for 3 mins', xp: 25, icon: '🚶' },
-      { id: 3003, title: 'Do light indoor exercises', xp: 25, icon: '🏃' },
+      { id: 3001, title: 'Walk around your home for 5 mins', xp: 45, icon: '🏠' },
+      { id: 3002, title: 'March in place for 3 mins', xp: 40, icon: '🚶' },
+      { id: 3003, title: 'Do indoor stretching', xp: 35, icon: '🧘' },
     ],
   },
   'activity-sleep': {
@@ -696,7 +696,7 @@ const missionsDatabase: Record<string, MissionData> = {
     frequency: 'daily',
     description: 'Take a peaceful moment to rest and recharge',
     xpReward: 40,
-    totalSteps: 3,
+    totalSteps: 1,
     icon: Moon,
     color: 'chart-2',
     details: 'Sometimes your body needs quiet rest to recover. Taking a few minutes to simply be still can help reduce stress and restore energy.',
@@ -706,10 +706,10 @@ const missionsDatabase: Record<string, MissionData> = {
       { icon: Leaf, text: 'Reduces anxiety' },
       { icon: Zap, text: 'Restores energy' },
     ],
-    initialSteps: Array.from({ length: 3 }, (_, i) => ({ id: i + 1, completed: false })),
+    initialSteps: Array.from({ length: 1 }, (_, i) => ({ id: i + 1, completed: false })),
     alternativeMissions: [],
     communityTip: 'Find a comfortable spot, close your eyes, and let go of any tension.',
-    stepLabel: 'Minute'
+    stepLabel: 'Session'
   },
   'rest-breathe': {
     id: 702,
