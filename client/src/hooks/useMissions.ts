@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './use-auth';
 import { apiRequest, authenticatedFetch } from '../lib/queryClient';
 import { trackMission, trackGamification } from '../lib/clarity';
+import { useOptimisticGamification } from './useOptimisticGamification';
 
 export interface CatalogMission {
   id: string;
@@ -56,6 +57,7 @@ export interface Mission {
 export function useMissions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { addXpOptimistically } = useOptimisticGamification();
   const userId = user?.id;
 
   const { data: catalogMissions = [], isLoading: catalogLoading } = useQuery<CatalogMission[]>({
@@ -137,11 +139,10 @@ export function useMissions() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
-      // Immediately refresh XP/gamification data when mission is completed
       if (variables.data.completed) {
-        queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
         const mission = missions.find(m => m.id === variables.id);
         if (mission) {
+          addXpOptimistically(mission.xpReward);
           trackMission('completed', mission.title, mission.xpReward);
           trackGamification('xp_earned', { amount: mission.xpReward, source: 'mission' });
         }
