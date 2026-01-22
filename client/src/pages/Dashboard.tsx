@@ -771,7 +771,7 @@ export default function Dashboard() {
                 
                 <div className="space-y-2">
                   <h4 className="font-bold text-foreground">1. Controller</h4>
-                  <p>Loretta Health UG (haftungsbeschränkt)<br/>Cuvrystraße 53, 10997 Berlin, Germany<br/>Email: privacy@loretta.care</p>
+                  <p>Loretta Health UG (haftungsbeschränkt)<br/>c/o Scaling Spaces, Cuvrystr. 53, 10997 Berlin, Germany<br/>Email: support@loretta.care</p>
                 </div>
                 
                 <div className="space-y-2">
@@ -852,7 +852,7 @@ export default function Dashboard() {
                 
                 <div className="space-y-2">
                   <h4 className="font-bold text-foreground">12. User Rights</h4>
-                  <p>You have the right to access, correct, delete, restrict, object, withdraw consent, and request portability. Contact: privacy@loretta.care</p>
+                  <p>You have the right to access, correct, delete, restrict, object, withdraw consent, and request portability. Contact: support@loretta.care</p>
                 </div>
                 
                 <div className="space-y-2">
@@ -878,7 +878,7 @@ export default function Dashboard() {
                 
                 <div className="space-y-2">
                   <h4 className="font-bold text-foreground">1. Verantwortlicher</h4>
-                  <p>Loretta Health UG (haftungsbeschränkt)<br/>Cuvrystraße 53, 10997 Berlin, Deutschland<br/>E-Mail: privacy@loretta.care</p>
+                  <p>Loretta Health UG (haftungsbeschränkt)<br/>c/o Scaling Spaces, Cuvrystr. 53, 10997 Berlin, Deutschland<br/>E-Mail: support@loretta.care</p>
                 </div>
                 
                 <div className="space-y-2">
@@ -959,7 +959,7 @@ export default function Dashboard() {
                 
                 <div className="space-y-2">
                   <h4 className="font-bold text-foreground">12. Nutzerrechte</h4>
-                  <p>Zugriff, Berichtigung, Löschung, Einschränkung, Widerspruch, Widerruf und Übertragbarkeit. Kontakt: privacy@loretta.care</p>
+                  <p>Zugriff, Berichtigung, Löschung, Einschränkung, Widerspruch, Widerruf und Übertragbarkeit. Kontakt: support@loretta.care</p>
                 </div>
                 
                 <div className="space-y-2">
