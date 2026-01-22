@@ -167,20 +167,35 @@ export function isEmailConfigured(): boolean {
 
 const FEEDBACK_RECEIVER_EMAIL = process.env.FEEDBACK_RECEIVER_EMAIL || 'support@loretta.health';
 
+function generateFeedbackId(): string {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${timestamp}-${random}`;
+}
+
 function generateFeedbackEmailHTML(
   userName: string,
   userEmail: string,
   subject: string,
   message: string,
-  category: string
+  category: string,
+  feedbackId: string
 ): string {
+  const categoryColors: Record<string, string> = {
+    bug: '#EF4444',
+    feature: '#22C55E',
+    general: '#013DC4',
+    support: '#F59E0B'
+  };
+  const categoryColor = categoryColors[category.toLowerCase()] || '#013DC4';
+  
   return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Feedback</title>
+  <title>App Feedback</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
@@ -188,43 +203,84 @@ function generateFeedbackEmailHTML(
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
           
-          <!-- Header with gradient -->
+          <!-- Header with Logo -->
           <tr>
-            <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 24px; text-align: center;">
-              <span style="font-size: 24px; font-weight: 800; color: white; letter-spacing: -0.5px;">Loretta Feedback</span>
+            <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 32px 24px; text-align: center;">
+              <!-- Logo Container -->
+              <div style="display: inline-block; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 12px 24px; border-radius: 16px; margin-bottom: 12px;">
+                <span style="font-size: 28px; font-weight: 800; color: white; letter-spacing: -0.5px;">&#128154; loretta</span>
+              </div>
+              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">App Feedback Portal</p>
+            </td>
+          </tr>
+          
+          <!-- Feedback ID Badge -->
+          <tr>
+            <td style="padding: 20px 24px 0 24px; text-align: center;">
+              <span style="display: inline-block; background: linear-gradient(135deg, #f0f4ff 0%, #f3f0ff 100%); border: 1px solid #CDB6EF; color: #013DC4; font-size: 11px; font-weight: 700; padding: 6px 16px; border-radius: 20px; letter-spacing: 1px;">
+                FEEDBACK #${feedbackId}
+              </span>
             </td>
           </tr>
           
           <!-- Main Content -->
           <tr>
-            <td style="padding: 32px 24px;">
-              <h1 style="color: #1a1a2e; font-size: 20px; font-weight: 800; margin: 0 0 24px 0;">New Feedback Received</h1>
+            <td style="padding: 24px;">
+              <!-- Subject - Large and prominent -->
+              <h1 style="color: #1a1a2e; font-size: 26px; font-weight: 800; margin: 0 0 20px 0; line-height: 1.3; text-align: center;">"${subject}"</h1>
               
-              <!-- User Info -->
-              <div style="background: #f8f9ff; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-                <p style="color: #718096; font-size: 13px; margin: 0 0 8px 0;"><strong>From:</strong> ${userName}</p>
-                <p style="color: #718096; font-size: 13px; margin: 0 0 8px 0;"><strong>Email:</strong> ${userEmail}</p>
-                <p style="color: #718096; font-size: 13px; margin: 0 0 8px 0;"><strong>Category:</strong> <span style="background: #013DC4; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px;">${category}</span></p>
-                <p style="color: #718096; font-size: 13px; margin: 0;"><strong>Subject:</strong> ${subject}</p>
+              <!-- User Info Card -->
+              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding-bottom: 12px;">
+                      <span style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">From</span>
+                      <p style="color: #2d3748; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">${userName}</p>
+                    </td>
+                    <td style="padding-bottom: 12px; text-align: right;">
+                      <span style="display: inline-block; background: ${categoryColor}; color: white; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${category}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <span style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Email</span>
+                      <p style="color: #013DC4; font-size: 14px; margin: 4px 0 0 0;">
+                        <a href="mailto:${userEmail}" style="color: #013DC4; text-decoration: none;">${userEmail}</a>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
               </div>
               
-              <!-- Message -->
-              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 1px solid #CDB6EF; border-radius: 12px; padding: 20px;">
-                <p style="color: #718096; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 12px 0;">Message</p>
-                <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${message}</p>
+              <!-- Message Box -->
+              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px solid #CDB6EF; border-radius: 16px; padding: 24px;">
+                <p style="color: #013DC4; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px 0;">Message</p>
+                <p style="color: #2d3748; font-size: 16px; line-height: 1.7; margin: 0; white-space: pre-wrap;">${message}</p>
               </div>
             </td>
           </tr>
           
           <!-- Footer -->
           <tr>
-            <td style="background: #f8f9fa; padding: 16px 24px; border-top: 1px solid #e9ecef;">
-              <p style="color: #718096; font-size: 11px; margin: 0; text-align: center;">
-                Sent via Loretta App Feedback Form | ${new Date().toISOString()}
+            <td style="background: linear-gradient(135deg, #f8f9fa 0%, #f0f4ff 100%); padding: 20px 24px; border-top: 1px solid #e9ecef;">
+              <p style="color: #a0aec0; font-size: 11px; margin: 0; text-align: center; line-height: 1.5;">
+                Received via Loretta App<br>
+                <span style="color: #cbd5e0;">${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
               </p>
             </td>
           </tr>
           
+        </table>
+        
+        <!-- Bottom branding -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin-top: 24px;">
+          <tr>
+            <td style="text-align: center;">
+              <p style="color: #a0aec0; font-size: 11px; margin: 0;">
+                © ${new Date().getFullYear()} Loretta Health. All rights reserved.
+              </p>
+            </td>
+          </tr>
         </table>
       </td>
     </tr>
@@ -239,22 +295,26 @@ function generateFeedbackEmailText(
   userEmail: string,
   subject: string,
   message: string,
-  category: string
+  category: string,
+  feedbackId: string
 ): string {
   return `
-New Feedback Received
+App Feedback #${feedbackId}
+
+Subject: "${subject}"
 
 From: ${userName}
 Email: ${userEmail}
 Category: ${category}
-Subject: ${subject}
 
 Message:
 ${message}
 
 ---
-Sent via Loretta App Feedback Form
-${new Date().toISOString()}
+Received via Loretta App
+${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+
+© ${new Date().getFullYear()} Loretta Health
   `.trim();
 }
 
@@ -265,8 +325,10 @@ export async function sendFeedbackEmail(
   message: string,
   category: string
 ): Promise<{ success: boolean; message: string }> {
+  const feedbackId = generateFeedbackId();
+  
   if (!BREVO_API_KEY) {
-    console.log(`[Feedback] Brevo not configured. Feedback from ${userEmail}: [${category}] ${subject} - ${message.substring(0, 100)}...`);
+    console.log(`[Feedback] Brevo not configured. Feedback #${feedbackId} from ${userEmail}: [${category}] ${subject} - ${message.substring(0, 100)}...`);
     return {
       success: true,
       message: "Brevo not configured. Feedback logged to console for demo purposes."
@@ -274,9 +336,9 @@ export async function sendFeedbackEmail(
   }
 
   const sendSmtpEmail = new Brevo.SendSmtpEmail();
-  sendSmtpEmail.subject = `[Loretta Feedback] [${category}] ${subject}`;
-  sendSmtpEmail.htmlContent = generateFeedbackEmailHTML(userName, userEmail, subject, message, category);
-  sendSmtpEmail.textContent = generateFeedbackEmailText(userName, userEmail, subject, message, category);
+  sendSmtpEmail.subject = `App Feedback #${feedbackId} - ${subject}`;
+  sendSmtpEmail.htmlContent = generateFeedbackEmailHTML(userName, userEmail, subject, message, category, feedbackId);
+  sendSmtpEmail.textContent = generateFeedbackEmailText(userName, userEmail, subject, message, category, feedbackId);
   sendSmtpEmail.sender = { name: FROM_NAME, email: FROM_EMAIL };
   sendSmtpEmail.to = [{ email: FEEDBACK_RECEIVER_EMAIL, name: 'Loretta Team' }];
   sendSmtpEmail.replyTo = { email: userEmail, name: userName };
