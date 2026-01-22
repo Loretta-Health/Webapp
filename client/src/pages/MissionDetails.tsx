@@ -865,6 +865,9 @@ export default function MissionDetails() {
   // Use actual maxProgress from database (via useMissions) as the source of truth
   const actualMaxProgress = existingMission?.maxProgress || missionData.totalSteps;
   
+  // Use actual XP reward from database, fallback to hardcoded value
+  const actualXpReward = existingMission?.xpReward ?? missionData.xpReward;
+  
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const [steps, setSteps] = useState<MissionStep[]>(() => {
     // Generate steps based on actual maxProgress from database
@@ -1181,7 +1184,7 @@ export default function MissionDetails() {
                 <div className="flex items-center gap-2">
                   <Zap className="w-5 h-5 text-[#013DC4] fill-[#013DC4]" />
                   <span className="font-black text-[#013DC4] text-sm sm:text-base" data-testid="mission-xp">
-                    +{missionData.xpReward} XP each
+                    +{actualXpReward} XP each
                   </span>
                 </div>
                 
