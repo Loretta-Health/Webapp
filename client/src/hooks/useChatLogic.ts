@@ -206,7 +206,8 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           context, 
-          language: i18n.language.startsWith('de') ? 'de' : 'en' 
+          language: i18n.language.startsWith('de') ? 'de' : 'en',
+          weatherContext: weatherContextRef.current,
         }),
       });
       

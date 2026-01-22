@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { BackButton } from '@/components/BackButton';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Zap, 
@@ -33,6 +34,7 @@ import { useQuery } from '@tanstack/react-query';
 import { isLowMoodEmotion } from '../../../shared/emotions';
 import { useWeatherAssessment } from '@/hooks/useWeatherAssessment';
 import { useWeatherSimulation } from '@/contexts/WeatherSimulationContext';
+import { authenticatedFetch } from '@/lib/queryClient';
 
 interface MissionStep {
   id: number;
@@ -808,14 +810,48 @@ export default function MissionDetails() {
   }, [latestCheckin]);
 
   // Check weather for bad weather alternatives - always refetch on mount
-  const { isBadWeather: actualBadWeather, assessment: weatherAssessment, refetch: refetchWeather } = useWeatherAssessment();
+  const { isBadWeather: actualBadWeather, assessment: weatherAssessment, refetch: refetchWeather, locationEnabled, usingDefault } = useWeatherAssessment();
   
-  // Ensure mood and weather are refreshed when entering mission details
+  // Fetch database alternative for this mission
+  const { data: dbAlternative, refetch: refetchAlternative } = useQuery<{
+    alternative: {
+      id: number;
+      missionKey: string;
+      titleEn: string;
+      titleDe: string;
+      descriptionEn: string;
+      descriptionDe: string;
+      xpReward: number;
+      icon: string;
+      color: string;
+      maxProgress: number;
+    } | null;
+  }>({
+    queryKey: ['mission-alternative', urlMissionId],
+    queryFn: async () => {
+      if (!urlMissionId) return { alternative: null };
+      const response = await authenticatedFetch(`/api/missions/${urlMissionId}/alternative`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch alternative');
+      }
+      return response.json();
+    },
+    enabled: !!urlMissionId,
+    staleTime: 5 * 60 * 1000,
+  });
+  
+  // Ensure mood, weather, and alternatives are refreshed when entering mission details
   useEffect(() => {
     refetchMood();
-    refetchWeather();
-  }, [urlMissionId]);
-  const isBadWeather = simulateBadWeather || actualBadWeather;
+    // Only refetch weather if location permission is granted (refetch bypasses enabled guard)
+    if (locationEnabled && !usingDefault) {
+      refetchWeather();
+    }
+    refetchAlternative();
+  }, [urlMissionId, locationEnabled, usingDefault]);
+  
+  // Only consider bad weather if user has granted location permission (not using default)
+  const isBadWeather = simulateBadWeather || (actualBadWeather && locationEnabled && !usingDefault);
 
   // Get mission data - use default if no ID provided
   const missionData = urlMissionId ? (missionsDatabase[urlMissionId] || missionsDatabase['1']) : missionsDatabase['1'];
@@ -1181,16 +1217,14 @@ export default function MissionDetails() {
         
         <Tabs defaultValue="main" className="w-full">
           <TabsList className={`grid w-full bg-gray-100 dark:bg-gray-800 ${
-            ((hasLowMoodToday && missionData.alternativeMissions.length > 0) || 
-             (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length))
+            ((hasLowMoodToday || isBadWeather) && dbAlternative?.alternative)
               ? 'grid-cols-2' 
               : 'grid-cols-1'
           }`}>
             <TabsTrigger value="main" className="font-bold" data-testid="tab-main-mission">
               {t('missionDetails.tabs.mainMission')}
             </TabsTrigger>
-            {((hasLowMoodToday && missionData.alternativeMissions.length > 0) || 
-              (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length)) && (
+            {((hasLowMoodToday || isBadWeather) && dbAlternative?.alternative) && (
               <TabsTrigger value="alternatives" className="font-bold" data-testid="tab-alternatives">
                 {t('missionDetails.tabs.alternatives')}
               </TabsTrigger>
@@ -1302,11 +1336,10 @@ export default function MissionDetails() {
             </motion.div>
           </TabsContent>
           
-          {((hasLowMoodToday && missionData.alternativeMissions.length > 0) || 
-            (isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length)) && (
+          {((hasLowMoodToday || isBadWeather) && dbAlternative?.alternative) && (
             <TabsContent value="alternatives" className="mt-4 space-y-3">
               {/* Mood banner - show when user has low mood today */}
-              {hasLowMoodToday && missionData.alternativeMissions.length > 0 && (
+              {hasLowMoodToday && !isBadWeather && (
                 <GlassCard className="p-4 bg-gradient-to-r from-[#CDB6EF]/10 to-[#4B7BE5]/10">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#CDB6EF] to-[#4B7BE5] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#CDB6EF]/30">
@@ -1323,7 +1356,7 @@ export default function MissionDetails() {
               )}
               
               {/* Weather banner - show when weather is bad for outdoor activities */}
-              {isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.length && (
+              {isBadWeather && (
                 <GlassCard className="p-4 bg-gradient-to-r from-[#0150FF]/10 to-[#4B7BE5]/10">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0150FF] to-[#4B7BE5] flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#0150FF]/30">
@@ -1339,28 +1372,35 @@ export default function MissionDetails() {
                 </GlassCard>
               )}
               
-              {/* Mood-based alternatives */}
-              {hasLowMoodToday && missionData.alternativeMissions.map((alt, index) => (
+              {/* Database-driven alternative mission */}
+              {dbAlternative?.alternative && (
                 <motion.div
-                  key={alt.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: 0.1 }}
                 >
-                  <Link href={`/alternative-mission?id=${alt.id}&original=${urlMissionId}`}>
+                  <Link href={`/mission-details?id=${dbAlternative.alternative.missionKey}`}>
                     <GlassCard 
                       className="p-4 hover-elevate cursor-pointer transition-all"
-                      data-testid={`alternative-mission-${index}`}
+                      data-testid="alternative-mission-0"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#CDB6EF]/20 to-[#4B7BE5]/20 flex items-center justify-center text-2xl">
-                          {alt.icon}
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${
+                          isBadWeather 
+                            ? 'bg-gradient-to-br from-[#0150FF]/20 to-[#4B7BE5]/20' 
+                            : 'bg-gradient-to-br from-[#CDB6EF]/20 to-[#4B7BE5]/20'
+                        }`}>
+                          {dbAlternative.alternative.icon || '🎯'}
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-bold text-gray-900 dark:text-white">{alt.title}</h4>
+                          <h4 className="font-bold text-gray-900 dark:text-white">
+                            {i18n.language.startsWith('de') 
+                              ? dbAlternative.alternative.titleDe 
+                              : dbAlternative.alternative.titleEn}
+                          </h4>
                           <div className="flex items-center gap-1 text-[#013DC4]">
                             <Zap className="w-4 h-4 fill-[#013DC4]" />
-                            <span className="text-sm font-bold">+{alt.xp} XP</span>
+                            <span className="text-sm font-bold">+{dbAlternative.alternative.xpReward} XP</span>
                           </div>
                         </div>
                         <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -1368,38 +1408,7 @@ export default function MissionDetails() {
                     </GlassCard>
                   </Link>
                 </motion.div>
-              ))}
-              
-              {/* Weather-based alternatives */}
-              {isBadWeather && missionData.isWeatherDependent && missionData.badWeatherAlternatives?.map((alt, index) => (
-                <motion.div
-                  key={alt.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: (missionData.alternativeMissions.length + index) * 0.1 }}
-                >
-                  <Link href={`/alternative-mission?id=${alt.id}&original=${urlMissionId}&type=weather`}>
-                    <GlassCard 
-                      className="p-4 hover-elevate cursor-pointer transition-all"
-                      data-testid={`weather-alternative-mission-${index}`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0150FF]/20 to-[#4B7BE5]/20 flex items-center justify-center text-2xl">
-                          {alt.icon}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-gray-900 dark:text-white">{alt.title}</h4>
-                          <div className="flex items-center gap-1 text-[#013DC4]">
-                            <Zap className="w-4 h-4 fill-[#013DC4]" />
-                            <span className="text-sm font-bold">+{alt.xp} XP</span>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400" />
-                      </div>
-                    </GlassCard>
-                  </Link>
-                </motion.div>
-              ))}
+              )}
               
               <GlassCard className="p-4 border-dashed border-2 border-[#013DC4]/20">
                 <div className="text-center py-4">

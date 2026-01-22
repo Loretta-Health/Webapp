@@ -1109,6 +1109,36 @@ IMPORTANT: When discussing risk scores, remember:
     }
   });
 
+  // Get alternative mission for a specific parent mission key
+  app.get("/api/missions/:missionKey/alternative", async (req, res) => {
+    try {
+      const { missionKey } = req.params;
+      const alternative = await storage.getAlternativeFor(missionKey);
+      
+      if (!alternative) {
+        return res.json({ alternative: null });
+      }
+      
+      res.json({
+        alternative: {
+          id: alternative.id,
+          missionKey: alternative.missionKey,
+          titleEn: alternative.titleEn,
+          titleDe: alternative.titleDe,
+          descriptionEn: alternative.descriptionEn,
+          descriptionDe: alternative.descriptionDe,
+          xpReward: alternative.xpReward,
+          icon: alternative.icon,
+          color: alternative.color,
+          maxProgress: alternative.maxProgress,
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching alternative mission:", error);
+      res.status(500).json({ error: "Failed to fetch alternative mission" });
+    }
+  });
+
   app.post("/api/missions/suggest", async (req, res) => {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: "Not authenticated" });
@@ -1116,7 +1146,15 @@ IMPORTANT: When discussing risk scores, remember:
 
     try {
       const userId = (req.user as any).id;
-      const { context, language = 'en' } = req.body;
+      const { context, language = 'en', weatherContext } = req.body;
+      
+      // Outdoor missions that should get weather-based alternatives
+      const outdoorMissionKeys = ['walking', 'jumping-jacks'];
+      
+      // Check if weather is bad for outdoor activities (only if we have real location)
+      const isBadWeather = weatherContext && 
+        !weatherContext.isGoodForOutdoor && 
+        !weatherContext.usingDefaultLocation;
 
       const catalog = await storage.getAllMissions();
       const userMissions = await storage.getUserMissions(userId);
@@ -1268,9 +1306,16 @@ IMPORTANT: When discussing risk scores, remember:
       const checkinDate = latestCheckin?.checkedInAt ? new Date(latestCheckin.checkedInAt).toDateString() : null;
       const isCheckinToday = checkinDate === today;
       const missionIsActive = bestUserMission?.isActive === true;
-      const shouldShowAlternative = missionIsActive && isLowMood && isCheckinToday && !bestMission.isAlternative;
+      const isOutdoorMission = outdoorMissionKeys.includes(bestMission.missionKey);
+      
+      // Show alternative if: mission is active AND (low mood today OR bad weather for outdoor mission)
+      const shouldShowMoodAlternative = missionIsActive && isLowMood && isCheckinToday && !bestMission.isAlternative;
+      const shouldShowWeatherAlternative = missionIsActive && isBadWeather && isOutdoorMission && !bestMission.isAlternative;
+      const shouldShowAlternative = shouldShowMoodAlternative || shouldShowWeatherAlternative;
       
       let alternativeMission = null;
+      let alternativeReason = '';
+      
       if (shouldShowAlternative) {
         const altMission = await storage.getAlternativeFor(bestMission.missionKey);
         if (altMission) {
@@ -1284,9 +1329,18 @@ IMPORTANT: When discussing risk scores, remember:
             color: altMission.color,
             maxProgress: altMission.maxProgress,
           };
-          reason = language === 'de' 
-            ? 'Hier ist eine sanftere Alternative, die zu deiner aktuellen Stimmung passt.' 
-            : 'Here\'s a gentler alternative that matches your current mood.';
+          
+          // Set reason based on trigger
+          if (shouldShowWeatherAlternative) {
+            alternativeReason = language === 'de' 
+              ? 'Das Wetter ist nicht ideal für draußen. Hier ist eine Indoor-Alternative.' 
+              : 'Weather isn\'t great for outdoor activities. Here\'s an indoor alternative.';
+          } else {
+            alternativeReason = language === 'de' 
+              ? 'Hier ist eine sanftere Alternative, die zu deiner aktuellen Stimmung passt.' 
+              : 'Here\'s a gentler alternative that matches your current mood.';
+          }
+          reason = alternativeReason;
         }
       }
       
