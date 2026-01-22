@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { trackMedication } from '@/lib/clarity';
+import { useOptimisticGamification } from './useOptimisticGamification';
 
 export interface MedicationDose {
   id: number;
@@ -65,6 +66,7 @@ export interface LogDoseResult {
 
 export function useMedicationProgress() {
   const queryClient = useQueryClient();
+  const { addXpOptimistically } = useOptimisticGamification();
 
   // Fetch all user medications
   const { data: medications = [], isLoading, error, refetch } = useQuery<Medication[]>({
@@ -117,10 +119,12 @@ export function useMedicationProgress() {
       const response = await apiRequest('POST', `/api/medications/${medicationId}/log`, { doseNumber });
       return response.json() as Promise<LogDoseResult>;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
+      if (result.xpAwarded && result.xpAwarded > 0) {
+        addXpOptimistically(result.xpAwarded);
+      }
     },
   });
 
