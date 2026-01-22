@@ -397,7 +397,7 @@ export default function QROnboarding() {
                         <TabsContent value="en" className="space-y-4 max-h-64 overflow-y-auto pr-2">
                           <div className="text-center border-b border-border pb-3">
                             <h3 className="font-black text-foreground text-sm">LORETTA HEALTH UG — GDPR CONSENT & PRIVACY POLICY (EN)</h3>
-                            <p className="text-[10px] mt-1">Last Updated: November 25, 2025 | Effective Date: November 25, 2025</p>
+                            <p className="text-[10px] mt-1">Last Updated: January 21, 2026 | Effective Date: January 21, 2026</p>
                           </div>
                           
                           <p>This Privacy and Consent Policy explains how Loretta Health UG (haftungsbeschränkt) ("Loretta", "we", "us") processes your personal and health data when you use the Loretta mobile application. Loretta provides wellbeing insights, behavioural support, and analysis of medical information. We do not provide diagnosis or medical treatment.</p>
@@ -406,7 +406,7 @@ export default function QROnboarding() {
                           
                           <div className="space-y-2">
                             <h4 className="font-bold text-foreground">1. Controller</h4>
-                            <p>Loretta Health UG (haftungsbeschränkt)<br/>Cuvrystraße 53, 10997 Berlin, Germany<br/>Email: privacy@loretta.care</p>
+                            <p>Loretta Health UG (haftungsbeschränkt)<br/>c/o Scaling Spaces, Cuvrystr. 53, 10997 Berlin, Germany<br/>Email: support@loretta.care</p>
                           </div>
                           
                           <div className="space-y-2">
@@ -487,7 +487,7 @@ export default function QROnboarding() {
                           
                           <div className="space-y-2">
                             <h4 className="font-bold text-foreground">12. User Rights</h4>
-                            <p>You have the right to access, correct, delete, restrict, object, withdraw consent, and request portability. Contact: privacy@loretta.care</p>
+                            <p>You have the right to access, correct, delete, restrict, object, withdraw consent, and request portability. Contact: support@loretta.care</p>
                           </div>
                           
                           <div className="space-y-2">
@@ -504,7 +504,7 @@ export default function QROnboarding() {
                         <TabsContent value="de" className="space-y-4 max-h-64 overflow-y-auto pr-2">
                           <div className="text-center border-b border-border pb-3">
                             <h3 className="font-black text-foreground text-sm">LORETTA HEALTH UG — DATENSCHUTZ- UND EINWILLIGUNGSERKLÄRUNG (DE)</h3>
-                            <p className="text-[10px] mt-1">Letzte Aktualisierung: November 25, 2025 | Gültig ab: November 25, 2025</p>
+                            <p className="text-[10px] mt-1">Letzte Aktualisierung: January 21, 2026 | Gültig ab: January 21, 2026</p>
                           </div>
                           
                           <p>Diese Erklärung beschreibt, wie die Loretta Health UG (haftungsbeschränkt) („Loretta", „wir") personenbezogene und gesundheitsbezogene Daten verarbeitet. Loretta bietet personalisierte Einblicke, Wohlbefindensunterstützung und Erklärungen zu medizinischen Informationen. Wir stellen keine Diagnosen und führen keine medizinischen Behandlungen durch.</p>
@@ -513,7 +513,7 @@ export default function QROnboarding() {
                           
                           <div className="space-y-2">
                             <h4 className="font-bold text-foreground">1. Verantwortlicher</h4>
-                            <p>Loretta Health UG (haftungsbeschränkt)<br/>Cuvrystraße 53, 10997 Berlin, Deutschland<br/>E-Mail: privacy@loretta.care</p>
+                            <p>Loretta Health UG (haftungsbeschränkt)<br/>c/o Scaling Spaces, Cuvrystr. 53, 10997 Berlin, Deutschland<br/>E-Mail: support@loretta.care</p>
                           </div>
                           
                           <div className="space-y-2">
@@ -594,7 +594,7 @@ export default function QROnboarding() {
                           
                           <div className="space-y-2">
                             <h4 className="font-bold text-foreground">12. Nutzerrechte</h4>
-                            <p>Zugriff, Berichtigung, Löschung, Einschränkung, Widerspruch, Widerruf und Übertragbarkeit. Kontakt: privacy@loretta.care</p>
+                            <p>Zugriff, Berichtigung, Löschung, Einschränkung, Widerspruch, Widerruf und Übertragbarkeit. Kontakt: support@loretta.care</p>
                           </div>
                           
                           <div className="space-y-2">
