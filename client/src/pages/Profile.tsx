@@ -2091,7 +2091,7 @@ export default function Profile() {
 
       {/* Feedback Dialog */}
       <Dialog open={isFeedbackOpen} onOpenChange={setIsFeedbackOpen}>
-        <DialogContent className="max-w-md bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
+        <DialogContent className="max-w-md mx-4 max-h-[85vh] bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
           <DialogHeader>
             <DialogTitle className="text-xl font-black flex items-center gap-2 text-gray-900 dark:text-white">
               <MessageSquare className="w-5 h-5 text-[#013DC4]" />
