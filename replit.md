@@ -31,9 +31,19 @@ Preferred communication style: Simple, everyday language.
   - iOS: `NSLocationWhenInUseUsageDescription` in Info.plist
   - Android: `ACCESS_COARSE_LOCATION` and `ACCESS_FINE_LOCATION` in AndroidManifest.xml
 - **Default Location**: Falls back to Berlin coordinates (52.52, 13.405) when permission is denied or unavailable.
-- **Weather Query Guard**: Weather API is only called when `locationEnabled` is true (user has granted permission).
+- **Weather Query Guard**: Weather API is only called when `locationEnabled` is true (user has granted permission). Both `useWeatherAssessment` hook and manual refetch calls are guarded.
 - **AI Context Awareness**: The `usingDefaultLocation` flag is passed to the AI, so it knows when weather data is from a default location rather than the user's actual location. Alternative mission suggestions are only triggered when using the user's real location.
-- **Weather Flow**: `useGeolocation` → `useWeatherAssessment` → `/api/weather/outdoor-assessment` → Open-Meteo API → `weatherContext` passed to `/api/chat` → AI response with weather-aware recommendations.
+- **Weather Flow**: `useGeolocation` → `useWeatherAssessment` → `/api/weather/outdoor-assessment` → Open-Meteo API → `weatherContext` passed to `/api/chat` AND `/api/missions/suggest` → AI/mission response with weather-aware recommendations.
+
+### Weather-Based Mission Alternatives
+- **Database-Driven Alternatives**: Alternative missions are stored in the database with `isAlternative` and `alternativeOf` fields linking them to parent missions.
+- **Outdoor Missions**: `walking` and `jumping-jacks` are marked as outdoor missions that trigger weather-based alternatives.
+- **API Endpoint**: `GET /api/missions/:missionKey/alternative` returns the database alternative for a mission.
+- **Trigger Conditions**: Weather alternatives only show when:
+  1. User has granted real location permission (`locationEnabled && !usingDefault`)
+  2. Weather assessment indicates bad conditions (`!isGoodForOutdoor`)
+  3. The mission is an outdoor mission
+- **MissionDetails Integration**: The UI fetches and displays database alternatives instead of hardcoded ones, with appropriate banners for mood-based or weather-based alternatives.
 
 ### Health Questionnaire & Risk Prediction
 - **Questionnaire**: 44 health questions mapped to NHANES-style parameters.
