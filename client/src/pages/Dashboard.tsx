@@ -1140,6 +1140,17 @@ export default function Dashboard() {
                   {registerError && (
                     <p className="text-sm text-red-500">{registerError}</p>
                   )}
+                  <p className="text-xs text-muted-foreground text-center">
+                    By signing up, you acknowledge that you have read and understood our{' '}
+                    <button 
+                      type="button"
+                      onClick={() => setShowPrivacyPolicy(true)}
+                      className="text-primary hover:underline font-medium"
+                    >
+                      Privacy Policy
+                    </button>
+                    .
+                  </p>
                   <Button 
                     type="submit" 
                     className="w-full bg-gradient-to-r from-primary via-primary to-chart-2 hover:opacity-90 text-white font-bold"
