@@ -470,6 +470,24 @@ export class DatabaseStorage implements IStorage {
     return updated;
   }
 
+  async deductXP(userId: string, amount: number): Promise<UserXp> {
+    let xpRecord = await this.getUserXp(userId);
+    
+    if (!xpRecord) {
+      xpRecord = await this.initUserXp(userId);
+    }
+
+    const newXP = Math.max(0, (xpRecord.totalXp || 0) - amount);
+
+    const [updated] = await db
+      .update(userXp)
+      .set({ totalXp: newXP, updatedAt: new Date() })
+      .where(eq(userXp.id, xpRecord.id))
+      .returning();
+
+    return updated;
+  }
+
   async getUserXp(userId: string): Promise<UserXp | undefined> {
     const [record] = await db
       .select()

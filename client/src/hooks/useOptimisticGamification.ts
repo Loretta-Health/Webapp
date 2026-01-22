@@ -35,6 +35,21 @@ export function useOptimisticGamification() {
     });
   }, [queryClient]);
 
+  const deductXpOptimistically = useCallback((xpAmount: number) => {
+    queryClient.setQueryData<GamificationData>(['/api/gamification'], (oldData) => {
+      if (!oldData) return oldData;
+      
+      const newXp = Math.max(0, oldData.xp - xpAmount);
+      const newLevel = calculateLevelFromXP(newXp);
+      
+      return {
+        ...oldData,
+        xp: newXp,
+        level: newLevel,
+      };
+    });
+  }, [queryClient]);
+
   const updateStreakOptimistically = useCallback((newStreak: number) => {
     queryClient.setQueryData<GamificationData>(['/api/gamification'], (oldData) => {
       if (!oldData) return oldData;
@@ -65,6 +80,7 @@ export function useOptimisticGamification() {
 
   return {
     addXpOptimistically,
+    deductXpOptimistically,
     updateStreakOptimistically,
     updateLivesOptimistically,
     refreshGamification,

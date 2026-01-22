@@ -58,7 +58,7 @@ export interface Mission {
 export function useMissions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { addXpOptimistically } = useOptimisticGamification();
+  const { addXpOptimistically, deductXpOptimistically } = useOptimisticGamification();
   const userId = user?.id;
 
   const { data: catalogMissions = [], isLoading: catalogLoading } = useQuery<CatalogMission[]>({
@@ -259,6 +259,23 @@ export function useMissions() {
     const mission = missions.find(m => m.id === missionId);
     if (mission && mission.progress > 0) {
       const newProgress = mission.progress - 1;
+      const wasCompleted = mission.completed;
+      
+      // Optimistically deduct XP if mission was completed
+      if (wasCompleted && mission.xpReward > 0) {
+        deductXpOptimistically(mission.xpReward);
+      }
+      
+      // Optimistically update mission progress
+      queryClient.setQueryData<UserMission[]>(['/api/missions'], (oldData) => {
+        if (!oldData) return oldData;
+        return oldData.map(m => 
+          m.id === missionId 
+            ? { ...m, progress: newProgress, completed: false, completedAt: null }
+            : m
+        );
+      });
+      
       updateMissionMutation.mutate({
         id: missionId,
         data: {
@@ -267,7 +284,7 @@ export function useMissions() {
         },
       });
     }
-  }, [missions, updateMissionMutation]);
+  }, [missions, updateMissionMutation, deductXpOptimistically, queryClient]);
 
   const removeMission = useCallback((missionId: string) => {
     deleteMissionMutation.mutate(missionId);

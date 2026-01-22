@@ -1453,10 +1453,11 @@ IMPORTANT: When discussing risk scores, remember:
         validatedData.activatedAt = new Date();
       }
       
-      // Get current mission state to check if it's being newly completed
+      // Get current mission state to check if it's being newly completed or un-completed
       const [currentMission] = await db.select().from(userMissions).where(eq(userMissions.id, id));
       const wasCompleted = currentMission?.completed ?? false;
       const isBeingCompleted = validatedData.completed === true && !wasCompleted;
+      const isBeingUncompleted = validatedData.completed === false && wasCompleted;
       
       const updated = await storage.updateUserMission(id, validatedData);
       
@@ -1470,6 +1471,15 @@ IMPORTANT: When discussing risk scores, remember:
         if (catalogMission && catalogMission.xpReward && catalogMission.xpReward > 0) {
           const xpResult = await addXPAndCheckAchievements(userId, catalogMission.xpReward);
           console.log(`[Missions] Awarded ${catalogMission.xpReward} XP to user ${userId} for completing mission ${currentMission.missionKey}. Achievements unlocked: ${xpResult.achievementsUnlocked.length}`);
+        }
+      }
+      
+      // Deduct XP when mission is being un-completed (undo)
+      if (isBeingUncompleted && currentMission) {
+        const catalogMission = await storage.getMissionByKey(currentMission.missionKey);
+        if (catalogMission && catalogMission.xpReward && catalogMission.xpReward > 0) {
+          await storage.deductXP(userId, catalogMission.xpReward);
+          console.log(`[Missions] Deducted ${catalogMission.xpReward} XP from user ${userId} for undoing mission ${currentMission.missionKey}`);
         }
       }
       
