@@ -1058,18 +1058,24 @@ export default function MyDashboard() {
             
             {showLeaderboard ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7">
-                <CollapsibleSectionNew
-                  title={t('sidebar.leaderboard')}
-                  icon={<Users className="w-5 h-5" />}
-                  defaultOpen={true}
-                >
-                  <Leaderboard communityType={communityType} />
-                </CollapsibleSectionNew>
-                <CollapsibleSectionNew
-                  title={t('achievements.title')}
-                  icon={<Trophy className="w-5 h-5" />}
-                  defaultOpen={true}
-                >
+                <Link href={`/leaderboard?community=${communityType}`} className="block">
+                  <div className="cursor-pointer hover:scale-[1.01] transition-transform">
+                    <CollapsibleSectionNew
+                      title={t('sidebar.leaderboard')}
+                      icon={<Users className="w-5 h-5" />}
+                      defaultOpen={true}
+                    >
+                      <Leaderboard communityType={communityType} />
+                    </CollapsibleSectionNew>
+                  </div>
+                </Link>
+                <Link href="/leaderboard?tab=achievements" className="block">
+                  <div className="cursor-pointer hover:scale-[1.01] transition-transform">
+                    <CollapsibleSectionNew
+                      title={t('achievements.title')}
+                      icon={<Trophy className="w-5 h-5" />}
+                      defaultOpen={true}
+                    >
                   <div className="grid grid-cols-1 gap-3 lg:gap-4">
                     {userAchievements && userAchievements.length > 0 ? (
                       userAchievements.slice(0, 6).map((achievement) => (
@@ -1117,47 +1123,51 @@ export default function MyDashboard() {
                       </>
                     )}
                   </div>
-                </CollapsibleSectionNew>
+                    </CollapsibleSectionNew>
+                  </div>
+                </Link>
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-7">
-                  <CollapsibleSectionNew
-                    title={t('riskScore.title')}
-                    icon={<Heart className="w-5 h-5" />}
-                    defaultOpen={true}
-                  >
-                    <div className="flex flex-col items-center justify-center w-full py-2 sm:py-4">
-                      <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-4 sm:mb-6">
-                        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-100 dark:text-gray-800" />
-                          <circle
-                            cx="50" cy="50" r="40" fill="none"
-                            stroke="url(#scoreGradient)"
-                            strokeWidth="8"
-                            strokeLinecap="round"
-                            strokeDasharray={`${Math.round(riskScore) * 2.51} 251`}
-                          />
-                          <defs>
-                            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor={riskScore <= 30 ? "#22C55E" : riskScore <= 60 ? "#F59E0B" : "#EF4444"} />
-                              <stop offset="100%" stopColor={riskScore <= 30 ? "#10B981" : riskScore <= 60 ? "#D97706" : "#DC2626"} />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                          <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{Math.round(riskScore)}</span>
-                          <span className={`text-xs sm:text-sm font-bold ${riskColor}`}>{riskLevel}</span>
+                  <Link href="/risk-score" className="block">
+                    <div className="cursor-pointer hover:scale-[1.01] transition-transform">
+                      <CollapsibleSectionNew
+                        title={t('riskScore.title')}
+                        icon={<Heart className="w-5 h-5" />}
+                        defaultOpen={true}
+                      >
+                        <div className="flex flex-col items-center justify-center w-full py-2 sm:py-4">
+                          <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-4 sm:mb-6">
+                            <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                              <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-100 dark:text-gray-800" />
+                              <circle
+                                cx="50" cy="50" r="40" fill="none"
+                                stroke="url(#scoreGradient)"
+                                strokeWidth="8"
+                                strokeLinecap="round"
+                                strokeDasharray={`${Math.round(riskScore) * 2.51} 251`}
+                              />
+                              <defs>
+                                <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stopColor={riskScore <= 30 ? "#22C55E" : riskScore <= 60 ? "#F59E0B" : "#EF4444"} />
+                                  <stop offset="100%" stopColor={riskScore <= 30 ? "#10B981" : riskScore <= 60 ? "#D97706" : "#DC2626"} />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                              <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{Math.round(riskScore)}</span>
+                              <span className={`text-xs sm:text-sm font-bold ${riskColor}`}>{riskLevel}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-[#013DC4] font-bold hover:bg-[#013DC4]/5 rounded-xl flex items-center gap-1 justify-center min-h-[48px] transition-all">
+                            {t('riskScore.viewDetails', 'View Details')} <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
                         </div>
-                      </div>
-                      
-                      <Link href="/risk-score" className="w-full sm:w-auto">
-                        <button className="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-[#013DC4] font-bold hover:bg-[#013DC4]/5 rounded-xl flex items-center gap-1 justify-center min-h-[48px] transition-all">
-                          {t('riskScore.viewDetails', 'View Details')} <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                        </button>
-                      </Link>
+                      </CollapsibleSectionNew>
                     </div>
-                  </CollapsibleSectionNew>
+                  </Link>
                   
                   <CollapsibleSectionNew
                     title={t('checkin.title', 'Daily Check-In')}
@@ -1260,13 +1270,17 @@ export default function MyDashboard() {
                 </CollapsibleSectionNew>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-7">
-                  <CollapsibleSectionNew
-                    title={t('sidebar.leaderboard')}
-                    icon={<Users className="w-5 h-5" />}
-                    defaultOpen={true}
-                  >
-                    <Leaderboard communityType={communityType} />
-                  </CollapsibleSectionNew>
+                  <Link href={`/leaderboard?community=${communityType}`} className="block">
+                    <div className="cursor-pointer hover:scale-[1.01] transition-transform">
+                      <CollapsibleSectionNew
+                        title={t('sidebar.leaderboard')}
+                        icon={<Users className="w-5 h-5" />}
+                        defaultOpen={true}
+                      >
+                        <Leaderboard communityType={communityType} />
+                      </CollapsibleSectionNew>
+                    </div>
+                  </Link>
                   
                   <CollapsibleSectionNew
                   title={t('medications.title')}

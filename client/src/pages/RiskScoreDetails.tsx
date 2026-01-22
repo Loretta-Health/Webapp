@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, Redirect } from 'wouter';
 import { Badge } from '@/components/ui/badge';
 import { BackButton } from '@/components/BackButton';
@@ -28,7 +29,8 @@ import {
   Footprints,
   MessageCircle,
   RefreshCw,
-  Ear
+  Ear,
+  ChevronDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -72,30 +74,48 @@ function GlassCard({
   );
 }
 
-function Section({ 
+function CollapsibleSection({ 
   title, 
   icon, 
   badge, 
   children, 
-  iconColor = 'from-[#013DC4] to-[#CDB6EF]'
+  iconColor = 'from-[#013DC4] to-[#CDB6EF]',
+  defaultOpen = true
 }: { 
   title: string; 
   icon: React.ReactNode; 
   badge?: React.ReactNode;
   children: React.ReactNode;
   iconColor?: string;
+  defaultOpen?: boolean;
 }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  
   return (
     <GlassCard className="overflow-hidden">
       <div className="p-4 sm:p-5">
-        <div className="flex items-center gap-2 sm:gap-3 mb-4">
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full flex items-center gap-2 sm:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-br ${iconColor} flex items-center justify-center text-white shadow-lg flex-shrink-0`}>
             {icon}
           </div>
-          <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{title}</h3>
+          <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg flex-1 text-left">{title}</h3>
           {badge}
-        </div>
-        {children}
+          <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="mt-4"
+          >
+            {children}
+          </motion.div>
+        )}
       </div>
     </GlassCard>
   );
@@ -333,10 +353,11 @@ export default function RiskScoreDetails() {
         </GlassCard>
 
         {/* Risk Factors Section */}
-        <Section
+        <CollapsibleSection
           title="Areas Needing Attention"
           icon={<AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />}
           iconColor="from-red-500 to-rose-400"
+          defaultOpen={true}
           badge={
             <Badge className="ml-2 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 border-0 rounded-full text-xs">
               {negativeFactors.length}
@@ -369,14 +390,15 @@ export default function RiskScoreDetails() {
               })
             )}
           </div>
-        </Section>
+        </CollapsibleSection>
 
         {/* Warnings Section */}
         {warningFactors.length > 0 && (
-          <Section
+          <CollapsibleSection
             title="Watch These"
             icon={<AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />}
             iconColor="from-amber-500 to-orange-400"
+            defaultOpen={false}
             badge={
               <Badge className="ml-2 bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-0 rounded-full text-xs">
                 {warningFactors.length}
@@ -405,15 +427,16 @@ export default function RiskScoreDetails() {
                 );
               })}
             </div>
-          </Section>
+          </CollapsibleSection>
         )}
 
         {/* Positive Factors Section */}
         {positiveFactors.length > 0 && (
-          <Section
+          <CollapsibleSection
             title="Keep It Up!"
             icon={<CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />}
             iconColor="from-green-500 to-emerald-400"
+            defaultOpen={false}
             badge={
               <Badge className="ml-2 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 border-0 rounded-full text-xs">
                 {positiveFactors.length}
@@ -442,7 +465,7 @@ export default function RiskScoreDetails() {
                 );
               })}
             </div>
-          </Section>
+          </CollapsibleSection>
         )}
 
         {/* Get Personalized Recommendations */}
