@@ -46,6 +46,8 @@ import {
   type UserFeedback,
   type InsertUserFeedback,
   type AuthToken,
+  type CalendarEvent,
+  type InsertCalendarEvent,
   users,
   questionnaireAnswers,
   userProfiles,
@@ -69,6 +71,7 @@ import {
   passwordResetTokens,
   userFeedback,
   authTokens,
+  calendarEvents,
 } from "@shared/schema";
 import { db, pool } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -1714,6 +1717,42 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFeedback(feedbackId: string): Promise<boolean> {
     const result = await db.delete(userFeedback).where(eq(userFeedback.id, feedbackId));
+    return true;
+  }
+
+  // Calendar Events methods
+  async getCalendarEvents(userId: string): Promise<CalendarEvent[]> {
+    return db.select().from(calendarEvents)
+      .where(eq(calendarEvents.userId, userId))
+      .orderBy(calendarEvents.dateISO, calendarEvents.startTime);
+  }
+
+  async getCalendarEventsByDateRange(userId: string, startDate: string, endDate: string): Promise<CalendarEvent[]> {
+    return db.select().from(calendarEvents)
+      .where(and(
+        eq(calendarEvents.userId, userId),
+        sql`${calendarEvents.dateISO} >= ${startDate}`,
+        sql`${calendarEvents.dateISO} <= ${endDate}`
+      ))
+      .orderBy(calendarEvents.dateISO, calendarEvents.startTime);
+  }
+
+  async createCalendarEvent(event: InsertCalendarEvent): Promise<CalendarEvent> {
+    const [created] = await db.insert(calendarEvents).values(event).returning();
+    return created;
+  }
+
+  async updateCalendarEvent(eventId: string, userId: string, updates: Partial<InsertCalendarEvent>): Promise<CalendarEvent | null> {
+    const [updated] = await db.update(calendarEvents)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(calendarEvents.id, eventId), eq(calendarEvents.userId, userId)))
+      .returning();
+    return updated || null;
+  }
+
+  async deleteCalendarEvent(eventId: string, userId: string): Promise<boolean> {
+    await db.delete(calendarEvents)
+      .where(and(eq(calendarEvents.id, eventId), eq(calendarEvents.userId, userId)));
     return true;
   }
 }

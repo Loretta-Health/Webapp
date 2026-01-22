@@ -60,6 +60,19 @@ Preferred communication style: Simple, everyday language.
 - **Reset Trigger**: Resets are checked and applied on each `GET /api/missions` request.
 - **Implementation**: See `server/missionReset.ts` for the reset logic.
 
+### Calendar System
+- **Database-Backed Events**: Personal calendar events stored per-user in `calendar_events` table.
+- **Event Types**: Four types with color-coded borders - appointment (blue), medication (lavender), exercise (blue), other (gray).
+- **CRUD Operations**: Full create, read, update, delete via REST API (`/api/calendar-events`).
+- **React Query Integration**: Frontend uses TanStack Query with `useQuery` and `useMutation` for state management.
+- **Week Navigation**: Users can browse by week with quick "this week" navigation.
+- **API Endpoints**:
+  - `GET /api/calendar-events` - Fetch all events for authenticated user
+  - `GET /api/calendar-events/range?startDate=&endDate=` - Fetch events in date range
+  - `POST /api/calendar-events` - Create new event
+  - `PUT /api/calendar-events/:id` - Update event
+  - `DELETE /api/calendar-events/:id` - Delete event
+
 ### Friend System
 - **Invite Mechanism**: Users generate unique 8-character invite codes to invite friends.
 - **Bidirectional Friendships**: Friendships are established in both directions upon acceptance.
