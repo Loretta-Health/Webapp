@@ -26,6 +26,7 @@ import {
   Footprints,
   Moon,
   Wind,
+  Undo2,
   type LucideIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -792,7 +793,7 @@ export default function MissionDetails() {
   // Get global weather simulation state
   const { simulateBadWeather } = useWeatherSimulation();
   
-  const { missions, activeMissions, inactiveMissions, updateMissionProgress, activateMission, deactivateMission } = useMissions();
+  const { missions, activeMissions, inactiveMissions, updateMissionProgress, undoMissionStep, activateMission, deactivateMission } = useMissions();
 
   // Check if user has a low mood check-in today for alternative missions
   // Always refetch on mount to ensure fresh mood data
@@ -1044,6 +1045,23 @@ export default function MissionDetails() {
     }
   };
   
+  const handleUndoStep = () => {
+    if (dbMissionId && completedCount > 0) {
+      setSteps(prev => {
+        const lastCompleted = [...prev].reverse().find(s => s.completed);
+        if (lastCompleted) {
+          return prev.map(step => 
+            step.id === lastCompleted.id 
+              ? { ...step, completed: false, time: undefined }
+              : step
+          );
+        }
+        return prev;
+      });
+      undoMissionStep(dbMissionId);
+    }
+  };
+  
   const isComplete = completedCount >= actualMaxProgress;
   
   return (
@@ -1167,25 +1185,38 @@ export default function MissionDetails() {
                   </span>
                 </div>
                 
-                <Button
-                  size="lg"
-                  className={`w-full sm:w-auto font-black ${isComplete ? '' : 'animate-pulse-glow'}`}
-                  disabled={isComplete || !existingMission?.isActive}
-                  onClick={handleLogCompletion}
-                  data-testid="button-log-completion"
-                >
-                  {isComplete ? (
-                    <>
-                      <Check className="w-5 h-5 mr-2" />
-                      {t('missionDetails.completed')}
-                    </>
-                  ) : (
-                    <>
-                      <MissionIcon className="w-5 h-5 mr-2" />
-                      {t('missionDetails.logCompletion')}
-                    </>
-                  )}
-                </Button>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    disabled={completedCount === 0}
+                    onClick={handleUndoStep}
+                    title={t('missionDetails.undoStep', 'Undo last step')}
+                    className="rounded-xl border-gray-200 dark:border-gray-700"
+                    data-testid="button-undo-step"
+                  >
+                    <Undo2 className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    size="lg"
+                    className={`flex-1 sm:flex-none font-black ${isComplete ? '' : 'animate-pulse-glow'}`}
+                    disabled={isComplete || !existingMission?.isActive}
+                    onClick={handleLogCompletion}
+                    data-testid="button-log-completion"
+                  >
+                    {isComplete ? (
+                      <>
+                        <Check className="w-5 h-5 mr-2" />
+                        {t('missionDetails.completed')}
+                      </>
+                    ) : (
+                      <>
+                        <MissionIcon className="w-5 h-5 mr-2" />
+                        {t('missionDetails.logCompletion')}
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
               
               {existingMission && (
