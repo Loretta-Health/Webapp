@@ -2,7 +2,9 @@ import { useState, useEffect, ReactNode } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
-import { Loader2, Lock, User, UserPlus, AtSign, Mail, ArrowLeft, KeyRound } from 'lucide-react';
+import { Loader2, Lock, User, UserPlus, AtSign, Mail, ArrowLeft, KeyRound, X, Shield } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
@@ -57,6 +59,8 @@ export default function AuthPage() {
     email: ''
   });
   const [registerError, setRegisterError] = useState('');
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
+  const [privacyLang, setPrivacyLang] = useState<'en' | 'de'>('en');
 
   useEffect(() => {
     if (user && !onboardingLoading) {
@@ -547,6 +551,17 @@ export default function AuthPage() {
                     <p className="text-sm text-red-600 dark:text-red-400 font-medium">{registerError}</p>
                   </div>
                 )}
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                  {t('privacyAcknowledgment')}{' '}
+                  <button 
+                    type="button"
+                    onClick={() => setShowPrivacyPolicy(true)}
+                    className="text-[#013DC4] hover:underline font-medium"
+                  >
+                    {t('privacyPolicy')}
+                  </button>
+                  .
+                </p>
                 <button 
                   type="submit" 
                   className="w-full py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/20 transition-all disabled:opacity-50 min-h-[56px]"
@@ -569,6 +584,165 @@ export default function AuthPage() {
           </div>
         </GlassCard>
       </div>
+
+      {/* Privacy Policy Modal */}
+      <Dialog open={showPrivacyPolicy} onOpenChange={setShowPrivacyPolicy}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-[#013DC4]" />
+              {privacyLang === 'en' ? 'Privacy Policy' : 'Datenschutzerklärung'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setPrivacyLang('en')}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                privacyLang === 'en' 
+                  ? 'bg-[#013DC4] text-white' 
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => setPrivacyLang('de')}
+              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                privacyLang === 'de' 
+                  ? 'bg-[#013DC4] text-white' 
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+              }`}
+            >
+              Deutsch
+            </button>
+          </div>
+          <div className="overflow-y-auto max-h-[60vh] pr-2">
+            {privacyLang === 'en' ? (
+              <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+                <div className="text-center border-b border-gray-200 dark:border-gray-700 pb-3">
+                  <h3 className="font-black text-gray-900 dark:text-white text-sm">LORETTA HEALTH UG — PRIVACY POLICY</h3>
+                  <p className="text-[10px] mt-1">Last Updated: January 21, 2026 | Effective Date: January 21, 2026</p>
+                </div>
+                
+                <div className="space-y-2 p-3 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 rounded-xl">
+                  <h4 className="font-bold text-gray-900 dark:text-white">Privacy at a Glance</h4>
+                  <ul className="space-y-1">
+                    <li><strong className="text-gray-900 dark:text-white">We never sell your data.</strong> Your health information belongs to you.</li>
+                    <li><strong className="text-gray-900 dark:text-white">You're in control.</strong> Access, update, or delete your data at support@loretta.care.</li>
+                    <li><strong className="text-gray-900 dark:text-white">Anonymization first.</strong> Your name is anonymized in our database.</li>
+                    <li><strong className="text-gray-900 dark:text-white">European data protection.</strong> We're based in Berlin and fully comply with GDPR.</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">1. Data Controller</h4>
+                  <p>Loretta Health UG<br/>c/o Scaling Spaces, Cuvrystr. 53<br/>10997 Berlin, Germany<br/>Email: support@loretta.care</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">2. What Data We Collect</h4>
+                  <p><strong className="text-gray-900 dark:text-white">Health Data:</strong> Medication information, health risk scores, emotional check-ins, wellbeing data.</p>
+                  <p><strong className="text-gray-900 dark:text-white">Personal Information:</strong> Name (anonymized), email address, phone number.</p>
+                  <p><strong className="text-gray-900 dark:text-white">Usage Data:</strong> App interactions, features accessed, performance data.</p>
+                  <p><strong className="text-gray-900 dark:text-white">Analytics:</strong> Device information, usage patterns via Microsoft Clarity.</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">3. How We Use Your Data</h4>
+                  <p><strong className="text-gray-900 dark:text-white">Health Services:</strong> Personalized recommendations, health insights, medication tracking, risk score monitoring.</p>
+                  <p><strong className="text-gray-900 dark:text-white">Research:</strong> Advancing chronic disease prevention through health AI research, improving early detection strategies.</p>
+                  <p><strong className="text-gray-900 dark:text-white">App Improvement:</strong> Analyzing usage patterns, monitoring performance.</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">4. Legal Basis (GDPR)</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Consent (Art. 6(1)(a), Art. 9(2)(a)) for health data</li>
+                    <li>Legitimate Interest (Art. 6(1)(f)) for analytics</li>
+                    <li>Contract Performance (Art. 6(1)(b)) for services</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">5. Your Rights</h4>
+                  <p>Access, rectification, erasure, restriction, data portability, objection, and withdrawal of consent. Contact support@loretta.care to exercise your rights.</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">6. Data Sharing</h4>
+                  <p><strong className="text-gray-900 dark:text-white">We do not sell your personal data.</strong> We may share with service providers (Microsoft Clarity), when required by law, or anonymized data for research.</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">7. Contact & Complaints</h4>
+                  <p>Questions: support@loretta.care<br/>Complaints: Berlin Commissioner for Data Protection, Friedrichstr. 219, 10969 Berlin</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+                <div className="text-center border-b border-gray-200 dark:border-gray-700 pb-3">
+                  <h3 className="font-black text-gray-900 dark:text-white text-sm">LORETTA HEALTH UG — DATENSCHUTZERKLÄRUNG</h3>
+                  <p className="text-[10px] mt-1">Letzte Aktualisierung: 21. Januar 2026 | Gültig ab: 21. Januar 2026</p>
+                </div>
+                
+                <div className="space-y-2 p-3 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 rounded-xl">
+                  <h4 className="font-bold text-gray-900 dark:text-white">Datenschutz auf einen Blick</h4>
+                  <ul className="space-y-1">
+                    <li><strong className="text-gray-900 dark:text-white">Wir verkaufen niemals Ihre Daten.</strong> Ihre Gesundheitsdaten gehören Ihnen.</li>
+                    <li><strong className="text-gray-900 dark:text-white">Sie haben die Kontrolle.</strong> Zugriff, Aktualisierung oder Löschung unter support@loretta.care.</li>
+                    <li><strong className="text-gray-900 dark:text-white">Anonymisierung zuerst.</strong> Ihr Name wird in unserer Datenbank anonymisiert.</li>
+                    <li><strong className="text-gray-900 dark:text-white">Europäischer Datenschutz.</strong> Wir sind in Berlin ansässig und DSGVO-konform.</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">1. Verantwortlicher</h4>
+                  <p>Loretta Health UG<br/>c/o Scaling Spaces, Cuvrystr. 53<br/>10997 Berlin, Deutschland<br/>E-Mail: support@loretta.care</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">2. Welche Daten wir erheben</h4>
+                  <p><strong className="text-gray-900 dark:text-white">Gesundheitsdaten:</strong> Medikamenteninformationen, Gesundheitsrisikobewertungen, emotionale Check-ins, Wohlbefindensdaten.</p>
+                  <p><strong className="text-gray-900 dark:text-white">Persönliche Daten:</strong> Name (anonymisiert), E-Mail-Adresse, Telefonnummer.</p>
+                  <p><strong className="text-gray-900 dark:text-white">Nutzungsdaten:</strong> App-Interaktionen, genutzte Funktionen, Leistungsdaten.</p>
+                  <p><strong className="text-gray-900 dark:text-white">Analytik:</strong> Geräteinformationen, Nutzungsmuster über Microsoft Clarity.</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">3. Wie wir Ihre Daten verwenden</h4>
+                  <p><strong className="text-gray-900 dark:text-white">Gesundheitsdienste:</strong> Personalisierte Empfehlungen, Gesundheitseinblicke, Medikamentenverfolgung, Risikobewertung.</p>
+                  <p><strong className="text-gray-900 dark:text-white">Forschung:</strong> Förderung der Prävention chronischer Krankheiten durch KI-Gesundheitsforschung.</p>
+                  <p><strong className="text-gray-900 dark:text-white">App-Verbesserung:</strong> Analyse von Nutzungsmustern, Leistungsüberwachung.</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">4. Rechtsgrundlage (DSGVO)</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Einwilligung (Art. 6(1)(a), Art. 9(2)(a)) für Gesundheitsdaten</li>
+                    <li>Berechtigtes Interesse (Art. 6(1)(f)) für Analytik</li>
+                    <li>Vertragserfüllung (Art. 6(1)(b)) für Dienste</li>
+                  </ul>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">5. Ihre Rechte</h4>
+                  <p>Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch und Widerruf der Einwilligung. Kontakt: support@loretta.care</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">6. Datenweitergabe</h4>
+                  <p><strong className="text-gray-900 dark:text-white">Wir verkaufen Ihre Daten nicht.</strong> Weitergabe an Dienstleister (Microsoft Clarity), bei rechtlicher Verpflichtung oder anonymisierte Daten für Forschung.</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="font-bold text-gray-900 dark:text-white">7. Kontakt & Beschwerden</h4>
+                  <p>Fragen: support@loretta.care<br/>Beschwerden: Berliner Beauftragte für Datenschutz, Friedrichstr. 219, 10969 Berlin</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
