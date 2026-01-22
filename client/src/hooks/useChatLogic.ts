@@ -521,15 +521,16 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
 
   const handleConfirmEmotion = useCallback(() => {
     setIsCheckInConfirmationPending(false);
+    
     toast({
-      title: 'Check-in Confirmed! +10 XP',
+      title: 'Check-in Confirmed!',
       description: `Thanks for sharing that you're feeling ${pendingEmotion}. Self-awareness is key to health!`,
     });
 
     const confirmMessage: ChatMessage = {
       id: (Date.now() + 3).toString(),
       role: 'assistant',
-      content: `Thanks for confirming! I've recorded that you're feeling ${pendingEmotion} today. Tracking your emotions helps us better understand your health journey. You've earned +10 XP for self-awareness! 🌟`,
+      content: `Thanks for confirming! I've recorded that you're feeling ${pendingEmotion} today. Tracking your emotions helps us better understand your health journey.`,
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, confirmMessage]);

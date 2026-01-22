@@ -28,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
+import { useOptimisticGamification } from '@/hooks/useOptimisticGamification';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface GamificationData {
@@ -199,6 +200,7 @@ export default function MyDashboard() {
   const { medications, getTotalProgress } = useMedicationProgress();
   const medicationProgress = getTotalProgress();
   const { progress: onboardingProgress, isConsentComplete, isQuestionnaireComplete, isSetupChecklistDismissed, markSetupChecklistDismissed } = useOnboardingProgress();
+  const { addXpOptimistically, updateStreakOptimistically, refreshGamification } = useOptimisticGamification();
   
   const { data: gamificationData } = useQuery<GamificationData>({
     queryKey: ['/api/gamification'],
@@ -280,7 +282,9 @@ export default function MyDashboard() {
       return apiRequest('POST', `/api/gamification/checkin`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
+      const currentStreak = gamificationData?.currentStreak ?? 0;
+      updateStreakOptimistically(currentStreak + 1);
+      refreshGamification();
     },
   });
 
@@ -288,8 +292,9 @@ export default function MyDashboard() {
     mutationFn: async (amount: number) => {
       return apiRequest('POST', `/api/gamification/${userId}/xp`, { amount });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
+    onSuccess: (_, amount) => {
+      addXpOptimistically(amount);
+      refreshGamification();
     },
   });
 
@@ -347,7 +352,6 @@ export default function MyDashboard() {
 
   const handleCheckInComplete = (emotion: string, xpAwarded: number) => {
     queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
   };
 
   const getEmotionEmoji = (emotion: string): string => {

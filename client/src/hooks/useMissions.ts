@@ -132,13 +132,26 @@ export function useMissions() {
     },
   });
 
+  const updateMissionProgressOptimistically = useCallback((missionId: string, newProgress: number, isCompleted: boolean) => {
+    queryClient.setQueryData<UserMission[]>(['/api/missions'], (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map(m => 
+        m.id === missionId 
+          ? { ...m, progress: newProgress, completed: isCompleted }
+          : m
+      );
+    });
+  }, [queryClient]);
+
   const updateMissionMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: { progress?: number; completed?: boolean; isActive?: boolean } }) => {
       const response = await apiRequest('PATCH', `/api/missions/${id}`, data);
       return response.json();
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      if (variables.data.progress !== undefined) {
+        updateMissionProgressOptimistically(variables.id, variables.data.progress, variables.data.completed || false);
+      }
       if (variables.data.completed) {
         const mission = missions.find(m => m.id === variables.id);
         if (mission) {
@@ -147,6 +160,7 @@ export function useMissions() {
           trackGamification('xp_earned', { amount: mission.xpReward, source: 'mission' });
         }
       }
+      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
     },
   });
 
