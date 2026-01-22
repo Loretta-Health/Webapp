@@ -51,6 +51,8 @@ export function useWeatherAssessment() {
     refetchInterval: 10 * 60 * 1000,
     refetchOnMount: 'always',
     retry: 2,
+    // Only fetch weather when user has granted location permission
+    enabled: locationEnabled,
   });
 
   const isBadWeather = assessment ? !assessment.isGoodForOutdoor : false;
