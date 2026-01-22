@@ -60,6 +60,7 @@
     "title": "Health Risk Score",
     "subtitle": "Based on your health profile",
     "notAvailable": "Complete your health questionnaire to get your personalized score",
+    "incompleteDisclaimer": "Complete your health questionnaire for a more accurate score",
     "low": "Low Risk",
     "moderate": "Moderate Risk",
     "high": "High Risk"

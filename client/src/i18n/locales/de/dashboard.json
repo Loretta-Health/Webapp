@@ -60,6 +60,7 @@
     "title": "Gesundheitsrisiko-Score",
     "subtitle": "Basierend auf deinem Gesundheitsprofil",
     "notAvailable": "Fülle den Gesundheitsfragebogen aus, um deinen persönlichen Score zu erhalten",
+    "incompleteDisclaimer": "Fülle den Gesundheitsfragebogen aus für einen genaueren Score",
     "low": "Niedriges Risiko",
     "moderate": "Mittleres Risiko",
     "high": "Hohes Risiko"
