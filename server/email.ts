@@ -267,7 +267,7 @@ function generateFeedbackEmailHTML(
             <td style="background: linear-gradient(135deg, #f8f9fa 0%, #f0f4ff 100%); padding: 20px 24px; border-top: 1px solid #e9ecef;">
               <p style="color: #a0aec0; font-size: 11px; margin: 0; text-align: center; line-height: 1.5;">
                 Received via Loretta App<br>
-                <span style="color: #cbd5e0;">${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                <span style="color: #cbd5e0;">${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' })} (Berlin)</span>
               </p>
             </td>
           </tr>
@@ -316,7 +316,7 @@ ${message}
 
 ---
 Received via Loretta App
-${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' })} (Berlin)
 
 © ${new Date().getFullYear()} Loretta Health
   `.trim();
