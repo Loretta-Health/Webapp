@@ -922,40 +922,29 @@ export default function MissionDetails() {
             ) : (
               <div className="space-y-3">
                 {activeMissions.map((mission) => (
-                  <GlassCard key={mission.id} className="p-4 hover:shadow-xl transition-all" glow>
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-gray-900 dark:text-white">{mission.title}</h3>
-                          <Badge variant="default" className="bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white text-xs border-0">
-                            {tDashboard('missions.active')}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-500">{mission.description}</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <div className="h-2 flex-1 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
-                            <div className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all" style={{ width: `${(mission.progress / mission.maxProgress) * 100}%` }} />
+                  <Link key={mission.id} href={`/mission-details?id=${mission.missionKey}`}>
+                    <GlassCard className="p-4 hover:shadow-xl hover:scale-[1.01] transition-all cursor-pointer" glow>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-gray-900 dark:text-white">{mission.title}</h3>
+                            <Badge variant="default" className="bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white text-xs border-0">
+                              {tDashboard('missions.active')}
+                            </Badge>
                           </div>
-                          <span className="text-xs text-gray-500">{mission.progress}/{mission.maxProgress}</span>
-                          <span className="text-xs font-bold text-[#013DC4]">+{mission.xpReward} XP</span>
+                          <p className="text-sm text-gray-500">{mission.description}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <div className="h-2 flex-1 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+                              <div className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all" style={{ width: `${(mission.progress / mission.maxProgress) * 100}%` }} />
+                            </div>
+                            <span className="text-xs text-gray-500">{mission.progress}/{mission.maxProgress}</span>
+                            <span className="text-xs font-bold text-[#013DC4]">+{mission.xpReward} XP</span>
+                          </div>
                         </div>
+                        <ChevronRight className="w-5 h-5 text-[#013DC4] ml-4 shrink-0" />
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
-                        <Link href={`/mission-details?id=${mission.missionKey}`}>
-                          <Button variant="ghost" className="rounded-xl hover:bg-[#013DC4]/10 min-w-[44px] min-h-[44px]">
-                            <ChevronRight className="w-5 h-5 text-[#013DC4]" />
-                          </Button>
-                        </Link>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => deactivateMission(mission.id)}
-                          className="text-gray-500 border-gray-200 dark:border-gray-700 rounded-xl min-h-[44px]"
-                        >
-                          {tDashboard('missions.deactivateMission')}
-                        </Button>
-                      </div>
-                    </div>
-                  </GlassCard>
+                    </GlassCard>
+                  </Link>
                 ))}
               </div>
             )}
@@ -971,7 +960,7 @@ export default function MissionDetails() {
               <div className="space-y-3">
                 {inactiveMissions.map((mission) => (
                   <Link key={mission.id} href={`/mission-details?id=${mission.missionKey}`}>
-                    <GlassCard className="p-4 opacity-70 hover:opacity-100 transition-all cursor-pointer hover:shadow-xl">
+                    <GlassCard className="p-4 opacity-70 hover:opacity-100 hover:scale-[1.01] transition-all cursor-pointer hover:shadow-xl">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
