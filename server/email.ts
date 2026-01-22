@@ -204,10 +204,8 @@ function generateFeedbackEmailHTML(
           <!-- Header with Logo -->
           <tr>
             <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 32px 24px; text-align: center;">
-              <!-- White Text Logo -->
-              <div style="display: inline-block; margin-bottom: 8px;">
-                <span style="font-size: 32px; font-weight: 800; color: white; letter-spacing: -0.5px; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">loretta</span>
-              </div>
+              <!-- Logo -->
+              <img src="https://loretta-care.replit.app/assets/loretta_logo-BREK--lQ.png" alt="Loretta" width="180" style="display: block; margin: 0 auto 12px auto; max-width: 180px; height: auto;" />
               <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">App Feedback</p>
             </td>
           </tr>
