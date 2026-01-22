@@ -28,12 +28,10 @@ function generatePasswordResetEmailHTML(
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
           
-          <!-- Header with gradient -->
+          <!-- Header with Logo -->
           <tr>
             <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 32px 24px; text-align: center;">
-              <div style="display: inline-block; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 12px 24px; border-radius: 16px; margin-bottom: 8px;">
-                <span style="font-size: 28px; font-weight: 800; color: white; letter-spacing: -0.5px;">loretta</span>
-              </div>
+              <img src="https://loretta-care.replit.app/assets/loretta_logo-BREK--lQ.png" alt="Loretta" width="160" style="display: block; margin: 0 auto 12px auto; max-width: 160px; height: auto;" />
               <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">Your personal health companion</p>
             </td>
           </tr>
@@ -168,9 +166,8 @@ export function isEmailConfigured(): boolean {
 const FEEDBACK_RECEIVER_EMAIL = process.env.FEEDBACK_RECEIVER_EMAIL || 'support@loretta.health';
 
 function generateFeedbackId(): string {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${timestamp}-${random}`;
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return random;
 }
 
 function generateFeedbackEmailHTML(
@@ -206,11 +203,9 @@ function generateFeedbackEmailHTML(
           <!-- Header with Logo -->
           <tr>
             <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 32px 24px; text-align: center;">
-              <!-- Logo Container -->
-              <div style="display: inline-block; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 12px 24px; border-radius: 16px; margin-bottom: 12px;">
-                <span style="font-size: 28px; font-weight: 800; color: white; letter-spacing: -0.5px;">&#128154; loretta</span>
-              </div>
-              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">App Feedback Portal</p>
+              <!-- Logo -->
+              <img src="https://loretta-care.replit.app/assets/loretta_logo-BREK--lQ.png" alt="Loretta" width="180" style="display: block; margin: 0 auto 12px auto; max-width: 180px; height: auto;" />
+              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">App Feedback</p>
             </td>
           </tr>
           
