@@ -1459,6 +1459,13 @@ IMPORTANT: When discussing risk scores, remember:
       const isBeingCompleted = validatedData.completed === true && !wasCompleted;
       const isBeingUncompleted = validatedData.completed === false && wasCompleted;
       
+      // Set completedAt timestamp when completing, clear it when undoing
+      if (isBeingCompleted) {
+        validatedData.completedAt = new Date();
+      } else if (isBeingUncompleted) {
+        validatedData.completedAt = null;
+      }
+      
       const updated = await storage.updateUserMission(id, validatedData);
       
       if (!updated) {
