@@ -196,7 +196,7 @@ export default function MyDashboard() {
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
   const { locationEnabled, toggleLocationEnabled, usingDefault, loading: locationLoading } = useGeolocation();
   const userId = user?.id;
-  const { activeMissions, completedCount, totalCount, completeMission } = useMissions();
+  const { missions, activeMissions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
   const medicationProgress = getTotalProgress();
   const { progress: onboardingProgress, isConsentComplete, isQuestionnaireComplete, isSetupChecklistDismissed, markSetupChecklistDismissed } = useOnboardingProgress();
@@ -261,6 +261,11 @@ export default function MyDashboard() {
   
   const savedAnswerIds = getSavedAnswerIds();
   const allCoreQuestionsAnswered = coreQuestionIds.every(id => savedAnswerIds.includes(id));
+
+  // Calculate XP earned today from all sources
+  const xpFromCheckinsToday = allEmotionalCheckins?.filter(c => isToday(new Date(c.checkedInAt))).reduce((sum, c) => sum + (c.xpAwarded || 0), 0) || 0;
+  const xpFromMissionsToday = missions?.filter(m => m.completed && m.completedAt && isToday(new Date(m.completedAt))).reduce((sum, m) => sum + (m.xpReward || 0), 0) || 0;
+  const totalXpToday = xpFromCheckinsToday + xpFromMissionsToday;
 
   const consentComplete = isConsentComplete || preferencesData?.consentAccepted === true;
   const profileComplete = !!(profileData?.firstName && profileData?.lastName) || !!(user?.firstName && user?.lastName && user?.email);
@@ -577,7 +582,7 @@ export default function MyDashboard() {
             </div>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { label: t('sidebar.xpEarned'), value: `+${allEmotionalCheckins?.filter(c => isToday(new Date(c.checkedInAt))).reduce((sum, c) => sum + (c.xpAwarded || 0), 0) || 0}`, color: 'from-[#013DC4] to-[#0150FF]', href: null },
+                { label: t('sidebar.xpEarned'), value: `+${totalXpToday}`, color: 'from-[#013DC4] to-[#0150FF]', href: null },
                 { label: t('sidebar.badges', 'Badges'), value: `${userAchievements?.filter(a => a.unlocked).length || 0}`, color: 'from-amber-400 to-orange-400', href: '/leaderboard?tab=achievements' },
                 { label: t('sidebar.missions'), value: `${completedCount}/${activeMissions.length}`, color: 'from-[#CDB6EF] to-purple-400', href: '/mission-details' },
               ].map((stat) => (
@@ -795,7 +800,7 @@ export default function MyDashboard() {
                     <Zap className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
                   </div>
                   <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className="text-xs sm:text-xl font-black text-gray-900 dark:text-white truncate">+{allEmotionalCheckins?.filter(c => isToday(new Date(c.checkedInAt))).reduce((sum, c) => sum + (c.xpAwarded || 0), 0) || 0}</div>
+                    <div className="text-xs sm:text-xl font-black text-gray-900 dark:text-white truncate">+{totalXpToday}</div>
                     <div className="text-[8px] sm:text-xs text-gray-500 font-medium truncate">{t('sidebar.xpToday', 'XP Today')}</div>
                   </div>
                 </GlassCard>

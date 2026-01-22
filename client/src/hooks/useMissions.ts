@@ -50,6 +50,7 @@ export interface Mission {
   userId?: string;
   createdAt?: string;
   updatedAt?: string;
+  completedAt?: string | null;
   icon?: string | null;
   color?: string | null;
 }
@@ -113,6 +114,7 @@ export function useMissions() {
       href: `/mission-details?id=${um.missionKey}`,
       missionKey: um.missionKey,
       userId: um.userId,
+      completedAt: um.completedAt,
       icon: catalogMission?.icon,
       color: catalogMission?.color,
     };
@@ -137,7 +139,12 @@ export function useMissions() {
       if (!oldData) return oldData;
       return oldData.map(m => 
         m.id === missionId 
-          ? { ...m, progress: newProgress, completed: isCompleted }
+          ? { 
+              ...m, 
+              progress: newProgress, 
+              completed: isCompleted,
+              completedAt: isCompleted ? new Date().toISOString() : m.completedAt
+            }
           : m
       );
     });
