@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Trophy, BookOpen, Pill, Smile, ChevronRight, MapPin, MapPinOff, ChevronDown, Star, TrendingUp, Zap, Target } from 'lucide-react';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Trophy, BookOpen, Pill, Smile, ChevronRight, MapPin, MapPinOff, ChevronDown, Star, TrendingUp, Zap, Target, AlertTriangle } from 'lucide-react';
 import { Heart, Flame } from 'lucide-react';
 import { Link, useLocation, Redirect } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -1160,6 +1160,13 @@ export default function MyDashboard() {
                               <span className={`text-xs sm:text-sm font-bold ${riskColor}`}>{riskLevel}</span>
                             </div>
                           </div>
+                          
+                          {!questionnaireComplete && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-amber-700 dark:text-amber-300 text-xs sm:text-sm mb-2">
+                              <AlertTriangle className="w-4 h-4 shrink-0" />
+                              <span>{t('riskScore.incompleteDisclaimer', 'Complete your health questionnaire for a more accurate score')}</span>
+                            </div>
+                          )}
                           
                           <div className="w-full sm:w-auto px-6 py-3 text-sm sm:text-base text-[#013DC4] font-bold hover:bg-[#013DC4]/5 rounded-xl flex items-center gap-1 justify-center min-h-[48px] transition-all">
                             {t('riskScore.viewDetails', 'View Details')} <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />

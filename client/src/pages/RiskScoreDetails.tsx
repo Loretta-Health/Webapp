@@ -167,6 +167,26 @@ export default function RiskScoreDetails() {
     enabled: !!user,
   });
 
+  const { data: questionnaireData } = useQuery<{ category: string; answers: Record<string, string> }[]>({
+    queryKey: ['/api/questionnaire', user?.id],
+    enabled: !!user,
+  });
+
+  const coreQuestionIds = [
+    'prescription_medicine', 'high_blood_pressure', 'general_health',
+    'age', 'weight_current', 'height', 'high_cholesterol', 'daily_aspirin'
+  ];
+  
+  const getSavedAnswerIds = (): string[] => {
+    if (!Array.isArray(questionnaireData) || questionnaireData.length === 0) return [];
+    const healthRecord = questionnaireData.find(r => r.category === 'health_risk_assessment');
+    if (!healthRecord?.answers) return [];
+    return Object.keys(healthRecord.answers);
+  };
+  
+  const savedAnswerIds = getSavedAnswerIds();
+  const questionnaireComplete = coreQuestionIds.every(id => savedAnswerIds.includes(id));
+
   const recalculateMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest('POST', '/api/risk-scores/calculate');
@@ -315,6 +335,14 @@ export default function RiskScoreDetails() {
                     <span>{Math.round(riskScore - previousScore)} from last</span>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Incomplete questionnaire disclaimer */}
+            {!questionnaireComplete && (
+              <div className="flex items-center gap-2 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-amber-700 dark:text-amber-300 text-sm mb-4 w-full max-w-sm">
+                <AlertTriangle className="w-5 h-5 shrink-0" />
+                <span>Complete your health questionnaire for a more accurate risk score</span>
               </div>
             )}
 
