@@ -31,7 +31,7 @@ function generatePasswordResetEmailHTML(
           <!-- Header with Logo -->
           <tr>
             <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 32px 24px; text-align: center;">
-              <img src="https://loretta-care.replit.app/assets/loretta_logo-BREK--lQ.png" alt="Loretta" width="160" style="display: block; margin: 0 auto 12px auto; max-width: 160px; height: auto;" />
+              <img src="https://loretta-care.replit.app/assets/loretta_logo-BREK--lQ.png" alt="Loretta" width="160" style="display: block; margin: 0 auto 12px auto; max-width: 160px; height: auto; filter: brightness(0) invert(1);" />
               <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">Your personal health companion</p>
             </td>
           </tr>
@@ -204,8 +204,8 @@ function generateFeedbackEmailHTML(
           <!-- Header with Logo -->
           <tr>
             <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 32px 24px; text-align: center;">
-              <!-- Logo -->
-              <img src="https://loretta-care.replit.app/assets/loretta_logo-BREK--lQ.png" alt="Loretta" width="180" style="display: block; margin: 0 auto 12px auto; max-width: 180px; height: auto;" />
+              <!-- Logo (white via filter) -->
+              <img src="https://loretta-care.replit.app/assets/loretta_logo-BREK--lQ.png" alt="Loretta" width="180" style="display: block; margin: 0 auto 12px auto; max-width: 180px; height: auto; filter: brightness(0) invert(1);" />
               <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">App Feedback</p>
             </td>
           </tr>
