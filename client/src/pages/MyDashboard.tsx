@@ -159,7 +159,7 @@ function CollapsibleSectionNew({
 
 export default function MyDashboard() {
   const { t } = useTranslation('dashboard');
-  const [, navigate] = useLocation();
+  const [currentPath, navigate] = useLocation();
   const [darkMode, setDarkMode] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -303,15 +303,42 @@ export default function MyDashboard() {
     },
   });
 
-  // Refresh all data when dashboard is visited/mounted
-  useEffect(() => {
+  // Refresh all data when dashboard is visited/mounted or when page regains focus
+  const refreshAllDashboardData = () => {
     queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
     queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
     queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] });
     queryClient.invalidateQueries({ queryKey: ['/api/achievements/user'] });
     queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
     queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] });
-  }, []);
+  };
+
+  useEffect(() => {
+    if (currentPath === '/my-dashboard') {
+      refreshAllDashboardData();
+    }
+  }, [currentPath]);
+
+  // Refresh data when page becomes visible again (e.g., navigating back)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshAllDashboardData();
+      }
+    };
+
+    const handleFocus = () => {
+      refreshAllDashboardData();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [queryClient]);
 
   const xp = gamificationData?.xp ?? 0;
   const level = gamificationData?.level ?? 1;
