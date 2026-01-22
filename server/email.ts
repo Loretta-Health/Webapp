@@ -171,7 +171,8 @@ function generateFeedbackId(): string {
 }
 
 function generateFeedbackEmailHTML(
-  userName: string,
+  username: string,
+  firstName: string,
   userEmail: string,
   subject: string,
   message: string,
@@ -229,11 +230,17 @@ function generateFeedbackEmailHTML(
                 <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                     <td style="padding-bottom: 12px;">
-                      <span style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">From</span>
-                      <p style="color: #2d3748; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">${userName}</p>
+                      <span style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Username</span>
+                      <p style="color: #2d3748; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">@${username}</p>
                     </td>
                     <td style="padding-bottom: 12px; text-align: right;">
                       <span style="display: inline-block; background: ${categoryColor}; color: white; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${category}</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2" style="padding-bottom: 12px;">
+                      <span style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">First Name</span>
+                      <p style="color: #2d3748; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">${firstName || 'Not provided'}</p>
                     </td>
                   </tr>
                   <tr>
@@ -286,7 +293,8 @@ function generateFeedbackEmailHTML(
 }
 
 function generateFeedbackEmailText(
-  userName: string,
+  username: string,
+  firstName: string,
   userEmail: string,
   subject: string,
   message: string,
@@ -298,7 +306,8 @@ App Feedback #${feedbackId}
 
 Subject: "${subject}"
 
-From: ${userName}
+Username: @${username}
+First Name: ${firstName || 'Not provided'}
 Email: ${userEmail}
 Category: ${category}
 
@@ -314,8 +323,9 @@ ${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 
 }
 
 export async function sendFeedbackEmail(
+  username: string,
+  firstName: string,
   userEmail: string,
-  userName: string,
   subject: string,
   message: string,
   category: string
@@ -323,7 +333,7 @@ export async function sendFeedbackEmail(
   const feedbackId = generateFeedbackId();
   
   if (!BREVO_API_KEY) {
-    console.log(`[Feedback] Brevo not configured. Feedback #${feedbackId} from ${userEmail}: [${category}] ${subject} - ${message.substring(0, 100)}...`);
+    console.log(`[Feedback] Brevo not configured. Feedback #${feedbackId} from @${username} (${userEmail}): [${category}] ${subject} - ${message.substring(0, 100)}...`);
     return {
       success: true,
       message: "Brevo not configured. Feedback logged to console for demo purposes."
@@ -332,11 +342,11 @@ export async function sendFeedbackEmail(
 
   const sendSmtpEmail = new Brevo.SendSmtpEmail();
   sendSmtpEmail.subject = `App Feedback #${feedbackId} - ${subject}`;
-  sendSmtpEmail.htmlContent = generateFeedbackEmailHTML(userName, userEmail, subject, message, category, feedbackId);
-  sendSmtpEmail.textContent = generateFeedbackEmailText(userName, userEmail, subject, message, category, feedbackId);
+  sendSmtpEmail.htmlContent = generateFeedbackEmailHTML(username, firstName, userEmail, subject, message, category, feedbackId);
+  sendSmtpEmail.textContent = generateFeedbackEmailText(username, firstName, userEmail, subject, message, category, feedbackId);
   sendSmtpEmail.sender = { name: FROM_NAME, email: FROM_EMAIL };
   sendSmtpEmail.to = [{ email: FEEDBACK_RECEIVER_EMAIL, name: 'Loretta Team' }];
-  sendSmtpEmail.replyTo = { email: userEmail, name: userName };
+  sendSmtpEmail.replyTo = { email: userEmail, name: firstName || username };
 
   try {
     await apiInstance.sendTransacEmail(sendSmtpEmail);

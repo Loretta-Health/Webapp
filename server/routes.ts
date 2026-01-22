@@ -3271,12 +3271,13 @@ IMPORTANT: When discussing risk scores, remember:
       
       const user = req.user as any;
       const userEmail = user.email || 'No email provided';
-      const userName = user.firstName || user.username || 'Anonymous User';
+      const username = user.username || 'unknown';
+      const firstName = user.firstName || '';
       
       // Save feedback to database
       await storage.createFeedback({
         userId: user.id,
-        username: user.username,
+        username: username,
         email: userEmail,
         category: category || 'general',
         subject,
@@ -3287,8 +3288,9 @@ IMPORTANT: When discussing risk scores, remember:
       // Also send email notification (optional, can fail silently)
       try {
         await sendFeedbackEmail(
+          username,
+          firstName,
           userEmail,
-          userName,
           subject,
           message,
           category || 'general'
