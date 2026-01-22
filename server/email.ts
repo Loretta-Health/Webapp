@@ -363,3 +363,138 @@ export async function sendFeedbackEmail(
     };
   }
 }
+
+function generateFeedbackThankYouHTML(firstName: string): string {
+  const greeting = firstName ? `Hi ${firstName}` : 'Hi there';
+  
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank You for Your Feedback</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
+          
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 32px 24px; text-align: center;">
+              <img src="https://loretta-care.replit.app/loretta_logo_white.png" alt="Loretta" width="160" style="display: block; margin: 0 auto 12px auto; max-width: 160px; height: auto;" />
+              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">Your personal health companion</p>
+            </td>
+          </tr>
+          
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 32px 24px;">
+              <h1 style="color: #1a1a2e; font-size: 24px; font-weight: 800; margin: 0 0 20px 0; text-align: center;">Thank You for Your Feedback!</h1>
+              
+              <p style="color: #4a5568; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0; text-align: center;">
+                ${greeting},
+              </p>
+              
+              <p style="color: #4a5568; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0; text-align: center;">
+                We truly appreciate you taking the time to share your thoughts with us. Your feedback is invaluable in helping us improve Loretta and create a better experience for everyone.
+              </p>
+              
+              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px solid #CDB6EF; border-radius: 16px; padding: 20px; margin: 24px 0; text-align: center;">
+                <p style="color: #013DC4; font-size: 15px; font-weight: 600; margin: 0; line-height: 1.6;">
+                  Our team will review your feedback carefully. If we need any additional information, we'll be in touch!
+                </p>
+              </div>
+              
+              <p style="color: #4a5568; font-size: 16px; line-height: 1.7; margin: 0; text-align: center;">
+                Thank you for being part of the Loretta community.
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Signature -->
+          <tr>
+            <td style="padding: 0 24px 32px 24px; text-align: center;">
+              <p style="color: #013DC4; font-size: 16px; font-weight: 700; margin: 0;">
+                With gratitude,<br>
+                <span style="font-size: 18px;">The Loretta Team</span>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #f8f9fa 0%, #f0f4ff 100%); padding: 20px 24px; border-top: 1px solid #e9ecef;">
+              <p style="color: #a0aec0; font-size: 11px; margin: 0; text-align: center;">
+                © ${new Date().getFullYear()} Loretta Health. All rights reserved.
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+function generateFeedbackThankYouText(firstName: string): string {
+  const greeting = firstName ? `Hi ${firstName}` : 'Hi there';
+  
+  return `
+Thank You for Your Feedback!
+
+${greeting},
+
+We truly appreciate you taking the time to share your thoughts with us. Your feedback is invaluable in helping us improve Loretta and create a better experience for everyone.
+
+Our team will review your feedback carefully. If we need any additional information, we'll be in touch!
+
+Thank you for being part of the Loretta community.
+
+With gratitude,
+The Loretta Team
+
+---
+© ${new Date().getFullYear()} Loretta Health. All rights reserved.
+  `.trim();
+}
+
+export async function sendFeedbackThankYouEmail(
+  userEmail: string,
+  firstName: string
+): Promise<{ success: boolean; message: string }> {
+  if (!BREVO_API_KEY) {
+    console.log(`[Feedback Thank You] Brevo not configured. Would send thank you to ${userEmail}`);
+    return {
+      success: true,
+      message: "Brevo not configured. Thank you email logged for demo purposes."
+    };
+  }
+
+  const sendSmtpEmail = new Brevo.SendSmtpEmail();
+  sendSmtpEmail.subject = 'Thank You for Your Feedback - Loretta';
+  sendSmtpEmail.htmlContent = generateFeedbackThankYouHTML(firstName);
+  sendSmtpEmail.textContent = generateFeedbackThankYouText(firstName);
+  sendSmtpEmail.sender = { name: 'Loretta Team', email: FROM_EMAIL };
+  sendSmtpEmail.to = [{ email: userEmail, name: firstName || 'Loretta User' }];
+
+  try {
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log(`[Feedback Thank You] Email sent successfully to ${userEmail}`);
+    return {
+      success: true,
+      message: "Thank you email sent successfully."
+    };
+  } catch (error: any) {
+    console.error('[Feedback Thank You] Failed to send email:', error?.body || error?.message || error);
+    return {
+      success: false,
+      message: "Failed to send thank you email."
+    };
+  }
+}

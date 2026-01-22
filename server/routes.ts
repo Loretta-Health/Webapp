@@ -31,7 +31,7 @@ import {
 } from "@shared/emotions";
 import { convertQuestionnaireToMLFeatures, type MLFeature } from "./lib/nhanesMapping";
 import { calculateAndSaveRiskScore, gatherFullFeatureSet, callMLPredictionAPI as callMLAPI } from "./lib/riskCalculation";
-import { sendFeedbackEmail } from "./email";
+import { sendFeedbackEmail, sendFeedbackThankYouEmail } from "./email";
 
 // Scaleway AI configuration
 const SCALEWAY_BASE_URL = 'https://api.scaleway.ai/v1';
@@ -3298,6 +3298,14 @@ IMPORTANT: When discussing risk scores, remember:
       } catch (emailError) {
         console.error("Failed to send feedback email notification:", emailError);
         // Continue - we saved to database successfully
+      }
+      
+      // Send thank you email to the user
+      try {
+        await sendFeedbackThankYouEmail(userEmail, firstName);
+      } catch (thankYouError) {
+        console.error("Failed to send feedback thank you email:", thankYouError);
+        // Continue - this is not critical
       }
       
       res.json({ success: true, message: "Feedback submitted successfully" });
