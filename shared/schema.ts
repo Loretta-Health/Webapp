@@ -609,3 +609,26 @@ export const insertUserFeedbackSchema = createInsertSchema(userFeedback).omit({
 
 export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
 export type UserFeedback = typeof userFeedback.$inferSelect;
+
+// Calendar events - stores user calendar events
+export const calendarEvents = pgTable("calendar_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  dateISO: text("date_iso").notNull(), // 'YYYY-MM-DD' format
+  startTime: text("start_time").notNull(), // 'HH:MM' format
+  endTime: text("end_time").notNull(), // 'HH:MM' format
+  notes: text("notes"),
+  type: text("type").notNull().default("other"), // 'appointment', 'medication', 'exercise', 'other'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertCalendarEvent = z.infer<typeof insertCalendarEventSchema>;
+export type CalendarEvent = typeof calendarEvents.$inferSelect;

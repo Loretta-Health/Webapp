@@ -3381,6 +3381,120 @@ IMPORTANT: When discussing risk scores, remember:
     });
   });
 
+  // ========================
+  // Calendar Events Endpoints
+  // ========================
+
+  // Get all calendar events for the authenticated user
+  app.get("/api/calendar-events", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    try {
+      const userId = (req.user as any).id;
+      const events = await storage.getCalendarEvents(userId);
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching calendar events:", error);
+      res.status(500).json({ error: "Failed to fetch calendar events" });
+    }
+  });
+
+  // Get calendar events for a date range
+  app.get("/api/calendar-events/range", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    try {
+      const userId = (req.user as any).id;
+      const { startDate, endDate } = req.query;
+      
+      if (!startDate || !endDate) {
+        return res.status(400).json({ error: "startDate and endDate are required" });
+      }
+      
+      const events = await storage.getCalendarEventsByDateRange(
+        userId, 
+        startDate as string, 
+        endDate as string
+      );
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching calendar events by range:", error);
+      res.status(500).json({ error: "Failed to fetch calendar events" });
+    }
+  });
+
+  // Create a new calendar event
+  app.post("/api/calendar-events", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    try {
+      const userId = (req.user as any).id;
+      const { title, dateISO, startTime, endTime, notes, type } = req.body;
+      
+      if (!title || !dateISO || !startTime || !endTime) {
+        return res.status(400).json({ error: "title, dateISO, startTime, and endTime are required" });
+      }
+      
+      const event = await storage.createCalendarEvent({
+        userId,
+        title,
+        dateISO,
+        startTime,
+        endTime,
+        notes: notes || null,
+        type: type || 'other',
+      });
+      
+      res.status(201).json(event);
+    } catch (error) {
+      console.error("Error creating calendar event:", error);
+      res.status(500).json({ error: "Failed to create calendar event" });
+    }
+  });
+
+  // Update a calendar event
+  app.put("/api/calendar-events/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    try {
+      const userId = (req.user as any).id;
+      const eventId = req.params.id;
+      const updates = req.body;
+      
+      const updated = await storage.updateCalendarEvent(eventId, userId, updates);
+      
+      if (!updated) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating calendar event:", error);
+      res.status(500).json({ error: "Failed to update calendar event" });
+    }
+  });
+
+  // Delete a calendar event
+  app.delete("/api/calendar-events/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+    try {
+      const userId = (req.user as any).id;
+      const eventId = req.params.id;
+      
+      await storage.deleteCalendarEvent(eventId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting calendar event:", error);
+      res.status(500).json({ error: "Failed to delete calendar event" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   startMedicationAutoMissCron();

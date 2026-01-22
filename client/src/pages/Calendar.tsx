@@ -10,27 +10,31 @@ import { Textarea } from '@/components/ui/textarea';
 import { BackButton } from '@/components/BackButton';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
 import { useTranslation } from 'react-i18next';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { authenticatedFetch } from '@/lib/queryClient';
 import { 
   ChevronLeft, 
   ChevronRight, 
   Plus, 
-  Trash2,
   Clock,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link } from 'wouter';
 import { format, addDays, startOfWeek, isSameDay, isToday, addWeeks, subWeeks } from 'date-fns';
 import { de, enUS } from 'date-fns/locale';
 
 interface CalendarEvent {
   id: string;
+  userId: string;
   title: string;
   dateISO: string;
   startTime: string;
   endTime: string;
-  notes?: string;
+  notes?: string | null;
   type: 'appointment' | 'medication' | 'exercise' | 'other';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const eventTypeColors = {
@@ -44,36 +48,10 @@ export default function Calendar() {
   const { t, i18n } = useTranslation('pages');
   const { t: tCommon } = useTranslation('common');
   useSwipeBack({ backPath: '/profile' });
+  const queryClient = useQueryClient();
   const dateLocale = i18n.language === 'de' ? de : enUS;
   const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [events, setEvents] = useState<CalendarEvent[]>([
-    {
-      id: '1',
-      title: 'Physio Session',
-      dateISO: format(new Date(), 'yyyy-MM-dd'),
-      startTime: '09:00',
-      endTime: '10:00',
-      notes: 'Bring water',
-      type: 'appointment',
-    },
-    {
-      id: '2',
-      title: 'Take Vitamin D3',
-      dateISO: format(new Date(), 'yyyy-MM-dd'),
-      startTime: '08:00',
-      endTime: '08:15',
-      type: 'medication',
-    },
-    {
-      id: '3',
-      title: 'Morning walk',
-      dateISO: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
-      startTime: '07:00',
-      endTime: '08:00',
-      type: 'exercise',
-    },
-  ]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -81,6 +59,56 @@ export default function Calendar() {
     endTime: '10:00',
     notes: '',
     type: 'appointment' as CalendarEvent['type'],
+  });
+
+  const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
+    queryKey: ['/api/calendar-events'],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/calendar-events');
+      if (!response.ok) {
+        throw new Error('Failed to fetch calendar events');
+      }
+      return response.json();
+    },
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: async (eventData: {
+      title: string;
+      dateISO: string;
+      startTime: string;
+      endTime: string;
+      notes?: string;
+      type: string;
+    }) => {
+      const response = await authenticatedFetch('/api/calendar-events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create event');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/calendar-events'] });
+    },
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: async (eventId: string) => {
+      const response = await authenticatedFetch(`/api/calendar-events/${eventId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete event');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/calendar-events'] });
+    },
   });
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
@@ -109,17 +137,15 @@ export default function Calendar() {
   const handleAddEvent = () => {
     if (!newEvent.title) return;
     
-    const event: CalendarEvent = {
-      id: Date.now().toString(),
+    createEventMutation.mutate({
       title: newEvent.title,
       dateISO: format(selectedDate, 'yyyy-MM-dd'),
       startTime: newEvent.startTime,
       endTime: newEvent.endTime,
       notes: newEvent.notes || undefined,
       type: newEvent.type,
-    };
+    });
     
-    setEvents(prev => [...prev, event]);
     setNewEvent({
       title: '',
       startTime: '09:00',
@@ -131,7 +157,7 @@ export default function Calendar() {
   };
 
   const handleDeleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(event => event.id !== id));
+    deleteEventMutation.mutate(id);
   };
 
   const selectedDateEvents = getEventsForDate(selectedDate);
@@ -329,9 +355,12 @@ export default function Calendar() {
                   <Button 
                     className="w-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20"
                     onClick={handleAddEvent}
-                    disabled={!newEvent.title}
+                    disabled={!newEvent.title || createEventMutation.isPending}
                     data-testid="button-save-event"
                   >
+                    {createEventMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : null}
                     {t('calendar.save')}
                   </Button>
                 </div>
@@ -342,7 +371,11 @@ export default function Calendar() {
 
         {/* Events List */}
         <div className="space-y-3 pb-8">
-          {selectedDateEvents.length === 0 ? (
+          {isLoading ? (
+            <Card className="p-8 text-center backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg">
+              <Loader2 className="w-8 h-8 mx-auto text-[#013DC4] animate-spin" />
+            </Card>
+          ) : selectedDateEvents.length === 0 ? (
             <Card className="p-8 text-center backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-lg">
               <CalendarIcon className="w-12 h-12 mx-auto text-[#CDB6EF] mb-4" />
               <p className="text-gray-500 dark:text-gray-400">{t('calendar.noEvents')}</p>
@@ -377,6 +410,7 @@ export default function Calendar() {
                     <Button
                       variant="outline"
                       onClick={() => handleDeleteEvent(event.id)}
+                      disabled={deleteEventMutation.isPending}
                       className="shrink-0 min-h-[44px] rounded-xl"
                       data-testid={`button-delete-event-${event.id}`}
                     >
