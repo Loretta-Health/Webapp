@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Users, Moon, Sun, Menu, X, User, MessageCircle, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Trophy, BookOpen, Pill, Smile, ChevronRight, MapPin, MapPinOff, ChevronDown, Star, TrendingUp, Zap, Target, AlertTriangle } from 'lucide-react';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { Heart, Flame } from 'lucide-react';
 import { Link, useLocation, Redirect } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -203,6 +204,19 @@ export default function MyDashboard() {
   const medicationProgress = getTotalProgress();
   const { progress: onboardingProgress, isConsentComplete, isQuestionnaireComplete, isSetupChecklistDismissed, markSetupChecklistDismissed } = useOnboardingProgress();
   const { updateAllXPDisplays, updateStreak, refreshAllXPData } = useXPUpdater();
+  
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/missions'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/profile'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/medications'] }),
+    ]);
+    refreshAllXPData();
+  }, [refreshAllXPData]);
   
   const { data: gamificationData } = useQuery<GamificationData>({
     queryKey: ['/api/gamification'],
@@ -793,7 +807,8 @@ export default function MyDashboard() {
           </div>
         </header>
         
-        <div className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 safe-area-bottom">
+        <PullToRefresh onRefresh={handleRefresh} className="flex-1">
+          <div className="p-3 sm:p-5 lg:p-8 safe-area-bottom">
           <div className="max-w-6xl mx-auto space-y-4 sm:space-y-5 lg:space-y-7">
             <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-5 bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] shadow-xl shadow-gray-900/15">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
@@ -1386,7 +1401,8 @@ export default function MyDashboard() {
               {t('disclaimer')}
             </p>
           </div>
-        </div>
+          </div>
+        </PullToRefresh>
       </main>
       
       <LevelUpModal
