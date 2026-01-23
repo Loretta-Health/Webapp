@@ -74,6 +74,7 @@ export default function Chat() {
     showMissionCard,
     suggestedMission,
     missionActivated,
+    isActivatingMission,
     pendingEmotion,
     isCheckInConfirmationPending,
     activityContext,
@@ -247,6 +248,7 @@ export default function Chat() {
                             suggestedMission={suggestedMission}
                             showMissionCard={showMissionCard}
                             missionActivated={missionActivated}
+                            isActivating={isActivatingMission}
                             onActivate={handleActivateMission}
                             onView={handleViewMission}
                           />
