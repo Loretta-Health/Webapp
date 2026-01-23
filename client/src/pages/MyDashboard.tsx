@@ -556,12 +556,12 @@ export default function MyDashboard() {
             </button>
           </div>
           
-          <div className="hidden lg:flex justify-center py-2">
+          <div className="hidden lg:flex justify-center py-2 mb-4">
             <img src={logoHorizontalBlue} alt="Loretta" className="h-12 object-contain" data-testid="logo-loretta" />
           </div>
           
           <Link href="/profile">
-            <div className="p-5 text-center cursor-pointer hover:bg-white/30 dark:hover:bg-gray-800/30 rounded-3xl transition-all">
+            <GlassCard className="p-5 text-center cursor-pointer hover:shadow-xl transition-all">
               <div className="relative inline-block mb-4">
                 <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-2xl shadow-gray-900/20 overflow-hidden">
                   {profileData?.profilePhoto ? (
@@ -600,7 +600,7 @@ export default function MyDashboard() {
                   />
                 </div>
               </div>
-            </div>
+            </GlassCard>
           </Link>
           
           <GlassCard className="p-4">
