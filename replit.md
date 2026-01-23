@@ -27,7 +27,8 @@ Preferred communication style: Simple, everyday language.
 - **Email Verification**: Configurable 6-digit code verification system with security measures (hashing, expiry, rate limiting, lockout).
 - **AI Health Navigator**: Contextual AI providing health advice based on user geolocation and real-time weather data (Open-Meteo API), suggesting dynamic recommendations for outdoor missions.
 - **Location Services**: Uses Capacitor Geolocation for native and browser API for web, with permission handling and fallback to a default location. Weather assessment and AI context are dependent on location availability.
-- **Weather-Based Mission Alternatives**: Database-driven alternative missions are offered when real location data indicates bad outdoor weather conditions, for specific outdoor missions.
+- **Weather-Based Mission Alternatives**: Database-driven alternative missions are offered when real location data indicates bad outdoor weather conditions, for specific outdoor missions (marked with `isOutdoor` flag in database).
+- **Alternative Mission Triggering**: Gentler alternative missions are offered when EITHER: (1) user has checked in with a negative emotional state today, OR (2) weather is bad AND the mission is an outdoor mission. The AI is aware of all alternatives and their triggering conditions.
 - **Health Questionnaire & Risk Prediction**: 44-questionnaire mapped to NHANES parameters, integrating with an external XGBoost diabetes prediction API for a single diabetes-based health risk score (0-100), with auto-recalculation upon data changes.
 - **Mission System**: Daily and weekly missions with automatic progress tracking and timezone-aware resets based on user preferences.
 - **Calendar System**: Database-backed personal calendar events with CRUD operations via REST API, supporting four event types and week navigation.

@@ -233,6 +233,7 @@ export const missions = pgTable("missions", {
   isActive: boolean("is_active").default(true), // whether mission is available in catalog
   alternativeOf: text("alternative_of"), // missionKey of parent mission (null if not an alternative)
   isAlternative: boolean("is_alternative").default(false), // true if this is a low-mood alternative
+  isOutdoor: boolean("is_outdoor").default(false), // true if mission requires going outside
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
