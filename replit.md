@@ -39,6 +39,9 @@ Preferred communication style: Simple, everyday language.
 - **API Configuration**: Native apps route API requests to `https://loretta-care.replit.app`.
 - **CORS Support**: Server includes CORS middleware for Capacitor origins and Replit domains, with `X-Auth-Token` support.
 - **Authentication**: Token-based authentication stored in Capacitor Preferences, sent via `X-Auth-Token` header, persisted in `auth_tokens` table. Includes 401 handling for invalid tokens and a global fetch interceptor for consistency.
+- **Platform Classes**: `main.tsx` adds `capacitor-android` or `capacitor-ios` class to document body on initialization for platform-specific CSS targeting.
+- **Android Safe Area**: Uses edge-to-edge layout with `StatusBar.setOverlaysWebView({ overlay: true })`. CSS provides 28px fallback for safe-area-inset-top via `.capacitor-android .safe-area-top { padding-top: max(28px, env(safe-area-inset-top, 28px)); }`.
+- **iOS Safe Area**: Uses standard `env(safe-area-inset-*)` CSS environment variables which are automatically provided by iOS Safari/WebKit.
 
 ## External Dependencies
 
