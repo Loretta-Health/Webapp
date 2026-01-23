@@ -32,6 +32,13 @@
                                 <key>NSExceptionMinimumTLSVersion</key>
                                 <string>TLSv1.2</string>
                         </dict>
+                        <key>localhost</key>
+                        <dict>
+                                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                                <true/>
+                                <key>NSIncludesSubdomains</key>
+                                <true/>
+                        </dict>
                 </dict>
         </dict>
         <key>CFBundleDevelopmentRegion</key>
