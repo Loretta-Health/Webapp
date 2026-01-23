@@ -268,12 +268,6 @@ export default function AuthPage() {
                   </p>
                 </div>
 
-                {resetMessage && (
-                  <div className="p-3 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl">
-                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">{resetMessage}</p>
-                  </div>
-                )}
-
                 {resetError && (
                   <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl">
                     <p className="text-sm text-red-600 dark:text-red-400 font-medium">{resetError}</p>
