@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { authenticatedFetch } from "@/lib/queryClient";
-import { useOptimisticGamification } from '@/hooks/useOptimisticGamification';
+import { useXPUpdater } from '@/hooks/useXPUpdater';
 import { 
   getRandomSupportiveMessage, 
   getEmotionEmoji,
@@ -55,7 +55,7 @@ export default function EmotionalCheckInModal({
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { addXpOptimistically } = useOptimisticGamification();
+  const { updateAllXPDisplays } = useXPUpdater();
 
   const { data: profileData } = useQuery<{ profilePhoto: string | null }>({
     queryKey: ['/api/profile'],
@@ -166,7 +166,7 @@ export default function EmotionalCheckInModal({
       queryClient.invalidateQueries({ queryKey: ['/api/user'] });
       queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
       queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins/weekly-stats'] });
-      addXpOptimistically(xpAwarded);
+      updateAllXPDisplays(xpAwarded, 'checkin');
       
       setStep('supportive');
       

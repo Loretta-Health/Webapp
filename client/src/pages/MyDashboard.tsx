@@ -29,7 +29,7 @@ import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { privacyPolicyContent, accessibilityPolicyContent } from '@/content/policies';
-import { useOptimisticGamification } from '@/hooks/useOptimisticGamification';
+import { useXPUpdater } from '@/hooks/useXPUpdater';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface GamificationData {
@@ -202,7 +202,7 @@ export default function MyDashboard() {
   const { medications, getTotalProgress } = useMedicationProgress();
   const medicationProgress = getTotalProgress();
   const { progress: onboardingProgress, isConsentComplete, isQuestionnaireComplete, isSetupChecklistDismissed, markSetupChecklistDismissed } = useOnboardingProgress();
-  const { addXpOptimistically, updateStreakOptimistically, refreshGamification } = useOptimisticGamification();
+  const { updateAllXPDisplays, updateStreak, refreshAllXPData } = useXPUpdater();
   
   const { data: gamificationData } = useQuery<GamificationData>({
     queryKey: ['/api/gamification'],
@@ -290,8 +290,8 @@ export default function MyDashboard() {
     },
     onSuccess: () => {
       const currentStreak = gamificationData?.currentStreak ?? 0;
-      updateStreakOptimistically(currentStreak + 1);
-      refreshGamification();
+      updateStreak(currentStreak + 1);
+      refreshAllXPData();
     },
   });
 
@@ -300,8 +300,7 @@ export default function MyDashboard() {
       return apiRequest('POST', `/api/gamification/${userId}/xp`, { amount });
     },
     onSuccess: (_, amount) => {
-      addXpOptimistically(amount);
-      refreshGamification();
+      updateAllXPDisplays(amount, 'bonus');
     },
   });
 

@@ -13,6 +13,7 @@ Preferred communication style: Simple, everyday language.
 - **Design Principles**: Duolingo-inspired gamification, vibrant color palette, custom typography (Nunito, DM Mono), gradient backgrounds, frosted glass effects (glass-morphism), animations, and mobile-first responsive design.
 - **Key UI Elements**: XP progress, level indicators, streak counters, lives system, medication trackers, activity metrics, risk score cards, educational tooltips, leaderboards, achievement badges, and an interactive mascot.
 - **State Management**: TanStack Query for server state, React hooks for UI state, LocalStorage for consent and preferences.
+- **Consolidated XP Updates**: `useXPUpdater` hook (`client/src/hooks/useXPUpdater.ts`) provides a single function (`updateAllXPDisplays`) that updates all XP visual representations in real-time, including total XP, level, XP today, missions, and check-ins. Supports event listeners for custom XP update reactions.
 - **Internationalization**: `react-i18next` for English and German support.
 - **Mobile Optimization**: Fully responsive design using Tailwind CSS breakpoints, with Capacitor 7.x for native iOS/Android app wrapping.
 

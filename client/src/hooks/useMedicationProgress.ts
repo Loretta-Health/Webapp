@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { trackMedication } from '@/lib/clarity';
-import { useOptimisticGamification } from './useOptimisticGamification';
+import { useXPUpdater } from './useXPUpdater';
 
 export interface MedicationDose {
   id: number;
@@ -66,7 +66,7 @@ export interface LogDoseResult {
 
 export function useMedicationProgress() {
   const queryClient = useQueryClient();
-  const { addXpOptimistically } = useOptimisticGamification();
+  const { updateAllXPDisplays } = useXPUpdater();
 
   // Fetch all user medications
   const { data: medications = [], isLoading, error, refetch } = useQuery<Medication[]>({
@@ -123,7 +123,7 @@ export function useMedicationProgress() {
       queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
       queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today'] });
       if (result.xpAwarded && result.xpAwarded > 0) {
-        addXpOptimistically(result.xpAwarded);
+        updateAllXPDisplays(result.xpAwarded, 'bonus');
       }
     },
   });
