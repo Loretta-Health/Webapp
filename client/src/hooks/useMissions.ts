@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './use-auth';
 import { apiRequest, authenticatedFetch } from '../lib/queryClient';
 import { trackMission, trackGamification } from '../lib/clarity';
-import { useOptimisticGamification } from './useOptimisticGamification';
+import { useXPUpdater } from './useXPUpdater';
 
 export interface CatalogMission {
   id: string;
@@ -58,7 +58,7 @@ export interface Mission {
 export function useMissions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { addXpOptimistically, deductXpOptimistically } = useOptimisticGamification();
+  const { updateAllXPDisplays, deductXP } = useXPUpdater();
   const userId = user?.id;
 
   const { data: catalogMissions = [], isLoading: catalogLoading } = useQuery<CatalogMission[]>({
@@ -162,7 +162,7 @@ export function useMissions() {
       if (variables.data.completed) {
         const mission = missions.find(m => m.id === variables.id);
         if (mission) {
-          addXpOptimistically(mission.xpReward);
+          updateAllXPDisplays(mission.xpReward, 'mission', { missionId: parseInt(mission.id) });
           trackMission('completed', mission.title, mission.xpReward);
           trackGamification('xp_earned', { amount: mission.xpReward, source: 'mission' });
         }
@@ -263,7 +263,7 @@ export function useMissions() {
       
       // Optimistically deduct XP if mission was completed
       if (wasCompleted && mission.xpReward > 0) {
-        deductXpOptimistically(mission.xpReward);
+        deductXP(mission.xpReward, 'mission_undo', { missionId: parseInt(missionId) });
       }
       
       // Optimistically update mission progress
@@ -284,7 +284,7 @@ export function useMissions() {
         },
       });
     }
-  }, [missions, updateMissionMutation, deductXpOptimistically, queryClient]);
+  }, [missions, updateMissionMutation, deductXP, queryClient]);
 
   const removeMission = useCallback((missionId: string) => {
     deleteMissionMutation.mutate(missionId);
