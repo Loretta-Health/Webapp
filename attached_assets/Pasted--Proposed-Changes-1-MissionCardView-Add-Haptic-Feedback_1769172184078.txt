@@ -1,0 +1,33 @@
+⚠️ Proposed Changes
+1. MissionCardView - Add Haptic Feedback (High Priority)
+The activate button should trigger haptic feedback on mobile for tactile confirmation.
+
+Issue: No haptic feedback when activating missions
+Standard: iOS Human Interface Guidelines recommend haptic feedback for significant actions
+2. MissionCardView - Improve Loading State
+Issue: No loading indicator when activating a mission
+Standard: Users should see immediate feedback that their action is being processed
+3. Chat Input - Move to Bottom with Keyboard-Aware Positioning
+Issue: Need to verify the chat input properly adjusts when the keyboard appears on mobile
+Standard: Input fields should remain visible above the keyboard
+4. Confirmation States - Add Success Animation
+Issue: "Activated" badge appears instantly without celebration
+Standard: Gamified apps (like Duolingo) use confetti/animations for positive reinforcement
+5. Touch Targets on Badge/Pill Elements
+Issue: The "Suggested Mission" pill badge (line 89-93) is not tappable but looks like it could be
+Standard: Non-interactive elements should not look interactive
+6. Scroll Area - Add Momentum Scrolling
+Issue: Verify -webkit-overflow-scrolling: touch is applied for native iOS scroll feel
+Standard: iOS users expect momentum/bounce scrolling
+7. Button Spacing on Mobile
+Issue: In MissionCardView, the flex gap-2 creates buttons that may be too close together on small phones
+Standard: Google recommends 8dp minimum spacing between touch targets
+8. Accessibility Labels
+Issue: Some buttons lack proper aria-label attributes for screen readers
+Standard: WCAG 2.1 AA compliance requires accessible names for all interactive elements
+9. Text Truncation
+Issue: Mission titles use no max-width constraint - very long titles could break layout
+Standard: Add text truncation with ellipsis for predictable layouts
+10. Pull-to-Refresh on Mission Lists
+Issue: No pull-to-refresh gesture on dashboard/mission lists
+Standard: Both iOS and Android users expect this pattern for refreshing content
