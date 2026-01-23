@@ -185,12 +185,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Fetch user's activated missions if authenticated
+      // Fetch user's missions and mission catalog if authenticated
       let activeMissionsContext = '';
+      let missionCatalogContext = '';
       if (req.isAuthenticated()) {
         const userId = (req.user as any).id;
         const userMissionsList = await storage.getUserMissions(userId);
         const activeMissions = userMissionsList.filter(m => m.isActive);
+        
+        // Get the full mission catalog for validation
+        const missionCatalog = await storage.getAllMissions();
+        const mainMissions = missionCatalog.filter(m => !m.isAlternative);
+        missionCatalogContext = `\n\n=== AVAILABLE MISSION CATALOG ===
+These are the ONLY missions that exist in the system. You MUST validate against this list:
+${mainMissions.map(m => `- "${m.titleEn}" (key: ${m.missionKey}) - ${m.descriptionEn}`).join('\n')}
+
+MISSION ACTIVATION RULES:
+1. If a user asks to "activate", "start", "give me", or "suggest" a SPECIFIC mission by name:
+   - Check if it matches one of the missions above (by title or key)
+   - If YES: Say you'll suggest that mission and add [SUGGEST_MISSION:${'{missionKey}'}] at the end (e.g., [SUGGEST_MISSION:walking])
+   - If NO: Tell the user that mission doesn't exist and list the available missions they can choose from
+
+2. If a user asks for a mission without specifying which one:
+   - Use [SUGGEST_MISSION] to let the system pick the best one
+
+3. NEVER suggest or mention missions that don't exist in the catalog above
+=== END MISSION CATALOG ===`;
         
         if (activeMissions.length > 0) {
           const missionDescriptions = await Promise.all(
@@ -319,7 +339,7 @@ IMPORTANT: When discussing risk scores, remember:
       }
 
       const chatMessages: ChatMessage[] = [
-        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + activeMissionsContext + dynamicContext + healthProfileContext },
+        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + missionCatalogContext + activeMissionsContext + dynamicContext + healthProfileContext },
         ...messages.map((msg: { role: string; content: string }) => ({
           role: msg.role as "user" | "assistant",
           content: msg.content,
@@ -1146,7 +1166,7 @@ IMPORTANT: When discussing risk scores, remember:
 
     try {
       const userId = (req.user as any).id;
-      const { context, language = 'en', weatherContext } = req.body;
+      const { context, language = 'en', weatherContext, specificMissionKey } = req.body;
       
       // Outdoor missions that should get weather-based alternatives
       const outdoorMissionKeys = ['walking', 'jumping-jacks'];
@@ -1158,6 +1178,67 @@ IMPORTANT: When discussing risk scores, remember:
 
       const catalog = await storage.getAllMissions();
       const userMissions = await storage.getUserMissions(userId);
+      
+      // If a specific mission key was requested, try to find and suggest it
+      if (specificMissionKey) {
+        const requestedMission = catalog.find(m => 
+          m.missionKey === specificMissionKey && !m.isAlternative
+        );
+        
+        if (!requestedMission) {
+          // Mission doesn't exist in catalog
+          return res.json({ 
+            mission: null, 
+            reason: language === 'de' 
+              ? `Diese Mission existiert nicht. Verfügbare Missionen: ${catalog.filter(m => !m.isAlternative).map(m => m.titleDe).join(', ')}` 
+              : `That mission doesn't exist. Available missions: ${catalog.filter(m => !m.isAlternative).map(m => m.titleEn).join(', ')}`
+          });
+        }
+        
+        const userMission = userMissions.find(um => um.missionKey === specificMissionKey);
+        
+        if (!userMission) {
+          // User doesn't have this mission assigned
+          return res.json({ 
+            mission: null, 
+            reason: language === 'de' 
+              ? 'Diese Mission ist für dich nicht verfügbar.' 
+              : 'This mission is not available for you.'
+          });
+        }
+        
+        if (userMission.isActive) {
+          // Mission is already active
+          return res.json({ 
+            mission: null, 
+            reason: language === 'de' 
+              ? 'Diese Mission ist bereits aktiviert!' 
+              : 'This mission is already activated!'
+          });
+        }
+        
+        // Return the specific requested mission
+        const localizedMission = {
+          id: requestedMission.id,
+          missionKey: requestedMission.missionKey,
+          userMissionId: userMission.id,
+          title: language === 'de' ? requestedMission.titleDe : requestedMission.titleEn,
+          description: language === 'de' ? requestedMission.descriptionDe : requestedMission.descriptionEn,
+          xpReward: requestedMission.xpReward,
+          icon: requestedMission.icon,
+          color: requestedMission.color,
+          maxProgress: requestedMission.maxProgress,
+        };
+        
+        return res.json({
+          mission: localizedMission,
+          reason: language === 'de' 
+            ? `Hier ist die Mission "${localizedMission.title}"!` 
+            : `Here's the "${localizedMission.title}" mission!`,
+          isAlternative: false,
+        });
+      }
+      
       const questionnaire = await storage.getQuestionnaireAnswers(userId, 'lifestyle');
       const emotionalCheckins = await storage.getAllEmotionalCheckins(userId);
       const profile = await storage.getUserProfile(userId);
