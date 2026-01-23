@@ -836,11 +836,12 @@ export default function MyDashboard() {
                 <div className="flex items-center gap-2 ml-3 flex-shrink-0">
                   <Link href="/feedback">
                     <button 
-                      className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg hover:bg-white/30 transition-colors min-w-[40px] min-h-[40px] active:scale-95"
+                      className="px-3 py-2 sm:px-4 sm:py-2.5 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center gap-1.5 sm:gap-2 shadow-lg hover:bg-white/30 transition-colors min-h-[40px] active:scale-95"
                       aria-label="Send feedback"
                       data-testid="button-welcome-feedback"
                     >
-                      <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                      <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      <span className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">Send feedback</span>
                     </button>
                   </Link>
                   <div className="hidden sm:flex w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl items-center justify-center shadow-xl">
