@@ -1,4 +1,5 @@
 import * as Brevo from '@getbrevo/brevo';
+import crypto from 'crypto';
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@loretta.health';
@@ -495,6 +496,177 @@ export async function sendFeedbackThankYouEmail(
     return {
       success: false,
       message: "Failed to send thank you email."
+    };
+  }
+}
+
+// ==========================================
+// EMAIL VERIFICATION FUNCTIONS
+// ==========================================
+
+export function generateVerificationCode(): string {
+  const buffer = crypto.randomBytes(3);
+  const code = ((buffer[0] << 16) | (buffer[1] << 8) | buffer[2]) % 1000000;
+  return code.toString().padStart(6, '0');
+}
+
+export function hashVerificationCode(code: string): string {
+  return crypto.createHash('sha256').update(code).digest('hex');
+}
+
+export function constantTimeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
+
+function generateEmailVerificationHTML(
+  userName: string,
+  verificationCode: string,
+  expiryMinutes: number = 15
+): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Email</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
+          
+          <!-- Header with Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 32px 24px; text-align: center;">
+              <img src="https://loretta-care.replit.app/loretta_logo_white.png" alt="Loretta" width="160" style="display: block; margin: 0 auto 12px auto; max-width: 160px; height: auto;" />
+              <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">Your personal health companion</p>
+            </td>
+          </tr>
+          
+          <!-- Main Content -->
+          <tr>
+            <td style="padding: 32px 24px;">
+              <h1 style="color: #1a1a2e; font-size: 22px; font-weight: 800; margin: 0 0 16px 0; text-align: center;">Verify Your Email</h1>
+              
+              <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0; text-align: center;">
+                Hi ${userName || 'there'},<br><br>
+                Welcome to Loretta! Please enter this code in the app to verify your email address:
+              </p>
+              
+              <!-- Code Box -->
+              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px dashed #CDB6EF; border-radius: 16px; padding: 24px; text-align: center; margin: 0 0 24px 0;">
+                <p style="color: #718096; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Your Verification Code</p>
+                <p style="font-family: 'DM Mono', 'SF Mono', Monaco, monospace; font-size: 36px; font-weight: 700; color: #013DC4; letter-spacing: 8px; margin: 0;">${verificationCode}</p>
+              </div>
+              
+              <!-- Timer notice -->
+              <div style="background: #fef3cd; border-radius: 12px; padding: 12px 16px; margin: 0 0 24px 0;">
+                <p style="color: #856404; font-size: 13px; margin: 0; text-align: center;">
+                  ⏱️ This code expires in <strong>${expiryMinutes} minutes</strong>
+                </p>
+              </div>
+              
+              <!-- Security notice -->
+              <p style="color: #718096; font-size: 13px; line-height: 1.5; margin: 0; text-align: center;">
+                If you didn't create a Loretta account, you can safely ignore this email.
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background: #f8f9fa; padding: 20px 24px; border-top: 1px solid #e9ecef;">
+              <p style="color: #718096; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
+                This is an automated message from Loretta.<br>
+                Please do not reply to this email.
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+        
+        <!-- Company footer -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; margin-top: 24px;">
+          <tr>
+            <td style="text-align: center;">
+              <p style="color: #a0aec0; font-size: 11px; margin: 0;">
+                © ${new Date().getFullYear()} Loretta Health. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+function generateEmailVerificationText(
+  userName: string,
+  verificationCode: string,
+  expiryMinutes: number = 15
+): string {
+  return `
+Verify Your Email
+
+Hi ${userName || 'there'},
+
+Welcome to Loretta! Please enter this code in the app to verify your email address:
+
+Your Verification Code: ${verificationCode}
+
+This code expires in ${expiryMinutes} minutes.
+
+If you didn't create a Loretta account, you can safely ignore this email.
+
+---
+This is an automated message from Loretta.
+Please do not reply to this email.
+
+© ${new Date().getFullYear()} Loretta Health. All rights reserved.
+  `.trim();
+}
+
+export async function sendVerificationEmail(
+  toEmail: string,
+  userName: string,
+  verificationCode: string,
+  expiryMinutes: number = 15
+): Promise<{ success: boolean; message: string }> {
+  if (!BREVO_API_KEY) {
+    console.log(`[Email Verification] Brevo not configured. Code for ${toEmail}: ${verificationCode} (expires in ${expiryMinutes} minutes)`);
+    return {
+      success: true,
+      message: "Brevo not configured. Verification code logged to console for demo purposes."
+    };
+  }
+
+  const sendSmtpEmail = new Brevo.SendSmtpEmail();
+  sendSmtpEmail.subject = 'Verify your email - Loretta';
+  sendSmtpEmail.htmlContent = generateEmailVerificationHTML(userName, verificationCode, expiryMinutes);
+  sendSmtpEmail.textContent = generateEmailVerificationText(userName, verificationCode, expiryMinutes);
+  sendSmtpEmail.sender = { name: FROM_NAME, email: FROM_EMAIL };
+  sendSmtpEmail.to = [{ email: toEmail, name: userName || 'User' }];
+
+  try {
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    console.log(`[Email Verification] Email sent successfully to ${toEmail}`);
+    return {
+      success: true,
+      message: "Verification email sent successfully."
+    };
+  } catch (error: any) {
+    console.error('[Email Verification] Failed to send email:', error?.body || error?.message || error);
+    return {
+      success: false,
+      message: "Failed to send verification email. Please try again later."
     };
   }
 }

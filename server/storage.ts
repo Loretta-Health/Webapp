@@ -43,6 +43,7 @@ import {
   type InsertMedicationAdherence,
   type UpdateMedicationAdherence,
   type PasswordResetToken,
+  type EmailVerificationToken,
   type UserFeedback,
   type InsertUserFeedback,
   type AuthToken,
@@ -69,6 +70,7 @@ import {
   medicationLogs,
   medicationAdherence,
   passwordResetTokens,
+  emailVerificationTokens,
   userFeedback,
   authTokens,
   calendarEvents,
@@ -95,6 +97,17 @@ export interface IStorage {
   createPasswordResetToken(userId: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
   getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
   markPasswordResetTokenUsed(tokenId: string): Promise<void>;
+
+  // Email verification methods
+  createEmailVerificationToken(userId: string, tokenHash: string, expiresAt: Date): Promise<EmailVerificationToken>;
+  getEmailVerificationToken(userId: string): Promise<EmailVerificationToken | undefined>;
+  markEmailVerificationTokenUsed(tokenId: string): Promise<void>;
+  incrementEmailVerificationResend(tokenId: string): Promise<void>;
+  setUserEmailVerified(userId: string): Promise<void>;
+  incrementEmailVerificationAttempts(userId: string): Promise<void>;
+  resetEmailVerificationAttempts(userId: string): Promise<void>;
+  lockEmailVerification(userId: string, until: Date): Promise<void>;
+  deleteUserEmailVerificationTokens(userId: string): Promise<void>;
 
   // Auth token methods (for native mobile app authentication)
   createAuthToken(userId: string, token: string): Promise<AuthToken>;
@@ -273,6 +286,69 @@ export class DatabaseStorage implements IStorage {
 
   async markPasswordResetTokenUsed(tokenId: string): Promise<void> {
     await db.update(passwordResetTokens).set({ used: true }).where(eq(passwordResetTokens.id, tokenId));
+  }
+
+  // Email verification methods
+  async createEmailVerificationToken(userId: string, tokenHash: string, expiresAt: Date): Promise<EmailVerificationToken> {
+    const [token] = await db.insert(emailVerificationTokens).values({
+      userId,
+      tokenHash,
+      expiresAt,
+    }).returning();
+    return token;
+  }
+
+  async getEmailVerificationToken(userId: string): Promise<EmailVerificationToken | undefined> {
+    const [token] = await db.select().from(emailVerificationTokens)
+      .where(and(
+        eq(emailVerificationTokens.userId, userId),
+        eq(emailVerificationTokens.used, false)
+      ))
+      .orderBy(desc(emailVerificationTokens.createdAt))
+      .limit(1);
+    return token;
+  }
+
+  async markEmailVerificationTokenUsed(tokenId: string): Promise<void> {
+    await db.update(emailVerificationTokens).set({ used: true }).where(eq(emailVerificationTokens.id, tokenId));
+  }
+
+  async incrementEmailVerificationResend(tokenId: string): Promise<void> {
+    await db.update(emailVerificationTokens).set({ 
+      resendCount: sql`${emailVerificationTokens.resendCount} + 1`,
+      lastResendAt: new Date()
+    }).where(eq(emailVerificationTokens.id, tokenId));
+  }
+
+  async setUserEmailVerified(userId: string): Promise<void> {
+    await db.update(users).set({ 
+      emailVerified: true,
+      emailVerificationAttempts: 0,
+      emailVerificationLockedUntil: null
+    }).where(eq(users.id, userId));
+  }
+
+  async incrementEmailVerificationAttempts(userId: string): Promise<void> {
+    await db.update(users).set({ 
+      emailVerificationAttempts: sql`${users.emailVerificationAttempts} + 1`
+    }).where(eq(users.id, userId));
+  }
+
+  async resetEmailVerificationAttempts(userId: string): Promise<void> {
+    await db.update(users).set({ 
+      emailVerificationAttempts: 0,
+      emailVerificationLockedUntil: null
+    }).where(eq(users.id, userId));
+  }
+
+  async lockEmailVerification(userId: string, until: Date): Promise<void> {
+    await db.update(users).set({ 
+      emailVerificationLockedUntil: until
+    }).where(eq(users.id, userId));
+  }
+
+  async deleteUserEmailVerificationTokens(userId: string): Promise<void> {
+    await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, userId));
   }
 
   // Auth token methods (for native mobile app authentication)
