@@ -21,8 +21,9 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Session-based using Passport.js (local strategy) and PostgreSQL session store.
 
 ### Email Verification System
-- **Required for Access**: New users must verify their email before accessing the app.
+- **Configurable Requirement**: Email verification can be toggled on/off via `REQUIRE_EMAIL_VERIFICATION` environment variable (`true`/`false`). When disabled, users can access the app without verifying their email.
 - **6-Digit Code**: Verification uses a 6-digit code sent via Brevo email, mobile-friendly for paste support.
+- **Public Config Endpoint**: `GET /api/config/public` returns the verification requirement status for frontend routing.
 - **Security Measures**:
   - Codes hashed with SHA-256 before storage
   - 15-minute expiry for verification codes
