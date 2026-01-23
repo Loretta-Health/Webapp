@@ -93,18 +93,18 @@ interface Team {
 function GlassCard({ 
   children, 
   className = '',
-  glow = false 
+  glow = false,
+  transparent = false
 }: { 
   children: React.ReactNode; 
   className?: string;
   glow?: boolean;
+  transparent?: boolean;
 }) {
   return (
     <div className={`
-      backdrop-blur-xl bg-white/70 dark:bg-gray-900/70
-      border border-white/50 dark:border-white/10
-      rounded-3xl shadow-xl
-      ${glow ? 'shadow-[#013DC4]/20' : ''}
+      ${transparent ? '' : 'backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10'}
+      rounded-3xl shadow-xl shadow-gray-900/10
       ${className}
     `}>
       {children}
@@ -534,7 +534,7 @@ export default function MyDashboard() {
           flex flex-col overflow-y-auto
           transform transition-transform duration-500 ease-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          shadow-2xl shadow-[#013DC4]/5
+          shadow-2xl shadow-gray-900/10
           safe-area-top safe-area-left safe-area-bottom
         `}
         data-testid="sidebar"
@@ -559,9 +559,9 @@ export default function MyDashboard() {
           </div>
           
           <Link href="/profile">
-            <GlassCard className="p-5 text-center cursor-pointer hover:shadow-xl transition-shadow" glow>
+            <div className="p-5 text-center cursor-pointer hover:bg-white/30 dark:hover:bg-gray-800/30 rounded-3xl transition-all">
               <div className="relative inline-block mb-4">
-                <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-2xl shadow-[#013DC4]/30 overflow-hidden">
+                <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-2xl shadow-gray-900/20 overflow-hidden">
                   {profileData?.profilePhoto ? (
                     <img 
                       src={profileData.profilePhoto} 
@@ -598,7 +598,7 @@ export default function MyDashboard() {
                   />
                 </div>
               </div>
-            </GlassCard>
+            </div>
           </Link>
           
           <GlassCard className="p-4">
@@ -733,7 +733,7 @@ export default function MyDashboard() {
       </aside>
       
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-4 pt-6 pb-4 sm:pt-8 sm:pb-5 flex items-center justify-between shadow-2xl shadow-[#013DC4]/30 relative overflow-hidden safe-area-top">
+        <header className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white px-4 pt-6 pb-4 sm:pt-8 sm:pb-5 flex items-center justify-between shadow-2xl shadow-gray-900/20 relative overflow-hidden safe-area-top">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDUiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30" />
           
           <button 
@@ -793,7 +793,7 @@ export default function MyDashboard() {
         
         <div className="flex-1 overflow-y-auto p-3 sm:p-5 lg:p-8 safe-area-bottom">
           <div className="max-w-6xl mx-auto space-y-4 sm:space-y-5 lg:space-y-7">
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-5 bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] shadow-xl shadow-[#013DC4]/20">
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl p-3 sm:p-4 lg:p-5 bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#4B7BE5] shadow-xl shadow-gray-900/15">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-50" />
               <div className="absolute top-0 right-0 w-24 sm:w-48 h-24 sm:h-48 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
               
@@ -875,10 +875,10 @@ export default function MyDashboard() {
             <div className="block">
               <Link href="/chat">
                 <button className="w-full group">
-                  <GlassCard className="p-4 sm:p-5 hover:shadow-2xl hover:shadow-[#CDB6EF]/20 transition-all" glow>
+                  <GlassCard className="p-4 sm:p-5 hover:shadow-2xl hover:shadow-gray-900/15 transition-all" glow>
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 sm:gap-5 min-w-0">
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#CDB6EF] via-purple-400 to-[#013DC4] flex items-center justify-center shadow-2xl shadow-[#CDB6EF]/30 group-hover:scale-110 transition-transform flex-shrink-0">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#CDB6EF] via-purple-400 to-[#013DC4] flex items-center justify-center shadow-2xl shadow-gray-900/20 group-hover:scale-110 transition-transform flex-shrink-0">
                         <MessageCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                       </div>
                       <div className="text-left min-w-0">
@@ -1193,7 +1193,7 @@ export default function MyDashboard() {
                     <div className="space-y-4">
                       <button 
                         onClick={() => setShowCheckInModal(true)}
-                        className="w-full py-3 sm:py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:shadow-2xl hover:shadow-[#013DC4]/30 transition-all hover:scale-[1.02] min-h-[48px]"
+                        className="w-full py-3 sm:py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#4B7BE5] text-white rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:shadow-2xl hover:shadow-gray-900/20 transition-all hover:scale-[1.02] min-h-[48px]"
                       >
                         {t('checkin.startButton', 'Start Check-in')} (+10 XP)
                       </button>
