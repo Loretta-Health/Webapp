@@ -1453,11 +1453,28 @@ IMPORTANT: When discussing risk scores, remember:
         validatedData.activatedAt = new Date();
       }
       
-      // Get current mission state to check if it's being newly completed or un-completed
+      // Get current mission state to check progress changes and completion status
       const [currentMission] = await db.select().from(userMissions).where(eq(userMissions.id, id));
       const wasCompleted = currentMission?.completed ?? false;
       const isBeingCompleted = validatedData.completed === true && !wasCompleted;
       const isBeingUncompleted = validatedData.completed === false && wasCompleted;
+      
+      // Get catalog mission for max progress clamping
+      const catalogMission = currentMission ? await storage.getMissionByKey(currentMission.missionKey) : null;
+      const maxProgress = catalogMission?.maxProgress ?? 999;
+      
+      // Track progress changes for per-increment XP rewards
+      // Clamp progress values to valid range (0 to maxProgress)
+      const previousProgress = Math.max(0, Math.min(currentMission?.progress ?? 0, maxProgress));
+      const rawNewProgress = validatedData.progress ?? previousProgress;
+      const clampedNewProgress = Math.max(0, Math.min(rawNewProgress, maxProgress));
+      
+      // Override progress in validatedData with clamped value
+      if (validatedData.progress !== undefined) {
+        validatedData.progress = clampedNewProgress;
+      }
+      
+      const progressDelta = clampedNewProgress - previousProgress;
       
       // Set completedAt timestamp when completing, clear it when undoing
       if (isBeingCompleted) {
@@ -1472,21 +1489,17 @@ IMPORTANT: When discussing risk scores, remember:
         return res.status(404).json({ error: "Mission not found" });
       }
       
-      // Award XP when mission is newly completed (use helper that also checks achievements)
-      if (isBeingCompleted && currentMission) {
-        const catalogMission = await storage.getMissionByKey(currentMission.missionKey);
-        if (catalogMission && catalogMission.xpReward && catalogMission.xpReward > 0) {
-          const xpResult = await addXPAndCheckAchievements(userId, catalogMission.xpReward);
-          console.log(`[Missions] Awarded ${catalogMission.xpReward} XP to user ${userId} for completing mission ${currentMission.missionKey}. Achievements unlocked: ${xpResult.achievementsUnlocked.length}`);
-        }
-      }
-      
-      // Deduct XP when mission is being un-completed (undo)
-      if (isBeingUncompleted && currentMission) {
-        const catalogMission = await storage.getMissionByKey(currentMission.missionKey);
-        if (catalogMission && catalogMission.xpReward && catalogMission.xpReward > 0) {
-          await storage.deductXP(userId, catalogMission.xpReward);
-          console.log(`[Missions] Deducted ${catalogMission.xpReward} XP from user ${userId} for undoing mission ${currentMission.missionKey}`);
+      // Award XP for each progress increment (not just on completion)
+      // The UI says "XP each" meaning users earn XP for every step, not just once at the end
+      if (progressDelta !== 0 && catalogMission && catalogMission.xpReward && catalogMission.xpReward > 0) {
+        const xpToAward = catalogMission.xpReward * progressDelta;
+        if (xpToAward > 0) {
+          const xpResult = await addXPAndCheckAchievements(userId, xpToAward);
+          console.log(`[Missions] Awarded ${xpToAward} XP (${catalogMission.xpReward} x ${progressDelta} increments) to user ${userId} for mission ${currentMission?.missionKey}. Achievements unlocked: ${xpResult.achievementsUnlocked.length}`);
+        } else if (xpToAward < 0) {
+          // Progress decreased (undo) - deduct XP
+          await storage.deductXP(userId, Math.abs(xpToAward));
+          console.log(`[Missions] Deducted ${Math.abs(xpToAward)} XP (${catalogMission.xpReward} x ${Math.abs(progressDelta)} decrements) from user ${userId} for mission ${currentMission?.missionKey}`);
         }
       }
       
