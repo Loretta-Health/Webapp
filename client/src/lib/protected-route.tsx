@@ -6,9 +6,11 @@ import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
 export function ProtectedRoute({
   path,
   component: Component,
+  requireEmailVerification = true,
 }: {
   path: string;
   component: () => React.JSX.Element;
+  requireEmailVerification?: boolean;
 }) {
   const { user, isLoading } = useAuth();
 
@@ -34,6 +36,14 @@ export function ProtectedRoute({
     return (
       <Route path={path}>
         <Redirect to="/auth" />
+      </Route>
+    );
+  }
+
+  if (requireEmailVerification && !user.emailVerified) {
+    return (
+      <Route path={path}>
+        <Redirect to="/verify-email" />
       </Route>
     );
   }
