@@ -1,18 +1,26 @@
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route } from "wouter";
 import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
 
+interface PublicConfig {
+  requireEmailVerification: boolean;
+}
+
 export function ProtectedRoute({
   path,
   component: Component,
-  requireEmailVerification = true,
 }: {
   path: string;
   component: () => React.JSX.Element;
-  requireEmailVerification?: boolean;
 }) {
   const { user, isLoading } = useAuth();
+  
+  const { data: config } = useQuery<PublicConfig>({
+    queryKey: ['/api/config/public'],
+    staleTime: 5 * 60 * 1000,
+  });
 
   if (isLoading) {
     return (
@@ -40,7 +48,8 @@ export function ProtectedRoute({
     );
   }
 
-  if (requireEmailVerification && !user.emailVerified) {
+  const requireVerification = config?.requireEmailVerification ?? false;
+  if (requireVerification && !user.emailVerified) {
     return (
       <Route path={path}>
         <Redirect to="/verify-email" />

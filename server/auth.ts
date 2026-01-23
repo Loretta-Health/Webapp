@@ -263,6 +263,12 @@ export function setupAuth(app: Express) {
     return res.sendStatus(401);
   });
 
+  app.get("/api/config/public", (req, res) => {
+    res.json({
+      requireEmailVerification: process.env.REQUIRE_EMAIL_VERIFICATION === 'true',
+    });
+  });
+
   // Password reset endpoints
   app.post("/api/password-reset/request", async (req, res) => {
     try {
