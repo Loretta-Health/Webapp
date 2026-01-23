@@ -6,7 +6,19 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
-import { sendPasswordResetEmail, isEmailConfigured } from "./email";
+import { 
+  sendPasswordResetEmail, 
+  isEmailConfigured, 
+  sendVerificationEmail, 
+  generateVerificationCode, 
+  hashVerificationCode,
+  constantTimeCompare
+} from "./email";
+
+const VERIFICATION_CODE_EXPIRY_MINUTES = 15;
+const MAX_VERIFICATION_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MINUTES = 30;
+const MAX_RESENDS_PER_HOUR = 3;
 
 async function generateAuthToken(userId: string): Promise<string> {
   const token = randomBytes(32).toString("hex");
@@ -29,9 +41,12 @@ declare global {
   }
 }
 
-function sanitizeUser(user: SelectUser): Omit<SelectUser, 'password'> {
+function sanitizeUser(user: SelectUser): Omit<SelectUser, 'password'> & { emailVerified: boolean } {
   const { password: _, ...safeUser } = user;
-  return safeUser;
+  return {
+    ...safeUser,
+    emailVerified: user.emailVerified ?? false,
+  };
 }
 
 const scryptAsync = promisify(scrypt);
@@ -178,10 +193,25 @@ export function setupAuth(app: Express) {
       // Add user to the Loretta community
       await storage.addUserToLorettaCommunity(user.id);
 
+      // Generate and send verification email
+      const verificationCode = generateVerificationCode();
+      const tokenHash = hashVerificationCode(verificationCode);
+      const expiresAt = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
+      
+      await storage.createEmailVerificationToken(user.id, tokenHash, expiresAt);
+      
+      const userName = firstName || finalUsername;
+      await sendVerificationEmail(email.toLowerCase(), userName, verificationCode, VERIFICATION_CODE_EXPIRY_MINUTES);
+
       req.login(user, async (err) => {
         if (err) return next(err);
         const authToken = await generateAuthToken(user.id);
-        res.status(201).json({ user: sanitizeUser(user), authToken });
+        res.status(201).json({ 
+          user: sanitizeUser(user), 
+          authToken,
+          requiresVerification: true,
+          message: "Please check your email for a verification code."
+        });
       });
     } catch (error) {
       console.error("Registration error:", error);
@@ -345,6 +375,173 @@ export function setupAuth(app: Express) {
     } catch (error) {
       console.error("Password reset complete error:", error);
       res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+
+  // Email verification endpoints
+  app.post("/api/verify-email", async (req, res) => {
+    try {
+      const { code } = req.body;
+      
+      if (!req.isAuthenticated() && !req.headers['x-auth-token']) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = req.user || (req as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      if (!code || typeof code !== 'string' || code.length !== 6) {
+        return res.status(400).json({ message: "Valid 6-digit verification code required" });
+      }
+
+      // Check if user is already verified
+      if (user.emailVerified) {
+        return res.json({ success: true, message: "Email already verified" });
+      }
+
+      // Check if user is locked out
+      if (user.emailVerificationLockedUntil && new Date() < user.emailVerificationLockedUntil) {
+        const remainingMinutes = Math.ceil((user.emailVerificationLockedUntil.getTime() - Date.now()) / 60000);
+        return res.status(429).json({ 
+          message: `Too many failed attempts. Please try again in ${remainingMinutes} minutes.`,
+          lockedUntil: user.emailVerificationLockedUntil
+        });
+      }
+
+      const verificationToken = await storage.getEmailVerificationToken(user.id);
+      
+      if (!verificationToken) {
+        return res.status(400).json({ message: "No verification code found. Please request a new one." });
+      }
+
+      if (new Date() > verificationToken.expiresAt) {
+        return res.status(400).json({ message: "Verification code has expired. Please request a new one." });
+      }
+
+      // Constant-time comparison of hashed codes
+      const providedHash = hashVerificationCode(code);
+      const isValid = constantTimeCompare(providedHash, verificationToken.tokenHash);
+
+      if (!isValid) {
+        // Increment failed attempts
+        await storage.incrementEmailVerificationAttempts(user.id);
+        const updatedUser = await storage.getUser(user.id);
+        
+        if (updatedUser && updatedUser.emailVerificationAttempts >= MAX_VERIFICATION_ATTEMPTS) {
+          // Lock the account
+          const lockoutUntil = new Date(Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000);
+          await storage.lockEmailVerification(user.id, lockoutUntil);
+          return res.status(429).json({ 
+            message: `Too many failed attempts. Account locked for ${LOCKOUT_DURATION_MINUTES} minutes.`,
+            lockedUntil: lockoutUntil
+          });
+        }
+
+        const remainingAttempts = MAX_VERIFICATION_ATTEMPTS - (updatedUser?.emailVerificationAttempts || 0);
+        return res.status(400).json({ 
+          message: `Invalid verification code. ${remainingAttempts} attempts remaining.`,
+          remainingAttempts
+        });
+      }
+
+      // Success! Mark token as used and user as verified
+      await storage.markEmailVerificationTokenUsed(verificationToken.id);
+      await storage.setUserEmailVerified(user.id);
+
+      // Get updated user
+      const verifiedUser = await storage.getUser(user.id);
+      
+      res.json({ 
+        success: true, 
+        message: "Email verified successfully!",
+        user: verifiedUser ? sanitizeUser(verifiedUser) : null
+      });
+    } catch (error) {
+      console.error("Email verification error:", error);
+      res.status(500).json({ message: "Failed to verify email" });
+    }
+  });
+
+  app.post("/api/resend-verification", async (req, res) => {
+    try {
+      if (!req.isAuthenticated() && !req.headers['x-auth-token']) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = req.user || (req as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      // Check if user is already verified
+      if (user.emailVerified) {
+        return res.json({ success: true, message: "Email already verified" });
+      }
+
+      // Check rate limiting
+      const existingToken = await storage.getEmailVerificationToken(user.id);
+      
+      if (existingToken) {
+        // Check if max resends reached
+        if (existingToken.resendCount >= MAX_RESENDS_PER_HOUR) {
+          const hoursSinceLastResend = existingToken.lastResendAt 
+            ? (Date.now() - existingToken.lastResendAt.getTime()) / (60 * 60 * 1000)
+            : 0;
+          
+          if (hoursSinceLastResend < 1) {
+            const minutesRemaining = Math.ceil(60 - (hoursSinceLastResend * 60));
+            return res.status(429).json({ 
+              message: `Maximum resend limit reached. Please wait ${minutesRemaining} minutes.`,
+              retryAfterMinutes: minutesRemaining
+            });
+          }
+        }
+
+        // Check if last resend was too recent (minimum 60 seconds between resends)
+        if (existingToken.lastResendAt) {
+          const secondsSinceLastResend = (Date.now() - existingToken.lastResendAt.getTime()) / 1000;
+          if (secondsSinceLastResend < 60) {
+            const waitSeconds = Math.ceil(60 - secondsSinceLastResend);
+            return res.status(429).json({ 
+              message: `Please wait ${waitSeconds} seconds before requesting another code.`,
+              retryAfterSeconds: waitSeconds
+            });
+          }
+        }
+      }
+
+      // Delete old tokens and create new one
+      await storage.deleteUserEmailVerificationTokens(user.id);
+      
+      const verificationCode = generateVerificationCode();
+      const tokenHash = hashVerificationCode(verificationCode);
+      const expiresAt = new Date(Date.now() + VERIFICATION_CODE_EXPIRY_MINUTES * 60 * 1000);
+      
+      await storage.createEmailVerificationToken(user.id, tokenHash, expiresAt);
+      
+      // Reset attempt counter when new code is sent
+      await storage.resetEmailVerificationAttempts(user.id);
+      
+      const userName = user.firstName || user.username;
+      const emailResult = await sendVerificationEmail(
+        user.email!,
+        userName,
+        verificationCode,
+        VERIFICATION_CODE_EXPIRY_MINUTES
+      );
+
+      res.json({ 
+        success: emailResult.success, 
+        message: emailResult.success 
+          ? "A new verification code has been sent to your email."
+          : emailResult.message,
+        expiresInMinutes: VERIFICATION_CODE_EXPIRY_MINUTES
+      });
+    } catch (error) {
+      console.error("Resend verification error:", error);
+      res.status(500).json({ message: "Failed to resend verification email" });
     }
   });
 }

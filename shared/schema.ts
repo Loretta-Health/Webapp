@@ -10,7 +10,10 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   firstName: text("first_name"),
   lastName: text("last_name"),
-  email: text("email").unique(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  emailVerificationAttempts: integer("email_verification_attempts").default(0).notNull(),
+  emailVerificationLockedUntil: timestamp("email_verification_locked_until"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -35,6 +38,20 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
 });
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+
+// Email verification tokens table - stores hashed verification codes
+export const emailVerificationTokens = pgTable("email_verification_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: text("user_id").notNull(),
+  tokenHash: text("token_hash").notNull(), // SHA-256 hash of the 6-digit code
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  resendCount: integer("resend_count").default(0).notNull(), // Track resend requests for rate limiting
+  lastResendAt: timestamp("last_resend_at"), // Last time a resend was requested
+});
+
+export type EmailVerificationToken = typeof emailVerificationTokens.$inferSelect;
 
 // Auth tokens table - for native mobile app authentication (survives server restarts)
 export const authTokens = pgTable("auth_tokens", {
