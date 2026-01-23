@@ -188,6 +188,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch user's missions and mission catalog if authenticated
       let activeMissionsContext = '';
       let missionCatalogContext = '';
+      let emotionalStateContext = '';
+      let alternativeMissionsContext = '';
       if (req.isAuthenticated()) {
         const userId = (req.user as any).id;
         const userMissionsList = await storage.getUserMissions(userId);
@@ -196,9 +198,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Get the full mission catalog for validation
         const missionCatalog = await storage.getAllMissions();
         const mainMissions = missionCatalog.filter(m => !m.isAlternative);
+        const altMissions = missionCatalog.filter(m => m.isAlternative);
+        
+        // Get user's emotional state from latest check-in
+        const latestCheckin = await storage.getLatestEmotionalCheckin(userId);
+        const today = new Date().toDateString();
+        const checkinDate = latestCheckin?.checkedInAt ? new Date(latestCheckin.checkedInAt).toDateString() : null;
+        const isCheckinToday = checkinDate === today;
+        const userHasLowMood = isCheckinToday && latestCheckin && isLowMoodEmotion(latestCheckin.emotion);
+        
+        // Build emotional state context
+        if (latestCheckin && isCheckinToday) {
+          emotionalStateContext = `\n\n=== USER'S EMOTIONAL STATE ===
+The user completed an emotional check-in TODAY.
+- Current emotion: ${latestCheckin.emotion}
+- Is low mood: ${userHasLowMood ? 'YES - User is feeling down today' : 'NO - User is feeling okay'}
+${userHasLowMood ? `
+IMPORTANT: Since the user has checked in with a LOW MOOD today, you should:
+1. Be extra gentle and supportive in your responses
+2. If they have outdoor missions activated, proactively offer gentler alternatives
+3. Don't push them to do intense activities - offer restful options instead` : ''}
+=== END EMOTIONAL STATE ===`;
+        }
+        
+        // Build alternative missions context
+        alternativeMissionsContext = `\n\n=== ALTERNATIVE MISSIONS CATALOG ===
+These are gentler alternative missions that replace harder ones:
+${altMissions.map(alt => {
+  const parent = mainMissions.find(m => m.missionKey === alt.alternativeOf);
+  return `- "${alt.titleEn}" (key: ${alt.missionKey}) replaces "${parent?.titleEn || alt.alternativeOf}" (${parent?.isOutdoor ? 'OUTDOOR' : 'indoor'})`;
+}).join('\n')}
+
+WHEN TO OFFER ALTERNATIVES (EITHER condition triggers alternatives):
+
+CONDITION 1 - LOW MOOD: ${userHasLowMood ? 'YES ✓ User checked in with negative emotion today' : 'NO - User has not checked in with low mood today'}
+  → When user has low mood: offer gentler alternatives for ANY activated mission if they seem to struggle
+
+CONDITION 2 - BAD WEATHER + OUTDOOR: Check the weather context below
+  → When weather is bad (from real location, NOT default): offer indoor alternatives for OUTDOOR missions only
+  → ONLY applies to missions marked as OUTDOOR (walking, jumping-jacks)
+  → IGNORE weather if user's location is unknown/default
+
+DECISION RULES:
+- If LOW MOOD TODAY → offer alternatives for any activated mission the user struggles with
+- If BAD WEATHER + OUTDOOR MISSION → offer indoor alternative even if mood is fine
+- If NEITHER condition → do NOT proactively offer alternatives (user must explicitly ask)
+- User phrases like "I can't", "too hard", "too tired" → check if mission is activated, then offer alternative
+=== END ALTERNATIVE MISSIONS ===`;
+        
         missionCatalogContext = `\n\n=== AVAILABLE MISSION CATALOG ===
 These are the ONLY missions that exist in the system. You MUST validate against this list:
-${mainMissions.map(m => `- "${m.titleEn}" (key: ${m.missionKey}) - ${m.descriptionEn}`).join('\n')}
+${mainMissions.map(m => `- "${m.titleEn}" (key: ${m.missionKey}, ${m.isOutdoor ? 'OUTDOOR' : 'indoor'}) - ${m.descriptionEn}`).join('\n')}
 
 MISSION ACTIVATION RULES:
 1. If a user asks to "activate", "start", "give me", or "suggest" a SPECIFIC mission by name:
@@ -222,6 +272,7 @@ MISSION ACTIVATION RULES:
                 title: catalogMission?.titleEn || m.missionKey,
                 progress: m.progress,
                 goal: catalogMission?.maxProgress || 0,
+                isOutdoor: catalogMission?.isOutdoor || false,
                 alternativeTitle: altMission?.titleEn || null,
                 alternativeKey: altMission?.missionKey || null,
               };
@@ -230,7 +281,7 @@ MISSION ACTIVATION RULES:
           
           activeMissionsContext = `\n\n=== USER'S ACTIVATED MISSIONS ===
 The user currently has these missions ACTIVATED (in progress):
-${missionDescriptions.map(m => `- "${m.title}" (key: ${m.key}, progress: ${m.progress}/${m.goal})${m.alternativeTitle ? ` → Alternative: "${m.alternativeTitle}"` : ''}`).join('\n')}
+${missionDescriptions.map(m => `- "${m.title}" (key: ${m.key}, ${m.isOutdoor ? 'OUTDOOR' : 'indoor'}, progress: ${m.progress}/${m.goal})${m.alternativeTitle ? ` → Alternative: "${m.alternativeTitle}"` : ''}`).join('\n')}
 
 IMPORTANT - SUGGESTING ALTERNATIVES:
 If the user expresses they CANNOT do one of their activated missions (phrases like "I can't", "I'm unable to", "it's too hard", "I don't feel up to", "I'm too tired for", "I can't do the walk", "jumping jacks are too hard today", etc.), you should:
@@ -339,7 +390,7 @@ IMPORTANT: When discussing risk scores, remember:
       }
 
       const chatMessages: ChatMessage[] = [
-        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + missionCatalogContext + activeMissionsContext + dynamicContext + healthProfileContext },
+        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + missionCatalogContext + alternativeMissionsContext + activeMissionsContext + emotionalStateContext + dynamicContext + healthProfileContext },
         ...messages.map((msg: { role: string; content: string }) => ({
           role: msg.role as "user" | "assistant",
           content: msg.content,
@@ -1168,9 +1219,6 @@ IMPORTANT: When discussing risk scores, remember:
       const userId = (req.user as any).id;
       const { context, language = 'en', weatherContext, specificMissionKey } = req.body;
       
-      // Outdoor missions that should get weather-based alternatives
-      const outdoorMissionKeys = ['walking', 'jumping-jacks'];
-      
       // Check if weather is bad for outdoor activities (only if we have real location)
       const isBadWeather = weatherContext && 
         !weatherContext.isGoodForOutdoor && 
@@ -1387,7 +1435,7 @@ IMPORTANT: When discussing risk scores, remember:
       const checkinDate = latestCheckin?.checkedInAt ? new Date(latestCheckin.checkedInAt).toDateString() : null;
       const isCheckinToday = checkinDate === today;
       const missionIsActive = bestUserMission?.isActive === true;
-      const isOutdoorMission = outdoorMissionKeys.includes(bestMission.missionKey);
+      const isOutdoorMission = bestMission.isOutdoor === true;
       
       // Show alternative if: mission is active AND (low mood today OR bad weather for outdoor mission)
       const shouldShowMoodAlternative = missionIsActive && isLowMood && isCheckinToday && !bestMission.isAlternative;
@@ -1597,7 +1645,7 @@ IMPORTANT: When discussing risk scores, remember:
     }
     try {
       const userId = (req.user as any).id;
-      const { parentMissionKey, alternativeMissionKey } = req.body;
+      const { parentMissionKey, alternativeMissionKey, weatherContext } = req.body;
       
       if (!parentMissionKey || !alternativeMissionKey) {
         return res.status(400).json({ error: "parentMissionKey and alternativeMissionKey are required" });
@@ -1611,12 +1659,27 @@ IMPORTANT: When discussing risk scores, remember:
         return res.status(400).json({ error: "You need to have the original mission activated first before switching to an alternative" });
       }
       
+      // Check two conditions for allowing alternative activation:
+      // 1. User has checked in with low mood TODAY
+      // 2. Weather is bad AND the parent mission is an outdoor mission
       const latestCheckin = await storage.getLatestEmotionalCheckin(userId);
       const today = new Date().toDateString();
       const checkinDate = latestCheckin?.checkedInAt ? new Date(latestCheckin.checkedInAt).toDateString() : null;
+      const hasLowMoodToday = latestCheckin && isLowMoodEmotion(latestCheckin.emotion) && checkinDate === today;
       
-      if (!latestCheckin || !isLowMoodEmotion(latestCheckin.emotion) || checkinDate !== today) {
-        return res.status(400).json({ error: "Alternative missions are only available when you've checked in with a low mood today" });
+      // Check if parent mission is outdoor and weather is bad
+      const parentCatalogMission = await storage.getMissionByKey(parentMissionKey);
+      const isOutdoorMission = parentCatalogMission?.isOutdoor === true;
+      const isBadWeatherForOutdoor = weatherContext && 
+        !weatherContext.isGoodForOutdoor && 
+        !weatherContext.usingDefaultLocation &&
+        isOutdoorMission;
+      
+      // Allow alternative if EITHER condition is met
+      if (!hasLowMoodToday && !isBadWeatherForOutdoor) {
+        return res.status(400).json({ 
+          error: "Alternative missions are only available when you've checked in with a low mood today, or when the weather is bad for outdoor missions" 
+        });
       }
       
       const altMission = await storage.getMissionByKey(alternativeMissionKey);
