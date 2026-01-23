@@ -447,7 +447,17 @@ export async function apiRequest(
         if (!res.ok) {
           console.warn('[apiRequest] HTTP Error:', diagnoseHttpError(res.status));
           const text = await res.text();
-          throw new Error(`${res.status}: ${text || res.statusText}`);
+          // Parse JSON error messages for user-friendly display
+          let errorMessage = text || res.statusText;
+          try {
+            const jsonError = JSON.parse(text);
+            if (jsonError.message) {
+              errorMessage = jsonError.message;
+            }
+          } catch {
+            // Not JSON, use as-is
+          }
+          throw new Error(errorMessage);
         }
         
         return res;
@@ -575,7 +585,17 @@ export const getQueryFn: <T>(options: {
           if (!res.ok) {
             console.warn('[getQueryFn] HTTP Error:', diagnoseHttpError(res.status));
             const text = await res.text();
-            throw new Error(`${res.status}: ${text}`);
+            // Parse JSON error messages for user-friendly display
+            let errorMessage = text;
+            try {
+              const jsonError = JSON.parse(text);
+              if (jsonError.message) {
+                errorMessage = jsonError.message;
+              }
+            } catch {
+              // Not JSON, use as-is
+            }
+            throw new Error(errorMessage);
           }
           
           return await res.json();
