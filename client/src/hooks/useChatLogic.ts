@@ -45,6 +45,7 @@ interface UseChatLogicReturn {
   showMissionCard: boolean;
   suggestedMission: SuggestedMission | null;
   missionActivated: boolean;
+  isActivatingMission: boolean;
   pendingEmotion: string | null;
   isCheckInConfirmationPending: boolean;
   activityContext: ActivityContext | null;
@@ -126,6 +127,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const [showMissionCard, setShowMissionCard] = useState(false);
   const [suggestedMission, setSuggestedMission] = useState<SuggestedMission | null>(null);
   const [missionActivated, setMissionActivated] = useState(false);
+  const [isActivatingMission, setIsActivatingMission] = useState(false);
   const [pendingEmotion, setPendingEmotion] = useState<string | null>(null);
   const [isCheckInConfirmationPending, setIsCheckInConfirmationPending] = useState(false);
   const [activityContext, setActivityContext] = useState<ActivityContext | null>(null);
@@ -442,10 +444,12 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   }, [toast]);
 
   const handleActivateMission = useCallback(async () => {
-    if (!suggestedMission) {
+    if (!suggestedMission || isActivatingMission) {
       return;
     }
 
+    setIsActivatingMission(true);
+    
     try {
       let response;
       
@@ -514,8 +518,10 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
           variant: 'destructive',
         });
       }
+    } finally {
+      setIsActivatingMission(false);
     }
-  }, [suggestedMission, toast, setMessages, t, i18n.language, queryClient]);
+  }, [suggestedMission, isActivatingMission, toast, setMessages, t, i18n.language, queryClient]);
 
   const handleViewMission = useCallback(() => {
     if (suggestedMission?.missionKey) {
@@ -569,6 +575,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     showMissionCard,
     suggestedMission,
     missionActivated,
+    isActivatingMission,
     pendingEmotion,
     isCheckInConfirmationPending,
     activityContext,
