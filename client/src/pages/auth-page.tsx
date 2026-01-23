@@ -6,8 +6,7 @@ import { Loader2, Lock, User, UserPlus, AtSign, Mail, ArrowLeft, KeyRound, X, Sh
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
-import lorettaLogo from '@assets/logos/loretta_logo.png';
-import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
+import lorettaLogoWhite from '/loretta_logo_white.png';
 import { apiRequest } from '@/lib/queryClient';
 
 function GlassCard({ 
@@ -212,7 +211,7 @@ export default function AuthPage() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#CDB6EF]/30 to-transparent rounded-full blur-3xl" />
             <div className="relative z-10">
               <div className="flex justify-center mb-3">
-                <img src={lorettaLogoHorizontal} alt="Loretta" className="h-10 sm:h-12 object-contain brightness-0 invert drop-shadow-lg" />
+                <img src={lorettaLogoWhite} alt="Loretta" className="h-10 sm:h-12 object-contain drop-shadow-lg" />
               </div>
               <p className="text-white/80 text-sm font-medium">{t('tagline')}</p>
             </div>
