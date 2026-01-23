@@ -20,6 +20,22 @@ Preferred communication style: Simple, everyday language.
 - **API Endpoints**: RESTful API for user data (questionnaires, profiles, preferences, gamification, risk scores), and AI chat.
 - **Authentication**: Session-based using Passport.js (local strategy) and PostgreSQL session store.
 
+### Email Verification System
+- **Required for Access**: New users must verify their email before accessing the app.
+- **6-Digit Code**: Verification uses a 6-digit code sent via Brevo email, mobile-friendly for paste support.
+- **Security Measures**:
+  - Codes hashed with SHA-256 before storage
+  - 15-minute expiry for verification codes
+  - Constant-time comparison to prevent timing attacks
+  - Max 5 attempts before 30-minute lockout
+  - Rate limiting: max 3 resends per hour, 60-second cooldown between resends
+- **Database Tables**: `email_verification_tokens` table stores hashed tokens; users table has `emailVerified`, `emailVerificationAttempts`, `emailVerificationLockedUntil` fields.
+- **API Endpoints**:
+  - `POST /api/verify-email` - Verify email with 6-digit code
+  - `POST /api/resend-verification` - Request new verification code
+- **Frontend**: `EmailVerification.tsx` page with gradient header, glass-morphism styling, auto-focus, and i18n support (English/German).
+- **Platform Support**: Works on web, iOS, and Android via `authenticatedFetch` for token-based auth compatibility.
+
 ### AI Health Navigator with Weather Awareness
 - **Contextual AI**: Integrates real-time weather data (via Open-Meteo API) based on user geolocation to provide context-aware health advice.
 - **Dynamic Recommendations**: AI suggests indoor alternatives for outdoor missions when weather conditions are unsuitable or the user reports not feeling well. This applies only to currently activated outdoor missions.
