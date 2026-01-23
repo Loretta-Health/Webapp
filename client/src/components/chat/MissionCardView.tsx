@@ -1,6 +1,4 @@
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Zap, ChevronRight, Target, Check, Sparkles, Dumbbell, Droplets, Brain, Footprints, Wind, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -35,6 +33,24 @@ interface MissionCardViewProps {
   onView: () => void;
 }
 
+function GlassCard({ 
+  children, 
+  className = '',
+}: { 
+  children: React.ReactNode; 
+  className?: string;
+}) {
+  return (
+    <div className={`
+      backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10
+      rounded-3xl shadow-xl shadow-gray-900/10
+      ${className}
+    `}>
+      {children}
+    </div>
+  );
+}
+
 export default function MissionCardView({
   suggestedMission,
   showMissionCard,
@@ -55,39 +71,39 @@ export default function MissionCardView({
         transition={{ duration: 0.3, ease: 'easeOut' }}
         className="my-4"
       >
-        <Card className="overflow-hidden border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-card to-chart-2/5">
-          <div className="p-4 space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-chart-2 flex items-center justify-center shadow-lg">
+        <GlassCard className="overflow-hidden">
+          <div className="p-4 sm:p-5 space-y-4">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#CDB6EF] flex items-center justify-center shadow-lg shadow-gray-900/10 flex-shrink-0">
                 {(() => {
                   const IconComponent = suggestedMission.icon ? iconMap[suggestedMission.icon.toLowerCase()] : null;
                   return IconComponent ? (
-                    <IconComponent className="w-6 h-6 text-white" />
+                    <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   ) : (
-                    <Target className="w-6 h-6 text-white" />
+                    <Target className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                   );
                 })()}
               </div>
               
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge className="bg-gradient-to-r from-primary to-chart-2 text-white border-0 text-xs">
-                    <Sparkles className="w-3 h-3 mr-1" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] text-white">
+                    <Sparkles className="w-3 h-3" />
                     {t('chat.missionCard.suggestedMission')}
-                  </Badge>
+                  </span>
                 </div>
-                <h4 className="font-bold text-foreground">{suggestedMission.title}</h4>
+                <h4 className="font-bold text-foreground text-base sm:text-lg leading-tight">{suggestedMission.title}</h4>
                 {suggestedMission.description && (
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                     {suggestedMission.description}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-border">
-              <div className="flex items-center gap-1 text-primary font-black text-sm sm:text-base">
-                <Zap className="w-4 h-4 sm:w-5 sm:h-5 fill-primary" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-gray-200/50 dark:border-white/10">
+              <div className="flex items-center gap-1.5 font-black text-sm sm:text-base bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] bg-clip-text text-transparent">
+                <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-[#013DC4] fill-[#013DC4]" />
                 <span>+{suggestedMission.xpReward} XP</span>
               </div>
 
@@ -96,30 +112,30 @@ export default function MissionCardView({
                   size="sm"
                   variant="outline"
                   onClick={onView}
-                  className="text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none active:scale-95"
+                  className="text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none rounded-xl border-gray-200 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
                 >
                   {t('chat.missionCard.viewDetails')}
                   <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                 </Button>
                 {missionActivated ? (
-                  <Badge className="bg-chart-2 text-white border-0 py-2 px-3 min-h-[44px] flex items-center">
-                    <Check className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-500 text-white min-h-[44px]">
+                    <Check className="w-4 h-4" />
                     {t('chat.missionCard.activated')}
-                  </Badge>
+                  </span>
                 ) : (
                   <Button
                     size="sm"
                     onClick={onActivate}
-                    className="bg-gradient-to-r from-primary to-chart-2 text-white text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none active:scale-95"
+                    className="bg-gradient-to-r from-[#013DC4] to-[#4B7BE5] hover:from-[#0150FF] hover:to-[#5B8BF5] text-white text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none rounded-xl shadow-lg shadow-gray-900/10 active:scale-95 transition-all"
                   >
-                    <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
                     {t('chat.missionCard.activateMission')}
                   </Button>
                 )}
               </div>
             </div>
           </div>
-        </Card>
+        </GlassCard>
       </motion.div>
     </AnimatePresence>
   );
