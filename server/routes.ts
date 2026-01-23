@@ -246,20 +246,36 @@ DECISION RULES:
 - User phrases like "I can't", "too hard", "too tired" → check if mission is activated, then offer alternative
 === END ALTERNATIVE MISSIONS ===`;
         
+        // Build list of available (not activated) missions for the user
+        const activatedMissionKeys = activeMissions.map(m => m.missionKey);
+        const availableMissions = mainMissions.filter(m => !activatedMissionKeys.includes(m.missionKey));
+        const availableMissionsStr = availableMissions.length > 0 
+          ? availableMissions.map(m => `- "${m.titleEn}" (key: ${m.missionKey})`).join('\n')
+          : '(All missions are already activated)';
+        
         missionCatalogContext = `\n\n=== AVAILABLE MISSION CATALOG ===
-These are the ONLY missions that exist in the system. You MUST validate against this list:
+These are the ONLY missions that exist in the system:
 ${mainMissions.map(m => `- "${m.titleEn}" (key: ${m.missionKey}, ${m.isOutdoor ? 'OUTDOOR' : 'indoor'}) - ${m.descriptionEn}`).join('\n')}
+
+=== MISSIONS AVAILABLE TO SUGGEST ===
+These missions are NOT YET ACTIVATED for this user - you can suggest these:
+${availableMissionsStr}
+
+CRITICAL RULE: ONLY suggest missions from the "AVAILABLE TO SUGGEST" list above!
+- Do NOT suggest missions that are already activated (listed in USER'S ACTIVATED MISSIONS)
+- If user asks for a mission that's already activated, tell them it's already active
 
 MISSION ACTIVATION RULES:
 1. If a user asks to "activate", "start", "give me", or "suggest" a SPECIFIC mission by name:
-   - Check if it matches one of the missions above (by title or key)
+   - First check if it's in the AVAILABLE TO SUGGEST list above
    - If YES: Say you'll suggest that mission and add [SUGGEST_MISSION:${'{missionKey}'}] at the end (e.g., [SUGGEST_MISSION:walking])
-   - If NO: Tell the user that mission doesn't exist and list the available missions they can choose from
+   - If it's already activated: Tell them "That mission is already active! You can find it in your missions."
+   - If it doesn't exist: Tell the user that mission doesn't exist and list the available ones
 
 2. If a user asks for a mission without specifying which one:
-   - Use [SUGGEST_MISSION] to let the system pick the best one
+   - Use [SUGGEST_MISSION] to let the system pick the best available one
 
-3. NEVER suggest or mention missions that don't exist in the catalog above
+3. NEVER suggest missions that are already activated or don't exist
 === END MISSION CATALOG ===`;
         
         if (activeMissions.length > 0) {
