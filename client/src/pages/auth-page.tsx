@@ -64,6 +64,11 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (user && !onboardingLoading) {
+      if (!user.emailVerified) {
+        setLocation('/verify-email');
+        return;
+      }
+      
       const pendingInvite = localStorage.getItem('loretta_pending_invite');
       
       if (pendingInvite && isOnboardingComplete) {
@@ -98,12 +103,17 @@ export default function AuthPage() {
       return;
     }
     
+    if (!registerForm.email) {
+      setRegisterError('Email is required');
+      return;
+    }
+    
     registerMutation.mutate({
       username: registerForm.username,
       password: registerForm.password,
       firstName: registerForm.firstName || undefined,
       lastName: registerForm.lastName || undefined,
-      email: registerForm.email || undefined,
+      email: registerForm.email,
     });
   };
 

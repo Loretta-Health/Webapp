@@ -28,6 +28,7 @@ import Calendar from "@/pages/Calendar";
 import RiskScoreDetails from "@/pages/RiskScoreDetails";
 import AlternativeMissionDetails from "@/pages/AlternativeMissionDetails";
 import AuthPage from "@/pages/auth-page";
+import EmailVerification from "@/pages/EmailVerification";
 import TeamInvite from "@/pages/TeamInvite";
 import JoinFriend from "@/pages/JoinFriend";
 import UIMockup1 from "@/pages/UIMockup1";
@@ -92,6 +93,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomeRoute} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/verify-email" component={EmailVerification} />
       <ProtectedRoute path="/my-dashboard" component={MyDashboard} />
       <ProtectedRoute path="/welcome" component={Welcome} />
       <ProtectedRoute path="/profile" component={() => (
