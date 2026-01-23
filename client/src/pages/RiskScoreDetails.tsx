@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link, Redirect } from 'wouter';
 import { Badge } from '@/components/ui/badge';
 import { BackButton } from '@/components/BackButton';
 import { useSwipeBack } from '@/hooks/useSwipeBack';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import { 
   AlertCircle, 
   CheckCircle2, 
@@ -198,6 +199,14 @@ export default function RiskScoreDetails() {
       queryClient.invalidateQueries({ queryKey: ['/api/risk-factors'] });
     },
   });
+  
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-factors'] }),
+    ]);
+  }, []);
 
   if (isAuthLoading || isScoreLoading || isFactorsLoading) {
     return (
@@ -255,8 +264,9 @@ export default function RiskScoreDetails() {
   const positiveFactors = factors.filter(f => f.type === 'positive').sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#013DC4]/5 via-white to-[#CDB6EF]/10 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-      {/* Header */}
+    <PullToRefresh onRefresh={handleRefresh} className="min-h-screen">
+      <div className="min-h-screen bg-gradient-to-br from-[#013DC4]/5 via-white to-[#CDB6EF]/10 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+        {/* Header */}
       <div className="bg-gradient-to-r from-[#013DC4] to-[#CDB6EF] pt-14 px-4 sm:px-6 pb-28 sm:pb-32 safe-area-top">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
@@ -529,6 +539,7 @@ export default function RiskScoreDetails() {
           </p>
         </div>
       </div>
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }
