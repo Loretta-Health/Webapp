@@ -604,10 +604,12 @@ export default function MyDashboard() {
           <GlassCard className="p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider">{t('sidebar.todaysProgress')}</h3>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-red-400 rounded-full shadow-lg">
-                <Flame className="w-4 h-4 text-white" />
-                <span className="text-sm font-bold text-white">{streak}</span>
-              </div>
+              <Link href="/streak">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-orange-400 to-red-400 rounded-full shadow-lg cursor-pointer hover:scale-105 transition-transform">
+                  <Flame className="w-4 h-4 text-white" />
+                  <span className="text-sm font-bold text-white">{streak}</span>
+                </div>
+              </Link>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {[
