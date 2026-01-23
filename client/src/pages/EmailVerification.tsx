@@ -5,7 +5,7 @@ import { Loader2, Mail, RefreshCw, CheckCircle, AlertCircle, ShieldCheck } from 
 import { useTranslation } from 'react-i18next';
 import { authenticatedFetch } from '@/lib/queryClient';
 import { useQueryClient } from '@tanstack/react-query';
-import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
+import lorettaLogoWhite from '/loretta_logo_white.png';
 
 function GlassCard({ 
   children, 
@@ -203,9 +203,9 @@ export default function EmailVerification() {
         <GlassCard className="overflow-hidden" glow>
           <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-8 text-center">
             <img 
-              src={lorettaLogoHorizontal} 
+              src={lorettaLogoWhite} 
               alt="Loretta" 
-              className="h-10 sm:h-12 mx-auto mb-4 object-contain brightness-0 invert drop-shadow-lg"
+              className="h-10 sm:h-12 mx-auto mb-4 object-contain drop-shadow-lg"
             />
             <p className="text-white/90 text-sm font-medium">
               {t('verification.subtitle')}
