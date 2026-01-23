@@ -10,7 +10,7 @@ export default function Declined() {
   useSwipeBack({ backPath: '/welcome' });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex items-center justify-center p-4 safe-area-top safe-area-bottom">
       <Card className="w-full max-w-md p-8 text-center border-0 shadow-2xl">
         <div className="flex justify-center mb-6">
           <img src={lorettaLogo} alt="Loretta" className="h-10 object-contain opacity-50" />
