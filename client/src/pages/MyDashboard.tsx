@@ -558,46 +558,48 @@ export default function MyDashboard() {
             <img src={logoHorizontalBlue} alt="Loretta" className="h-12 object-contain" data-testid="logo-loretta" />
           </div>
           
-          <GlassCard className="p-5 text-center" glow>
-            <div className="relative inline-block mb-4">
-              <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-2xl shadow-[#013DC4]/30 overflow-hidden">
-                {profileData?.profilePhoto ? (
-                  <img 
-                    src={profileData.profilePhoto} 
-                    alt={user.username} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-10 h-10 lg:w-12 lg:h-12 text-white" />
-                )}
-              </div>
-              <div className="absolute -bottom-2 -right-2 w-9 h-9 bg-gradient-to-br from-[#CDB6EF] to-purple-400 rounded-xl flex items-center justify-center border-2 border-white shadow-lg">
-                <img src={logomarkViolet} alt="" className="w-5 h-5 brightness-0 invert" />
-              </div>
-            </div>
-            <h2 className="text-xl lg:text-2xl font-black text-gray-900 dark:text-white">{user.username}</h2>
-            <p className="text-sm text-gray-500 font-medium">
-              {isNewUser ? t('sidebar.newMember') : t('sidebar.healthExplorer', { level })}
-            </p>
-            
-            <div className="mt-4 p-3 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 rounded-2xl">
-              <div className="flex items-center justify-between text-sm mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center">
-                    <Star className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <span className="font-bold text-gray-700 dark:text-gray-300">{t('stats.level', { level })}</span>
+          <Link href="/profile">
+            <GlassCard className="p-5 text-center cursor-pointer hover:shadow-xl transition-shadow" glow>
+              <div className="relative inline-block mb-4">
+                <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-3xl bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] flex items-center justify-center shadow-2xl shadow-[#013DC4]/30 overflow-hidden">
+                  {profileData?.profilePhoto ? (
+                    <img 
+                      src={profileData.profilePhoto} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-10 h-10 lg:w-12 lg:h-12 text-white" />
+                  )}
                 </div>
-                <span className="text-gray-500 font-medium">{(xp % nextLevelXP).toLocaleString()} / {nextLevelXP.toLocaleString()}</span>
+                <div className="absolute -bottom-2 -right-2 w-9 h-9 bg-gradient-to-br from-[#CDB6EF] to-purple-400 rounded-xl flex items-center justify-center border-2 border-white shadow-lg">
+                  <img src={logomarkViolet} alt="" className="w-5 h-5 brightness-0 invert" />
+                </div>
               </div>
-              <div className="h-3 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
-                <div 
-                  className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg"
-                  style={{ width: `${xpProgress}%` }}
-                />
+              <h2 className="text-xl lg:text-2xl font-black text-gray-900 dark:text-white">{user.username}</h2>
+              <p className="text-sm text-gray-500 font-medium">
+                {isNewUser ? t('sidebar.newMember') : t('sidebar.healthExplorer', { level })}
+              </p>
+              
+              <div className="mt-4 p-3 bg-gradient-to-r from-[#013DC4]/10 to-[#CDB6EF]/10 rounded-2xl">
+                <div className="flex items-center justify-between text-sm mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center">
+                      <Star className="w-3.5 h-3.5 text-white" />
+                    </div>
+                    <span className="font-bold text-gray-700 dark:text-gray-300">{t('stats.level', { level })}</span>
+                  </div>
+                  <span className="text-gray-500 font-medium">{(xp % nextLevelXP).toLocaleString()} / {nextLevelXP.toLocaleString()}</span>
+                </div>
+                <div className="h-3 bg-white/50 dark:bg-gray-800/50 rounded-full overflow-hidden shadow-inner">
+                  <div 
+                    className="h-full bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] rounded-full transition-all shadow-lg"
+                    style={{ width: `${xpProgress}%` }}
+                  />
+                </div>
               </div>
-            </div>
-          </GlassCard>
+            </GlassCard>
+          </Link>
           
           <GlassCard className="p-4">
             <div className="flex items-center justify-between mb-3">
