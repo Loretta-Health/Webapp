@@ -544,8 +544,9 @@ export default function MyDashboard() {
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        <div className="p-5 lg:p-7 space-y-5 lg:space-y-6">
-          <div className="flex items-center justify-between lg:hidden">
+        <div className="p-5 lg:p-7">
+          {/* Mobile header with close button */}
+          <div className="flex items-center justify-between mb-5 lg:hidden">
             <img src={logoHorizontalBlue} alt="Loretta" className="h-9 object-contain" data-testid="logo-loretta-mobile" />
             <button 
               onClick={() => setSidebarOpen(false)} 
@@ -556,10 +557,12 @@ export default function MyDashboard() {
             </button>
           </div>
           
-          <div className="hidden lg:flex justify-center py-2 mb-8">
+          {/* Desktop logo with proper spacing */}
+          <div className="hidden lg:flex justify-center pt-2 pb-6">
             <img src={logoHorizontalBlue} alt="Loretta" className="h-12 object-contain" data-testid="logo-loretta" />
           </div>
           
+          <div className="space-y-5 lg:space-y-6">
           <Link href="/profile">
             <GlassCard className="p-5 text-center cursor-pointer hover:shadow-xl transition-all">
               <div className="relative inline-block mb-4">
@@ -711,6 +714,7 @@ export default function MyDashboard() {
               )}
               <span className="font-semibold text-gray-700 dark:text-gray-300">{t('sidebar.signOut')}</span>
             </button>
+          </div>
           </div>
           
           <div className="flex gap-4 px-1 pt-2">
