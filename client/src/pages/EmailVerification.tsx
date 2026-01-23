@@ -198,7 +198,7 @@ export default function EmailVerification() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f0f4ff] via-[#f8f4ff] to-[#f0f4ff] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 safe-area-inset">
+    <div className="min-h-screen bg-gradient-to-br from-[#f0f4ff] via-[#f8f4ff] to-[#f0f4ff] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 safe-area-top safe-area-bottom">
       <div className="w-full max-w-md">
         <GlassCard className="overflow-hidden" glow>
           <div className="bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-8 text-center">

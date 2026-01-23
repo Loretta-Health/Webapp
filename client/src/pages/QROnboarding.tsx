@@ -176,7 +176,7 @@ export default function QROnboarding() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 flex flex-col">
-      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4">
+      <div className="bg-gradient-to-r from-primary via-primary to-chart-2 p-4 safe-area-top">
         <div className="max-w-4xl mx-auto flex items-center justify-center gap-3">
           <img src={lorettaLogo} alt="Loretta" className="h-8" />
           <h1 className="text-xl font-black text-white">Join Loretta</h1>

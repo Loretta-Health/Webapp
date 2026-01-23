@@ -7,7 +7,7 @@ export default function NotFound() {
   const { t } = useTranslation('pages');
   
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 p-4 safe-area-top safe-area-bottom">
       <div className="backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-3xl shadow-xl shadow-[#013DC4]/10 w-full max-w-md p-8">
         <div className="flex flex-col items-center text-center">
           <img src={lorettaLogoHorizontal} alt="Loretta" className="h-8 sm:h-10 mb-6 object-contain" />
