@@ -3408,6 +3408,72 @@ IMPORTANT: When discussing risk scores, remember:
     });
   });
 
+  app.delete("/api/admin/users/:userId", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8');
+      if (!decoded.startsWith('admin:')) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+    } catch {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    
+    const { userId } = req.params;
+    
+    try {
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      const result = await storage.deleteUserCompletely(userId);
+      console.log(`[Admin] Deleted user ${userId} (${user.username}), cleaned tables: ${result.deletedTables.join(', ')}`);
+      res.json({ success: true, deletedTables: result.deletedTables, username: user.username });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
+  app.get("/api/admin/users", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8');
+      if (!decoded.startsWith('admin:')) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+    } catch {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    
+    try {
+      const allUsers = await db.select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        emailVerified: users.emailVerified,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      }).from(users);
+      
+      res.json(allUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
   // ========================
   // Calendar Events Endpoints
   // ========================

@@ -74,9 +74,11 @@ import {
   userFeedback,
   authTokens,
   calendarEvents,
+  friendships,
+  userInviteCodes,
 } from "@shared/schema";
 import { db, pool } from "./db";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, or } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 
@@ -1848,6 +1850,117 @@ export class DatabaseStorage implements IStorage {
     await db.delete(calendarEvents)
       .where(and(eq(calendarEvents.id, eventId), eq(calendarEvents.userId, userId)));
     return true;
+  }
+
+  async deleteUserCompletely(userId: string): Promise<{ success: boolean; deletedTables: string[] }> {
+    const deletedTables: string[] = [];
+    
+    try {
+      await db.delete(emailVerificationTokens).where(eq(emailVerificationTokens.userId, userId));
+      deletedTables.push('email_verification_tokens');
+    } catch {}
+    
+    try {
+      await db.delete(authTokens).where(eq(authTokens.userId, userId));
+      deletedTables.push('auth_tokens');
+    } catch {}
+    
+    try {
+      await db.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, userId));
+      deletedTables.push('password_reset_tokens');
+    } catch {}
+    
+    try {
+      await db.delete(friendships).where(or(eq(friendships.userId, userId), eq(friendships.friendId, userId)));
+      deletedTables.push('friendships');
+    } catch {}
+    
+    try {
+      await db.delete(userInviteCodes).where(eq(userInviteCodes.userId, userId));
+      deletedTables.push('user_invite_codes');
+    } catch {}
+    
+    try {
+      await db.delete(userAchievements).where(eq(userAchievements.userId, userId));
+      deletedTables.push('user_achievements');
+    } catch {}
+    
+    try {
+      await db.delete(calendarEvents).where(eq(calendarEvents.userId, userId));
+      deletedTables.push('calendar_events');
+    } catch {}
+    
+    try {
+      await db.delete(emotionalCheckins).where(eq(emotionalCheckins.userId, userId));
+      deletedTables.push('emotional_checkins');
+    } catch {}
+    
+    try {
+      await db.delete(riskScores).where(eq(riskScores.userId, userId));
+      deletedTables.push('risk_scores');
+    } catch {}
+    
+    try {
+      await db.delete(userMissions).where(eq(userMissions.userId, userId));
+      deletedTables.push('user_missions');
+    } catch {}
+    
+    try {
+      await db.delete(userPreferences).where(eq(userPreferences.userId, userId));
+      deletedTables.push('user_preferences');
+    } catch {}
+    
+    try {
+      await db.delete(questionnaireAnswers).where(eq(questionnaireAnswers.userId, userId));
+      deletedTables.push('questionnaire_answers');
+    } catch {}
+    
+    try {
+      await db.delete(userProfiles).where(eq(userProfiles.userId, userId));
+      deletedTables.push('user_profiles');
+    } catch {}
+    
+    try {
+      await db.delete(userGamification).where(eq(userGamification.userId, userId));
+      deletedTables.push('user_gamification');
+    } catch {}
+    
+    try {
+      await db.delete(userActivities).where(eq(userActivities.userId, userId));
+      deletedTables.push('user_activities');
+    } catch {}
+    
+    try {
+      await db.delete(userXp).where(eq(userXp.userId, userId));
+      deletedTables.push('user_xp');
+    } catch {}
+    
+    try {
+      await db.delete(medicationLogs).where(eq(medicationLogs.medicationId, sql`(SELECT id FROM medications WHERE user_id = ${userId})`));
+      await db.delete(medicationAdherence).where(eq(medicationAdherence.userId, userId));
+      await db.delete(medications).where(eq(medications.userId, userId));
+      deletedTables.push('medications');
+    } catch {}
+    
+    try {
+      await db.delete(onboardingProgress).where(eq(onboardingProgress.userId, userId));
+      deletedTables.push('onboarding_progress');
+    } catch {}
+    
+    try {
+      await db.delete(userFeedback).where(eq(userFeedback.userId, userId));
+      deletedTables.push('user_feedback');
+    } catch {}
+    
+    try {
+      await db.delete(teamMembers).where(eq(teamMembers.userId, userId));
+      deletedTables.push('team_members');
+    } catch {}
+    
+    await db.delete(users).where(eq(users.id, userId));
+    deletedTables.push('users');
+    
+    return { success: true, deletedTables };
   }
 }
 
