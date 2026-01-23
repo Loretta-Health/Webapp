@@ -28,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useMissions } from '@/hooks/useMissions';
 import { useMedicationProgress } from '@/hooks/useMedicationProgress';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
+import { privacyPolicyContent, accessibilityPolicyContent } from '@/content/policies';
 import { useOptimisticGamification } from '@/hooks/useOptimisticGamification';
 import { format, isToday, isYesterday } from 'date-fns';
 
@@ -1411,15 +1412,19 @@ export default function MyDashboard() {
       <Dialog open={showPrivacyPolicy} onOpenChange={setShowPrivacyPolicy}>
         <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[80vh] rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl sm:text-2xl font-black">{t('dialogs.privacyPolicy')}</DialogTitle>
+            <DialogTitle className="text-xl sm:text-2xl font-black">{privacyPolicyContent.title}</DialogTitle>
             <DialogDescription className="text-sm">
-              {t('dialogs.privacyDescription')}
+              {privacyPolicyContent.subtitle} | Effective: {privacyPolicyContent.effectiveDate}
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[50vh] sm:h-[60vh] pr-4">
-            <div className="space-y-4 text-sm text-muted-foreground">
-              <p>{t('dialogs.privacyContent1')}</p>
-              <p>{t('dialogs.privacyContent2')}</p>
+            <div className="space-y-6 text-sm text-muted-foreground">
+              {privacyPolicyContent.sections.map((section, index) => (
+                <div key={index}>
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>
+                  <p className="whitespace-pre-line">{section.content}</p>
+                </div>
+              ))}
             </div>
           </ScrollArea>
         </DialogContent>
@@ -1428,15 +1433,14 @@ export default function MyDashboard() {
       <Dialog open={showAccessibilityPolicy} onOpenChange={setShowAccessibilityPolicy}>
         <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[80vh] rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl sm:text-2xl font-black">{t('dialogs.accessibilityPolicy')}</DialogTitle>
+            <DialogTitle className="text-xl sm:text-2xl font-black">{accessibilityPolicyContent.title}</DialogTitle>
             <DialogDescription className="text-sm">
-              {t('dialogs.accessibilityDescription')}
+              Our commitment to accessible health technology
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="h-[50vh] sm:h-[60vh] pr-4">
             <div className="space-y-4 text-sm text-muted-foreground">
-              <p>{t('dialogs.accessibilityContent1')}</p>
-              <p>{t('dialogs.accessibilityContent2')}</p>
+              <p className="whitespace-pre-line">{accessibilityPolicyContent.content}</p>
             </div>
           </ScrollArea>
         </DialogContent>
