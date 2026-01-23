@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Moon, Sun, Menu, X, User, MessageCircle, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Trophy, BookOpen, Pill, Smile, ChevronRight, MapPin, MapPinOff, ChevronDown, Star, TrendingUp, Zap, Target, AlertTriangle } from 'lucide-react';
+import { Users, Moon, Sun, Menu, X, User, MessageCircle, MessageSquare, Shield, Accessibility, LogOut, Loader2, Sparkles, ClipboardList, Check, Trophy, BookOpen, Pill, Smile, ChevronRight, MapPin, MapPinOff, ChevronDown, Star, TrendingUp, Zap, Target, AlertTriangle } from 'lucide-react';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { Heart, Flame } from 'lucide-react';
 import { Link, useLocation, Redirect } from 'wouter';
@@ -833,8 +833,19 @@ export default function MyDashboard() {
                     {isNewUser ? t('welcome.newUserSubtitle') : t('welcome.returningUserSubtitle')}
                   </p>
                 </div>
-                <div className="hidden sm:flex w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl items-center justify-center shadow-xl flex-shrink-0 ml-3">
-                  <img src={logomarkViolet} alt="Loretta mascot" className="w-7 h-7 sm:w-8 sm:h-8 object-contain brightness-0 invert" />
+                <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                  <Link href="/feedback">
+                    <button 
+                      className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg hover:bg-white/30 transition-colors min-w-[40px] min-h-[40px] active:scale-95"
+                      aria-label="Send feedback"
+                      data-testid="button-welcome-feedback"
+                    >
+                      <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </button>
+                  </Link>
+                  <div className="hidden sm:flex w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl items-center justify-center shadow-xl">
+                    <img src={logomarkViolet} alt="Loretta mascot" className="w-7 h-7 sm:w-8 sm:h-8 object-contain brightness-0 invert" />
+                  </div>
                 </div>
               </div>
             </div>
