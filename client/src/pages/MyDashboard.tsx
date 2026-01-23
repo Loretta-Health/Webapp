@@ -556,7 +556,7 @@ export default function MyDashboard() {
             </button>
           </div>
           
-          <div className="hidden lg:flex justify-center py-2 mb-4">
+          <div className="hidden lg:flex justify-center py-2 mb-8">
             <img src={logoHorizontalBlue} alt="Loretta" className="h-12 object-contain" data-testid="logo-loretta" />
           </div>
           
