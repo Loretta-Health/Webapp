@@ -192,6 +192,7 @@ export default function MyDashboard() {
   const [showAddMedicationModal, setShowAddMedicationModal] = useState(false);
   const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   const [showAccessibilityPolicy, setShowAccessibilityPolicy] = useState(false);
+  const [policyLang, setPolicyLang] = useState<'en' | 'de'>('en');
   const [isChecklistClosing, setIsChecklistClosing] = useState(false);
   const previousAllSetupCompleteRef = useRef<boolean | null>(null);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
@@ -1412,14 +1413,36 @@ export default function MyDashboard() {
       <Dialog open={showPrivacyPolicy} onOpenChange={setShowPrivacyPolicy}>
         <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[80vh] rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl sm:text-2xl font-black">{privacyPolicyContent.title}</DialogTitle>
+            <DialogTitle className="text-xl sm:text-2xl font-black">{privacyPolicyContent[policyLang].title}</DialogTitle>
             <DialogDescription className="text-sm">
-              {privacyPolicyContent.subtitle} | Effective: {privacyPolicyContent.effectiveDate}
+              {privacyPolicyContent[policyLang].subtitle} | {policyLang === 'en' ? 'Effective' : 'Gültig ab'}: {privacyPolicyContent[policyLang].effectiveDate}
             </DialogDescription>
           </DialogHeader>
+          <div className="flex gap-2 mb-2">
+            <button
+              onClick={() => setPolicyLang('en')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
+                policyLang === 'en' 
+                  ? 'bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white shadow-lg' 
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => setPolicyLang('de')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
+                policyLang === 'de' 
+                  ? 'bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white shadow-lg' 
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              Deutsch
+            </button>
+          </div>
           <ScrollArea className="h-[50vh] sm:h-[60vh] pr-4">
             <div className="space-y-6 text-sm text-muted-foreground">
-              {privacyPolicyContent.sections.map((section, index) => (
+              {privacyPolicyContent[policyLang].sections.map((section: { title: string; content: string }, index: number) => (
                 <div key={index}>
                   <h3 className="font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>
                   <p className="whitespace-pre-line">{section.content}</p>
@@ -1433,14 +1456,36 @@ export default function MyDashboard() {
       <Dialog open={showAccessibilityPolicy} onOpenChange={setShowAccessibilityPolicy}>
         <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[80vh] rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl sm:text-2xl font-black">{accessibilityPolicyContent.title}</DialogTitle>
+            <DialogTitle className="text-xl sm:text-2xl font-black">{accessibilityPolicyContent[policyLang].title}</DialogTitle>
             <DialogDescription className="text-sm">
-              Our commitment to accessible health technology
+              {policyLang === 'en' ? 'Our commitment to accessible health technology' : 'Unser Engagement für barrierefreie Gesundheitstechnologie'}
             </DialogDescription>
           </DialogHeader>
+          <div className="flex gap-2 mb-2">
+            <button
+              onClick={() => setPolicyLang('en')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
+                policyLang === 'en' 
+                  ? 'bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white shadow-lg' 
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              English
+            </button>
+            <button
+              onClick={() => setPolicyLang('de')}
+              className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ${
+                policyLang === 'de' 
+                  ? 'bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white shadow-lg' 
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              Deutsch
+            </button>
+          </div>
           <ScrollArea className="h-[50vh] sm:h-[60vh] pr-4">
             <div className="space-y-4 text-sm text-muted-foreground">
-              <p className="whitespace-pre-line">{accessibilityPolicyContent.content}</p>
+              <p className="whitespace-pre-line">{accessibilityPolicyContent[policyLang].content}</p>
             </div>
           </ScrollArea>
         </DialogContent>
