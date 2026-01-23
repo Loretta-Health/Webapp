@@ -545,8 +545,8 @@ export default function MyDashboard() {
         onTouchEnd={onTouchEnd}
       >
         <div className="p-5 lg:p-7">
-          {/* Mobile header with close button */}
-          <div className="flex items-center justify-between mb-5 lg:hidden">
+          {/* Header with close button */}
+          <div className="flex items-center justify-between mb-5">
             <img src={logoHorizontalBlue} alt="Loretta" className="h-9 object-contain" data-testid="logo-loretta-mobile" />
             <button 
               onClick={() => setSidebarOpen(false)} 
@@ -555,11 +555,6 @@ export default function MyDashboard() {
             >
               <X className="w-5 h-5 text-gray-500" />
             </button>
-          </div>
-          
-          {/* Desktop logo with proper spacing */}
-          <div className="hidden lg:flex justify-center pt-2 pb-6">
-            <img src={logoHorizontalBlue} alt="Loretta" className="h-12 object-contain" data-testid="logo-loretta" />
           </div>
           
           <div className="space-y-5 lg:space-y-6">
