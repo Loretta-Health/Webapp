@@ -69,46 +69,6 @@
   -webkit-touch-callout: none;
 }
 
-/* Prevent iOS rubber-band/bounce scrolling effect */
-.capacitor-ios {
-  overscroll-behavior: none;
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-}
-
-.capacitor-ios body,
-.capacitor-ios html {
-  overscroll-behavior: none;
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-}
-
-/* Main app container should handle scrolling instead */
-.capacitor-ios #root {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-}
-
-/* Set background color for safe area to match header gradient */
-.capacitor-ios {
-  background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #6C8DD5 100%);
-}
-
-/* Prevent iOS rubber-band on all scroll containers */
-.capacitor-ios .overflow-y-auto,
-.capacitor-ios .overflow-auto {
-  overscroll-behavior-y: none;
-  -webkit-overflow-scrolling: touch;
-}
-
 /* Allow text selection on inputs and textareas */
 .capacitor-ios input, .capacitor-ios textarea,
 .capacitor-android input, .capacitor-android textarea {
