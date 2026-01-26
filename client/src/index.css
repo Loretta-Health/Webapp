@@ -69,6 +69,22 @@
   -webkit-touch-callout: none;
 }
 
+/* iOS-specific: Lock app container to viewport height to prevent "sticky" pull-down */
+.capacitor-ios #root {
+  height: 100vh; /* Fallback */
+  height: 100dvh; /* Dynamic viewport height for iOS */
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* Prevent body overscroll on iOS */
+.capacitor-ios body {
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+
 /* Allow text selection on inputs and textareas */
 .capacitor-ios input, .capacitor-ios textarea,
 .capacitor-android input, .capacitor-android textarea {

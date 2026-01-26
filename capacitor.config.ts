@@ -18,7 +18,7 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     preferredContentMode: 'mobile',
-    backgroundColor: '#013DC4'
+    backgroundColor: '#F0F4FF' // Match app background to prevent dark flash on overscroll
   },
   android: {
     backgroundColor: '#013DC4',
