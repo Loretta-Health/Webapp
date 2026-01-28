@@ -692,11 +692,6 @@ export default function Profile() {
   });
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
   const [isShareOpen, setIsShareOpen] = useState(false);
-  const [shareOptions, setShareOptions] = useState({
-    medications: true,
-    missions: true,
-    clinicalData: false,
-  });
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [feedbackForm, setFeedbackForm] = useState({
     subject: '',
@@ -2176,109 +2171,9 @@ export default function Profile() {
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-6 py-4">
-            <p className="text-gray-500">
-              {language === 'en' ? 'Choose what information to share:' : 'Wählen Sie, welche Informationen geteilt werden sollen:'}
-            </p>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 min-h-[60px] rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
-                <div className="space-y-1 flex-1 pr-4">
-                  <p className="font-bold text-gray-900 dark:text-white">
-                    {language === 'en' ? 'Medications' : 'Medikamente'}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {language === 'en' 
-                      ? 'Share your medication schedule and adherence' 
-                      : 'Teile deinen Medikamentenplan und die Einhaltung'}
-                  </p>
-                </div>
-                <Switch
-                  checked={shareOptions.medications}
-                  onCheckedChange={(checked) => 
-                    setShareOptions(prev => ({ ...prev, medications: checked }))
-                  }
-                  data-testid="switch-share-medications"
-                />
-              </div>
-              
-              <div className="flex items-center justify-between p-4 min-h-[60px] rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
-                <div className="space-y-1 flex-1 pr-4">
-                  <p className="font-bold text-gray-900 dark:text-white">
-                    {language === 'en' ? 'Missions' : 'Missionen'}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {language === 'en' 
-                      ? 'Share your health goals and mission progress' 
-                      : 'Teile deine Gesundheitsziele und Missionsfortschritte'}
-                  </p>
-                </div>
-                <Switch
-                  checked={shareOptions.missions}
-                  onCheckedChange={(checked) => 
-                    setShareOptions(prev => ({ ...prev, missions: checked }))
-                  }
-                  data-testid="switch-share-missions"
-                />
-              </div>
-              
-              <div className="flex items-center justify-between p-4 min-h-[60px] rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-white/50 dark:border-white/10">
-                <div className="space-y-1 flex-1 pr-4">
-                  <p className="font-bold text-gray-900 dark:text-white">
-                    {language === 'en' ? 'Clinical Data' : 'Klinische Daten'}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {language === 'en' 
-                      ? 'Share lab results and health measurements' 
-                      : 'Teile Laborergebnisse und Gesundheitsmessungen'}
-                  </p>
-                </div>
-                <Switch
-                  checked={shareOptions.clinicalData}
-                  onCheckedChange={(checked) => 
-                    setShareOptions(prev => ({ ...prev, clinicalData: checked }))
-                  }
-                  data-testid="switch-share-clinical"
-                />
-              </div>
-            </div>
-            
-            <Button
-              className="w-full min-h-[48px] bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20 active:scale-[0.98] transition-transform"
-              onClick={async () => {
-                const shareData = Object.entries(shareOptions)
-                  .filter(([_, enabled]) => enabled)
-                  .map(([key]) => key)
-                  .join(',');
-                const shareUrl = `${window.location.origin}/shared-profile/${userId}?data=${shareData}`;
-                
-                try {
-                  await navigator.clipboard.writeText(shareUrl);
-                  toast({
-                    title: language === 'en' ? 'Link copied!' : 'Link kopiert!',
-                    description: language === 'en' 
-                      ? 'Share link has been copied to clipboard' 
-                      : 'Der Freigabelink wurde in die Zwischenablage kopiert',
-                  });
-                  setIsShareOpen(false);
-                } catch (err) {
-                  toast({
-                    title: language === 'en' ? 'Copy failed' : 'Kopieren fehlgeschlagen',
-                    description: language === 'en' 
-                      ? 'Could not copy link to clipboard' 
-                      : 'Link konnte nicht kopiert werden',
-                    variant: 'destructive',
-                  });
-                }
-              }}
-              data-testid="button-copy-share-link"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              {language === 'en' ? 'Copy Share Link' : 'Freigabelink kopieren'}
-            </Button>
-            
-            <p className="text-center text-sm text-muted-foreground">
-              {language === 'en' ? 'Link expires in 7 days' : 'Link läuft in 7 Tagen ab'}
+          <div className="py-8 text-center">
+            <p className="text-lg font-semibold text-gray-600 dark:text-gray-300">
+              {language === 'en' ? 'Feature coming soon' : 'Funktion kommt bald'}
             </p>
           </div>
         </DialogContent>
