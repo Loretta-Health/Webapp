@@ -1,5 +1,6 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from './use-auth';
 import { apiRequest, authenticatedFetch } from '../lib/queryClient';
 import { trackMission, trackGamification } from '../lib/clarity';
@@ -59,7 +60,11 @@ export function useMissions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { updateAllXPDisplays, deductXP } = useXPUpdater();
+  const { i18n } = useTranslation();
   const userId = user?.id;
+  
+  // Get current language from i18n (reactive to language changes)
+  const currentLanguage = i18n.language?.startsWith('de') ? 'de' : 'en';
 
   const { data: catalogMissions = [], isLoading: catalogLoading } = useQuery<CatalogMission[]>({
     queryKey: ['/api/missions-catalog'],
@@ -87,38 +92,29 @@ export function useMissions() {
 
   const isLoading = catalogLoading || userMissionsLoading;
 
-  const getCurrentLanguage = (): 'en' | 'de' => {
-    if (typeof window !== 'undefined') {
-      const htmlLang = document.documentElement.lang;
-      const i18nLang = localStorage.getItem('i18nextLng');
-      const navigatorLang = navigator.language;
-      const lang = i18nLang || htmlLang || navigatorLang || 'en';
-      return lang.startsWith('de') ? 'de' : 'en';
-    }
-    return 'en';
-  };
-
-  const missions: Mission[] = userMissions.map(um => {
-    const catalogMission = catalogMissions.find(cm => cm.missionKey === um.missionKey);
-    const lang = getCurrentLanguage();
-    return {
-      id: um.id,
-      title: catalogMission ? (lang === 'de' ? catalogMission.titleDe : catalogMission.titleEn) : um.missionKey,
-      description: catalogMission ? (lang === 'de' ? catalogMission.descriptionDe : catalogMission.descriptionEn) : null,
-      category: catalogMission?.category || 'daily',
-      xpReward: catalogMission?.xpReward || 0,
-      progress: um.progress,
-      maxProgress: um.maxProgress,
-      completed: um.completed,
-      isActive: um.isActive,
-      href: `/mission-details?id=${um.missionKey}`,
-      missionKey: um.missionKey,
-      userId: um.userId,
-      completedAt: um.completedAt,
-      icon: catalogMission?.icon,
-      color: catalogMission?.color,
-    };
-  });
+  // Memoize missions with language as dependency for reactivity
+  const missions: Mission[] = useMemo(() => {
+    return userMissions.map(um => {
+      const catalogMission = catalogMissions.find(cm => cm.missionKey === um.missionKey);
+      return {
+        id: um.id,
+        title: catalogMission ? (currentLanguage === 'de' ? catalogMission.titleDe : catalogMission.titleEn) : um.missionKey,
+        description: catalogMission ? (currentLanguage === 'de' ? catalogMission.descriptionDe : catalogMission.descriptionEn) : null,
+        category: catalogMission?.category || 'daily',
+        xpReward: catalogMission?.xpReward || 0,
+        progress: um.progress,
+        maxProgress: um.maxProgress,
+        completed: um.completed,
+        isActive: um.isActive,
+        href: `/mission-details?id=${um.missionKey}`,
+        missionKey: um.missionKey,
+        userId: um.userId,
+        completedAt: um.completedAt,
+        icon: catalogMission?.icon,
+        color: catalogMission?.color,
+      };
+    });
+  }, [userMissions, catalogMissions, currentLanguage]);
 
   const createMissionMutation = useMutation({
     mutationFn: async (mission: Omit<Mission, 'id'> & { id?: string }) => {
