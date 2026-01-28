@@ -7,7 +7,8 @@ export type AchievementEvent =
   | { type: 'medication_taken'; consecutiveDays: number }
   | { type: 'onboarding_complete' }
   | { type: 'profile_complete' }
-  | { type: 'questionnaire_complete' };
+  | { type: 'questionnaire_complete' }
+  | { type: 'water_mission_completed'; missionKey: string; date: string };
 
 interface AchievementRule {
   id: string;
@@ -52,6 +53,9 @@ const ACHIEVEMENT_RULES: AchievementRule[] = [
           return currentProgress + 1;
         }
       }
+      if (event.type === 'water_mission_completed') {
+        return currentProgress + 1;
+      }
       return null;
     }
   },
@@ -94,6 +98,7 @@ const ACHIEVEMENT_RULES: AchievementRule[] = [
 ];
 
 const ACTIVITY_ACHIEVEMENTS = ['hydration-champion', 'sleep-master', 'step-champion'];
+const WATER_MISSION_KEYS = ['water-glasses', 'sip-water'];
 
 export async function processAchievementEvent(
   userId: string, 
@@ -123,6 +128,13 @@ export async function processAchievementEvent(
         }
       }
       
+      // For water mission achievements, only allow one increment per day
+      if (event.type === 'water_mission_completed' && rule.id === 'hydration-champion') {
+        if (hasAlreadyIncrementedToday(userId, rule.id, event.date)) {
+          continue;
+        }
+      }
+      
       const result = await storage.updateUserAchievementProgress(userId, rule.id, newProgress);
       
       if (result.updated) {
@@ -130,6 +142,9 @@ export async function processAchievementEvent(
         
         // Mark as incremented today only after successful update
         if (event.type === 'activity_logged' && ACTIVITY_ACHIEVEMENTS.includes(rule.id)) {
+          markIncrementedToday(userId, rule.id, event.date);
+        }
+        if (event.type === 'water_mission_completed' && rule.id === 'hydration-champion') {
           markIncrementedToday(userId, rule.id, event.date);
         }
         
@@ -168,4 +183,16 @@ export async function processXpEarned(userId: string, totalXp: number) {
 
 export async function processMedicationTaken(userId: string, consecutiveDays: number) {
   return processAchievementEvent(userId, { type: 'medication_taken', consecutiveDays });
+}
+
+export async function processWaterMissionCompleted(userId: string, missionKey: string) {
+  if (!WATER_MISSION_KEYS.includes(missionKey)) {
+    return { achievementsUpdated: [], achievementsUnlocked: [], totalXpAwarded: 0 };
+  }
+  const today = new Date().toISOString().split('T')[0];
+  return processAchievementEvent(userId, { 
+    type: 'water_mission_completed',
+    missionKey,
+    date: today
+  });
 }

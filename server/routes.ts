@@ -7,7 +7,7 @@ import { userMissions, userInviteCodes, friendships, users, emotionalCheckins, m
 import { setupAuth } from "./auth";
 import { HEALTH_NAVIGATOR_SYSTEM_PROMPT, EMOTION_CLASSIFICATION_PROMPT } from "./prompts";
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
-import { processCheckin, processActivityLogged, processXpEarned, processMedicationTaken } from "./lib/achievementManager";
+import { processCheckin, processActivityLogged, processXpEarned, processMedicationTaken, processWaterMissionCompleted } from "./lib/achievementManager";
 import { startMedicationAutoMissCron } from "./cron/medication-auto-miss";
 import { resetMissionsForUser } from "./missionReset";
 import { 
@@ -1680,6 +1680,14 @@ IMPORTANT: When discussing risk scores, remember:
           // Progress decreased (undo) - deduct XP
           await storage.deductXP(userId, Math.abs(xpToAward));
           console.log(`[Missions] Deducted ${Math.abs(xpToAward)} XP (${catalogMission.xpReward} x ${Math.abs(progressDelta)} decrements) from user ${userId} for mission ${currentMission?.missionKey}`);
+        }
+      }
+      
+      // Track hydration achievement when water missions are completed for today
+      if (isBeingCompleted && currentMission?.missionKey) {
+        const hydrationResult = await processWaterMissionCompleted(userId, currentMission.missionKey);
+        if (hydrationResult.achievementsUpdated.length > 0) {
+          console.log(`[Missions] Hydration achievement updated for user ${userId} from mission ${currentMission.missionKey}`);
         }
       }
       
