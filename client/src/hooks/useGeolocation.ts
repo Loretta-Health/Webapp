@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
+import { App } from '@capacitor/app';
 import { NativeSettings, IOSSettings, AndroidSettings } from 'capacitor-native-settings';
 
 export const BERLIN_COORDINATES = {
@@ -46,8 +47,11 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     usingDefault: true,
     permissionDenied: false,
   });
+  
+  const settingsOpenedRef = useRef(false);
 
   const openAppSettings = useCallback(async () => {
+    settingsOpenedRef.current = true;
     try {
       await NativeSettings.open({
         optionIOS: IOSSettings.App,
@@ -220,6 +224,32 @@ export function useGeolocation(options: GeolocationOptions = {}) {
       requestLocation();
     }
   }, []);
+
+  useEffect(() => {
+    if (!isNative) return;
+    
+    const listener = App.addListener('appStateChange', async ({ isActive }) => {
+      if (isActive && settingsOpenedRef.current && state.permissionDenied) {
+        settingsOpenedRef.current = false;
+        
+        try {
+          const permissionStatus = await Geolocation.checkPermissions();
+          if (permissionStatus.location === 'granted') {
+            setState(prev => ({ ...prev, permissionDenied: false }));
+            if (locationEnabled) {
+              await requestLocation();
+            }
+          }
+        } catch (error) {
+          console.error('Error checking permissions on resume:', error);
+        }
+      }
+    });
+    
+    return () => {
+      listener.then(l => l.remove());
+    };
+  }, [isNative, state.permissionDenied, locationEnabled, requestLocation]);
 
   return {
     ...state,
