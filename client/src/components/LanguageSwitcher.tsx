@@ -9,8 +9,8 @@ import {
 import { Button } from '@/components/ui/button';
 
 const languages = [
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'en', name: 'English', label: 'EN' },
+  { code: 'de', name: 'Deutsch', label: 'DE' },
 ];
 
 interface LanguageSwitcherProps {
@@ -20,7 +20,8 @@ interface LanguageSwitcherProps {
 export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   const { i18n } = useTranslation();
 
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const currentLangCode = i18n.language?.startsWith('de') ? 'de' : 'en';
+  const currentLanguage = languages.find(lang => lang.code === currentLangCode) || languages[0];
 
   const changeLanguage = (languageCode: string) => {
     i18n.changeLanguage(languageCode);
@@ -32,8 +33,8 @@ export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className={`gap-2 min-h-[44px] min-w-[44px] ${className || ''}`}>
           <Globe className="h-5 w-5" />
-          <span className="hidden sm:inline">{currentLanguage.flag} {currentLanguage.name}</span>
-          <span className="sm:hidden">{currentLanguage.flag}</span>
+          <span className="hidden sm:inline">{currentLanguage.label} {currentLanguage.name}</span>
+          <span className="sm:hidden font-semibold text-sm">{currentLanguage.label}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -41,9 +42,9 @@ export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
           <DropdownMenuItem
             key={language.code}
             onClick={() => changeLanguage(language.code)}
-            className={i18n.language === language.code ? 'bg-accent' : ''}
+            className={currentLangCode === language.code ? 'bg-accent' : ''}
           >
-            <span className="mr-2">{language.flag}</span>
+            <span className="mr-2 font-semibold">{language.label}</span>
             {language.name}
           </DropdownMenuItem>
         ))}
