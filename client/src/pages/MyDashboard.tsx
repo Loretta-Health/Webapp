@@ -197,7 +197,7 @@ export default function MyDashboard() {
   const [isChecklistClosing, setIsChecklistClosing] = useState(false);
   const previousAllSetupCompleteRef = useRef<boolean | null>(null);
   const { user, isLoading: isAuthLoading, logoutMutation } = useAuth();
-  const { locationEnabled, toggleLocationEnabled, usingDefault, loading: locationLoading } = useGeolocation();
+  const { locationEnabled, toggleLocationEnabled, usingDefault, loading: locationLoading, permissionDenied, openAppSettings, isNative } = useGeolocation();
   const userId = user?.id;
   const { missions, activeMissions, completedCount, totalCount, completeMission } = useMissions();
   const { medications, getTotalProgress } = useMedicationProgress();
@@ -776,10 +776,10 @@ export default function MyDashboard() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button 
-                    onClick={toggleLocationEnabled}
+                    onClick={permissionDenied && isNative ? openAppSettings : toggleLocationEnabled}
                     disabled={locationLoading}
                     data-testid="button-location-toggle"
-                    className={`p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center ${locationEnabled && !usingDefault ? 'text-white' : 'text-white/60'}`}
+                    className={`p-2 sm:p-2.5 hover:bg-white/10 rounded-xl transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center ${permissionDenied ? 'text-red-400' : locationEnabled && !usingDefault ? 'text-white' : 'text-white/60'}`}
                   >
                     {locationLoading ? (
                       <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
@@ -791,8 +791,17 @@ export default function MyDashboard() {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{locationEnabled && !usingDefault ? t('location.usingYours', 'Using your location') : t('location.usingDefault', 'Using default location (Berlin)')}</p>
-                  <p className="text-xs text-muted-foreground">{t('location.clickTo', 'Click to')} {locationEnabled ? t('location.disable', 'disable') : t('location.enable', 'enable')}</p>
+                  {permissionDenied && isNative ? (
+                    <>
+                      <p>{t('location.permissionDenied', 'Location permission denied')}</p>
+                      <p className="text-xs text-muted-foreground">{t('location.tapToOpenSettings', 'Tap to open Settings')}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p>{locationEnabled && !usingDefault ? t('location.usingYours', 'Using your location') : t('location.usingDefault', 'Using default location (Berlin)')}</p>
+                      <p className="text-xs text-muted-foreground">{t('location.clickTo', 'Click to')} {locationEnabled ? t('location.disable', 'disable') : t('location.enable', 'enable')}</p>
+                    </>
+                  )}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

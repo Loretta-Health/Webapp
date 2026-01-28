@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
+import { NativeSettings, IOSSettings, AndroidSettings } from 'capacitor-native-settings';
 
 export const BERLIN_COORDINATES = {
   latitude: 52.52,
@@ -14,6 +15,7 @@ interface GeolocationState {
   error: string | null;
   loading: boolean;
   usingDefault: boolean;
+  permissionDenied: boolean;
 }
 
 interface GeolocationOptions {
@@ -42,10 +44,22 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     error: null,
     loading: false,
     usingDefault: true,
+    permissionDenied: false,
   });
 
+  const openAppSettings = useCallback(async () => {
+    try {
+      await NativeSettings.open({
+        optionIOS: IOSSettings.App,
+        optionAndroid: AndroidSettings.ApplicationDetails,
+      });
+    } catch (error) {
+      console.error('Failed to open settings:', error);
+    }
+  }, []);
+
   const requestNativeLocation = useCallback(async (): Promise<{ latitude: number; longitude: number }> => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState(prev => ({ ...prev, loading: true, error: null, permissionDenied: false }));
 
     try {
       const permissionStatus = await Geolocation.checkPermissions();
@@ -57,9 +71,10 @@ export function useGeolocation(options: GeolocationOptions = {}) {
             latitude: defaultLocation.latitude,
             longitude: defaultLocation.longitude,
             accuracy: null,
-            error: 'Location permission denied. Using default location (Berlin).',
+            error: 'Location permission denied. Tap to open Settings.',
             loading: false,
             usingDefault: true,
+            permissionDenied: true,
           });
           return defaultLocation;
         }
@@ -79,17 +94,22 @@ export function useGeolocation(options: GeolocationOptions = {}) {
         error: null,
         loading: false,
         usingDefault: false,
+        permissionDenied: false,
       });
       return { latitude, longitude };
     } catch (error: any) {
       const errorMessage = error?.message || 'Could not get location. Using default location (Berlin).';
+      const isDenied = errorMessage.toLowerCase().includes('denied') || 
+                       errorMessage.toLowerCase().includes('permission') ||
+                       (error?.code === 1);
       setState({
         latitude: defaultLocation.latitude,
         longitude: defaultLocation.longitude,
         accuracy: null,
-        error: errorMessage,
+        error: isDenied ? 'Location permission denied. Tap to open Settings.' : errorMessage,
         loading: false,
         usingDefault: true,
+        permissionDenied: isDenied,
       });
       return defaultLocation;
     }
@@ -104,11 +124,12 @@ export function useGeolocation(options: GeolocationOptions = {}) {
         error: 'Geolocation is not supported by your browser. Using default location.',
         loading: false,
         usingDefault: true,
+        permissionDenied: false,
       }));
       return defaultLocation;
     }
 
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    setState(prev => ({ ...prev, loading: true, error: null, permissionDenied: false }));
 
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
@@ -121,14 +142,17 @@ export function useGeolocation(options: GeolocationOptions = {}) {
             error: null,
             loading: false,
             usingDefault: false,
+            permissionDenied: false,
           });
           resolve({ latitude, longitude });
         },
         (error) => {
           let errorMessage: string;
+          let isDenied = false;
           switch (error.code) {
             case error.PERMISSION_DENIED:
               errorMessage = 'Location permission denied. Using default location (Berlin).';
+              isDenied = true;
               break;
             case error.POSITION_UNAVAILABLE:
               errorMessage = 'Location unavailable. Using default location (Berlin).';
@@ -146,6 +170,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
             error: errorMessage,
             loading: false,
             usingDefault: true,
+            permissionDenied: isDenied,
           });
           resolve(defaultLocation);
         },
@@ -166,6 +191,11 @@ export function useGeolocation(options: GeolocationOptions = {}) {
   }, [isNative, requestNativeLocation, requestWebLocation]);
 
   const toggleLocationEnabled = useCallback(async () => {
+    if (state.permissionDenied && isNative) {
+      await openAppSettings();
+      return;
+    }
+    
     const newValue = !locationEnabled;
     setLocationEnabled(newValue);
     localStorage.setItem(LOCATION_ENABLED_KEY, String(newValue));
@@ -180,9 +210,10 @@ export function useGeolocation(options: GeolocationOptions = {}) {
         error: null,
         loading: false,
         usingDefault: true,
+        permissionDenied: false,
       });
     }
-  }, [locationEnabled, requestLocation, defaultLocation]);
+  }, [locationEnabled, requestLocation, defaultLocation, state.permissionDenied, isNative, openAppSettings]);
 
   useEffect(() => {
     if (locationEnabled) {
@@ -195,6 +226,8 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     locationEnabled,
     requestLocation,
     toggleLocationEnabled,
+    openAppSettings,
+    isNative,
     isSupported: isNative || (typeof navigator !== 'undefined' && 'geolocation' in navigator),
     coordinates: state.latitude && state.longitude 
       ? { latitude: state.latitude, longitude: state.longitude }
