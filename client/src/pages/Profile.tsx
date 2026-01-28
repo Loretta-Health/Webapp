@@ -1633,7 +1633,7 @@ export default function Profile() {
               <h1 className="text-xl sm:text-2xl font-black text-white">{localT.profile}</h1>
               <p className="text-white/70 text-sm">{language === 'en' ? 'Health Profile' : 'Gesundheitsprofil'}</p>
             </div>
-            <div className="w-[100px] flex items-center justify-end gap-1">
+            <div className="w-[120px] flex items-center justify-end gap-2">
               <LanguageSwitcher className="text-white hover:bg-white/20 rounded-2xl min-w-[44px] min-h-[44px]" />
               <Button 
                 variant="ghost" 
