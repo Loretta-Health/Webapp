@@ -2164,9 +2164,9 @@ export default function Profile() {
 
       {/* Share Dialog */}
       <Dialog open={isShareOpen} onOpenChange={setIsShareOpen}>
-        <DialogContent className="max-w-md bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md mx-auto bg-gradient-to-br from-white/95 via-white/90 to-[#CDB6EF]/20 dark:from-gray-900/95 dark:via-gray-900/90 dark:to-[#013DC4]/20 backdrop-blur-xl border-white/50 dark:border-white/10 rounded-3xl shadow-2xl shadow-[#013DC4]/10 p-6 safe-area-bottom">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black text-gray-900 dark:text-white">
+            <DialogTitle className="text-xl font-black text-gray-900 dark:text-white text-center">
               {language === 'en' ? 'Share with Family & Friends' : 'Mit Familie & Freunden teilen'}
             </DialogTitle>
           </DialogHeader>
@@ -2176,7 +2176,7 @@ export default function Profile() {
               {language === 'en' ? 'Feature coming soon' : 'Funktion kommt bald'}
             </p>
             <Button
-              className="w-full min-h-[48px] bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20 active:scale-[0.98] transition-transform"
+              className="w-full min-h-[52px] bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold text-base shadow-lg shadow-[#013DC4]/20 active:scale-[0.98] transition-transform touch-manipulation"
               onClick={() => setIsShareOpen(false)}
             >
               {language === 'en' ? 'Close' : 'Schließen'}
