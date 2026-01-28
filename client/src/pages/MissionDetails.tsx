@@ -782,13 +782,23 @@ const missionsDatabase: Record<string, MissionData> = {
 };
 
 export default function MissionDetails() {
-  const { t } = useTranslation('pages');
+  const { t, i18n } = useTranslation('pages');
   const { t: tDashboard } = useTranslation('dashboard');
   const [, navigate] = useLocation();
   useSwipeBack({ backPath: '/my-dashboard' });
   const searchString = useSearch();
   const params = new URLSearchParams(searchString);
   const urlMissionId = params.get('id');
+  
+  // Helper to get translated mission content
+  const getTranslatedMissionContent = (missionKey: string) => {
+    const translationKey = `missionDetails.missions.${missionKey}`;
+    const details = t(`${translationKey}.details`, { defaultValue: '' });
+    const benefits = t(`${translationKey}.benefits`, { returnObjects: true, defaultValue: [] }) as string[];
+    const communityTip = t(`${translationKey}.communityTip`, { defaultValue: '' });
+    const stepLabel = t(`${translationKey}.stepLabel`, { defaultValue: 'Step' });
+    return { details, benefits, communityTip, stepLabel };
+  };
   
   // Get global weather simulation state
   const { simulateBadWeather } = useWeatherSimulation();
@@ -860,6 +870,21 @@ export default function MissionDetails() {
   const existingMission = missions.find(m => 
     m.missionKey === urlMissionId || m.href?.includes(`?id=${urlMissionId}`)
   );
+  
+  // Get translated content for this mission
+  const translatedContent = useMemo(() => {
+    if (urlMissionId) {
+      return getTranslatedMissionContent(urlMissionId);
+    }
+    return { details: '', benefits: [], communityTip: '', stepLabel: 'Step' };
+  }, [urlMissionId, i18n.language]);
+  
+  // Use translated title/description from useMissions, fallback to hardcoded
+  const displayTitle = existingMission?.title || missionData.title;
+  const displayDescription = existingMission?.description || missionData.description;
+  const displayDetails = translatedContent.details || missionData.details;
+  const displayCommunityTip = translatedContent.communityTip || missionData.communityTip;
+  const displayStepLabel = translatedContent.stepLabel || missionData.stepLabel;
   const initialProgress = existingMission?.progress || 0;
   
   // Use actual maxProgress from database (via useMissions) as the source of truth
@@ -1104,13 +1129,13 @@ export default function MissionDetails() {
                 
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mb-1" data-testid="mission-title">
-                    {missionData.title}
+                    {displayTitle}
                   </h2>
                   <Badge className={colors.badge} data-testid="mission-frequency">
-                    {missionData.frequency}
+                    {tDashboard(`missions.${missionData.frequency}`)}
                   </Badge>
                   <p className="text-sm sm:text-base text-gray-500 mt-2" data-testid="mission-description">
-                    {missionData.description}
+                    {displayDescription}
                   </p>
                 </div>
               </div>
@@ -1262,7 +1287,7 @@ export default function MissionDetails() {
               <GlassCard className="p-5">
                 <h3 className="text-lg font-black text-gray-900 dark:text-white mb-3">{t('missionDetails.missionDetails')}</h3>
                 <p className="text-gray-500 leading-relaxed" data-testid="mission-details-text">
-                  {missionData.details}
+                  {displayDetails}
                 </p>
               </GlassCard>
             </motion.div>
@@ -1275,21 +1300,24 @@ export default function MissionDetails() {
               <GlassCard className="p-5">
                 <h3 className="text-lg font-black text-gray-900 dark:text-white mb-4">{t('missionDetails.benefits')}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {missionData.benefits.map((benefit, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 + index * 0.1 }}
-                      className="flex items-center gap-3 p-3 bg-gradient-to-r from-[#013DC4]/10 to-transparent rounded-xl"
-                      data-testid={`benefit-${index}`}
-                    >
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#013DC4]/20 to-[#013DC4]/10 flex items-center justify-center">
-                        <benefit.icon className="w-5 h-5 text-[#013DC4]" />
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">{benefit.text}</span>
-                    </motion.div>
-                  ))}
+                  {missionData.benefits.map((benefit, index) => {
+                    const translatedBenefitText = translatedContent.benefits[index] || benefit.text;
+                    return (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.2 + index * 0.1 }}
+                        className="flex items-center gap-3 p-3 bg-gradient-to-r from-[#013DC4]/10 to-transparent rounded-xl"
+                        data-testid={`benefit-${index}`}
+                      >
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#013DC4]/20 to-[#013DC4]/10 flex items-center justify-center">
+                          <benefit.icon className="w-5 h-5 text-[#013DC4]" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">{translatedBenefitText}</span>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </GlassCard>
             </motion.div>
@@ -1315,7 +1343,7 @@ export default function MissionDetails() {
                         <Check className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1">
-                        <span className="font-bold text-gray-900 dark:text-white">{missionData.stepLabel} #{step.id}</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{displayStepLabel} #{step.id}</span>
                       </div>
                       <div className="flex items-center gap-1 text-gray-500">
                         <Clock className="w-4 h-4" />
@@ -1351,7 +1379,7 @@ export default function MissionDetails() {
                   <div>
                     <h4 className="font-black text-gray-900 dark:text-white mb-1">{tDashboard('community.communityTip')}</h4>
                     <p className="text-sm text-gray-500" data-testid="community-tip">
-                      {missionData.communityTip}
+                      {displayCommunityTip}
                     </p>
                   </div>
                 </div>

@@ -342,6 +342,44 @@
     "weatherBanner": {
       "title": "Wetterwarnung",
       "description": "Das Wetter ist heute nicht so gut. Probiere stattdessen eine dieser Indoor-Alternativen!"
+    },
+    "missions": {
+      "jumping-jacks": {
+        "details": "Hampelmänner sind eine Ganzkörper-Herz-Kreislauf-Übung, die deine Herzfrequenz erhöht, die Durchblutung verbessert und deine Muskeln aufweckt. Mache heute bis zu 3 Mal einen Satz von 10 Hampelmännern für einen Energieschub.",
+        "benefits": ["Verbrennt schnell Kalorien", "Stärkt die Herzgesundheit", "Verbessert die Koordination", "Steigert das Energieniveau"],
+        "communityTip": "Mache morgens, nach dem Mittagessen und abends je 10 Hampelmänner für einen Energieschub!",
+        "stepLabel": "Satz"
+      },
+      "water-glasses": {
+        "details": "Diese Mission hilft dir, den ganzen Tag über ausreichend hydriert zu bleiben. Wasser trinken ist essentiell für die Körperfunktionen und die allgemeine Gesundheit.",
+        "benefits": ["Verbessert das Energieniveau", "Unterstützt die Gehirnfunktion", "Erhält die Nierenfunktion", "Erhält die Hautgesundheit"],
+        "communityTip": "Stelle eine Wasserflasche sichtbar auf deinen Schreibtisch als Erinnerung, den ganzen Tag über hydriert zu bleiben.",
+        "stepLabel": "Glas"
+      },
+      "meditation": {
+        "details": "Meditation hilft, Stress abzubauen, die Konzentration zu verbessern und das allgemeine geistige Wohlbefinden zu fördern. Schon 5 Minuten täglich können einen großen Unterschied für deine mentale Klarheit machen.",
+        "benefits": ["Reduziert Stress und Angst", "Senkt den Blutdruck", "Verbessert Fokus und Konzentration", "Fördert emotionales Wohlbefinden"],
+        "communityTip": "Finde einen ruhigen Platz, schließe die Augen und konzentriere dich auf deinen Atem. Schon 5 Minuten können deinen Tag verändern!",
+        "stepLabel": "Sitzung"
+      },
+      "walking": {
+        "details": "Gehen ist eine der besten Bewegungsformen für die allgemeine Gesundheit. Ein 10-minütiger zügiger Spaziergang kann deine Stimmung heben, die Durchblutung verbessern und dir helfen, deine täglichen Aktivitätsziele zu erreichen.",
+        "benefits": ["Verbessert die Herz-Kreislauf-Gesundheit", "Hebt die Stimmung und mentale Klarheit", "Steigert das Energieniveau", "Frische Luft und Vitamin D"],
+        "communityTip": "Versuche während Telefonaten oder nach dem Essen zu gehen. Jeder Schritt zählt für dein Tagesziel!",
+        "stepLabel": "Spaziergang"
+      },
+      "deep-breathing": {
+        "details": "Tiefe Atemübungen aktivieren dein parasympathisches Nervensystem und helfen, Stress und Angst abzubauen. Mache heute bis zu 3 Mal einen Satz von 10 langsamen Atemzügen.",
+        "benefits": ["Reduziert Stress und Angst", "Senkt den Blutdruck", "Erhöht die mentale Klarheit", "Fördert Entspannung"],
+        "communityTip": "Probiere die 4-7-8 Technik: 4 Sekunden einatmen, 7 Sekunden halten, 8 Sekunden ausatmen.",
+        "stepLabel": "Sitzung"
+      },
+      "sip-water": {
+        "details": "Kleine, achtsame Schlucke Wasser helfen deinem Körper, die Flüssigkeit besser aufzunehmen als große Mengen auf einmal zu trinken.",
+        "benefits": ["Bessere Flüssigkeitsaufnahme", "Schonend für die Verdauung", "Achtsame Praxis", "Konstante Energie"],
+        "communityTip": "Stelle dir stündlich eine sanfte Erinnerung, ein paar Schlucke Wasser zu trinken.",
+        "stepLabel": "Schluck"
+      }
     }
   },
   "alternativeMission": {

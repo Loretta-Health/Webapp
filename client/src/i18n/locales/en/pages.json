@@ -342,6 +342,44 @@
     "weatherBanner": {
       "title": "Weather Alert",
       "description": "The weather isn't great today. Try one of these indoor alternatives instead!"
+    },
+    "missions": {
+      "jumping-jacks": {
+        "details": "Jumping jacks are a full-body cardiovascular exercise that increases your heart rate, improves circulation, and helps wake up your muscles. Complete a set of 10 jumping jacks up to 3 times today for an energy boost.",
+        "benefits": ["Burns calories quickly", "Strengthens heart health", "Improves coordination", "Boosts energy levels"],
+        "communityTip": "Do a quick set of 10 jumping jacks in the morning, after lunch, and in the evening for an energy boost!",
+        "stepLabel": "Set"
+      },
+      "water-glasses": {
+        "details": "This mission helps you maintain proper hydration levels throughout the day. Drinking water is essential for maintaining bodily functions and overall health.",
+        "benefits": ["Improves energy levels", "Supports brain function", "Maintains kidney function", "Maintains skin health"],
+        "communityTip": "Try keeping a water bottle at your desk as a visual reminder to stay hydrated throughout the day.",
+        "stepLabel": "Glass"
+      },
+      "meditation": {
+        "details": "Meditation helps reduce stress, improve focus, and promote overall mental well-being. Just 5 minutes a day can make a significant difference in your mental clarity and emotional balance.",
+        "benefits": ["Reduces stress and anxiety", "Lowers blood pressure", "Improves focus and concentration", "Promotes emotional well-being"],
+        "communityTip": "Find a quiet spot, close your eyes, and focus on your breath. Even 5 minutes can transform your day!",
+        "stepLabel": "Session"
+      },
+      "walking": {
+        "details": "Walking is one of the best forms of exercise for overall health. A 10-minute brisk walk can boost your mood, improve circulation, and help you reach your daily activity goals.",
+        "benefits": ["Improves cardiovascular health", "Boosts mood and mental clarity", "Increases energy levels", "Fresh air and vitamin D"],
+        "communityTip": "Try walking during phone calls or after meals. Every step counts toward your daily goal!",
+        "stepLabel": "Walk"
+      },
+      "deep-breathing": {
+        "details": "Deep breathing exercises activate your parasympathetic nervous system, helping to reduce stress and anxiety. Complete a set of 10 slow breaths up to 3 times today.",
+        "benefits": ["Reduces stress and anxiety", "Lowers blood pressure", "Increases mental clarity", "Promotes relaxation"],
+        "communityTip": "Try the 4-7-8 technique: breathe in for 4 seconds, hold for 7, exhale for 8.",
+        "stepLabel": "Session"
+      },
+      "sip-water": {
+        "details": "Taking small, mindful sips of water helps your body absorb hydration more effectively than drinking large amounts at once.",
+        "benefits": ["Better hydration absorption", "Gentle on digestion", "Mindful practice", "Consistent energy"],
+        "communityTip": "Set a gentle reminder every hour to take a few sips of water.",
+        "stepLabel": "Sip"
+      }
     }
   },
   "alternativeMission": {
