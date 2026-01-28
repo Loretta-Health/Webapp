@@ -269,55 +269,55 @@ const translations = {
       questions: 'Fragen',
     },
     questionTexts: {
-      high_blood_pressure: 'Wurde Ihnen jemals gesagt, dass Sie hohen Blutdruck haben?',
-      high_cholesterol: 'Wurde Ihnen gesagt, dass Sie hohen Cholesterinspiegel haben?',
-      arthritis: 'Hat ein Arzt jemals gesagt, dass Sie Arthritis haben?',
-      prescription_medicine: 'Haben Sie im letzten Monat verschreibungspflichtige Medikamente eingenommen?',
-      daily_aspirin: 'Wurde Ihnen geraten, täglich Aspirin zu nehmen?',
-      general_health: 'Wie würden Sie Ihre allgemeine Gesundheit bewerten?',
-      dental_health: 'Wie würden Sie Ihre Zahn-/Zahnfleischgesundheit bewerten?',
-      hearing_health: 'Wie würden Sie Ihre Hörgesundheit bewerten?',
-      unsteadiness: 'Hatten Sie Probleme mit Unsicherheit oder Gleichgewicht?',
-      mouth_eating_problems: 'Konnten Sie wegen Mund- oder Zahnproblemen nicht essen?',
-      mouth_feel_bad: 'Wie oft fühlen Sie sich wegen Ihres Mundzustands schlecht?',
-      video_consult: 'Hatten Sie eine Videokonsultation mit einem Arzt?',
-      moderate_activity: 'Wie viele Stunden pro Woche machen Sie mäßige körperliche Aktivität?',
-      sedentary_hours: 'Wie viele Stunden pro Tag sitzen oder liegen Sie?',
-      job_type: 'Welche Art von Arbeit haben Sie letzte Woche gemacht?',
-      weekday_sleep: 'Wie viele Stunden schlafen Sie normalerweise an Wochentagen?',
-      weekend_sleep: 'Wie viele Stunden schlafen Sie normalerweise am Wochenende?',
-      wake_time_weekday: 'Wann stehen Sie normalerweise an Wochentagen auf?',
-      sleep_time_weekday: 'Wann gehen Sie normalerweise an Wochentagen schlafen?',
-      wake_time_weekend: 'Wann stehen Sie normalerweise am Wochenende auf?',
-      sleep_time_weekend: 'Wann gehen Sie normalerweise am Wochenende schlafen?',
-      alcohol_frequency: 'Wie oft haben Sie in den letzten 12 Monaten Alkohol getrunken?',
-      age: 'Wie alt sind Sie?',
-      height: 'Wie groß sind Sie?',
-      weight_current: 'Wie viel wiegen Sie aktuell?',
-      weight_year_ago: 'Wie viel wogen Sie vor einem Jahr?',
-      education: 'Was ist Ihr höchster Bildungsabschluss?',
-      income_poverty_ratio: 'Wie würden Sie Ihr Haushaltseinkommen beschreiben?',
-      monthly_poverty_index: 'Wie oft deckt Ihr Einkommen alle Ausgaben?',
-      household_rooms: 'Wie viele Zimmer hat Ihr Haushalt?',
-      diet_fruits_vegetables: 'Wie viele Portionen Obst und Gemüse essen Sie täglich?',
-      diet_protein: 'Wie würden Sie Ihre Proteinaufnahme beschreiben?',
-      diet_sugar: 'Wie oft konsumieren Sie zuckerhaltige Speisen oder Getränke?',
-      diet_water: 'Wie viele Gläser Wasser trinken Sie täglich?',
-      diet_processed_foods: 'Wie oft essen Sie verarbeitete Lebensmittel oder Fast Food?',
-      diet_meals_per_day: 'Wie viele Mahlzeiten essen Sie typischerweise pro Tag?',
-      diet_snacking: 'Wie oft naschen Sie zwischen den Mahlzeiten?',
-      diet_restrictions: 'Befolgen Sie irgendwelche Ernährungseinschränkungen?',
-      sleep_quality: 'Wie würden Sie Ihre allgemeine Schlafqualität bewerten?',
-      sleep_duration: 'Wie viele Stunden Schlaf bekommen Sie durchschnittlich?',
-      sleep_consistency: 'Wie konsistent ist Ihr Schlafrhythmus?',
-      sleep_disturbances: 'Wie oft erleben Sie Schlafstörungen?',
-      sleep_aids: 'Verwenden Sie Schlafmittel oder Medikamente?',
-      sleep_naps: 'Wie oft machen Sie tagsüber ein Nickerchen?',
-      stress_level: 'Wie würden Sie Ihr aktuelles Stressniveau bewerten?',
-      stress_frequency: 'Wie oft fühlen Sie sich gestresst?',
-      stress_coping: 'Wie gut bewältigen Sie Stress?',
-      stress_work: 'Wie viel trägt die Arbeit zu Ihrem Stress bei?',
-      stress_relationships: 'Wie viel tragen Beziehungen zu Ihrem Stress bei?',
+      high_blood_pressure: 'Wurde dir jemals gesagt, dass du hohen Blutdruck hast?',
+      high_cholesterol: 'Wurde dir gesagt, dass du hohen Cholesterinspiegel hast?',
+      arthritis: 'Hat ein Arzt jemals gesagt, dass du Arthritis hast?',
+      prescription_medicine: 'Hast du im letzten Monat verschreibungspflichtige Medikamente eingenommen?',
+      daily_aspirin: 'Wurde dir geraten, täglich Aspirin zu nehmen?',
+      general_health: 'Wie würdest du deine allgemeine Gesundheit bewerten?',
+      dental_health: 'Wie würdest du deine Zahn- und Zahnfleischgesundheit bewerten?',
+      hearing_health: 'Wie würdest du deine Hörgesundheit bewerten?',
+      unsteadiness: 'Hattest du Probleme mit Unsicherheit oder Gleichgewicht?',
+      mouth_eating_problems: 'Konntest du wegen Mund- oder Zahnproblemen nicht essen?',
+      mouth_feel_bad: 'Wie oft fühlst du dich wegen deines Mundzustands schlecht?',
+      video_consult: 'Hattest du eine Videokonsultation mit einem Arzt?',
+      moderate_activity: 'Wie viele Stunden pro Woche machst du mäßige körperliche Aktivität?',
+      sedentary_hours: 'Wie viele Stunden pro Tag sitzt oder liegst du?',
+      job_type: 'Welche Art von Arbeit hast du letzte Woche gemacht?',
+      weekday_sleep: 'Wie viele Stunden schläfst du normalerweise an Wochentagen?',
+      weekend_sleep: 'Wie viele Stunden schläfst du normalerweise am Wochenende?',
+      wake_time_weekday: 'Wann stehst du normalerweise an Wochentagen auf?',
+      sleep_time_weekday: 'Wann gehst du normalerweise an Wochentagen schlafen?',
+      wake_time_weekend: 'Wann stehst du normalerweise am Wochenende auf?',
+      sleep_time_weekend: 'Wann gehst du normalerweise am Wochenende schlafen?',
+      alcohol_frequency: 'Wie oft hast du in den letzten 12 Monaten Alkohol getrunken?',
+      age: 'Wie alt bist du?',
+      height: 'Wie groß bist du?',
+      weight_current: 'Wie viel wiegst du aktuell?',
+      weight_year_ago: 'Wie viel hast du vor einem Jahr gewogen?',
+      education: 'Was ist dein höchster Bildungsabschluss?',
+      income_poverty_ratio: 'Wie würdest du dein Haushaltseinkommen beschreiben?',
+      monthly_poverty_index: 'Wie oft deckt dein Einkommen alle Ausgaben?',
+      household_rooms: 'Wie viele Zimmer hat dein Haushalt?',
+      diet_fruits_vegetables: 'Wie viele Portionen Obst und Gemüse isst du täglich?',
+      diet_protein: 'Wie würdest du deine Proteinaufnahme beschreiben?',
+      diet_sugar: 'Wie oft konsumierst du zuckerhaltige Speisen oder Getränke?',
+      diet_water: 'Wie viele Gläser Wasser trinkst du täglich?',
+      diet_processed_foods: 'Wie oft isst du verarbeitete Lebensmittel oder Fast Food?',
+      diet_meals_per_day: 'Wie viele Mahlzeiten isst du typischerweise pro Tag?',
+      diet_snacking: 'Wie oft naschst du zwischen den Mahlzeiten?',
+      diet_restrictions: 'Befolgst du irgendwelche Ernährungseinschränkungen?',
+      sleep_quality: 'Wie würdest du deine allgemeine Schlafqualität bewerten?',
+      sleep_duration: 'Wie viele Stunden Schlaf bekommst du durchschnittlich?',
+      sleep_consistency: 'Wie konsistent ist dein Schlafrhythmus?',
+      sleep_disturbances: 'Wie oft erlebst du Schlafstörungen?',
+      sleep_aids: 'Verwendest du Schlafmittel oder Medikamente?',
+      sleep_naps: 'Wie oft machst du tagsüber ein Nickerchen?',
+      stress_level: 'Wie würdest du dein aktuelles Stressniveau bewerten?',
+      stress_frequency: 'Wie oft fühlst du dich gestresst?',
+      stress_coping: 'Wie gut bewältigst du Stress?',
+      stress_work: 'Wie viel trägt die Arbeit zu deinem Stress bei?',
+      stress_relationships: 'Wie viel tragen Beziehungen zu deinem Stress bei?',
     },
     behaviors: {
       title: 'Verhaltensweisen',
@@ -348,7 +348,7 @@ const translations = {
       cancel: 'Abbrechen',
       save: 'Änderungen speichern',
       saved: 'Profil aktualisiert',
-      savedDescription: 'Ihr Profil wurde erfolgreich aktualisiert.',
+      savedDescription: 'Dein Profil wurde erfolgreich aktualisiert.',
     },
     feedback: {
       title: 'Feedback senden',
@@ -356,7 +356,7 @@ const translations = {
       subject: 'Betreff',
       subjectPlaceholder: 'Worum geht es?',
       message: 'Nachricht',
-      messagePlaceholder: 'Teilen Sie uns Ihre Gedanken, Vorschläge oder ein Problem mit...',
+      messagePlaceholder: 'Teile uns deine Gedanken, Vorschläge oder ein Problem mit...',
       category: 'Kategorie',
       categories: {
         general: 'Allgemeines Feedback',
@@ -368,9 +368,9 @@ const translations = {
       send: 'Feedback senden',
       sending: 'Wird gesendet...',
       success: 'Feedback gesendet',
-      successDescription: 'Vielen Dank für Ihr Feedback! Wir schätzen es, dass Sie sich die Zeit nehmen, uns zu helfen.',
+      successDescription: 'Vielen Dank für dein Feedback! Wir freuen uns, dass du dir die Zeit nimmst, uns zu helfen.',
       error: 'Senden fehlgeschlagen',
-      errorDescription: 'Etwas ist schiefgelaufen. Bitte versuchen Sie es später erneut.',
+      errorDescription: 'Etwas ist schiefgelaufen. Bitte versuche es später erneut.',
     },
   },
 };
@@ -937,7 +937,7 @@ export default function Profile() {
           title: language === 'en' ? 'Invalid value' : 'Ungültiger Wert',
           description: language === 'en' 
             ? 'Please enter a valid number' 
-            : 'Bitte geben Sie eine gültige Zahl ein',
+            : 'Bitte gib eine gültige Zahl ein',
           variant: 'destructive',
         });
         const revertedAnswers = { ...questionnaireAnswers };
@@ -1133,7 +1133,7 @@ export default function Profile() {
     setIsBasicInfoEditOpen(false);
     toast({
       title: language === 'en' ? 'Basic information updated' : 'Grundinformationen aktualisiert',
-      description: language === 'en' ? 'Your health information has been saved.' : 'Ihre Gesundheitsinformationen wurden gespeichert.',
+      description: language === 'en' ? 'Your health information has been saved.' : 'Deine Gesundheitsinformationen wurden gespeichert.',
     });
   };
 
@@ -1144,7 +1144,7 @@ export default function Profile() {
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: language === 'en' ? 'File too large' : 'Datei zu groß',
-        description: language === 'en' ? 'Please select an image under 5MB' : 'Bitte wählen Sie ein Bild unter 5MB',
+        description: language === 'en' ? 'Please select an image under 5MB' : 'Bitte wähle ein Bild unter 5MB',
         variant: 'destructive',
       });
       return;
@@ -1153,7 +1153,7 @@ export default function Profile() {
     if (!file.type.startsWith('image/')) {
       toast({
         title: language === 'en' ? 'Invalid file type' : 'Ungültiger Dateityp',
-        description: language === 'en' ? 'Please select an image file' : 'Bitte wählen Sie eine Bilddatei',
+        description: language === 'en' ? 'Please select an image file' : 'Bitte wähle eine Bilddatei',
         variant: 'destructive',
       });
       return;
@@ -1555,7 +1555,7 @@ export default function Profile() {
               <p className="text-sm text-muted-foreground">
                 {language === 'en' 
                   ? 'To update your health information (age, height, weight, etc.), use the Edit button in the Basic Information tab.'
-                  : 'Um Ihre Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, verwenden Sie die Bearbeiten-Schaltfläche im Tab Grundinformationen.'}
+                  : 'Um deine Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, verwende die Bearbeiten-Schaltfläche im Tab Grundinformationen.'}
               </p>
             </div>
             <div className="flex justify-end gap-3">
@@ -1578,7 +1578,7 @@ export default function Profile() {
     if (!feedbackForm.subject.trim() || !feedbackForm.message.trim()) {
       toast({
         title: localT.feedback.error,
-        description: language === 'en' ? 'Please fill in all required fields.' : 'Bitte füllen Sie alle Pflichtfelder aus.',
+        description: language === 'en' ? 'Please fill in all required fields.' : 'Bitte fülle alle Pflichtfelder aus.',
         variant: 'destructive',
       });
       return;
@@ -2075,7 +2075,7 @@ export default function Profile() {
                   {localT.feedback.title}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  {language === 'en' ? 'Help us improve Loretta' : 'Helfen Sie uns, Loretta zu verbessern'}
+                  {language === 'en' ? 'Help us improve Loretta' : 'Hilf uns, Loretta zu verbessern'}
                 </p>
               </div>
             </div>
@@ -2190,7 +2190,7 @@ export default function Profile() {
                   <p className="text-sm text-gray-500">
                     {language === 'en' 
                       ? 'Share your medication schedule and adherence' 
-                      : 'Teilen Sie Ihren Medikamentenplan und die Einhaltung'}
+                      : 'Teile deinen Medikamentenplan und die Einhaltung'}
                   </p>
                 </div>
                 <Switch
@@ -2210,7 +2210,7 @@ export default function Profile() {
                   <p className="text-sm text-gray-500">
                     {language === 'en' 
                       ? 'Share your health goals and mission progress' 
-                      : 'Teilen Sie Ihre Gesundheitsziele und Missionsfortschritte'}
+                      : 'Teile deine Gesundheitsziele und Missionsfortschritte'}
                   </p>
                 </div>
                 <Switch
@@ -2230,7 +2230,7 @@ export default function Profile() {
                   <p className="text-sm text-gray-500">
                     {language === 'en' 
                       ? 'Share lab results and health measurements' 
-                      : 'Teilen Sie Laborergebnisse und Gesundheitsmessungen'}
+                      : 'Teile Laborergebnisse und Gesundheitsmessungen'}
                   </p>
                 </div>
                 <Switch
@@ -2375,7 +2375,7 @@ export default function Profile() {
             <p className="text-sm text-muted-foreground">
               {language === 'en' 
                 ? 'To update your health information (age, height, weight, etc.), use the Edit button in the Basic Information tab.'
-                : 'Um Ihre Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, verwenden Sie die Bearbeiten-Schaltfläche im Tab Grundinformationen.'}
+                : 'Um deine Gesundheitsinformationen (Alter, Größe, Gewicht usw.) zu aktualisieren, verwende die Bearbeiten-Schaltfläche im Tab Grundinformationen.'}
             </p>
           </div>
 

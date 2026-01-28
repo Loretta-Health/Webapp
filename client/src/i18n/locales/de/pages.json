@@ -69,7 +69,7 @@
   },
   "declined": {
     "title": "Wir verstehen",
-    "message": "Ihre Privatsphäre ist wichtig. Wenn Sie Ihre Meinung ändern, würden wir Ihnen gerne auf Ihrer Gesundheitsreise helfen.",
+    "message": "Deine Privatsphäre ist wichtig. Wenn du deine Meinung änderst, helfen wir dir gerne auf deiner Gesundheitsreise.",
     "goBack": "Zurück zur Einwilligung"
   },
   "notFound": {
@@ -423,8 +423,8 @@
       "sun": "So"
     },
     "milestoneNames": {
-      "weekWarrior": "Wochen-Krieger",
-      "fortnightFighter": "Zwei-Wochen-Kämpfer",
+      "weekWarrior": "Wochen-Held",
+      "fortnightFighter": "Zwei-Wochen-Held",
       "threeWeekChampion": "Drei-Wochen-Champion",
       "monthlyMaster": "Monats-Meister"
     }
