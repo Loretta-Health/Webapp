@@ -41,6 +41,7 @@ interface GamificationData {
   lives: number;
   achievements: string[];
   lastCheckIn: string | null;
+  xpToday?: number;
 }
 
 interface RiskScoreData {
@@ -278,10 +279,12 @@ export default function MyDashboard() {
   const savedAnswerIds = getSavedAnswerIds();
   const allCoreQuestionsAnswered = coreQuestionIds.every(id => savedAnswerIds.includes(id));
 
-  // Calculate XP earned today from all sources
+  // Use optimistic xpToday from gamification data (updated in real-time by useXPUpdater)
+  // Falls back to calculated value from queries if xpToday not yet available
   const xpFromCheckinsToday = allEmotionalCheckins?.filter(c => isToday(new Date(c.checkedInAt))).reduce((sum, c) => sum + (c.xpAwarded || 0), 0) || 0;
   const xpFromMissionsToday = missions?.filter(m => m.completed && m.completedAt && isToday(new Date(m.completedAt))).reduce((sum, m) => sum + (m.xpReward || 0), 0) || 0;
-  const totalXpToday = xpFromCheckinsToday + xpFromMissionsToday;
+  const calculatedXpToday = xpFromCheckinsToday + xpFromMissionsToday;
+  const totalXpToday = gamificationData?.xpToday ?? calculatedXpToday;
 
   const consentComplete = isConsentComplete || preferencesData?.consentAccepted === true;
   const profileComplete = !!(profileData?.firstName && profileData?.lastName) || !!(user?.firstName && user?.lastName && user?.email);

@@ -9,6 +9,7 @@ interface GamificationData {
   lives: number;
   achievements: string[];
   lastCheckIn: string | null;
+  xpToday?: number;
 }
 
 interface EmotionalCheckin {
@@ -44,7 +45,7 @@ function isToday(date: Date): boolean {
   );
 }
 
-type XPUpdateCallback = (newTotalXP: number, xpChange: number, newLevel: number) => void;
+type XPUpdateCallback = (newTotalXP: number, xpChange: number, newLevel: number, xpToday: number) => void;
 
 const xpUpdateListeners = new Set<XPUpdateCallback>();
 
@@ -52,10 +53,10 @@ export function useXPUpdater() {
   const queryClient = useQueryClient();
   const lastUpdateRef = useRef<number>(0);
 
-  const notifyListeners = useCallback((newTotalXP: number, xpChange: number, newLevel: number) => {
+  const notifyListeners = useCallback((newTotalXP: number, xpChange: number, newLevel: number, xpToday: number) => {
     xpUpdateListeners.forEach(listener => {
       try {
-        listener(newTotalXP, xpChange, newLevel);
+        listener(newTotalXP, xpChange, newLevel, xpToday);
       } catch (e) {
         console.error('XP listener error:', e);
       }
@@ -79,17 +80,20 @@ export function useXPUpdater() {
 
     let newTotalXP = 0;
     let newLevel = 1;
+    let newXpToday = 0;
 
     queryClient.setQueryData<GamificationData>(['/api/gamification'], (oldData) => {
       if (!oldData) return oldData;
       
       newTotalXP = oldData.xp + xpChange;
       newLevel = calculateLevelFromXP(newTotalXP);
+      newXpToday = (oldData.xpToday || 0) + xpChange;
       
       return {
         ...oldData,
         xp: newTotalXP,
         level: newLevel,
+        xpToday: newXpToday,
       };
     });
 
@@ -117,11 +121,11 @@ export function useXPUpdater() {
 
     queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] });
 
-    notifyListeners(newTotalXP, xpChange, newLevel);
+    notifyListeners(newTotalXP, xpChange, newLevel, newXpToday);
 
-    console.log(`[XP Update] +${xpChange} XP from ${source}. Total: ${newTotalXP}, Level: ${newLevel}`);
+    console.log(`[XP Update] +${xpChange} XP from ${source}. Total: ${newTotalXP}, Level: ${newLevel}, Today: ${newXpToday}`);
 
-    return { newTotalXP, newLevel, xpChange };
+    return { newTotalXP, newLevel, xpChange, xpToday: newXpToday };
   }, [queryClient, notifyListeners]);
 
   const deductXP = useCallback((
@@ -133,17 +137,20 @@ export function useXPUpdater() {
   ) => {
     let newTotalXP = 0;
     let newLevel = 1;
+    let newXpToday = 0;
 
     queryClient.setQueryData<GamificationData>(['/api/gamification'], (oldData) => {
       if (!oldData) return oldData;
       
       newTotalXP = Math.max(0, oldData.xp - xpAmount);
       newLevel = calculateLevelFromXP(newTotalXP);
+      newXpToday = Math.max(0, (oldData.xpToday || 0) - xpAmount);
       
       return {
         ...oldData,
         xp: newTotalXP,
         level: newLevel,
+        xpToday: newXpToday,
       };
     });
 
@@ -160,11 +167,11 @@ export function useXPUpdater() {
 
     queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] });
 
-    notifyListeners(newTotalXP, -xpAmount, newLevel);
+    notifyListeners(newTotalXP, -xpAmount, newLevel, newXpToday);
 
-    console.log(`[XP Update] -${xpAmount} XP from ${source}. Total: ${newTotalXP}, Level: ${newLevel}`);
+    console.log(`[XP Update] -${xpAmount} XP from ${source}. Total: ${newTotalXP}, Level: ${newLevel}, Today: ${newXpToday}`);
 
-    return { newTotalXP, newLevel, xpChange: -xpAmount };
+    return { newTotalXP, newLevel, xpChange: -xpAmount, xpToday: newXpToday };
   }, [queryClient, notifyListeners]);
 
   const refreshAllXPData = useCallback(() => {

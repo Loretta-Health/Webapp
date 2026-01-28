@@ -2,8 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
-import { eq, and, or } from "drizzle-orm";
-import { userMissions, userInviteCodes, friendships, users } from "@shared/schema";
+import { eq, and, or, gte, lte } from "drizzle-orm";
+import { userMissions, userInviteCodes, friendships, users, emotionalCheckins, medicationLogs } from "@shared/schema";
 import { setupAuth } from "./auth";
 import { HEALTH_NAVIGATOR_SYSTEM_PROMPT, EMOTION_CLASSIFICATION_PROMPT } from "./prompts";
 import { XP_REWARDS, getXPRewardAmount, calculateLevelFromXP } from "./lib/xpManager";
@@ -678,6 +678,40 @@ IMPORTANT: When discussing risk scores, remember:
       const xp = xpRecord?.totalXp || 0;
       const level = calculateLevelFromXP(xp);
       
+      // Calculate XP earned today from all sources: check-ins, missions, and medications
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+      
+      const [todayCheckins, todayMissions, todayMedications] = await Promise.all([
+        db.select().from(emotionalCheckins)
+          .where(and(
+            eq(emotionalCheckins.userId, userId),
+            gte(emotionalCheckins.checkedInAt, todayStart),
+            lte(emotionalCheckins.checkedInAt, todayEnd)
+          )),
+        db.select().from(userMissions)
+          .where(and(
+            eq(userMissions.userId, userId),
+            eq(userMissions.completed, true),
+            gte(userMissions.completedAt, todayStart),
+            lte(userMissions.completedAt, todayEnd)
+          )),
+        db.select().from(medicationLogs)
+          .where(and(
+            eq(medicationLogs.userId, userId),
+            eq(medicationLogs.status, 'taken'),
+            gte(medicationLogs.takenAt, todayStart),
+            lte(medicationLogs.takenAt, todayEnd)
+          ))
+      ]);
+      
+      const xpFromCheckinsToday = todayCheckins.reduce((sum, c) => sum + (c.xpAwarded || 0), 0);
+      const xpFromMissionsToday = todayMissions.reduce((sum, m) => sum + (m.xpReward || 0), 0);
+      const xpFromMedicationsToday = todayMedications.reduce((sum, m) => sum + (m.xpAwarded || 0), 0);
+      const xpToday = xpFromCheckinsToday + xpFromMissionsToday + xpFromMedicationsToday;
+      
       // Calculate effective streak based on today's activity
       const isActiveToday = await storage.checkUserActiveToday(userId);
       const lastCheckIn = gamification.lastCheckIn;
@@ -705,6 +739,7 @@ IMPORTANT: When discussing risk scores, remember:
         currentStreak: effectiveStreak,
         xp,
         level,
+        xpToday,
         isActiveToday,
       });
     } catch (error) {
