@@ -4,12 +4,12 @@ export default function MedicationTrackerExample() {
   return (
     <div className="p-6 max-w-sm">
       <MedicationTracker 
+        medicationId="example-med-1"
         name="Omeprazole"
         dosage="20mg"
-        timing="Before breakfast"
+        scheduledTimes={["08:00"]}
         frequency="daily"
-        streak={14}
-        onTake={() => console.log('Medication taken')}
+        adherencePercent={85}
       />
     </div>
   );

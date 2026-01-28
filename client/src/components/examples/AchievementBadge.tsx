@@ -6,7 +6,7 @@ export default function AchievementBadgeExample() {
       <AchievementBadge
         title="First Steps"
         description="Complete your first daily check-in"
-        icon="🎯"
+        icon="target"
         unlocked
         rarity="common"
         unlockedDate="2 days ago"
@@ -14,7 +14,7 @@ export default function AchievementBadgeExample() {
       <AchievementBadge
         title="Week Warrior"
         description="Maintain a 7-day streak"
-        icon="🔥"
+        icon="flame"
         unlocked
         rarity="rare"
         unlockedDate="Today"
@@ -22,7 +22,7 @@ export default function AchievementBadgeExample() {
       <AchievementBadge
         title="Health Champion"
         description="Reach level 10"
-        icon="👑"
+        icon="crown"
         unlocked={false}
         progress={7}
         maxProgress={10}
@@ -31,7 +31,7 @@ export default function AchievementBadgeExample() {
       <AchievementBadge
         title="Legend Status"
         description="Achieve 100-day streak"
-        icon="⭐"
+        icon="star"
         unlocked={false}
         progress={14}
         maxProgress={100}

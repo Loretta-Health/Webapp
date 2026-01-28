@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { users, userGamification, userActivities, userPreferences } from '../../shared/schema';
+import { users, userGamification, userActivities, userXp } from '../../shared/schema';
 import { storage } from '../storage';
 import { processCheckin, processActivityLogged, processXpEarned, processMedicationTaken } from '../lib/achievementManager';
 import { eq, desc } from 'drizzle-orm';
@@ -30,11 +30,15 @@ async function recalculateAllAchievements() {
           console.log(`  - Streak: ${gamification.currentStreak} days`);
           await processCheckin(user.id, gamification.currentStreak);
         }
-        
-        if (gamification.totalXp && gamification.totalXp > 0) {
-          console.log(`  - Total XP: ${gamification.totalXp}`);
-          await processXpEarned(user.id, gamification.totalXp);
-        }
+      }
+      
+      const [xpData] = await db.select().from(userXp).where(
+        eq(userXp.userId, user.id)
+      );
+      
+      if (xpData && xpData.totalXp && xpData.totalXp > 0) {
+        console.log(`  - Total XP: ${xpData.totalXp}`);
+        await processXpEarned(user.id, xpData.totalXp);
       }
       
       const medicationStreak = await storage.getUserMedicationStreak(user.id);
@@ -43,11 +47,8 @@ async function recalculateAllAchievements() {
         await processMedicationTaken(user.id, medicationStreak);
       }
       
-      const [prefs] = await db.select().from(userPreferences).where(
-        eq(userPreferences.userId, user.id)
-      );
-      const stepsGoal = prefs?.stepsGoal || 8000;
-      const waterGoal = prefs?.waterGoal || 8;
+      const defaultStepsGoal = 10000;
+      const defaultWaterGoal = 8;
       
       const allActivities = await db.select().from(userActivities)
         .where(eq(userActivities.userId, user.id))
@@ -63,13 +64,16 @@ async function recalculateAllAchievements() {
         if (processedDates.has(dateStr)) continue;
         processedDates.add(dateStr);
         
-        if (activity.water && activity.water >= waterGoal) {
+        const activityWaterGoal = activity.waterGoal || defaultWaterGoal;
+        const activityStepsGoal = activity.stepsGoal || defaultStepsGoal;
+        
+        if (activity.water && activity.water >= activityWaterGoal) {
           hydrationDays++;
         }
         if (activity.sleepHours && activity.sleepHours >= 7 && activity.sleepHours <= 8) {
           sleepDays++;
         }
-        if (activity.steps && activity.steps >= stepsGoal) {
+        if (activity.steps && activity.steps >= activityStepsGoal) {
           stepDays++;
         }
       }

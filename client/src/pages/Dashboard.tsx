@@ -1031,7 +1031,7 @@ export default function Dashboard() {
               <TabsContent value="login">
                 <form onSubmit={(e) => {
                   e.preventDefault();
-                  loginMutation.mutate(loginForm, {
+                  loginMutation.mutate({ identifier: loginForm.username, password: loginForm.password }, {
                     onSuccess: () => {
                       setShowAuthDialog(false);
                       setLoginForm({ username: '', password: '' });
@@ -1096,6 +1096,7 @@ export default function Dashboard() {
                   registerMutation.mutate({
                     username: registerForm.username,
                     password: registerForm.password,
+                    email: `${registerForm.username}@placeholder.local`,
                   }, {
                     onSuccess: () => {
                       setShowAuthDialog(false);
