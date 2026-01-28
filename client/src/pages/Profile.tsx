@@ -2171,10 +2171,16 @@ export default function Profile() {
             </DialogTitle>
           </DialogHeader>
           
-          <div className="py-8 text-center">
+          <div className="py-8 text-center space-y-6">
             <p className="text-lg font-semibold text-gray-600 dark:text-gray-300">
               {language === 'en' ? 'Feature coming soon' : 'Funktion kommt bald'}
             </p>
+            <Button
+              className="w-full min-h-[48px] bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white rounded-2xl font-bold shadow-lg shadow-[#013DC4]/20 active:scale-[0.98] transition-transform"
+              onClick={() => setIsShareOpen(false)}
+            >
+              {language === 'en' ? 'Close' : 'Schließen'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
