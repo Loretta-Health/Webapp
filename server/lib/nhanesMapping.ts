@@ -1,3 +1,5 @@
+import { encodeFeatureValue } from './featureEncoder';
+
 export interface FeatureMapping {
   questionId: string;
   nhanesId: string;
@@ -255,7 +257,7 @@ QUESTIONNAIRE_TO_NHANES.forEach(m => {
 
 export interface MLFeature {
   ID: string;
-  Value: string;
+  Value: number;
 }
 
 function timeToMinutes(timeStr: string): number | null {
@@ -278,8 +280,8 @@ function convertTimeToCyclical(timeStr: string, nhanesId: string): MLFeature[] {
   const cosValue = Math.cos(radians);
   
   return [
-    { ID: `${nhanesId}_sin`, Value: sinValue.toFixed(6) },
-    { ID: `${nhanesId}_cos`, Value: cosValue.toFixed(6) }
+    { ID: `${nhanesId}_sin`, Value: parseFloat(sinValue.toFixed(6)) },
+    { ID: `${nhanesId}_cos`, Value: parseFloat(cosValue.toFixed(6)) }
   ];
 }
 
@@ -295,8 +297,11 @@ export function convertQuestionnaireToMLFeatures(answers: Record<string, any>): 
     const mapping = mappingByQuestionId.get(questionId);
     if (!mapping) {
       if (mappingByNhanesId.has(questionId) && !seenNhanesIds.has(questionId)) {
-        features.push({ ID: questionId, Value: stringValue });
-        seenNhanesIds.add(questionId);
+        const encodedValue = encodeFeatureValue(questionId, stringValue);
+        if (encodedValue !== null) {
+          features.push({ ID: questionId, Value: encodedValue });
+          seenNhanesIds.add(questionId);
+        }
       }
       continue;
     }
@@ -314,7 +319,7 @@ export function convertQuestionnaireToMLFeatures(answers: Record<string, any>): 
       continue;
     }
     
-    let value: string;
+    let numericValue: number | null = null;
     
     if (mapping.valueType === 'categorical' && mapping.valueMapping) {
       const normalizedKey = stringValue.toLowerCase();
@@ -323,29 +328,29 @@ export function convertQuestionnaireToMLFeatures(answers: Record<string, any>): 
         console.warn(`[NHANES Mapping] Unmapped categorical value for ${questionId}: "${stringValue}"`);
         continue;
       }
-      value = mappedValue;
+      numericValue = encodeFeatureValue(mapping.nhanesId, mappedValue);
     } else if (mapping.valueType === 'numerical') {
-      const numValue = parseFloat(stringValue);
+      let numValue = parseFloat(stringValue);
       if (isNaN(numValue)) continue;
       
       if (mapping.unitConversion === 'kg_to_lbs') {
-        const poundsValue = numValue * 2.20462;
-        value = poundsValue.toFixed(1);
+        numValue = numValue * 2.20462;
       } else if (mapping.unitConversion === 'cm_to_inches') {
-        const inchesValue = numValue / 2.54;
-        value = inchesValue.toFixed(1);
-      } else {
-        value = numValue.toString();
+        numValue = numValue / 2.54;
       }
+      numericValue = parseFloat(numValue.toFixed(1));
     } else {
-      value = stringValue;
+      numericValue = encodeFeatureValue(mapping.nhanesId, stringValue);
     }
     
-    features.push({ ID: mapping.nhanesId, Value: value });
-    seenNhanesIds.add(mapping.nhanesId);
+    if (numericValue !== null) {
+      features.push({ ID: mapping.nhanesId, Value: numericValue });
+      seenNhanesIds.add(mapping.nhanesId);
+    }
   }
   
   console.log(`[NHANES Mapping] Converted ${Object.keys(answers).length} answers to ${features.length} ML features`);
+  console.log(`[NHANES Mapping] Feature values:`, features.map(f => `${f.ID}=${f.Value}`).join(', '));
   return features;
 }
 
