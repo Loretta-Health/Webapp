@@ -1,0 +1,48 @@
+pd.DataFrame([
+    # Case 1: Lower risk - young, healthy, good lifestyle
+    {
+        'RIDAGEYR': 32,           # Age 32
+        'WHD050': 165.0,          # Weight year ago (lbs)
+        'WHD020': 165.0,          # Current weight (lbs)
+        'RXQ033': 0,              # No prescriptions (0=No, 1=Yes)
+        'HUQ010': 1,              # General health: Excellent (1=Excellent, 2=Very good, 3=Good, 4=Fair, 5=Poor)
+        'BPQ020': 0,              # No high blood pressure
+        'BPQ080': 0,              # No high cholesterol
+        'RXQ510': 0,              # No daily aspirin
+        'OHQ845': 2,              # Dental health: Very good
+        'INDFMPIR': 3.5,          # Income poverty ratio: Comfortable
+        'PAD680': 4.0,            # Sedentary hours per day
+        'INDFMMPI': 0.5,          # Monthly poverty index: Never
+        'PAD790': 180,            # Moderate activity minutes per week
+        'WHD010': 68.0,           # Height in inches
+        'OCD150': 1,              # Job type: Working (1=Working, 2=With job not working, 3=Looking, 4=Not working)
+        'MCQ160A': 0,             # No arthritis
+        'SLQ310_cos': 0.707,      # Wake time weekday cos (7:00 AM ≈ 420 min)
+        'SLD012': 7.5,            # Weekday sleep hours
+        'DMDEDUC2': 5,            # Education: College grad (1=<9th, 2=9-11th, 3=HS, 4=Some college, 5=College+)
+        'SLQ330_cos': 0.5,        # Wake time weekend cos
+        'SLD013': 8.0,            # Weekend sleep hours
+        'HOD051': 5,              # Household rooms: 5
+        'SLQ300_sin': -0.707,     # Sleep time weekday sin
+        'SLQ310_sin': 0.707,      # Wake time weekday sin
+        'SLQ320_sin': -0.866,     # Sleep time weekend sin
+        'SLQ330_sin': 0.866,      # Wake time weekend sin
+        'SLQ300_cos': 0.707,      # Sleep time weekday cos
+        'ALQ121': 1,              # Alcohol: Never in last year (1=Never, 2=Every day, etc.)
+        'SLQ320_cos': 0.5,        # Sleep time weekend cos
+        'AUQ054': 1,              # Hearing: Excellent (1=Excellent, 2=Good, 3=Little trouble, etc.)
+        'DMDHHSIZ': 3,            # Household size: 3 people
+        'RIDRETH3': 3,            # Ethnicity: Non-Hispanic White (1=Mex Am, 2=Other Hisp, 3=NH White, 4=NH Black, 6=NH Asian, 7=Other)
+        'KIQ022': 0,              # No kidney problems
+        'OHQ630': 5,              # Mouth feel bad: Never (1=Very often, 5=Never)
+        'OHQ660': 5,              # Mouth avoid food: Never
+        'OHQ620': 5,              # Mouth aching: Never
+        'BAQ530': 1,              # Falls: Never (1=Never, 2=1-2 times, etc.)
+        'OHQ670': 5,              # Mouth eating problems: Never
+        'MCQ160C': 0,             # No coronary disease
+        'BAQ321C': 0,             # No unsteadiness
+        'DMDMARTZ': 1,            # Marital: Married (1=Married, 2=Widowed/Div/Sep, 3=Never married)
+        'HUQ055': 0,              # No video consult
+        'OHQ680': 5,              # (Unknown feature - assuming frequency scale)
+        'DPQ030': 1,              # Sleep trouble: Not at all (1=Not at all, 2=Several days, 3=More than half, 4=Nearly every day)
+    },

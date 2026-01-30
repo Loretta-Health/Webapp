@@ -245,6 +245,13 @@ export const QUESTIONNAIRE_TO_NHANES: FeatureMapping[] = [
     'hardly_ever': 'Hardly ever',
     'never': 'Never'
   }},
+  { questionId: 'mouth_embarrassed', nhanesId: 'OHQ680', valueType: 'categorical', valueMapping: {
+    'very_often': 'Very often',
+    'fairly_often': 'Fairly often',
+    'occasionally': 'Occasionally',
+    'hardly_ever': 'Hardly ever',
+    'never': 'Never'
+  }},
 ];
 
 const mappingByQuestionId = new Map<string, FeatureMapping>();

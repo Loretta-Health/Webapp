@@ -32,8 +32,16 @@ export async function callMLPredictionAPI(features: MLFeature[], username: strin
     return null;
   }
   
+  // Convert features array to dictionary format expected by the sklearn model
+  // The model expects { feature_name: numeric_value, ... } not [{ ID, Value }, ...]
+  const featuresDict: Record<string, number> = {};
+  for (const feature of features) {
+    featuresDict[feature.ID] = feature.Value;
+  }
+  
   const predictUrl = `${PREDICTION_API_BASE_URL}/predict`;
   console.log('[ML API] Calling:', predictUrl, 'with', features.length, 'features for user:', username);
+  console.log('[ML API] Features dict:', JSON.stringify(featuresDict));
   
   const response = await fetch(predictUrl, {
     method: 'POST',
@@ -41,7 +49,7 @@ export async function callMLPredictionAPI(features: MLFeature[], username: strin
       'Content-Type': 'application/json',
       'X-API-Key': ML_API_KEY,
     },
-    body: JSON.stringify({ username, features }),
+    body: JSON.stringify({ username, features: featuresDict }),
   });
   
   if (!response.ok) {
