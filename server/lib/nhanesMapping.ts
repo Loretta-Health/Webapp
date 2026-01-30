@@ -1,5 +1,3 @@
-import { encodeFeatureValue } from './featureEncoder';
-
 export interface FeatureMapping {
   questionId: string;
   nhanesId: string;
@@ -245,13 +243,6 @@ export const QUESTIONNAIRE_TO_NHANES: FeatureMapping[] = [
     'hardly_ever': 'Hardly ever',
     'never': 'Never'
   }},
-  { questionId: 'mouth_embarrassed', nhanesId: 'OHQ680', valueType: 'categorical', valueMapping: {
-    'very_often': 'Very often',
-    'fairly_often': 'Fairly often',
-    'occasionally': 'Occasionally',
-    'hardly_ever': 'Hardly ever',
-    'never': 'Never'
-  }},
 ];
 
 const mappingByQuestionId = new Map<string, FeatureMapping>();
@@ -264,7 +255,7 @@ QUESTIONNAIRE_TO_NHANES.forEach(m => {
 
 export interface MLFeature {
   ID: string;
-  Value: number;
+  Value: string;
 }
 
 function timeToMinutes(timeStr: string): number | null {
@@ -287,8 +278,8 @@ function convertTimeToCyclical(timeStr: string, nhanesId: string): MLFeature[] {
   const cosValue = Math.cos(radians);
   
   return [
-    { ID: `${nhanesId}_sin`, Value: parseFloat(sinValue.toFixed(6)) },
-    { ID: `${nhanesId}_cos`, Value: parseFloat(cosValue.toFixed(6)) }
+    { ID: `${nhanesId}_sin`, Value: sinValue.toFixed(6) },
+    { ID: `${nhanesId}_cos`, Value: cosValue.toFixed(6) }
   ];
 }
 
@@ -304,11 +295,8 @@ export function convertQuestionnaireToMLFeatures(answers: Record<string, any>): 
     const mapping = mappingByQuestionId.get(questionId);
     if (!mapping) {
       if (mappingByNhanesId.has(questionId) && !seenNhanesIds.has(questionId)) {
-        const encodedValue = encodeFeatureValue(questionId, stringValue);
-        if (encodedValue !== null) {
-          features.push({ ID: questionId, Value: encodedValue });
-          seenNhanesIds.add(questionId);
-        }
+        features.push({ ID: questionId, Value: stringValue });
+        seenNhanesIds.add(questionId);
       }
       continue;
     }
@@ -326,7 +314,7 @@ export function convertQuestionnaireToMLFeatures(answers: Record<string, any>): 
       continue;
     }
     
-    let numericValue: number | null = null;
+    let value: string;
     
     if (mapping.valueType === 'categorical' && mapping.valueMapping) {
       const normalizedKey = stringValue.toLowerCase();
@@ -335,29 +323,29 @@ export function convertQuestionnaireToMLFeatures(answers: Record<string, any>): 
         console.warn(`[NHANES Mapping] Unmapped categorical value for ${questionId}: "${stringValue}"`);
         continue;
       }
-      numericValue = encodeFeatureValue(mapping.nhanesId, mappedValue);
+      value = mappedValue;
     } else if (mapping.valueType === 'numerical') {
-      let numValue = parseFloat(stringValue);
+      const numValue = parseFloat(stringValue);
       if (isNaN(numValue)) continue;
       
       if (mapping.unitConversion === 'kg_to_lbs') {
-        numValue = numValue * 2.20462;
+        const poundsValue = numValue * 2.20462;
+        value = poundsValue.toFixed(1);
       } else if (mapping.unitConversion === 'cm_to_inches') {
-        numValue = numValue / 2.54;
+        const inchesValue = numValue / 2.54;
+        value = inchesValue.toFixed(1);
+      } else {
+        value = numValue.toString();
       }
-      numericValue = parseFloat(numValue.toFixed(1));
     } else {
-      numericValue = encodeFeatureValue(mapping.nhanesId, stringValue);
+      value = stringValue;
     }
     
-    if (numericValue !== null) {
-      features.push({ ID: mapping.nhanesId, Value: numericValue });
-      seenNhanesIds.add(mapping.nhanesId);
-    }
+    features.push({ ID: mapping.nhanesId, Value: value });
+    seenNhanesIds.add(mapping.nhanesId);
   }
   
   console.log(`[NHANES Mapping] Converted ${Object.keys(answers).length} answers to ${features.length} ML features`);
-  console.log(`[NHANES Mapping] Feature values:`, features.map(f => `${f.ID}=${f.Value}`).join(', '));
   return features;
 }
 
