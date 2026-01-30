@@ -557,6 +557,38 @@ export const baseQuestions: Question[] = [
       { label: 'Never', value: 'never', apiValue: 4, riskWeight: 0 },
     ],
   },
+  {
+    id: 'mouth_job_difficulty',
+    apiId: 'OHQ640',
+    text: "In the past year, have you had difficulty doing your job because of problems with your mouth?",
+    type: 'choice',
+    icon: Smile,
+    category: "Oral Health",
+    module: 'oral',
+    options: [
+      { label: 'Very often', value: 'very_often', apiValue: 0, riskWeight: 3 },
+      { label: 'Fairly often', value: 'fairly_often', apiValue: 1, riskWeight: 2 },
+      { label: 'Occasionally', value: 'occasionally', apiValue: 2, riskWeight: 1 },
+      { label: 'Hardly ever', value: 'hardly_ever', apiValue: 3, riskWeight: 0 },
+      { label: 'Never', value: 'never', apiValue: 4, riskWeight: 0 },
+    ],
+  },
+  {
+    id: 'mouth_embarrassed',
+    apiId: 'OHQ680',
+    text: "In the past year, have you felt embarrassed because of your mouth?",
+    type: 'choice',
+    icon: Smile,
+    category: "Oral Health",
+    module: 'oral',
+    options: [
+      { label: 'Very often', value: 'very_often', apiValue: 0, riskWeight: 3 },
+      { label: 'Fairly often', value: 'fairly_often', apiValue: 1, riskWeight: 2 },
+      { label: 'Occasionally', value: 'occasionally', apiValue: 2, riskWeight: 1 },
+      { label: 'Hardly ever', value: 'hardly_ever', apiValue: 3, riskWeight: 0 },
+      { label: 'Never', value: 'never', apiValue: 4, riskWeight: 0 },
+    ],
+  },
 
   // === BACKGROUND / DEMOGRAPHICS / FINANCIAL ===
   {
