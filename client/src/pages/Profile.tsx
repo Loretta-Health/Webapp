@@ -888,7 +888,8 @@ export default function Profile() {
 
   const recalculateRiskScoreMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('POST', '/api/risk-scores/calculate', {});
+      const response = await apiRequest('POST', '/api/risk-scores/calculate', {});
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', userId] });
@@ -898,11 +899,26 @@ export default function Profile() {
         description: t('riskScoreRecalculated') || 'Your health risk score has been recalculated based on your updated answers.',
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to recalculate risk score:', error);
+      
+      let errorMessage = t('riskScoreUpdateFailed') || 'Failed to update your risk score. Please try again.';
+      
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.featuresRequired) {
+          const needed = errorData.featuresRequired - (errorData.featuresProvided || 0);
+          errorMessage = language === 'de' 
+            ? `Bitte beantworten Sie mindestens ${errorData.featuresRequired} Fragen im Gesundheitsfragebogen (noch ${needed} erforderlich).`
+            : `Please answer at least ${errorData.featuresRequired} questions in the health questionnaire (${needed} more needed).`;
+        }
+      } catch {
+        // Use default error message
+      }
+      
       toast({
         title: t('error') || 'Error',
-        description: t('riskScoreUpdateFailed') || 'Failed to update your risk score. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       });
     },
