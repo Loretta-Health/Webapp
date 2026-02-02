@@ -59,8 +59,9 @@
   "riskScore": {
     "title": "Gesundheitsrisiko-Score",
     "subtitle": "Basierend auf deinem Gesundheitsprofil",
-    "notAvailable": "Fülle den Gesundheitsfragebogen aus, um deinen persönlichen Score zu erhalten",
-    "incompleteDisclaimer": "Fülle den Gesundheitsfragebogen aus für einen genaueren Score",
+    "notAvailable": "Beantworte mindestens 5 Fragen im Gesundheitsfragebogen, um deinen Score zu erhalten",
+    "incompleteDisclaimer": "Beantworte mindestens 5 Fragen, um deinen Risiko-Score zu berechnen ({{answered}}/5 beantwortet)",
+    "needMoreQuestions": "Noch {{needed}} Fragen erforderlich",
     "low": "Niedriges Risiko",
     "moderate": "Mittleres Risiko",
     "high": "Hohes Risiko"

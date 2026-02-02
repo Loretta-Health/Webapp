@@ -183,7 +183,11 @@
     "stable": "Stabil",
     "declining": "Abnehmend",
     "factors": "Risikofaktoren",
-    "recommendations": "Empfehlungen"
+    "recommendations": "Empfehlungen",
+    "updated": "Risiko-Score aktualisiert",
+    "recalculated": "Dein Gesundheitsrisiko-Score wurde basierend auf deinen aktualisierten Antworten neu berechnet.",
+    "updateFailed": "Risiko-Score konnte nicht aktualisiert werden. Bitte versuche es erneut.",
+    "needMoreQuestions": "Bitte beantworte mindestens {{required}} Fragen im Gesundheitsfragebogen (noch {{needed}} erforderlich)."
   },
   "streak": {
     "title": "Serien-Details",

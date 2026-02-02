@@ -346,6 +346,8 @@ export default function MyDashboard() {
   };
   
   const savedAnswerIds = getSavedAnswerIds();
+  const answeredQuestionsCount = savedAnswerIds.length;
+  const hasMinimumQuestionsForScore = answeredQuestionsCount >= 5;
   const allCoreQuestionsAnswered = coreQuestionIds.every(id => savedAnswerIds.includes(id));
 
   // Use optimistic xpToday from gamification data (updated in real-time by useXPUpdater)
@@ -1253,13 +1255,15 @@ export default function MyDashboard() {
                           <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-4 sm:mb-6">
                             <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                               <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-100 dark:text-gray-800" />
-                              <circle
-                                cx="50" cy="50" r="40" fill="none"
-                                stroke="url(#scoreGradient)"
-                                strokeWidth="8"
-                                strokeLinecap="round"
-                                strokeDasharray={`${Math.round(riskScore) * 2.51} 251`}
-                              />
+                              {hasMinimumQuestionsForScore && (
+                                <circle
+                                  cx="50" cy="50" r="40" fill="none"
+                                  stroke="url(#scoreGradient)"
+                                  strokeWidth="8"
+                                  strokeLinecap="round"
+                                  strokeDasharray={`${Math.round(riskScore) * 2.51} 251`}
+                                />
+                              )}
                               <defs>
                                 <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                   <stop offset="0%" stopColor={riskScore <= 30 ? "#22C55E" : riskScore <= 60 ? "#F59E0B" : "#EF4444"} />
@@ -1268,15 +1272,24 @@ export default function MyDashboard() {
                               </defs>
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{Math.round(riskScore)}</span>
-                              <span className={`text-xs sm:text-sm font-bold ${riskColor}`}>{riskLevel}</span>
+                              {hasMinimumQuestionsForScore ? (
+                                <>
+                                  <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{Math.round(riskScore)}</span>
+                                  <span className={`text-xs sm:text-sm font-bold ${riskColor}`}>{riskLevel}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-2xl sm:text-3xl font-black text-gray-400 dark:text-gray-500">--</span>
+                                  <span className="text-xs sm:text-sm font-bold text-gray-400 dark:text-gray-500">{t('riskScore.needMoreQuestions', { needed: 5 - answeredQuestionsCount })}</span>
+                                </>
+                              )}
                             </div>
                           </div>
                           
-                          {!questionnaireComplete && (
+                          {!hasMinimumQuestionsForScore && (
                             <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-amber-700 dark:text-amber-300 text-xs sm:text-sm mb-2">
                               <AlertTriangle className="w-4 h-4 shrink-0" />
-                              <span>{t('riskScore.incompleteDisclaimer', 'Complete your health questionnaire for a more accurate score')}</span>
+                              <span>{t('riskScore.incompleteDisclaimer', { answered: answeredQuestionsCount, defaultValue: `Answer at least 5 questions to calculate your risk score (${answeredQuestionsCount}/5 answered)` })}</span>
                             </div>
                           )}
                           

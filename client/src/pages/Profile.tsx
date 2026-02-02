@@ -895,29 +895,37 @@ export default function Profile() {
       queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', userId] });
       queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', userId] });
       toast({
-        title: t('riskScoreUpdated') || 'Risk score updated',
-        description: t('riskScoreRecalculated') || 'Your health risk score has been recalculated based on your updated answers.',
+        title: language === 'de' ? 'Risiko-Score aktualisiert' : 'Risk score updated',
+        description: language === 'de' 
+          ? 'Dein Gesundheitsrisiko-Score wurde basierend auf deinen aktualisierten Antworten neu berechnet.'
+          : 'Your health risk score has been recalculated based on your updated answers.',
       });
     },
     onError: (error: any) => {
-      console.error('Failed to recalculate risk score:', error);
+      console.error('[Profile] Failed to recalculate risk score:', error);
+      console.log('[Profile] Error message:', error?.message);
       
-      let errorMessage = t('riskScoreUpdateFailed') || 'Failed to update your risk score. Please try again.';
+      let errorMessage = language === 'de' 
+        ? 'Risiko-Score konnte nicht aktualisiert werden. Bitte versuche es erneut.'
+        : 'Failed to update your risk score. Please try again.';
       
       try {
         const errorData = JSON.parse(error.message);
+        console.log('[Profile] Parsed error data:', errorData);
         if (errorData.featuresRequired) {
           const needed = errorData.featuresRequired - (errorData.featuresProvided || 0);
           errorMessage = language === 'de' 
-            ? `Bitte beantworten Sie mindestens ${errorData.featuresRequired} Fragen im Gesundheitsfragebogen (noch ${needed} erforderlich).`
+            ? `Bitte beantworte mindestens ${errorData.featuresRequired} Fragen im Gesundheitsfragebogen (noch ${needed} erforderlich).`
             : `Please answer at least ${errorData.featuresRequired} questions in the health questionnaire (${needed} more needed).`;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
         }
-      } catch {
-        // Use default error message
+      } catch (parseError) {
+        console.log('[Profile] Could not parse error as JSON:', parseError);
       }
       
       toast({
-        title: t('error') || 'Error',
+        title: language === 'de' ? 'Fehler' : 'Error',
         description: errorMessage,
         variant: 'destructive',
       });

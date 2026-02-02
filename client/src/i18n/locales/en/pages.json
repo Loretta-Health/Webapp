@@ -183,7 +183,11 @@
     "stable": "Stable",
     "declining": "Declining",
     "factors": "Risk Factors",
-    "recommendations": "Recommendations"
+    "recommendations": "Recommendations",
+    "updated": "Risk score updated",
+    "recalculated": "Your health risk score has been recalculated based on your updated answers.",
+    "updateFailed": "Failed to update your risk score. Please try again.",
+    "needMoreQuestions": "Please answer at least {{required}} questions in the health questionnaire ({{needed}} more needed)."
   },
   "streak": {
     "title": "Streak Details",
