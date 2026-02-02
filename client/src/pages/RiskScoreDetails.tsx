@@ -186,6 +186,8 @@ export default function RiskScoreDetails() {
   };
   
   const savedAnswerIds = getSavedAnswerIds();
+  const answeredQuestionsCount = savedAnswerIds.length;
+  const hasMinimumQuestionsForScore = answeredQuestionsCount >= 5;
   const questionnaireComplete = coreQuestionIds.every(id => savedAnswerIds.includes(id));
 
   const recalculateMutation = useMutation({
@@ -310,13 +312,15 @@ export default function RiskScoreDetails() {
             >
               <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-100 dark:text-gray-800" />
-                <circle
-                  cx="50" cy="50" r="40" fill="none"
-                  stroke="url(#scoreGradientDetails)"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={`${Math.round(riskScore) * 2.51} 251`}
-                />
+                {hasMinimumQuestionsForScore && (
+                  <circle
+                    cx="50" cy="50" r="40" fill="none"
+                    stroke="url(#scoreGradientDetails)"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${Math.round(riskScore) * 2.51} 251`}
+                  />
+                )}
                 <defs>
                   <linearGradient id="scoreGradientDetails" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor={riskScore <= 30 ? "#22C55E" : riskScore <= 60 ? "#F59E0B" : "#EF4444"} />
@@ -325,13 +329,22 @@ export default function RiskScoreDetails() {
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{Math.round(riskScore)}</span>
-                <span className={`text-xs sm:text-sm font-bold ${riskColor}`}>{riskLevel}</span>
+                {hasMinimumQuestionsForScore ? (
+                  <>
+                    <span className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">{Math.round(riskScore)}</span>
+                    <span className={`text-xs sm:text-sm font-bold ${riskColor}`}>{riskLevel}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-2xl sm:text-3xl font-black text-gray-400 dark:text-gray-500">--</span>
+                    <span className="text-xs sm:text-sm font-bold text-gray-400 dark:text-gray-500 text-center px-2">{5 - answeredQuestionsCount} more needed</span>
+                  </>
+                )}
               </div>
             </motion.div>
 
             {/* Trend indicator */}
-            {trend !== 'stable' && (
+            {hasMinimumQuestionsForScore && trend !== 'stable' && (
               <div className="flex items-center gap-2 mb-4">
                 {trend === 'up' && (
                   <div className="flex items-center gap-1 text-red-500 text-sm font-medium bg-red-50 dark:bg-red-900/20 px-3 py-1 rounded-full">
@@ -349,10 +362,10 @@ export default function RiskScoreDetails() {
             )}
 
             {/* Incomplete questionnaire disclaimer */}
-            {!questionnaireComplete && (
+            {!hasMinimumQuestionsForScore && (
               <div className="flex items-center gap-2 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-amber-700 dark:text-amber-300 text-sm mb-4 w-full max-w-sm">
                 <AlertTriangle className="w-5 h-5 shrink-0" />
-                <span>Complete your health questionnaire for a more accurate risk score</span>
+                <span>Answer at least 5 questions to calculate your risk score ({answeredQuestionsCount}/5 answered)</span>
               </div>
             )}
 

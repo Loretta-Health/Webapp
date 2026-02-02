@@ -1280,7 +1280,7 @@ export default function MyDashboard() {
                               ) : (
                                 <>
                                   <span className="text-2xl sm:text-3xl font-black text-gray-400 dark:text-gray-500">--</span>
-                                  <span className="text-xs sm:text-sm font-bold text-gray-400 dark:text-gray-500">{t('riskScore.needMoreQuestions', { needed: 5 - answeredQuestionsCount })}</span>
+                                  <span className="text-xs sm:text-sm font-bold text-gray-400 dark:text-gray-500 text-center px-2">{t('riskScore.needMoreQuestions', { needed: 5 - answeredQuestionsCount })}</span>
                                 </>
                               )}
                             </div>
