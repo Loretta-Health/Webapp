@@ -46,6 +46,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.authToken) {
         await setAuthToken(data.authToken);
       }
+      // Clear any stale localStorage from previous users on this device
+      localStorage.removeItem('loretta_profile');
+      localStorage.removeItem('loretta_questionnaire_answers');
+      localStorage.removeItem('loretta_questionnaire');
+      localStorage.removeItem('loretta_risk_score');
+      localStorage.removeItem('loretta_user');
+      localStorage.removeItem('loretta_invite');
+      localStorage.removeItem('loretta_pending_invite');
+      localStorage.removeItem('loretta_pending_friend_invite');
+      
       queryClient.clear();
       queryClient.setQueryData(["/api/user"], user);
       trackAuth('login');
@@ -74,6 +84,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.authToken) {
         await setAuthToken(data.authToken);
       }
+      // Clear legacy localStorage keys after registration - registration data is now on server
+      localStorage.removeItem('loretta_profile');
+      localStorage.removeItem('loretta_questionnaire_answers');
+      localStorage.removeItem('loretta_questionnaire');
+      localStorage.removeItem('loretta_risk_score');
+      localStorage.removeItem('loretta_user');
+      localStorage.removeItem('loretta_invite');
+      localStorage.removeItem('loretta_pending_invite');
+      localStorage.removeItem('loretta_pending_friend_invite');
+      
       queryClient.clear();
       queryClient.setQueryData(["/api/user"], user);
       trackAuth('signup');
@@ -94,6 +114,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
+      // Clear user-specific localStorage before logout (while we still have the user ID)
+      if (user?.id) {
+        const userId = user.id;
+        localStorage.removeItem(`loretta_profile_${userId}`);
+        localStorage.removeItem(`loretta_questionnaire_answers_${userId}`);
+        localStorage.removeItem(`loretta_questionnaire_${userId}`);
+        localStorage.removeItem(`loretta_risk_score_${userId}`);
+      }
+      // Also clear legacy non-user-specific keys and session-related data
+      localStorage.removeItem('loretta_profile');
+      localStorage.removeItem('loretta_questionnaire_answers');
+      localStorage.removeItem('loretta_questionnaire');
+      localStorage.removeItem('loretta_risk_score');
+      localStorage.removeItem('loretta_user');
+      localStorage.removeItem('loretta_invite');
+      localStorage.removeItem('loretta_pending_invite');
+      localStorage.removeItem('loretta_pending_friend_invite');
+      
       await apiRequest("POST", "/api/logout");
     },
     onSuccess: async () => {

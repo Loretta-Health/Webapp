@@ -464,6 +464,18 @@ export default function Onboarding() {
   const { markQuestionnaireComplete, markConsentComplete, isQuestionnaireComplete, isConsentComplete, isOnboardingComplete, isLoading: progressLoading } = useOnboardingProgress();
   const [initialStepSet, setInitialStepSet] = useState(false);
 
+  // Clear stale localStorage when starting onboarding without a logged-in user
+  // This prevents cross-user data contamination on shared devices
+  useEffect(() => {
+    if (!userId) {
+      localStorage.removeItem('loretta_user');
+      localStorage.removeItem('loretta_profile');
+      localStorage.removeItem('loretta_questionnaire_answers');
+      localStorage.removeItem('loretta_questionnaire');
+      localStorage.removeItem('loretta_risk_score');
+    }
+  }, [userId]);
+
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
     queryKey: ['/api/questionnaires'],
     enabled: !!userId,
@@ -864,7 +876,8 @@ export default function Onboarding() {
 
   const handleRegistrationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('loretta_user', JSON.stringify(registration));
+    // Registration data is stored in component state and sent to server via saveProfileMutation
+    // No localStorage needed - server is the source of truth
     saveProfileMutation.mutate(registration);
     setStep('questionnaire');
   };
@@ -987,7 +1000,9 @@ export default function Onboarding() {
   
   const handleGetEarlyResults = async () => {
     setIsPredicting(true);
-    localStorage.setItem('loretta_questionnaire', JSON.stringify(answers));
+    if (userId) {
+      localStorage.setItem(`loretta_questionnaire_${userId}`, JSON.stringify(answers));
+    }
     saveQuestionnaireMutation.mutate(answers);
     
     try {
@@ -1014,7 +1029,9 @@ export default function Onboarding() {
       };
       
       setRiskScore(fullScore);
-      localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+      if (userId) {
+        localStorage.setItem(`loretta_risk_score_${userId}`, JSON.stringify(fullScore));
+      }
       initializeGamificationMutation.mutate();
       initializeAchievementsMutation.mutate();
       initializeMissionsMutation.mutate();
@@ -1067,7 +1084,9 @@ export default function Onboarding() {
 
   const finishQuestionnaire = async (finalAnswers: QuestionnaireAnswer[]) => {
     setIsPredicting(true);
-    localStorage.setItem('loretta_questionnaire', JSON.stringify(finalAnswers));
+    if (userId) {
+      localStorage.setItem(`loretta_questionnaire_${userId}`, JSON.stringify(finalAnswers));
+    }
     saveQuestionnaireMutation.mutate(finalAnswers);
     
     // ML backend disabled - using legacy calculation endpoint directly
@@ -1097,7 +1116,9 @@ export default function Onboarding() {
       };
       
       setRiskScore(fullScore);
-      localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+      if (userId) {
+        localStorage.setItem(`loretta_risk_score_${userId}`, JSON.stringify(fullScore));
+      }
       initializeGamificationMutation.mutate();
       initializeAchievementsMutation.mutate();
       initializeMissionsMutation.mutate();
@@ -1115,7 +1136,9 @@ export default function Onboarding() {
         color: fallbackScore.color,
       };
       setRiskScore(fullScore);
-      localStorage.setItem('loretta_risk_score', JSON.stringify(fullScore));
+      if (userId) {
+        localStorage.setItem(`loretta_risk_score_${userId}`, JSON.stringify(fullScore));
+      }
       
       saveRiskScoreMutation.mutate({
         overallScore: fallbackScore.score,

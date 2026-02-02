@@ -699,10 +699,7 @@ export default function Profile() {
     category: 'general',
   });
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
-  const [questionnaireAnswers, setQuestionnaireAnswers] = useState<Record<string, string>>(() => {
-    const saved = localStorage.getItem('loretta_questionnaire_answers');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [questionnaireAnswers, setQuestionnaireAnswers] = useState<Record<string, string>>({});
   const [pendingSaves, setPendingSaves] = useState<Record<string, boolean>>({});
   const [lorettaConsent, setLorettaConsent] = useState<boolean>(true);
   const recalculateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -880,9 +877,11 @@ export default function Profile() {
       backendAnswers.forEach((item) => {
         Object.assign(mergedAnswers, item.answers);
       });
-      // Backend is the source of truth - update state and sync to localStorage
+      // Backend is the source of truth - update state and sync to user-specific localStorage
       setQuestionnaireAnswers(mergedAnswers);
-      localStorage.setItem('loretta_questionnaire_answers', JSON.stringify(mergedAnswers));
+      if (userId) {
+        localStorage.setItem(`loretta_questionnaire_answers_${userId}`, JSON.stringify(mergedAnswers));
+      }
       console.log('[Profile] Loaded questionnaire answers from backend:', Object.keys(mergedAnswers).length, 'answers');
     }
   }, [backendAnswers]);
@@ -996,7 +995,9 @@ export default function Profile() {
     }
     
     const newAnswers = { ...questionnaireAnswers, [questionId]: value };
-    localStorage.setItem('loretta_questionnaire_answers', JSON.stringify(newAnswers));
+    if (userId) {
+      localStorage.setItem(`loretta_questionnaire_answers_${userId}`, JSON.stringify(newAnswers));
+    }
 
     const category = getCategoryForQuestion(questionId);
     setPendingSaves((prev) => ({ ...prev, [category]: true }));
@@ -1068,7 +1069,9 @@ export default function Profile() {
     };
     
     setProfileData(updatedProfile);
-    localStorage.setItem('loretta_profile', JSON.stringify(updatedProfile));
+    if (userId) {
+      localStorage.setItem(`loretta_profile_${userId}`, JSON.stringify(updatedProfile));
+    }
     saveProfileMutation.mutate(updatedProfile);
     
     setIsEditOpen(false);
@@ -1122,7 +1125,9 @@ export default function Profile() {
     };
     
     setProfileData(updatedProfile);
-    localStorage.setItem('loretta_profile', JSON.stringify(updatedProfile));
+    if (userId) {
+      localStorage.setItem(`loretta_profile_${userId}`, JSON.stringify(updatedProfile));
+    }
     saveProfileMutation.mutate(updatedProfile);
     
     // Two-way sync: Update questionnaire answers
