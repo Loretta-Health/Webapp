@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { apiRequest, queryClient, authenticatedFetch } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 
 interface RiskScoreData {
@@ -169,7 +169,12 @@ export default function RiskScoreDetails() {
   });
 
   const { data: questionnaireData } = useQuery<{ category: string; answers: Record<string, string> }[]>({
-    queryKey: ['/api/questionnaire', user?.id],
+    queryKey: ['/api/questionnaires', user?.id],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/questionnaires');
+      if (!response.ok) throw new Error('Failed to fetch questionnaires');
+      return response.json();
+    },
     enabled: !!user,
   });
 

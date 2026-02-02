@@ -928,6 +928,7 @@ export default function Profile() {
         title: language === 'de' ? 'Fehler' : 'Error',
         description: errorMessage,
         variant: 'destructive',
+        duration: 5000,
       });
     },
   });
