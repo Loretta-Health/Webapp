@@ -9,7 +9,7 @@ import { PullToRefresh } from '@/components/PullToRefresh';
 import { Heart, Flame } from 'lucide-react';
 import { Link, useLocation, Redirect } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { apiRequest, queryClient, authenticatedFetch } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import logomarkViolet from '@assets/Logomark_violet@2x_1766161339181.png';
 import logoHorizontalBlue from '@assets/Logo_horizontal_blue@2x_(1)_1766161586795.png';
@@ -221,46 +221,115 @@ export default function MyDashboard() {
   
   const { data: gamificationData } = useQuery<GamificationData>({
     queryKey: ['/api/gamification', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/gamification');
+      if (!response.ok) throw new Error('Failed to fetch gamification');
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: riskScoreData } = useQuery<RiskScoreData>({
     queryKey: ['/api/risk-scores/latest', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/risk-scores/latest');
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch risk score');
+      }
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: allEmotionalCheckins } = useQuery<EmotionalCheckinData[]>({
     queryKey: ['/api/emotional-checkins', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/emotional-checkins');
+      if (!response.ok) {
+        if (response.status === 404) return [];
+        throw new Error('Failed to fetch emotional checkins');
+      }
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: preferencesData } = useQuery<{ consentAccepted: boolean; consentDate: string | null }>({
     queryKey: ['/api/preferences', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/preferences');
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch preferences');
+      }
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: profileData } = useQuery<{ firstName: string | null; lastName: string | null; dateOfBirth: string | null; profilePhoto: string | null }>({
     queryKey: ['/api/profile', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/profile');
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch profile');
+      }
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: questionnaireData } = useQuery<{ category: string; answers: Record<string, string> }[]>({
     queryKey: ['/api/questionnaires', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/questionnaires');
+      if (!response.ok) {
+        if (response.status === 404) return [];
+        throw new Error('Failed to fetch questionnaires');
+      }
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: activityData } = useQuery<ActivityData>({
     queryKey: ['/api/activities/today', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/activities/today');
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch activities');
+      }
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: userAchievements } = useQuery<UserAchievement[]>({
     queryKey: ['/api/achievements/user', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/achievements/user');
+      if (!response.ok) {
+        if (response.status === 404) return [];
+        throw new Error('Failed to fetch achievements');
+      }
+      return response.json();
+    },
     enabled: !!user,
   });
 
   const { data: userTeams } = useQuery<Team[]>({
     queryKey: ['/api/teams/me', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/teams/me');
+      if (!response.ok) {
+        if (response.status === 404) return [];
+        throw new Error('Failed to fetch teams');
+      }
+      return response.json();
+    },
     enabled: !!user,
   });
 

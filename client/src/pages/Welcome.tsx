@@ -1,7 +1,7 @@
 import ConsentForm from '@/components/ConsentForm';
 import { useLocation } from 'wouter';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { apiRequest, queryClient, authenticatedFetch } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { useEffect } from 'react';
@@ -23,11 +23,27 @@ export default function Welcome() {
 
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
     queryKey: ['/api/questionnaires', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/questionnaires');
+      if (!response.ok) {
+        if (response.status === 404) return [];
+        throw new Error('Failed to fetch questionnaires');
+      }
+      return response.json();
+    },
     enabled: !!userId,
   });
 
   const { data: preferencesData, isLoading: prefsLoading } = useQuery<UserPreferences | null>({
     queryKey: ['/api/preferences', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/preferences');
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch preferences');
+      }
+      return response.json();
+    },
     enabled: !!userId,
   });
 

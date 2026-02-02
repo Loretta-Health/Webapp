@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, authenticatedFetch } from '@/lib/queryClient';
 import { trackMedication } from '@/lib/clarity';
 import { useXPUpdater } from './useXPUpdater';
 import { useAuth } from './use-auth';
@@ -74,6 +74,14 @@ export function useMedicationProgress() {
   // Fetch all user medications
   const { data: medications = [], isLoading, error, refetch } = useQuery<Medication[]>({
     queryKey: ['/api/medications', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/medications');
+      if (!response.ok) {
+        if (response.status === 404) return [];
+        throw new Error('Failed to fetch medications');
+      }
+      return response.json();
+    },
     retry: false,
     enabled: !!userId,
   });
@@ -81,6 +89,14 @@ export function useMedicationProgress() {
   // Fetch today's logs
   const { data: todayLogs = [] } = useQuery<MedicationLog[]>({
     queryKey: ['/api/medications/logs/today', userId],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/medications/logs/today');
+      if (!response.ok) {
+        if (response.status === 404) return [];
+        throw new Error('Failed to fetch medication logs');
+      }
+      return response.json();
+    },
     retry: false,
     enabled: !!userId,
   });

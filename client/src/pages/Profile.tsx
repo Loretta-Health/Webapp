@@ -769,11 +769,29 @@ export default function Profile() {
 
   const { data: backendProfile, isLoading: isProfileLoading } = useQuery<BackendProfile | null>({
     queryKey: ['/api/profile', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const response = await authenticatedFetch('/api/profile');
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch profile');
+      }
+      return response.json();
+    },
     enabled: !!userId,
   });
 
   const { data: backendAnswers } = useQuery<Array<{ category: string; answers: Record<string, string> }>>({
     queryKey: ['/api/questionnaires', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const response = await authenticatedFetch('/api/questionnaires');
+      if (!response.ok) {
+        if (response.status === 404) return [];
+        throw new Error('Failed to fetch questionnaires');
+      }
+      return response.json();
+    },
     enabled: !!userId,
   });
 
@@ -845,6 +863,14 @@ export default function Profile() {
 
   const { data: gamificationData } = useQuery<GamificationData>({
     queryKey: ['/api/gamification', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const response = await authenticatedFetch('/api/gamification');
+      if (!response.ok) {
+        throw new Error('Failed to fetch gamification data');
+      }
+      return response.json();
+    },
     enabled: !!userId,
   });
 

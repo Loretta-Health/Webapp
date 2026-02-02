@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { Switch, Route, Redirect } from "wouter";
-import { queryClient } from "./lib/queryClient";
+import { queryClient, authenticatedFetch } from "./lib/queryClient";
 import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -44,6 +44,14 @@ function ConsentGuard({ children }: { children: React.ReactNode }) {
   
   const { data: preferencesData, isLoading: prefsLoading } = useQuery<{ consentAccepted?: boolean } | null>({
     queryKey: ['/api/preferences', user?.id],
+    queryFn: async () => {
+      const response = await authenticatedFetch('/api/preferences');
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch preferences');
+      }
+      return response.json();
+    },
     enabled: !!user?.id,
   });
   
