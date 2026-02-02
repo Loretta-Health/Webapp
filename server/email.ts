@@ -10,6 +10,23 @@ if (BREVO_API_KEY) {
   apiInstance.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, BREVO_API_KEY);
 }
 
+const darkModeStyles = `
+  @media (prefers-color-scheme: dark) {
+    .email-body { background: linear-gradient(135deg, #1a1a2e 0%, #16162a 100%) !important; }
+    .email-card { background: #1e1e32 !important; border: 1px solid #2d2d4a !important; }
+    .email-card-inner { background: #1e1e32 !important; }
+    .text-dark { color: #f0f0f5 !important; }
+    .text-muted { color: #9ca3af !important; }
+    .text-subtle { color: #6b7280 !important; }
+    .info-card { background: linear-gradient(135deg, #252542 0%, #1e1e32 100%) !important; border-color: #3d3d6a !important; }
+    .code-box { background: linear-gradient(135deg, #252542 0%, #2a2a4a 100%) !important; border-color: #9d86cf !important; }
+    .warning-box { background: #3d3520 !important; }
+    .warning-text { color: #fcd34d !important; }
+    .footer-bg { background: linear-gradient(135deg, #1a1a2e 0%, #1e1e32 100%) !important; border-color: #2d2d4a !important; }
+    .link-primary { color: #6b9fff !important; }
+  }
+`;
+
 function generatePasswordResetEmailHTML(
   userName: string,
   resetCode: string,
@@ -21,13 +38,18 @@ function generatePasswordResetEmailHTML(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>Reset Your Password</title>
+  <style type="text/css">
+    ${darkModeStyles}
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" class="email-body" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
+        <table width="100%" cellpadding="0" cellspacing="0" class="email-card" style="max-width: 480px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
           
           <!-- Header with Logo -->
           <tr>
@@ -39,29 +61,29 @@ function generatePasswordResetEmailHTML(
           
           <!-- Main Content -->
           <tr>
-            <td style="padding: 32px 24px;">
-              <h1 style="color: #1a1a2e; font-size: 22px; font-weight: 800; margin: 0 0 16px 0; text-align: center;">Reset Your Password</h1>
+            <td class="email-card-inner" style="padding: 32px 24px; background: white;">
+              <h1 class="text-dark" style="color: #1a1a2e; font-size: 22px; font-weight: 800; margin: 0 0 16px 0; text-align: center;">Reset Your Password</h1>
               
-              <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0; text-align: center;">
+              <p class="text-muted" style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0; text-align: center;">
                 Hi ${userName || 'there'},<br><br>
                 We received a request to reset your password. Enter this code in the app to set a new password:
               </p>
               
               <!-- Code Box -->
-              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px dashed #CDB6EF; border-radius: 16px; padding: 24px; text-align: center; margin: 0 0 24px 0;">
-                <p style="color: #718096; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Your Reset Code</p>
+              <div class="code-box" style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px dashed #CDB6EF; border-radius: 16px; padding: 24px; text-align: center; margin: 0 0 24px 0;">
+                <p class="text-subtle" style="color: #718096; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Your Reset Code</p>
                 <p style="font-family: 'DM Mono', 'SF Mono', Monaco, monospace; font-size: 36px; font-weight: 700; color: #013DC4; letter-spacing: 8px; margin: 0;">${resetCode}</p>
               </div>
               
               <!-- Timer notice -->
-              <div style="background: #fef3cd; border-radius: 12px; padding: 12px 16px; margin: 0 0 24px 0;">
-                <p style="color: #856404; font-size: 13px; margin: 0; text-align: center;">
+              <div class="warning-box" style="background: #fef3cd; border-radius: 12px; padding: 12px 16px; margin: 0 0 24px 0;">
+                <p class="warning-text" style="color: #856404; font-size: 13px; margin: 0; text-align: center;">
                   ⏱️ This code expires in <strong>${expiryMinutes} minutes</strong>
                 </p>
               </div>
               
               <!-- Security notice -->
-              <p style="color: #718096; font-size: 13px; line-height: 1.5; margin: 0; text-align: center;">
+              <p class="text-subtle" style="color: #718096; font-size: 13px; line-height: 1.5; margin: 0; text-align: center;">
                 Didn't request this? You can safely ignore this email. Your password won't change unless you enter the code above.
               </p>
             </td>
@@ -69,8 +91,8 @@ function generatePasswordResetEmailHTML(
           
           <!-- Footer -->
           <tr>
-            <td style="background: #f8f9fa; padding: 20px 24px; border-top: 1px solid #e9ecef;">
-              <p style="color: #718096; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
+            <td class="footer-bg" style="background: #f8f9fa; padding: 20px 24px; border-top: 1px solid #e9ecef;">
+              <p class="text-subtle" style="color: #718096; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
                 This is an automated message from Loretta.<br>
                 Please do not reply to this email.
               </p>
@@ -83,7 +105,7 @@ function generatePasswordResetEmailHTML(
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; margin-top: 24px;">
           <tr>
             <td style="text-align: center;">
-              <p style="color: #a0aec0; font-size: 11px; margin: 0;">
+              <p class="text-subtle" style="color: #a0aec0; font-size: 11px; margin: 0;">
                 © ${new Date().getFullYear()} Loretta Health. All rights reserved.
               </p>
             </td>
@@ -194,18 +216,22 @@ function generateFeedbackEmailHTML(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>App Feedback</title>
+  <style type="text/css">
+    ${darkModeStyles}
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" class="email-body" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
+        <table width="100%" cellpadding="0" cellspacing="0" class="email-card" style="max-width: 600px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
           
           <!-- Header with Logo -->
           <tr>
             <td style="background: linear-gradient(135deg, #013DC4 0%, #0150FF 50%, #CDB6EF 100%); padding: 32px 24px; text-align: center;">
-              <!-- Logo -->
               <img src="https://loretta-care.replit.app/loretta_logo_white.png" alt="Loretta" width="180" style="display: block; margin: 0 auto 12px auto; max-width: 180px; height: auto;" />
               <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 8px 0 0 0; font-weight: 500;">App Feedback</p>
             </td>
@@ -213,8 +239,8 @@ function generateFeedbackEmailHTML(
           
           <!-- Feedback ID Badge -->
           <tr>
-            <td style="padding: 20px 24px 0 24px; text-align: center;">
-              <span style="display: inline-block; background: linear-gradient(135deg, #f0f4ff 0%, #f3f0ff 100%); border: 1px solid #CDB6EF; color: #013DC4; font-size: 11px; font-weight: 700; padding: 6px 16px; border-radius: 20px; letter-spacing: 1px;">
+            <td class="email-card-inner" style="padding: 20px 24px 0 24px; text-align: center; background: white;">
+              <span class="info-card" style="display: inline-block; background: linear-gradient(135deg, #f0f4ff 0%, #f3f0ff 100%); border: 1px solid #CDB6EF; color: #013DC4; font-size: 11px; font-weight: 700; padding: 6px 16px; border-radius: 20px; letter-spacing: 1px;">
                 FEEDBACK #${feedbackId}
               </span>
             </td>
@@ -222,17 +248,17 @@ function generateFeedbackEmailHTML(
           
           <!-- Main Content -->
           <tr>
-            <td style="padding: 24px;">
+            <td class="email-card-inner" style="padding: 24px; background: white;">
               <!-- Subject - Large and prominent -->
-              <h1 style="color: #1a1a2e; font-size: 26px; font-weight: 800; margin: 0 0 20px 0; line-height: 1.3; text-align: center;">"${subject}"</h1>
+              <h1 class="text-dark" style="color: #1a1a2e; font-size: 26px; font-weight: 800; margin: 0 0 20px 0; line-height: 1.3; text-align: center;">"${subject}"</h1>
               
               <!-- User Info Card -->
-              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+              <div class="info-card" style="background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 20px;">
                 <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                     <td style="padding-bottom: 12px;">
-                      <span style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Username</span>
-                      <p style="color: #2d3748; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">@${username}</p>
+                      <span class="text-subtle" style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Username</span>
+                      <p class="text-dark" style="color: #2d3748; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">@${username}</p>
                     </td>
                     <td style="padding-bottom: 12px; text-align: right;">
                       <span style="display: inline-block; background: ${categoryColor}; color: white; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${category}</span>
@@ -240,15 +266,15 @@ function generateFeedbackEmailHTML(
                   </tr>
                   <tr>
                     <td colspan="2" style="padding-bottom: 12px;">
-                      <span style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">First Name</span>
-                      <p style="color: #2d3748; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">${firstName || 'Not provided'}</p>
+                      <span class="text-subtle" style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">First Name</span>
+                      <p class="text-dark" style="color: #2d3748; font-size: 15px; font-weight: 600; margin: 4px 0 0 0;">${firstName || 'Not provided'}</p>
                     </td>
                   </tr>
                   <tr>
                     <td colspan="2">
-                      <span style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Email</span>
+                      <span class="text-subtle" style="color: #a0aec0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Email</span>
                       <p style="color: #013DC4; font-size: 14px; margin: 4px 0 0 0;">
-                        <a href="mailto:${userEmail}" style="color: #013DC4; text-decoration: none;">${userEmail}</a>
+                        <a href="mailto:${userEmail}" class="link-primary" style="color: #013DC4; text-decoration: none;">${userEmail}</a>
                       </p>
                     </td>
                   </tr>
@@ -256,17 +282,17 @@ function generateFeedbackEmailHTML(
               </div>
               
               <!-- Message Box -->
-              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px solid #CDB6EF; border-radius: 16px; padding: 24px;">
+              <div class="code-box" style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px solid #CDB6EF; border-radius: 16px; padding: 24px;">
                 <p style="color: #013DC4; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px 0;">Message</p>
-                <p style="color: #2d3748; font-size: 16px; line-height: 1.7; margin: 0; white-space: pre-wrap;">${message}</p>
+                <p class="text-dark" style="color: #2d3748; font-size: 16px; line-height: 1.7; margin: 0; white-space: pre-wrap;">${message}</p>
               </div>
             </td>
           </tr>
           
           <!-- Footer -->
           <tr>
-            <td style="background: linear-gradient(135deg, #f8f9fa 0%, #f0f4ff 100%); padding: 20px 24px; border-top: 1px solid #e9ecef;">
-              <p style="color: #a0aec0; font-size: 11px; margin: 0; text-align: center; line-height: 1.5;">
+            <td class="footer-bg" style="background: linear-gradient(135deg, #f8f9fa 0%, #f0f4ff 100%); padding: 20px 24px; border-top: 1px solid #e9ecef;">
+              <p class="text-subtle" style="color: #a0aec0; font-size: 11px; margin: 0; text-align: center; line-height: 1.5;">
                 Received via Loretta App<br>
                 <span style="color: #cbd5e0;">${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' })} (Berlin)</span>
               </p>
@@ -279,7 +305,7 @@ function generateFeedbackEmailHTML(
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin-top: 24px;">
           <tr>
             <td style="text-align: center;">
-              <p style="color: #a0aec0; font-size: 11px; margin: 0;">
+              <p class="text-subtle" style="color: #a0aec0; font-size: 11px; margin: 0;">
                 © ${new Date().getFullYear()} Loretta Health. All rights reserved.
               </p>
             </td>
@@ -374,13 +400,18 @@ function generateFeedbackThankYouHTML(firstName: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>Thank You for Your Feedback</title>
+  <style type="text/css">
+    ${darkModeStyles}
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" class="email-body" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 520px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
+        <table width="100%" cellpadding="0" cellspacing="0" class="email-card" style="max-width: 520px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
           
           <!-- Header with Logo -->
           <tr>
@@ -392,24 +423,24 @@ function generateFeedbackThankYouHTML(firstName: string): string {
           
           <!-- Main Content -->
           <tr>
-            <td style="padding: 32px 24px;">
-              <h1 style="color: #1a1a2e; font-size: 24px; font-weight: 800; margin: 0 0 20px 0; text-align: center;">Thank You for Your Feedback!</h1>
+            <td class="email-card-inner" style="padding: 32px 24px; background: white;">
+              <h1 class="text-dark" style="color: #1a1a2e; font-size: 24px; font-weight: 800; margin: 0 0 20px 0; text-align: center;">Thank You for Your Feedback!</h1>
               
-              <p style="color: #4a5568; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0; text-align: center;">
+              <p class="text-muted" style="color: #4a5568; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0; text-align: center;">
                 ${greeting},
               </p>
               
-              <p style="color: #4a5568; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0; text-align: center;">
+              <p class="text-muted" style="color: #4a5568; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0; text-align: center;">
                 We truly appreciate you taking the time to share your thoughts with us. Your feedback is invaluable in helping us improve Loretta and create a better experience for everyone.
               </p>
               
-              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px solid #CDB6EF; border-radius: 16px; padding: 20px; margin: 24px 0; text-align: center;">
-                <p style="color: #013DC4; font-size: 15px; font-weight: 600; margin: 0; line-height: 1.6;">
+              <div class="code-box" style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px solid #CDB6EF; border-radius: 16px; padding: 20px; margin: 24px 0; text-align: center;">
+                <p class="link-primary" style="color: #013DC4; font-size: 15px; font-weight: 600; margin: 0; line-height: 1.6;">
                   Our team will review your feedback carefully. If we need any additional information, we'll be in touch!
                 </p>
               </div>
               
-              <p style="color: #4a5568; font-size: 16px; line-height: 1.7; margin: 0; text-align: center;">
+              <p class="text-muted" style="color: #4a5568; font-size: 16px; line-height: 1.7; margin: 0; text-align: center;">
                 Thank you for being part of the Loretta community.
               </p>
             </td>
@@ -417,8 +448,8 @@ function generateFeedbackThankYouHTML(firstName: string): string {
           
           <!-- Signature -->
           <tr>
-            <td style="padding: 0 24px 32px 24px; text-align: center;">
-              <p style="color: #013DC4; font-size: 16px; font-weight: 700; margin: 0;">
+            <td class="email-card-inner" style="padding: 0 24px 32px 24px; text-align: center; background: white;">
+              <p class="link-primary" style="color: #013DC4; font-size: 16px; font-weight: 700; margin: 0;">
                 With gratitude,<br>
                 <span style="font-size: 18px;">The Loretta Team</span>
               </p>
@@ -427,8 +458,8 @@ function generateFeedbackThankYouHTML(firstName: string): string {
           
           <!-- Footer -->
           <tr>
-            <td style="background: linear-gradient(135deg, #f8f9fa 0%, #f0f4ff 100%); padding: 20px 24px; border-top: 1px solid #e9ecef;">
-              <p style="color: #a0aec0; font-size: 11px; margin: 0; text-align: center;">
+            <td class="footer-bg" style="background: linear-gradient(135deg, #f8f9fa 0%, #f0f4ff 100%); padding: 20px 24px; border-top: 1px solid #e9ecef;">
+              <p class="text-subtle" style="color: #a0aec0; font-size: 11px; margin: 0; text-align: center;">
                 © ${new Date().getFullYear()} Loretta Health. All rights reserved.
               </p>
             </td>
@@ -532,13 +563,18 @@ function generateEmailVerificationHTML(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
   <title>Verify Your Email</title>
+  <style type="text/css">
+    ${darkModeStyles}
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); min-height: 100vh;">
+  <table width="100%" cellpadding="0" cellspacing="0" class="email-body" style="background: linear-gradient(135deg, #f0f4ff 0%, #f8f4ff 100%); padding: 40px 20px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
+        <table width="100%" cellpadding="0" cellspacing="0" class="email-card" style="max-width: 480px; background: white; border-radius: 24px; box-shadow: 0 4px 24px rgba(1, 61, 196, 0.08); overflow: hidden;">
           
           <!-- Header with Logo -->
           <tr>
@@ -550,29 +586,29 @@ function generateEmailVerificationHTML(
           
           <!-- Main Content -->
           <tr>
-            <td style="padding: 32px 24px;">
-              <h1 style="color: #1a1a2e; font-size: 22px; font-weight: 800; margin: 0 0 16px 0; text-align: center;">Verify Your Email</h1>
+            <td class="email-card-inner" style="padding: 32px 24px; background: white;">
+              <h1 class="text-dark" style="color: #1a1a2e; font-size: 22px; font-weight: 800; margin: 0 0 16px 0; text-align: center;">Verify Your Email</h1>
               
-              <p style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0; text-align: center;">
+              <p class="text-muted" style="color: #4a5568; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0; text-align: center;">
                 Hi ${userName || 'there'},<br><br>
                 Welcome to Loretta! Please enter this code in the app to verify your email address:
               </p>
               
               <!-- Code Box -->
-              <div style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px dashed #CDB6EF; border-radius: 16px; padding: 24px; text-align: center; margin: 0 0 24px 0;">
-                <p style="color: #718096; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Your Verification Code</p>
+              <div class="code-box" style="background: linear-gradient(135deg, #f8f9ff 0%, #f3f0ff 100%); border: 2px dashed #CDB6EF; border-radius: 16px; padding: 24px; text-align: center; margin: 0 0 24px 0;">
+                <p class="text-subtle" style="color: #718096; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">Your Verification Code</p>
                 <p style="font-family: 'DM Mono', 'SF Mono', Monaco, monospace; font-size: 36px; font-weight: 700; color: #013DC4; letter-spacing: 8px; margin: 0;">${verificationCode}</p>
               </div>
               
               <!-- Timer notice -->
-              <div style="background: #fef3cd; border-radius: 12px; padding: 12px 16px; margin: 0 0 24px 0;">
-                <p style="color: #856404; font-size: 13px; margin: 0; text-align: center;">
+              <div class="warning-box" style="background: #fef3cd; border-radius: 12px; padding: 12px 16px; margin: 0 0 24px 0;">
+                <p class="warning-text" style="color: #856404; font-size: 13px; margin: 0; text-align: center;">
                   ⏱️ This code expires in <strong>${expiryMinutes} minutes</strong>
                 </p>
               </div>
               
               <!-- Security notice -->
-              <p style="color: #718096; font-size: 13px; line-height: 1.5; margin: 0; text-align: center;">
+              <p class="text-subtle" style="color: #718096; font-size: 13px; line-height: 1.5; margin: 0; text-align: center;">
                 If you didn't create a Loretta account, you can safely ignore this email.
               </p>
             </td>
@@ -580,8 +616,8 @@ function generateEmailVerificationHTML(
           
           <!-- Footer -->
           <tr>
-            <td style="background: #f8f9fa; padding: 20px 24px; border-top: 1px solid #e9ecef;">
-              <p style="color: #718096; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
+            <td class="footer-bg" style="background: #f8f9fa; padding: 20px 24px; border-top: 1px solid #e9ecef;">
+              <p class="text-subtle" style="color: #718096; font-size: 12px; margin: 0; text-align: center; line-height: 1.5;">
                 This is an automated message from Loretta.<br>
                 Please do not reply to this email.
               </p>
@@ -594,7 +630,7 @@ function generateEmailVerificationHTML(
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; margin-top: 24px;">
           <tr>
             <td style="text-align: center;">
-              <p style="color: #a0aec0; font-size: 11px; margin: 0;">
+              <p class="text-subtle" style="color: #a0aec0; font-size: 11px; margin: 0;">
                 © ${new Date().getFullYear()} Loretta Health. All rights reserved.
               </p>
             </td>
