@@ -379,9 +379,9 @@ async function throwIfResNotOk(res: Response) {
     
     try {
       const jsonError = JSON.parse(text);
-      if (jsonError.message) {
-        errorMessage = jsonError.message;
-      }
+      // Preserve the full JSON in the error message so handlers can parse additional fields
+      // (e.g., featuresProvided, featuresRequired for risk score calculation errors)
+      errorMessage = text;
     } catch {
       errorMessage = text || res.statusText || 'An error occurred';
     }
