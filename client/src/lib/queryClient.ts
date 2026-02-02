@@ -532,8 +532,8 @@ export async function apiRequest(
     await throwIfResNotOk(res);
     return res;
   } catch (error: any) {
-    // Check if this is already a diagnosed error (from throwIfResNotOk)
-    if (error.message?.startsWith('Network Error:') || error.message?.startsWith('[')) {
+    // Check if this is already a diagnosed error (from throwIfResNotOk) or a JSON error response
+    if (error.message?.startsWith('Network Error:') || error.message?.startsWith('[') || error.message?.startsWith('{')) {
       throw error;
     }
     const diagnosis = diagnoseNetworkError(error);
