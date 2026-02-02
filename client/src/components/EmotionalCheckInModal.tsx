@@ -58,7 +58,8 @@ export default function EmotionalCheckInModal({
   const { updateAllXPDisplays } = useXPUpdater();
 
   const { data: profileData } = useQuery<{ profilePhoto: string | null }>({
-    queryKey: ['/api/profile'],
+    queryKey: ['/api/profile', userId],
+    enabled: !!userId,
   });
 
   useEffect(() => {
@@ -164,8 +165,8 @@ export default function EmotionalCheckInModal({
       addMessage('assistant', supportiveMessage);
       
       queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins/weekly-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins/weekly-stats', userId] });
       updateAllXPDisplays(xpAwarded, 'checkin');
       
       setStep('supportive');

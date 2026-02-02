@@ -30,13 +30,16 @@ import type { MetricData } from '@/components/chat';
 import { useChatLogic, type ChatMessage } from '@/hooks/useChatLogic';
 import ReactMarkdown from 'react-markdown';
 import { trackAIChat, trackPageView } from '@/lib/clarity';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Chat() {
   const { t } = useTranslation('pages');
   useSwipeBack({ backPath: '/my-dashboard' });
+  const { user } = useAuth();
   
   const { data: profileData } = useQuery<{ profilePhoto: string | null }>({
-    queryKey: ['/api/profile'],
+    queryKey: ['/api/profile', user?.id],
+    enabled: !!user,
   });
   
   useEffect(() => {

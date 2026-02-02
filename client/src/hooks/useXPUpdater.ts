@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useRef, useEffect } from 'react';
+import { useAuth } from './use-auth';
 
 interface GamificationData {
   xp: number;
@@ -51,6 +52,8 @@ const xpUpdateListeners = new Set<XPUpdateCallback>();
 
 export function useXPUpdater() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const userId = user?.id;
   const lastUpdateRef = useRef<number>(0);
 
   const notifyListeners = useCallback((newTotalXP: number, xpChange: number, newLevel: number, xpToday: number) => {
@@ -82,7 +85,7 @@ export function useXPUpdater() {
     let newLevel = 1;
     let newXpToday = 0;
 
-    queryClient.setQueryData<GamificationData>(['/api/gamification'], (oldData) => {
+    queryClient.setQueryData<GamificationData>(['/api/gamification', userId], (oldData) => {
       if (!oldData) return oldData;
       
       newTotalXP = oldData.xp + xpChange;
@@ -98,7 +101,7 @@ export function useXPUpdater() {
     });
 
     if (source === 'checkin' && options?.checkinId) {
-      queryClient.setQueryData<EmotionalCheckin[]>(['/api/emotional-checkins'], (oldData) => {
+      queryClient.setQueryData<EmotionalCheckin[]>(['/api/emotional-checkins', userId], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map(checkin => 
           checkin.id === options.checkinId 
@@ -109,7 +112,7 @@ export function useXPUpdater() {
     }
 
     if (source === 'mission' && options?.missionId) {
-      queryClient.setQueryData<UserMission[]>(['/api/missions'], (oldData) => {
+      queryClient.setQueryData<UserMission[]>(['/api/missions', userId], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map(mission => 
           mission.id === options.missionId 
@@ -119,14 +122,14 @@ export function useXPUpdater() {
       });
     }
 
-    queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/activities/today', userId] });
 
     notifyListeners(newTotalXP, xpChange, newLevel, newXpToday);
 
     console.log(`[XP Update] +${xpChange} XP from ${source}. Total: ${newTotalXP}, Level: ${newLevel}, Today: ${newXpToday}`);
 
     return { newTotalXP, newLevel, xpChange, xpToday: newXpToday };
-  }, [queryClient, notifyListeners]);
+  }, [queryClient, notifyListeners, userId]);
 
   const deductXP = useCallback((
     xpAmount: number,
@@ -139,7 +142,7 @@ export function useXPUpdater() {
     let newLevel = 1;
     let newXpToday = 0;
 
-    queryClient.setQueryData<GamificationData>(['/api/gamification'], (oldData) => {
+    queryClient.setQueryData<GamificationData>(['/api/gamification', userId], (oldData) => {
       if (!oldData) return oldData;
       
       newTotalXP = Math.max(0, oldData.xp - xpAmount);
@@ -155,7 +158,7 @@ export function useXPUpdater() {
     });
 
     if (source === 'mission_undo' && options?.missionId) {
-      queryClient.setQueryData<UserMission[]>(['/api/missions'], (oldData) => {
+      queryClient.setQueryData<UserMission[]>(['/api/missions', userId], (oldData) => {
         if (!oldData) return oldData;
         return oldData.map(mission => 
           mission.id === options.missionId 
@@ -165,25 +168,25 @@ export function useXPUpdater() {
       });
     }
 
-    queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/activities/today', userId] });
 
     notifyListeners(newTotalXP, -xpAmount, newLevel, newXpToday);
 
     console.log(`[XP Update] -${xpAmount} XP from ${source}. Total: ${newTotalXP}, Level: ${newLevel}, Today: ${newXpToday}`);
 
     return { newTotalXP, newLevel, xpChange: -xpAmount, xpToday: newXpToday };
-  }, [queryClient, notifyListeners]);
+  }, [queryClient, notifyListeners, userId]);
 
   const refreshAllXPData = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/achievements/user'] });
-  }, [queryClient]);
+    queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/activities/today', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/achievements/user', userId] });
+  }, [queryClient, userId]);
 
   const updateStreak = useCallback((newStreak: number) => {
-    queryClient.setQueryData<GamificationData>(['/api/gamification'], (oldData) => {
+    queryClient.setQueryData<GamificationData>(['/api/gamification', userId], (oldData) => {
       if (!oldData) return oldData;
       
       return {
@@ -193,10 +196,10 @@ export function useXPUpdater() {
         lastCheckIn: new Date().toISOString(),
       };
     });
-  }, [queryClient]);
+  }, [queryClient, userId]);
 
   const updateLives = useCallback((livesChange: number) => {
-    queryClient.setQueryData<GamificationData>(['/api/gamification'], (oldData) => {
+    queryClient.setQueryData<GamificationData>(['/api/gamification', userId], (oldData) => {
       if (!oldData) return oldData;
       
       return {
@@ -204,7 +207,7 @@ export function useXPUpdater() {
         lives: Math.max(0, Math.min(5, oldData.lives + livesChange)),
       };
     });
-  }, [queryClient]);
+  }, [queryClient, userId]);
 
   return {
     updateAllXPDisplays,

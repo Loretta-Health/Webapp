@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { trackMedication } from '@/lib/clarity';
 import { useXPUpdater } from './useXPUpdater';
+import { useAuth } from './use-auth';
 
 export interface MedicationDose {
   id: number;
@@ -67,17 +68,21 @@ export interface LogDoseResult {
 export function useMedicationProgress() {
   const queryClient = useQueryClient();
   const { updateAllXPDisplays } = useXPUpdater();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   // Fetch all user medications
   const { data: medications = [], isLoading, error, refetch } = useQuery<Medication[]>({
-    queryKey: ['/api/medications'],
+    queryKey: ['/api/medications', userId],
     retry: false,
+    enabled: !!userId,
   });
 
   // Fetch today's logs
   const { data: todayLogs = [] } = useQuery<MedicationLog[]>({
-    queryKey: ['/api/medications/logs/today'],
+    queryKey: ['/api/medications/logs/today', userId],
     retry: false,
+    enabled: !!userId,
   });
 
   // Create medication mutation
@@ -87,7 +92,7 @@ export function useMedicationProgress() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications', userId] });
     },
   });
 
@@ -98,7 +103,7 @@ export function useMedicationProgress() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications', userId] });
     },
   });
 
@@ -109,7 +114,7 @@ export function useMedicationProgress() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications', userId] });
     },
   });
 
@@ -120,8 +125,8 @@ export function useMedicationProgress() {
       return response.json() as Promise<LogDoseResult>;
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today', userId] });
       if (result.xpAwarded && result.xpAwarded > 0) {
         updateAllXPDisplays(result.xpAwarded, 'bonus');
       }
@@ -135,9 +140,9 @@ export function useMedicationProgress() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
     },
   });
 
@@ -148,8 +153,8 @@ export function useMedicationProgress() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/medications'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/medications/logs/today', userId] });
     },
   });
 

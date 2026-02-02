@@ -9,6 +9,7 @@ import { useWeatherSimulation } from '@/contexts/WeatherSimulationContext';
 import { authenticatedFetch } from "@/lib/queryClient";
 import { detectEmotionFromText } from '../../../shared/emotions';
 import { useGeolocation } from './useGeolocation';
+import { useAuth } from './use-auth';
 
 interface WeatherContext {
   isGoodForOutdoor: boolean;
@@ -136,6 +137,8 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { simulateBadWeather } = useWeatherSimulation();
+  const { user } = useAuth();
+  const userId = user?.id;
   
   const { coordinates, locationEnabled, usingDefault } = useGeolocation({
     enableHighAccuracy: false,
@@ -482,7 +485,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         throw new Error(errorData.error || 'Failed to activate mission');
       }
 
-      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
 
       setMissionActivated(true);
       toast({

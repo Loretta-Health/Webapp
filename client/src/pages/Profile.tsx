@@ -768,12 +768,12 @@ export default function Profile() {
   };
 
   const { data: backendProfile, isLoading: isProfileLoading } = useQuery<BackendProfile | null>({
-    queryKey: ['/api/profile'],
+    queryKey: ['/api/profile', userId],
     enabled: !!userId,
   });
 
   const { data: backendAnswers } = useQuery<Array<{ category: string; answers: Record<string, string> }>>({
-    queryKey: ['/api/questionnaires'],
+    queryKey: ['/api/questionnaires', userId],
     enabled: !!userId,
   });
 
@@ -844,7 +844,7 @@ export default function Profile() {
   }, [backendProfile, backendAnswers, profileLoaded, user]);
 
   const { data: gamificationData } = useQuery<GamificationData>({
-    queryKey: ['/api/gamification'],
+    queryKey: ['/api/gamification', userId],
     enabled: !!userId,
   });
 
@@ -866,8 +866,8 @@ export default function Profile() {
       return apiRequest('POST', '/api/risk-scores/calculate', {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', userId] });
       toast({
         title: t('riskScoreUpdated') || 'Risk score updated',
         description: t('riskScoreRecalculated') || 'Your health risk score has been recalculated based on your updated answers.',
@@ -1028,7 +1028,7 @@ export default function Profile() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
     },
   });
 

@@ -259,7 +259,7 @@ export default function ActivityDetails() {
       setIsEditing(false);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/activities'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/activities', userId] });
     },
     onError: () => {
       setOptimisticValue(null);

@@ -208,59 +208,59 @@ export default function MyDashboard() {
   
   const handleRefresh = useCallback(async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/missions'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/profile'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/medications'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/activities/today', userId] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', userId] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins', userId] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/medications', userId] }),
     ]);
     refreshAllXPData();
-  }, [refreshAllXPData]);
+  }, [refreshAllXPData, userId]);
   
   const { data: gamificationData } = useQuery<GamificationData>({
-    queryKey: ['/api/gamification'],
+    queryKey: ['/api/gamification', userId],
     enabled: !!user,
   });
 
   const { data: riskScoreData } = useQuery<RiskScoreData>({
-    queryKey: ['/api/risk-scores/latest'],
+    queryKey: ['/api/risk-scores/latest', userId],
     enabled: !!user,
   });
 
   const { data: allEmotionalCheckins } = useQuery<EmotionalCheckinData[]>({
-    queryKey: ['/api/emotional-checkins'],
+    queryKey: ['/api/emotional-checkins', userId],
     enabled: !!user,
   });
 
   const { data: preferencesData } = useQuery<{ consentAccepted: boolean; consentDate: string | null }>({
-    queryKey: ['/api/preferences'],
+    queryKey: ['/api/preferences', userId],
     enabled: !!user,
   });
 
   const { data: profileData } = useQuery<{ firstName: string | null; lastName: string | null; dateOfBirth: string | null; profilePhoto: string | null }>({
-    queryKey: ['/api/profile'],
+    queryKey: ['/api/profile', userId],
     enabled: !!user,
   });
 
   const { data: questionnaireData } = useQuery<{ category: string; answers: Record<string, string> }[]>({
-    queryKey: ['/api/questionnaires'],
+    queryKey: ['/api/questionnaires', userId],
     enabled: !!user,
   });
 
   const { data: activityData } = useQuery<ActivityData>({
-    queryKey: ['/api/activities/today'],
+    queryKey: ['/api/activities/today', userId],
     enabled: !!user,
   });
 
   const { data: userAchievements } = useQuery<UserAchievement[]>({
-    queryKey: ['/api/achievements/user'],
+    queryKey: ['/api/achievements/user', userId],
     enabled: !!user,
   });
 
   const { data: userTeams } = useQuery<Team[]>({
-    queryKey: ['/api/teams/me'],
+    queryKey: ['/api/teams/me', userId],
     enabled: !!user,
   });
 
@@ -322,14 +322,14 @@ export default function MyDashboard() {
   });
 
   // Refresh all data when dashboard is visited/mounted or when page regains focus
-  const refreshAllDashboardData = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/activities/today'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/achievements/user'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
-    queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] });
-  };
+  const refreshAllDashboardData = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/activities/today', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/achievements/user', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', userId] });
+  }, [userId]);
 
   useEffect(() => {
     if (currentPath === '/my-dashboard') {
@@ -401,7 +401,7 @@ export default function MyDashboard() {
   };
 
   const handleCheckInComplete = (emotion: string, xpAwarded: number) => {
-    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/emotional-checkins', userId] });
   };
 
   const getEmotionEmoji = (emotion: string): string => {

@@ -154,17 +154,17 @@ export default function RiskScoreDetails() {
   useSwipeBack({ backPath: '/my-dashboard' });
 
   const { data: riskScoreData, isLoading: isScoreLoading } = useQuery<RiskScoreData>({
-    queryKey: ['/api/risk-scores/latest'],
+    queryKey: ['/api/risk-scores/latest', user?.id],
     enabled: !!user,
   });
 
   const { data: riskScoreHistory } = useQuery<RiskScoreHistoryEntry[]>({
-    queryKey: ['/api/risk-scores'],
+    queryKey: ['/api/risk-scores', user?.id],
     enabled: !!user,
   });
 
   const { data: riskFactorsData, isLoading: isFactorsLoading } = useQuery<RiskFactorData[]>({
-    queryKey: ['/api/risk-factors'],
+    queryKey: ['/api/risk-factors', user?.id],
     enabled: !!user,
   });
 
@@ -194,19 +194,19 @@ export default function RiskScoreDetails() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-factors'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-factors', user?.id] });
     },
   });
   
   const handleRefresh = useCallback(async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores'] }),
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-factors'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', user?.id] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', user?.id] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-factors', user?.id] }),
     ]);
-  }, []);
+  }, [user?.id]);
 
   if (isAuthLoading || isScoreLoading || isFactorsLoading) {
     return (

@@ -22,12 +22,12 @@ export default function Welcome() {
   const { isLoading, markConsentComplete, isConsentComplete, isQuestionnaireComplete } = useOnboardingProgress();
 
   const { data: questionnaireData, isLoading: questLoading } = useQuery<QuestionnaireRecord[]>({
-    queryKey: ['/api/questionnaires'],
+    queryKey: ['/api/questionnaires', userId],
     enabled: !!userId,
   });
 
   const { data: preferencesData, isLoading: prefsLoading } = useQuery<UserPreferences | null>({
-    queryKey: ['/api/preferences'],
+    queryKey: ['/api/preferences', userId],
     enabled: !!userId,
   });
 
@@ -56,7 +56,7 @@ export default function Welcome() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/preferences'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/preferences', userId] });
     },
   });
 

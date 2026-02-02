@@ -78,7 +78,7 @@ export function useMissions() {
   });
 
   const { data: userMissions = [], isLoading: userMissionsLoading, error } = useQuery<UserMission[]>({
-    queryKey: ['/api/missions'],
+    queryKey: ['/api/missions', userId],
     queryFn: async () => {
       if (!userId) return [];
       const response = await authenticatedFetch('/api/missions');
@@ -126,12 +126,12 @@ export function useMissions() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
     },
   });
 
   const updateMissionProgressOptimistically = useCallback((missionId: string, newProgress: number, isCompleted: boolean) => {
-    queryClient.setQueryData<UserMission[]>(['/api/missions'], (oldData) => {
+    queryClient.setQueryData<UserMission[]>(['/api/missions', userId], (oldData) => {
       if (!oldData) return oldData;
       return oldData.map(m => 
         m.id === missionId 
@@ -163,7 +163,7 @@ export function useMissions() {
           trackGamification('xp_earned', { amount: mission.xpReward, source: 'mission' });
         }
       }
-      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
     },
   });
 
@@ -173,7 +173,7 @@ export function useMissions() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
     },
   });
 
@@ -184,7 +184,7 @@ export function useMissions() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
     },
   });
 
@@ -197,7 +197,7 @@ export function useMissions() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
     },
   });
 

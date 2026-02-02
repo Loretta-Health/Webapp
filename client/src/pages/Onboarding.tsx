@@ -478,12 +478,12 @@ export default function Onboarding() {
     weight?: string;
     ethnicity?: string;
   } | null>({
-    queryKey: ['/api/profile'],
+    queryKey: ['/api/profile', userId],
     enabled: !!userId,
   });
 
   const { data: preferencesData, isLoading: prefsLoading } = useQuery<{ consentAccepted?: boolean } | null>({
-    queryKey: ['/api/preferences'],
+    queryKey: ['/api/preferences', userId],
     enabled: !!userId,
   });
   const profileComplete = !!(profileData?.firstName && profileData?.lastName && profileData?.email) || !!(user?.firstName && user?.lastName && user?.email);
@@ -652,12 +652,12 @@ export default function Onboarding() {
             userId,
             ...profileUpdates,
           });
-          queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
           console.log('[Onboarding] Synced to profile:', Object.keys(profileUpdates).join(', '));
         }
         
         // Recalculate risk score with updated data
-        queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', userId] });
       } catch (error) {
         console.error('[Onboarding] Auto-save failed:', error);
       }
@@ -719,7 +719,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Profile saved successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/profile'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
     },
     onError: (error) => {
       console.error('Failed to save profile:', error);
@@ -758,7 +758,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Risk score saved successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', userId] });
     },
     onError: (error) => {
       console.error('Failed to save risk score:', error);
@@ -780,7 +780,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Gamification initialized successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/gamification'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
     },
     onError: (error) => {
       console.error('Failed to initialize gamification:', error);
@@ -798,7 +798,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Achievements initialized successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/achievements'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/achievements', userId] });
     },
     onError: (error) => {
       console.error('Failed to initialize achievements:', error);
@@ -816,7 +816,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Missions initialized successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/missions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
     },
     onError: (error) => {
       console.error('Failed to initialize missions:', error);
@@ -850,7 +850,7 @@ export default function Onboarding() {
       newsletterSubscribed: newsletterOptIn,
     });
     await markConsentComplete();
-    queryClient.invalidateQueries({ queryKey: ['/api/preferences'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/preferences', userId] });
     setStep('questionnaire');
   };
 

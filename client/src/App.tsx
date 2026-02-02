@@ -43,7 +43,7 @@ function ConsentGuard({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   
   const { data: preferencesData, isLoading: prefsLoading } = useQuery<{ consentAccepted?: boolean } | null>({
-    queryKey: ['/api/preferences'],
+    queryKey: ['/api/preferences', user?.id],
     enabled: !!user?.id,
   });
   

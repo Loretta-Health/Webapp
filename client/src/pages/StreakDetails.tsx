@@ -67,12 +67,12 @@ export default function StreakDetails() {
   useSwipeBack({ backPath: '/my-dashboard' });
   
   const { data: gamificationData, isLoading } = useQuery<GamificationData>({
-    queryKey: ['/api/gamification'],
+    queryKey: ['/api/gamification', user?.id],
     enabled: !!user,
   });
   
   const { data: achievements } = useQuery<UserAchievement[]>({
-    queryKey: ['/api/achievements/user'],
+    queryKey: ['/api/achievements/user', user?.id],
     enabled: !!user,
   });
   

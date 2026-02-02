@@ -79,7 +79,7 @@ export default function Dashboard() {
   const { locationEnabled, toggleLocationEnabled, usingDefault, loading: locationLoading } = useGeolocation();
 
   const { data: riskScoreData } = useQuery<RiskScoreData>({
-    queryKey: ['/api/risk-scores/latest'],
+    queryKey: ['/api/risk-scores/latest', user?.id],
     enabled: !!user,
   });
   
