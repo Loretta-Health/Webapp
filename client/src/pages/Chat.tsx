@@ -87,6 +87,7 @@ export default function Chat() {
     handleConfirmEmotion,
     handleDenyEmotion,
     setActivityContext,
+    handleLearnMore,
   } = useChatLogic({ messages, setMessages });
 
   useEffect(() => {
@@ -237,9 +238,20 @@ export default function Chat() {
                               <span className="text-sm sm:text-base">{message.content}</span>
                             )}
                           </div>
-                          <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 mt-1">
-                            {formatTime(message.timestamp)}
-                          </p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
+                              {formatTime(message.timestamp)}
+                            </p>
+                            {message.role === 'assistant' && message.canLearnMore && !message.isDetailedResponse && !loading && (
+                              <button
+                                onClick={() => handleLearnMore(message.id)}
+                                className="text-[10px] sm:text-xs text-[#013DC4] dark:text-[#6B9FFF] hover:text-[#0150FF] dark:hover:text-[#8BB4FF] font-medium flex items-center gap-0.5 transition-colors"
+                              >
+                                {t('chat.learnMore', 'Learn more')}
+                                <ChevronRight className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </motion.div>
                     )}

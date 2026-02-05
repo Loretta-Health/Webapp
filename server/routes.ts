@@ -161,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chat endpoint for Health Navigator with safety guardrails
   app.post("/api/chat", async (req, res) => {
     try {
-      const { messages, weatherContext } = req.body;
+      const { messages, weatherContext, detailedResponse } = req.body;
       
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Messages array is required" });
@@ -405,8 +405,21 @@ IMPORTANT: When discussing risk scores, remember:
         }
       }
 
+      // Add detailed response instruction if user clicked "Learn more"
+      const detailedResponseInstruction = detailedResponse 
+        ? `\n\n=== DETAILED RESPONSE REQUESTED ===
+The user clicked "Learn more" and wants a comprehensive, detailed explanation.
+IGNORE the "keep responses short" instruction for this response ONLY.
+Provide a thorough, well-structured answer with:
+- Full explanations and context
+- Relevant examples or tips
+- Actionable recommendations if applicable
+- Use bullet points and formatting to make it easy to read
+=== END DETAILED INSTRUCTION ===`
+        : '';
+
       const chatMessages: ChatMessage[] = [
-        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + missionCatalogContext + alternativeMissionsContext + activeMissionsContext + emotionalStateContext + dynamicContext + healthProfileContext },
+        { role: "system", content: HEALTH_NAVIGATOR_SYSTEM_PROMPT + detailedResponseInstruction + missionCatalogContext + alternativeMissionsContext + activeMissionsContext + emotionalStateContext + dynamicContext + healthProfileContext },
         ...messages.map((msg: { role: string; content: string }) => ({
           role: msg.role as "user" | "assistant",
           content: msg.content,

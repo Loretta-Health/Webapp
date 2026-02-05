@@ -25,6 +25,8 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   metricData?: MetricData;
+  canLearnMore?: boolean;
+  isDetailedResponse?: boolean;
 }
 
 export interface ActivityContext {
@@ -58,6 +60,7 @@ interface UseChatLogicReturn {
   handleDenyEmotion: () => void;
   setActivityContext: React.Dispatch<React.SetStateAction<ActivityContext | null>>;
   parseAIResponse: (response: string) => void;
+  handleLearnMore: (messageId: string) => Promise<void>;
 }
 
 const suggestedMissions: SuggestedMission[] = [
@@ -422,6 +425,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         role: 'assistant',
         content: cleanedMessage,
         timestamp: new Date(),
+        canLearnMore: true,
       };
 
       setMessages(prev => [...prev, assistantMessage]);
@@ -569,6 +573,62 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     setPendingEmotion(null);
   }, [setMessages]);
 
+  const handleLearnMore = useCallback(async (messageId: string) => {
+    setLoading(true);
+    
+    // Find the message index and get the preceding user message
+    const messageIndex = messages.findIndex(m => m.id === messageId);
+    if (messageIndex === -1) {
+      setLoading(false);
+      return;
+    }
+    
+    // Get all messages up to and including the assistant message we want to expand
+    const messagesUpToTarget = messages.slice(0, messageIndex + 1);
+    
+    try {
+      const messagesForAPI = messagesUpToTarget.map(msg => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+
+      const response = await authenticatedFetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: messagesForAPI,
+          weatherContext: weatherContextRef.current,
+          detailedResponse: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get detailed response');
+      }
+
+      const data = await response.json();
+      const cleanedMessage = cleanAIResponse(data.message);
+
+      // Replace the original assistant message with the detailed one
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, content: cleanedMessage, isDetailedResponse: true, canLearnMore: false }
+          : msg
+      ));
+    } catch (error) {
+      console.error('Learn more error:', error);
+      toast({
+        title: 'Error',
+        description: "Couldn't get more details. Please try again.",
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [messages, setMessages, cleanAIResponse, toast]);
+
   return {
     inputText,
     setInputText,
@@ -590,5 +650,6 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     handleDenyEmotion,
     setActivityContext,
     parseAIResponse,
+    handleLearnMore,
   };
 }
