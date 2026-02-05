@@ -410,9 +410,9 @@ IMPORTANT: When discussing risk scores, remember:
         ? `\n\n=== DETAILED RESPONSE REQUESTED ===
 The user clicked "Learn more" and wants a comprehensive, detailed explanation.
 IGNORE the "keep responses short" instruction for this response ONLY.
+CRITICAL: Do NOT start with any affirmative phrases like "Sure!", "Of course!", "Certainly!", "I'd be happy to!", "Absolutely!" or similar. Just dive directly into the detailed explanation.
 Provide a thorough, well-structured answer with:
 - Full explanations and context
-- Relevant examples or tips
 - Actionable recommendations if applicable
 - Use bullet points and formatting to make it easy to read
 === END DETAILED INSTRUCTION ===`

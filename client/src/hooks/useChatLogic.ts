@@ -590,21 +590,11 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         : msg
     ));
     
-    // Create the user "learn more" message
-    const learnMoreUserMessage: ChatMessage = {
-      id: `learn-more-${Date.now()}`,
-      role: 'user',
-      content: 'Can you expand on that? Please restate your answer with more details.',
-      timestamp: new Date(),
-    };
-    
-    // Add the user message to the chat
-    setMessages(prev => [...prev, learnMoreUserMessage]);
-    
-    // Get all messages up to and including the new user message for API call
+    // Get all messages up to and including the assistant message for API call
     const messagesUpToTarget = messages.slice(0, messageIndex + 1);
     
     try {
+      // Send the expand request internally (not shown to user)
       const messagesForAPI = [
         ...messagesUpToTarget.map(msg => ({
           role: msg.role,
@@ -612,7 +602,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         })),
         {
           role: 'user' as const,
-          content: learnMoreUserMessage.content,
+          content: 'Please expand on your previous response with more details.',
         }
       ];
 
