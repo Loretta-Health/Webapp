@@ -252,20 +252,35 @@ export function detectEmotionFromText(text: string): EmotionCategory | null {
     return lowerText as EmotionCategory;
   }
   
-  // Check for emotion name as standalone word in the text (e.g., "I feel neutral" or "feeling happy today")
-  for (const emotionKey of allEmotionKeys) {
-    const emotionRegex = new RegExp(`\\b${emotionKey}\\b`, 'i');
-    if (emotionRegex.test(lowerText)) {
-      return emotionKey;
-    }
-  }
+  // Only trigger check-in for EXPLICIT emotional expressions
+  // Require phrases like "I feel", "I'm feeling", "feeling", "I am", "I'm so", etc.
+  const emotionalPhrasePatterns = [
+    /\bi\s*(?:feel|am|'m)\s+(?:so\s+)?/i,
+    /\bfeeling\s+(?:really\s+|very\s+|so\s+)?/i,
+    /\bi\s*(?:feel|am|'m)\s+(?:really\s+|very\s+)?/i,
+    /\btoday\s+i\s+(?:feel|am|'m)\s+/i,
+    /\bright\s+now\s+i\s+(?:feel|am|'m)\s+/i,
+  ];
   
-  // Then check keywords for each emotion
-  for (const emotion of EMOTION_BANK) {
-    for (const keyword of emotion.keywords) {
-      const regex = new RegExp(`\\b${keyword.replace(/\s+/g, '\\s+')}\\b`, 'i');
-      if (regex.test(lowerText)) {
-        return emotion.key;
+  const hasEmotionalPhrase = emotionalPhrasePatterns.some(pattern => pattern.test(lowerText));
+  
+  // If user explicitly expresses their emotional state, check for emotions
+  if (hasEmotionalPhrase) {
+    // Check for emotion name as standalone word
+    for (const emotionKey of allEmotionKeys) {
+      const emotionRegex = new RegExp(`\\b${emotionKey}\\b`, 'i');
+      if (emotionRegex.test(lowerText)) {
+        return emotionKey;
+      }
+    }
+    
+    // Check keywords for each emotion
+    for (const emotion of EMOTION_BANK) {
+      for (const keyword of emotion.keywords) {
+        const regex = new RegExp(`\\b${keyword.replace(/\s+/g, '\\s+')}\\b`, 'i');
+        if (regex.test(lowerText)) {
+          return emotion.key;
+        }
       }
     }
   }

@@ -203,6 +203,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const cleanAIResponse = useCallback((response: string): string => {
     return response
       .replace(/\[SUGGEST_MISSION(?::[^\]]+)?\]/gi, '')
+      .replace(/\[SUGGEST_ALTERNATIVE\]/gi, '')
       .replace(/\[MISSION:\d+\]/gi, '')
       .replace(/\[CHECK_IN\]/gi, '')
       .replace(/\[EMOTION_DETECTED:[^\]]+\]/gi, '')
@@ -210,7 +211,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       .trim();
   }, []);
 
-  const fetchSuggestedMission = useCallback(async (context: string, specificMissionKey?: string, targetMessageId?: string) => {
+  const fetchSuggestedMission = useCallback(async (context: string, specificMissionKey?: string, targetMessageId?: string, preferAlternative?: boolean) => {
     try {
       const response = await authenticatedFetch('/api/missions/suggest', {
         method: 'POST',
@@ -220,6 +221,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
           language: i18n.language.startsWith('de') ? 'de' : 'en',
           weatherContext: weatherContextRef.current,
           specificMissionKey,
+          preferAlternative,
         }),
       });
       
@@ -269,6 +271,12 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     if (specificMissionMatch) {
       const missionKey = specificMissionMatch[1].trim();
       fetchSuggestedMission(lastUserMessageRef.current, missionKey, targetMessageId);
+      return;
+    }
+    
+    // Check for alternative mission suggestion [SUGGEST_ALTERNATIVE]
+    if (response.includes('[SUGGEST_ALTERNATIVE]')) {
+      fetchSuggestedMission(lastUserMessageRef.current, undefined, targetMessageId, true);
       return;
     }
     

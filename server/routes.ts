@@ -1281,7 +1281,7 @@ Provide a thorough, well-structured answer with:
 
     try {
       const userId = (req.user as any).id;
-      const { context, language = 'en', weatherContext, specificMissionKey } = req.body;
+      const { context, language = 'en', weatherContext, specificMissionKey, preferAlternative } = req.body;
       
       // Check if weather is bad for outdoor activities (only if we have real location)
       const isBadWeather = weatherContext && 
@@ -1492,7 +1492,6 @@ Provide a thorough, well-structured answer with:
       const { catalog: bestMission, userMission: bestUserMission } = bestResult;
       
       // Check if user has low mood and should get alternative
-      // ONLY suggest alternatives if the original mission is ACTIVATED
       const latestCheckin = await storage.getLatestEmotionalCheckin(userId);
       const isLowMood = latestCheckin && isLowMoodEmotion(latestCheckin.emotion);
       const today = new Date().toDateString();
@@ -1501,10 +1500,12 @@ Provide a thorough, well-structured answer with:
       const missionIsActive = bestUserMission?.isActive === true;
       const isOutdoorMission = bestMission.isOutdoor === true;
       
-      // Show alternative if: mission is active AND (low mood today OR bad weather for outdoor mission)
+      // Show alternative if:
+      // 1. AI explicitly requested alternative (preferAlternative flag)
+      // 2. Mission is active AND (low mood today OR bad weather for outdoor mission)
       const shouldShowMoodAlternative = missionIsActive && isLowMood && isCheckinToday && !bestMission.isAlternative;
       const shouldShowWeatherAlternative = missionIsActive && isBadWeather && isOutdoorMission && !bestMission.isAlternative;
-      const shouldShowAlternative = shouldShowMoodAlternative || shouldShowWeatherAlternative;
+      const shouldShowAlternative = preferAlternative || shouldShowMoodAlternative || shouldShowWeatherAlternative;
       
       let alternativeMission = null;
       let alternativeReason = '';
