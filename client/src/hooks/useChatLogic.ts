@@ -27,6 +27,9 @@ export interface ChatMessage {
   metricData?: MetricData;
   canLearnMore?: boolean;
   isDetailedResponse?: boolean;
+  attachedMission?: SuggestedMission;
+  missionActivated?: boolean;
+  attachedCheckIn?: string;
 }
 
 export interface ActivityContext {
@@ -207,7 +210,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       .trim();
   }, []);
 
-  const fetchSuggestedMission = useCallback(async (context: string, specificMissionKey?: string) => {
+  const fetchSuggestedMission = useCallback(async (context: string, specificMissionKey?: string, targetMessageId?: string) => {
     try {
       const response = await authenticatedFetch('/api/missions/suggest', {
         method: 'POST',
@@ -235,6 +238,17 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
             isAlternative: data.isAlternative || false,
             parentMissionKey: data.originalMission?.missionKey,
           };
+          
+          // Attach mission to the specific message or latest assistant message
+          setMessages(prev => {
+            const msgId = targetMessageId || [...prev].reverse().find(m => m.role === 'assistant')?.id;
+            if (!msgId) return prev;
+            return prev.map(m => 
+              m.id === msgId ? { ...m, attachedMission: mission, missionActivated: false } : m
+            );
+          });
+          
+          // Keep global state for backward compatibility
           setSuggestedMission(mission);
           setShowMissionCard(true);
           setMissionActivated(false);
@@ -243,20 +257,24 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     } catch (error) {
       console.error('Failed to fetch suggested mission:', error);
     }
-  }, [i18n.language]);
+  }, [i18n.language, setMessages]);
 
   const parseAIResponse = useCallback((response: string): void => {
+    parseAIResponseWithMessageId(response, undefined);
+  }, []);
+  
+  const parseAIResponseWithMessageId = useCallback((response: string, targetMessageId?: string): void => {
     // Check for specific mission suggestion [SUGGEST_MISSION:missionKey]
     const specificMissionMatch = response.match(/\[SUGGEST_MISSION:([^\]]+)\]/i);
     if (specificMissionMatch) {
       const missionKey = specificMissionMatch[1].trim();
-      fetchSuggestedMission(lastUserMessageRef.current, missionKey);
+      fetchSuggestedMission(lastUserMessageRef.current, missionKey, targetMessageId);
       return;
     }
     
     // Check for general mission suggestion [SUGGEST_MISSION]
     if (response.includes('[SUGGEST_MISSION]')) {
-      fetchSuggestedMission(lastUserMessageRef.current);
+      fetchSuggestedMission(lastUserMessageRef.current, undefined, targetMessageId);
       return;
     }
 
@@ -267,6 +285,12 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
           const missionId = match[1];
           const mission = suggestedMissions.find(m => m.id === missionId);
           if (mission) {
+            // Attach mission to specific message
+            if (targetMessageId) {
+              setMessages(prev => prev.map(m => 
+                m.id === targetMessageId ? { ...m, attachedMission: mission, missionActivated: false } : m
+              ));
+            }
             setSuggestedMission(mission);
             setShowMissionCard(true);
             setMissionActivated(false);
@@ -275,6 +299,12 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         } else if (type === 'suggestion' || type === 'recommendation') {
           const mission = getMissionFromContent(response);
           if (mission) {
+            // Attach mission to specific message
+            if (targetMessageId) {
+              setMessages(prev => prev.map(m => 
+                m.id === targetMessageId ? { ...m, attachedMission: mission, missionActivated: false } : m
+              ));
+            }
             setSuggestedMission(mission);
             setShowMissionCard(true);
             setMissionActivated(false);
@@ -287,12 +317,18 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     if (activityContextRef.current) {
       const contextMission = getMissionForActivityContext(activityContextRef.current.type);
       if (contextMission && response.toLowerCase().includes('improve')) {
+        // Attach mission to specific message
+        if (targetMessageId) {
+          setMessages(prev => prev.map(m => 
+            m.id === targetMessageId ? { ...m, attachedMission: contextMission, missionActivated: false } : m
+          ));
+        }
         setSuggestedMission(contextMission);
         setShowMissionCard(true);
         setMissionActivated(false);
       }
     }
-  }, [fetchSuggestedMission]);
+  }, [fetchSuggestedMission, setMessages]);
 
   const getMissionFromContent = (response: string): SuggestedMission | null => {
     const lowerResponse = response.toLowerCase();
@@ -420,15 +456,20 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       
       const cleanedMessage = cleanAIResponse(data.message);
 
+      const assistantMessageId = (Date.now() + 1).toString();
       const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: assistantMessageId,
         role: 'assistant',
         content: cleanedMessage,
         timestamp: new Date(),
         canLearnMore: true,
+        attachedCheckIn: pendingEmotion || undefined,
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Parse AI response and attach mission to this specific message
+      parseAIResponseWithMessageId(data.message, assistantMessageId);
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage: ChatMessage = {
@@ -492,6 +533,14 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
 
       setMissionActivated(true);
+      
+      // Update the message's missionActivated state
+      setMessages(prev => prev.map(m => 
+        m.attachedMission?.id === suggestedMission.id || m.attachedMission?.missionKey === suggestedMission.missionKey
+          ? { ...m, missionActivated: true }
+          : m
+      ));
+      
       toast({
         title: t('chat.missionActivated', 'Mission Activated!') + ' 🎯',
         description: `"${suggestedMission.title}" has been added to your quests.`,
@@ -545,6 +594,11 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const handleConfirmEmotion = useCallback(() => {
     setIsCheckInConfirmationPending(false);
     
+    // Clear the attachedCheckIn from the message
+    setMessages(prev => prev.map(m => 
+      m.attachedCheckIn === pendingEmotion ? { ...m, attachedCheckIn: undefined } : m
+    ));
+    
     toast({
       title: 'Check-in Confirmed!',
       description: `Thanks for sharing that you're feeling ${pendingEmotion}. Self-awareness is key to health!`,
@@ -563,6 +617,11 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const handleDenyEmotion = useCallback(() => {
     setIsCheckInConfirmationPending(false);
     
+    // Clear the attachedCheckIn from the message
+    setMessages(prev => prev.map(m => 
+      m.attachedCheckIn === pendingEmotion ? { ...m, attachedCheckIn: undefined } : m
+    ));
+    
     const denyMessage: ChatMessage = {
       id: (Date.now() + 3).toString(),
       role: 'assistant',
@@ -571,7 +630,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     };
     setMessages(prev => [...prev, denyMessage]);
     setPendingEmotion(null);
-  }, [setMessages]);
+  }, [pendingEmotion, setMessages]);
 
   const handleLearnMore = useCallback(async (messageId: string) => {
     setLoading(true);

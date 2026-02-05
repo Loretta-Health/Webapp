@@ -256,22 +256,22 @@ export default function Chat() {
                       </motion.div>
                     )}
 
-                    {message.role === 'assistant' && idx === visibleMessages.length - 1 && (
+                    {message.role === 'assistant' && (
                       <>
-                        {showMissionCard && suggestedMission && (
+                        {message.attachedMission && (
                           <MissionCardView
-                            suggestedMission={suggestedMission}
-                            showMissionCard={showMissionCard}
-                            missionActivated={missionActivated}
+                            suggestedMission={message.attachedMission}
+                            showMissionCard={true}
+                            missionActivated={message.missionActivated || false}
                             isActivating={isActivatingMission}
                             onActivate={handleActivateMission}
                             onView={handleViewMission}
                           />
                         )}
 
-                        {isCheckInConfirmationPending && pendingEmotion && (
+                        {message.attachedCheckIn && (
                           <CheckInConfirmationBanner
-                            emotion={pendingEmotion}
+                            emotion={message.attachedCheckIn}
                             onConfirm={handleConfirmEmotion}
                             onDeny={handleDenyEmotion}
                           />
