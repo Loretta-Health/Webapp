@@ -241,13 +241,21 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
             parentMissionKey: data.originalMission?.missionKey,
           };
           
-          // Attach mission to the specific message or latest assistant message
+          // Clear any previous unactivated missions and attach new mission to the target message
           setMessages(prev => {
             const msgId = targetMessageId || [...prev].reverse().find(m => m.role === 'assistant')?.id;
             if (!msgId) return prev;
-            return prev.map(m => 
-              m.id === msgId ? { ...m, attachedMission: mission, missionActivated: false } : m
-            );
+            return prev.map(m => {
+              // Clear unactivated missions from other messages
+              if (m.attachedMission && !m.missionActivated && m.id !== msgId) {
+                return { ...m, attachedMission: undefined };
+              }
+              // Attach new mission to target message
+              if (m.id === msgId) {
+                return { ...m, attachedMission: mission, missionActivated: false };
+              }
+              return m;
+            });
           });
           
           // Keep global state for backward compatibility
@@ -286,6 +294,26 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       return;
     }
 
+    // Helper function to attach mission and clear previous unactivated ones
+    const attachMissionToMessage = (mission: SuggestedMission) => {
+      if (targetMessageId) {
+        setMessages(prev => prev.map(m => {
+          // Clear unactivated missions from other messages
+          if (m.attachedMission && !m.missionActivated && m.id !== targetMessageId) {
+            return { ...m, attachedMission: undefined };
+          }
+          // Attach new mission to target message
+          if (m.id === targetMessageId) {
+            return { ...m, attachedMission: mission, missionActivated: false };
+          }
+          return m;
+        }));
+      }
+      setSuggestedMission(mission);
+      setShowMissionCard(true);
+      setMissionActivated(false);
+    };
+
     for (const { pattern, type } of missionTriggerPatterns) {
       const match = response.match(pattern);
       if (match) {
@@ -293,29 +321,13 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
           const missionId = match[1];
           const mission = suggestedMissions.find(m => m.id === missionId);
           if (mission) {
-            // Attach mission to specific message
-            if (targetMessageId) {
-              setMessages(prev => prev.map(m => 
-                m.id === targetMessageId ? { ...m, attachedMission: mission, missionActivated: false } : m
-              ));
-            }
-            setSuggestedMission(mission);
-            setShowMissionCard(true);
-            setMissionActivated(false);
+            attachMissionToMessage(mission);
             return;
           }
         } else if (type === 'suggestion' || type === 'recommendation') {
           const mission = getMissionFromContent(response);
           if (mission) {
-            // Attach mission to specific message
-            if (targetMessageId) {
-              setMessages(prev => prev.map(m => 
-                m.id === targetMessageId ? { ...m, attachedMission: mission, missionActivated: false } : m
-              ));
-            }
-            setSuggestedMission(mission);
-            setShowMissionCard(true);
-            setMissionActivated(false);
+            attachMissionToMessage(mission);
             return;
           }
         }
@@ -325,15 +337,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     if (activityContextRef.current) {
       const contextMission = getMissionForActivityContext(activityContextRef.current.type);
       if (contextMission && response.toLowerCase().includes('improve')) {
-        // Attach mission to specific message
-        if (targetMessageId) {
-          setMessages(prev => prev.map(m => 
-            m.id === targetMessageId ? { ...m, attachedMission: contextMission, missionActivated: false } : m
-          ));
-        }
-        setSuggestedMission(contextMission);
-        setShowMissionCard(true);
-        setMissionActivated(false);
+        attachMissionToMessage(contextMission);
       }
     }
   }, [fetchSuggestedMission, setMessages]);
