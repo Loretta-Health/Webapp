@@ -576,21 +576,45 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
   const handleLearnMore = useCallback(async (messageId: string) => {
     setLoading(true);
     
-    // Find the message index and get the preceding user message
+    // Find the message index
     const messageIndex = messages.findIndex(m => m.id === messageId);
     if (messageIndex === -1) {
       setLoading(false);
       return;
     }
     
-    // Get all messages up to and including the assistant message we want to expand
+    // Remove canLearnMore from the original message immediately
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, canLearnMore: false }
+        : msg
+    ));
+    
+    // Create the user "learn more" message
+    const learnMoreUserMessage: ChatMessage = {
+      id: `learn-more-${Date.now()}`,
+      role: 'user',
+      content: 'Can you tell me more about this? Please provide more details and examples.',
+      timestamp: new Date(),
+    };
+    
+    // Add the user message to the chat
+    setMessages(prev => [...prev, learnMoreUserMessage]);
+    
+    // Get all messages up to and including the new user message for API call
     const messagesUpToTarget = messages.slice(0, messageIndex + 1);
     
     try {
-      const messagesForAPI = messagesUpToTarget.map(msg => ({
-        role: msg.role,
-        content: msg.content,
-      }));
+      const messagesForAPI = [
+        ...messagesUpToTarget.map(msg => ({
+          role: msg.role,
+          content: msg.content,
+        })),
+        {
+          role: 'user' as const,
+          content: learnMoreUserMessage.content,
+        }
+      ];
 
       const response = await authenticatedFetch('/api/chat', {
         method: 'POST',
@@ -611,12 +635,17 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       const data = await response.json();
       const cleanedMessage = cleanAIResponse(data.message);
 
-      // Replace the original assistant message with the detailed one
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, content: cleanedMessage, isDetailedResponse: true, canLearnMore: false }
-          : msg
-      ));
+      // Add the detailed AI response as a new message
+      const detailedResponse: ChatMessage = {
+        id: `detailed-${Date.now()}`,
+        role: 'assistant',
+        content: cleanedMessage,
+        timestamp: new Date(),
+        isDetailedResponse: true,
+        canLearnMore: false,
+      };
+      
+      setMessages(prev => [...prev, detailedResponse]);
     } catch (error) {
       console.error('Learn more error:', error);
       toast({
