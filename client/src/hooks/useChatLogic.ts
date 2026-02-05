@@ -594,7 +594,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     const learnMoreUserMessage: ChatMessage = {
       id: `learn-more-${Date.now()}`,
       role: 'user',
-      content: 'Can you tell me more about this? Please provide more details and examples.',
+      content: 'Can you expand on that? Please restate your answer with more details and examples.',
       timestamp: new Date(),
     };
     
