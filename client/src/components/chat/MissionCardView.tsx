@@ -30,8 +30,8 @@ interface MissionCardViewProps {
   suggestedMission: SuggestedMission | null;
   showMissionCard: boolean;
   missionActivated: boolean;
-  onActivate: () => void;
-  onView: () => void;
+  onActivate: (mission: SuggestedMission) => void;
+  onView: (mission: SuggestedMission) => void;
   isActivating?: boolean;
 }
 
@@ -74,8 +74,9 @@ export default function MissionCardView({
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   
   const handleActivate = () => {
+    if (!suggestedMission) return;
     triggerHaptic();
-    onActivate();
+    onActivate(suggestedMission);
   };
   
   if (!suggestedMission || !showMissionCard) return null;
@@ -137,7 +138,7 @@ export default function MissionCardView({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={onView}
+                  onClick={() => suggestedMission && onView(suggestedMission)}
                   aria-label={`View details for ${suggestedMission.title}`}
                   className="text-xs sm:text-sm min-h-[44px] flex-1 sm:flex-none rounded-xl border-gray-200 dark:border-white/20 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all"
                 >

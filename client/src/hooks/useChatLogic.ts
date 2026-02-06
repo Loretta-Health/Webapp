@@ -57,8 +57,8 @@ interface UseChatLogicReturn {
   activityContext: ActivityContext | null;
   handleSend: (text?: string, metricData?: MetricData) => Promise<void>;
   handleImagePick: () => void;
-  handleActivateMission: () => void;
-  handleViewMission: () => void;
+  handleActivateMission: (mission?: SuggestedMission) => void;
+  handleViewMission: (mission?: SuggestedMission) => void;
   handleConfirmEmotion: () => void;
   handleDenyEmotion: () => void;
   setActivityContext: React.Dispatch<React.SetStateAction<ActivityContext | null>>;
@@ -464,8 +464,6 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
 
       const data = await response.json();
       
-      parseAIResponse(data.message);
-      
       const cleanedMessage = cleanAIResponse(data.message);
 
       const assistantMessageId = (Date.now() + 1).toString();
@@ -475,7 +473,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
         content: cleanedMessage,
         timestamp: new Date(),
         canLearnMore: true,
-        attachedCheckIn: pendingEmotion || undefined,
+        attachedCheckIn: detectedEmotion || undefined,
       };
 
       setMessages(prev => [...prev, assistantMessage]);
@@ -494,7 +492,7 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     } finally {
       setLoading(false);
     }
-  }, [inputText, selectedImage, messages, setMessages, detectEmotion, parseAIResponse, cleanAIResponse]);
+  }, [inputText, selectedImage, messages, setMessages, detectEmotion, cleanAIResponse, parseAIResponseWithMessageId]);
 
   const handleImagePick = useCallback(() => {
     toast({
@@ -503,8 +501,9 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     });
   }, [toast]);
 
-  const handleActivateMission = useCallback(async () => {
-    if (!suggestedMission || isActivatingMission) {
+  const handleActivateMission = useCallback(async (mission?: SuggestedMission) => {
+    const targetMission = mission || suggestedMission;
+    if (!targetMission || isActivatingMission) {
       return;
     }
 
@@ -513,26 +512,31 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     try {
       let response;
       
-      if (suggestedMission.isAlternative && suggestedMission.parentMissionKey && suggestedMission.missionKey) {
+      if (targetMission.isAlternative && targetMission.parentMissionKey && targetMission.missionKey) {
         response = await authenticatedFetch('/api/missions/activate-alternative', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            parentMissionKey: suggestedMission.parentMissionKey,
-            alternativeMissionKey: suggestedMission.missionKey,
+            parentMissionKey: targetMission.parentMissionKey,
+            alternativeMissionKey: targetMission.missionKey,
           }),
         });
-      } else if (suggestedMission.userMissionId) {
-        response = await authenticatedFetch(`/api/missions/${suggestedMission.userMissionId}`, {
+      } else if (targetMission.userMissionId) {
+        response = await authenticatedFetch(`/api/missions/${targetMission.userMissionId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isActive: true }),
         });
       } else {
         setMissionActivated(true);
+        setMessages(prev => prev.map(m => 
+          m.attachedMission?.id === targetMission.id || m.attachedMission?.missionKey === targetMission.missionKey
+            ? { ...m, missionActivated: true }
+            : m
+        ));
         toast({
           title: t('chat.missionActivated', 'Mission Activated!') + ' 🎯',
-          description: `"${suggestedMission.title}" has been added to your quests.`,
+          description: `"${targetMission.title}" has been added to your quests.`,
         });
         return;
       }
@@ -548,22 +552,22 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
       
       // Update the message's missionActivated state
       setMessages(prev => prev.map(m => 
-        m.attachedMission?.id === suggestedMission.id || m.attachedMission?.missionKey === suggestedMission.missionKey
+        m.attachedMission?.id === targetMission.id || m.attachedMission?.missionKey === targetMission.missionKey
           ? { ...m, missionActivated: true }
           : m
       ));
       
       toast({
         title: t('chat.missionActivated', 'Mission Activated!') + ' 🎯',
-        description: `"${suggestedMission.title}" has been added to your quests.`,
+        description: `"${targetMission.title}" has been added to your quests.`,
       });
 
       const systemMessage: ChatMessage = {
         id: (Date.now() + 2).toString(),
         role: 'assistant',
         content: i18n.language.startsWith('de') 
-          ? `Super Wahl! Ich habe die Mission "${suggestedMission.title}" für dich aktiviert. Du kannst deinen Fortschritt im Dashboard verfolgen. Viel Erfolg! 💪`
-          : `Great choice! I've activated the "${suggestedMission.title}" mission for you. You can track your progress in the Dashboard. Good luck! 💪`,
+          ? `Super Wahl! Ich habe die Mission "${targetMission.title}" für dich aktiviert. Du kannst deinen Fortschritt im Dashboard verfolgen. Viel Erfolg! 💪`
+          : `Great choice! I've activated the "${targetMission.title}" mission for you. You can track your progress in the Dashboard. Good luck! 💪`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, systemMessage]);
@@ -591,12 +595,13 @@ export function useChatLogic({ messages, setMessages }: UseChatLogicProps): UseC
     }
   }, [suggestedMission, isActivatingMission, toast, setMessages, t, i18n.language, queryClient]);
 
-  const handleViewMission = useCallback(() => {
-    if (suggestedMission?.missionKey) {
-      if (suggestedMission.isAlternative) {
-        setLocation(`/alternative-mission?id=${suggestedMission.missionKey}`);
+  const handleViewMission = useCallback((mission?: SuggestedMission) => {
+    const targetMission = mission || suggestedMission;
+    if (targetMission?.missionKey) {
+      if (targetMission.isAlternative) {
+        setLocation(`/alternative-mission?id=${targetMission.missionKey}`);
       } else {
-        setLocation(`/mission-details?id=${suggestedMission.missionKey}`);
+        setLocation(`/mission-details?id=${targetMission.missionKey}`);
       }
     } else {
       setLocation('/my-dashboard');
