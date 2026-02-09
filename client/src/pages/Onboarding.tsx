@@ -52,7 +52,8 @@ import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { useAuth } from '@/hooks/use-auth';
 import { 
   baseQuestions, 
-  CORE_QUESTION_COUNT,
+  ONBOARDING_QUESTION_IDS,
+  ONBOARDING_QUESTION_COUNT,
   type Question,
   type QuestionnaireAnswer
 } from '@/lib/questionnaire';
@@ -419,7 +420,7 @@ export function buildFeatureJson(answers: QuestionnaireAnswer[]): FeatureItem[] 
 }
 
 function getQuestionsWithFollowUps(answers: QuestionnaireAnswer[]): Question[] {
-  return [...baseQuestions];
+  return baseQuestions.filter(q => (ONBOARDING_QUESTION_IDS as readonly string[]).includes(q.id));
 }
 
 export default function Onboarding() {
@@ -500,8 +501,7 @@ export default function Onboarding() {
   });
   const profileComplete = !!(profileData?.firstName && profileData?.lastName && profileData?.email) || !!(user?.firstName && user?.lastName && user?.email);
   
-  // Get core question IDs for completion check (exclude follow-up questions)
-  const coreQuestionIds = baseQuestions.filter(q => q.module === 'core' && !q.followUpFor).map(q => q.id);
+  const coreQuestionIds = [...ONBOARDING_QUESTION_IDS];
   
   // Check if all core questions have been answered in saved data
   const getSavedAnswerIds = (): string[] => {
@@ -901,11 +901,6 @@ export default function Onboarding() {
 
     const updatedQuestions = getQuestionsWithFollowUps(updatedAnswers);
     
-    if (currentQuestion === CORE_QUESTION_COUNT - 1 && !showModuleSelection) {
-      setShowModuleSelection(true);
-      return;
-    }
-    
     if (currentQuestion < updatedQuestions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
     } else {
@@ -949,11 +944,6 @@ export default function Onboarding() {
     
     fetchLiveScore(updatedAnswers);
 
-    if (currentQuestion === CORE_QUESTION_COUNT - 1 && !showModuleSelection) {
-      setShowModuleSelection(true);
-      return;
-    }
-
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
     } else {
@@ -985,11 +975,6 @@ export default function Onboarding() {
     setWantToSkip(false);
     
     fetchLiveScore(updatedAnswers);
-
-    if (currentQuestion === CORE_QUESTION_COUNT - 1 && !showModuleSelection) {
-      setShowModuleSelection(true);
-      return;
-    }
 
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
@@ -1051,7 +1036,7 @@ export default function Onboarding() {
   
   const handleContinueWithModules = () => {
     setShowModuleSelection(false);
-    setCurrentQuestion(CORE_QUESTION_COUNT);
+    setCurrentQuestion(ONBOARDING_QUESTION_COUNT);
   };
   
   const getModuleInfo = (module: string) => {
@@ -1211,11 +1196,6 @@ export default function Onboarding() {
     setTimeInput('');
     setInputError('');
     setWantToSkip(false);
-
-    if (currentQuestion === CORE_QUESTION_COUNT - 1 && !showModuleSelection) {
-      setShowModuleSelection(true);
-      return;
-    }
 
     const updatedQuestions = getQuestionsWithFollowUps(updatedAnswers);
     
@@ -1785,7 +1765,7 @@ export default function Onboarding() {
     const question = questions[currentQuestion];
     const QuestionIcon = question.icon;
     const isFollowUp = question.followUpFor !== undefined;
-    const isInCoreSection = currentQuestion < CORE_QUESTION_COUNT;
+    const isInCoreSection = currentQuestion < ONBOARDING_QUESTION_COUNT;
     
     return (
       <motion.div

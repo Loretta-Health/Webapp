@@ -52,6 +52,16 @@ export interface QuestionnaireAnswer {
 
 export const CORE_QUESTION_COUNT = 8;
 
+export const ONBOARDING_QUESTION_IDS = [
+  'age',
+  'weight_current',
+  'high_cholesterol',
+  'high_blood_pressure',
+  'general_health',
+] as const;
+
+export const ONBOARDING_QUESTION_COUNT = ONBOARDING_QUESTION_IDS.length;
+
 export const baseQuestions: Question[] = [
   // === CORE QUESTIONS (Quick Health Check) ===
   {
