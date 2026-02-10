@@ -73,6 +73,8 @@ export default function AuthPage() {
       if (pendingInvite && isOnboardingComplete) {
         localStorage.removeItem('loretta_pending_invite');
         setLocation(`/team-invite?code=${pendingInvite}`);
+      } else if (isOnboardingComplete) {
+        setLocation('/my-dashboard');
       } else {
         setLocation('/welcome');
       }

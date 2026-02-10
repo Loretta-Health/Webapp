@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest, queryClient, authenticatedFetch } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/use-auth';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
+import { ONBOARDING_QUESTION_IDS } from '@/lib/questionnaire';
 import { useEffect } from 'react';
 
 interface QuestionnaireRecord {
@@ -47,7 +48,13 @@ export default function Welcome() {
     enabled: !!userId,
   });
 
-  const legacyQuestionnaireComplete = Array.isArray(questionnaireData) && questionnaireData.length > 0;
+  const legacyQuestionnaireComplete = (() => {
+    if (!Array.isArray(questionnaireData) || questionnaireData.length === 0) return false;
+    const healthRecord = questionnaireData.find(r => r.category === 'health_risk_assessment');
+    if (!healthRecord?.answers) return false;
+    const answeredIds = Object.keys(healthRecord.answers);
+    return ONBOARDING_QUESTION_IDS.every(id => answeredIds.includes(id));
+  })();
   
   const allLoading = isLoading || questLoading || prefsLoading;
   const effectiveQuestionnaireComplete = isQuestionnaireComplete || legacyQuestionnaireComplete;
