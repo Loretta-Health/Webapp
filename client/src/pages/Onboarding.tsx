@@ -1026,21 +1026,16 @@ export default function Onboarding() {
       
       if ((step === 'questionnaire' || step === 'registration' || step === 'consent') && answers.length > 0) {
         await saveQuestionnaireMutation.mutateAsync(answers);
-        
-        const coreAnswered = ONBOARDING_QUESTION_IDS.filter(id =>
-          answers.some(a => a.questionId === id)
-        ).length;
-        if (coreAnswered >= ONBOARDING_QUESTION_IDS.length) {
-          try {
-            await authenticatedFetch('/api/risk-scores/calculate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({}),
-            });
-          } catch (e) {
-            console.error('[Onboarding] Risk calc on save-and-exit failed:', e);
-          }
-        }
+      }
+      
+      try {
+        await authenticatedFetch('/api/risk-scores/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+      } catch (e) {
+        console.error('[Onboarding] Risk calc on save-and-exit failed:', e);
       }
     } catch (error) {
       console.error('Failed to save progress:', error);
