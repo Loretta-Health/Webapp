@@ -650,16 +650,13 @@ export default function Onboarding() {
         }
         
         if (Object.keys(profileUpdates).length > 0) {
-          await apiRequest('POST', '/api/profile', {
+          await apiRequest('POST', '/api/profile?skipRiskCalc=true', {
             userId,
             ...profileUpdates,
           });
           queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
           console.log('[Onboarding] Synced to profile:', Object.keys(profileUpdates).join(', '));
         }
-        
-        // Recalculate risk score with updated data
-        queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', userId] });
       } catch (error) {
         console.error('[Onboarding] Auto-save failed:', error);
       }
@@ -713,7 +710,7 @@ export default function Onboarding() {
         answersRecord[a.questionId] = String(a.answer);
       });
       console.log('Saving questionnaire:', { userId, category: 'health_risk_assessment', answersCount: Object.keys(answersRecord).length });
-      return apiRequest('POST', '/api/questionnaires', {
+      return apiRequest('POST', '/api/questionnaires?skipRiskCalc=true', {
         userId,
         category: 'health_risk_assessment',
         answers: answersRecord,

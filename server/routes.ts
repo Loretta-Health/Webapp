@@ -543,16 +543,20 @@ Provide a thorough, well-structured answer with:
       const saved = await storage.saveQuestionnaireAnswers(validatedData);
       console.log("[API] Questionnaire saved successfully:", saved.id);
       
-      // Automatically recalculate risk score using full feature set
-      try {
-        const result = await calculateAndSaveRiskScore(userId);
-        if (result.success) {
-          console.log("[API] Risk score calculated from ML model after questionnaire update:", result.riskValue, "using", result.featuresUsed, "features");
-        } else {
-          console.log("[API] Risk score not updated:", result.error);
+      const skipRiskCalc = req.query.skipRiskCalc === 'true';
+      if (!skipRiskCalc) {
+        try {
+          const result = await calculateAndSaveRiskScore(userId);
+          if (result.success) {
+            console.log("[API] Risk score calculated from ML model after questionnaire update:", result.riskValue, "using", result.featuresUsed, "features");
+          } else {
+            console.log("[API] Risk score not updated:", result.error);
+          }
+        } catch (riskError) {
+          console.error("[API] Failed to auto-recalculate risk score:", riskError);
         }
-      } catch (riskError) {
-        console.error("[API] Failed to auto-recalculate risk score:", riskError);
+      } else {
+        console.log("[API] Skipping auto risk calculation (skipRiskCalc=true)");
       }
       
       res.json(saved);
@@ -606,8 +610,8 @@ Provide a thorough, well-structured answer with:
         achievementsUnlocked = xpResult.achievementsUnlocked;
       }
       
-      // Automatically recalculate risk score using full feature set when profile is updated
-      if (saved.age || saved.height || saved.weight) {
+      const skipRiskCalc = req.query.skipRiskCalc === 'true';
+      if (!skipRiskCalc && (saved.age || saved.height || saved.weight)) {
         try {
           const result = await calculateAndSaveRiskScore(userId);
           if (result.success) {
@@ -618,6 +622,8 @@ Provide a thorough, well-structured answer with:
         } catch (riskError) {
           console.error("[API] Failed to auto-recalculate risk score:", riskError);
         }
+      } else if (skipRiskCalc) {
+        console.log("[API] Skipping auto risk calculation for profile (skipRiskCalc=true)");
       }
       
       res.json({ ...saved, xpAwarded, achievementsUnlocked });
