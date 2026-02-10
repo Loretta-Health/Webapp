@@ -625,7 +625,7 @@ export default function Onboarding() {
       
       try {
         // Save questionnaire answers
-        await apiRequest('POST', '/api/questionnaires', {
+        await apiRequest('POST', '/api/questionnaires?skipRiskCalc=true', {
           userId,
           category: 'health_risk_assessment',
           answers: answersRecord,
@@ -1025,6 +1025,21 @@ export default function Onboarding() {
       
       if ((step === 'questionnaire' || step === 'registration' || step === 'consent') && answers.length > 0) {
         await saveQuestionnaireMutation.mutateAsync(answers);
+        
+        const coreAnswered = ONBOARDING_QUESTION_IDS.filter(id =>
+          answers.some(a => a.questionId === id)
+        ).length;
+        if (coreAnswered >= ONBOARDING_QUESTION_IDS.length) {
+          try {
+            await authenticatedFetch('/api/risk-scores/calculate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({}),
+            });
+          } catch (e) {
+            console.error('[Onboarding] Risk calc on save-and-exit failed:', e);
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to save progress:', error);
