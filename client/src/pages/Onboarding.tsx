@@ -1012,10 +1012,15 @@ export default function Onboarding() {
   
   const handleRiskScoreContinue = async () => {
     await markQuestionnaireComplete();
+    queryClient.invalidateQueries({ queryKey: ['/api/questionnaires'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/gamification', userId] });
     navigate('/my-dashboard');
   };
 
   const handleSaveAndExit = async () => {
+    let saveSucceeded = false;
     try {
       if (step === 'consent' && acknowledged) {
         await savePreferencesMutation.mutateAsync({
@@ -1033,6 +1038,12 @@ export default function Onboarding() {
         await saveQuestionnaireMutation.mutateAsync(answers);
       }
       
+      saveSucceeded = true;
+    } catch (error) {
+      console.error('Failed to save progress:', error);
+    }
+    
+    if (saveSucceeded) {
       try {
         await authenticatedFetch('/api/risk-scores/calculate', {
           method: 'POST',
@@ -1042,9 +1053,11 @@ export default function Onboarding() {
       } catch (e) {
         console.error('[Onboarding] Risk calc on save-and-exit failed:', e);
       }
-    } catch (error) {
-      console.error('Failed to save progress:', error);
     }
+    
+    queryClient.invalidateQueries({ queryKey: ['/api/questionnaires'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
+    queryClient.invalidateQueries({ queryKey: ['/api/risk-scores/latest', userId] });
     navigate('/my-dashboard');
   };
 
