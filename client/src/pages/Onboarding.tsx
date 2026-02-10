@@ -65,7 +65,7 @@ interface QuestionnaireRecord {
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
 
-type OnboardingStep = 'welcome' | 'consent' | 'registration' | 'questionnaire' | 'riskScore';
+type OnboardingStep = 'welcome' | 'consent' | 'registration' | 'questionnaire';
 
 interface RegistrationData {
   firstName: string;
@@ -370,12 +370,12 @@ function kgToLbs(kg: number): number {
   return kg * 2.20462;
 }
 
-export interface FeatureItem {
+interface FeatureItem {
   ID: string;
   Value: string;
 }
 
-export function buildFeatureJson(answers: QuestionnaireAnswer[]): FeatureItem[] {
+function buildFeatureJson(answers: QuestionnaireAnswer[]): FeatureItem[] {
   const features: FeatureItem[] = [];
   const allQuestions = [...baseQuestions];
   
@@ -441,23 +441,9 @@ export default function Onboarding() {
   const [answers, setAnswers] = useState<QuestionnaireAnswer[]>([]);
   const [skippedQuestions, setSkippedQuestions] = useState<string[]>([]);
   const [wantToSkip, setWantToSkip] = useState(false);
-  const [riskScore, setRiskScore] = useState<{ 
-    diabetes_probability: number; 
-    risk_level: string;
-    score: number;
-    level: string;
-    color: string;
-  } | null>(null);
-  const [isPredicting, setIsPredicting] = useState(false);
   const [numberInput, setNumberInput] = useState('');
   const [timeInput, setTimeInput] = useState('');
   const [inputError, setInputError] = useState('');
-  const [liveScore, setLiveScore] = useState<{
-    probability: number;
-    riskLevel: string;
-    answeredCount: number;
-    isLoading: boolean;
-  } | null>(null);
   const [showModuleSelection, setShowModuleSelection] = useState(false);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const { user } = useAuth();
@@ -678,28 +664,6 @@ export default function Onboarding() {
     return () => clearTimeout(saveTimer);
   }, [answers, savedAnswersLoaded, userId, lastSavedCount]);
   
-  const fetchLiveScore = async (currentAnswers: QuestionnaireAnswer[]) => {
-    if (currentAnswers.length < 3) return;
-    
-    try {
-      setLiveScore(prev => prev ? { ...prev, isLoading: true } : { probability: 0, riskLevel: 'Unknown', answeredCount: 0, isLoading: true });
-      
-      console.log('[LiveScore] Using client-side calculation (ML backend disabled)');
-      
-      const fallbackScore = calculateRiskScore(currentAnswers);
-      const probability = (100 - fallbackScore.score) / 100;
-      
-      setLiveScore({
-        probability: probability,
-        riskLevel: fallbackScore.level,
-        answeredCount: currentAnswers.length,
-        isLoading: false,
-      });
-    } catch (error) {
-      console.log('[LiveScore] Calculation error:', error);
-      setLiveScore(prev => prev ? { ...prev, isLoading: false } : null);
-    }
-  };
 
   const savePreferencesMutation = useMutation({
     mutationFn: async ({ consentAccepted, newsletterSubscribed }: { consentAccepted: boolean; newsletterSubscribed: boolean }) => {
@@ -760,22 +724,6 @@ export default function Onboarding() {
     },
   });
 
-  const saveRiskScoreMutation = useMutation({
-    mutationFn: async (scoreData: { overallScore: number; diabetesRisk: number; heartRisk: number; strokeRisk: number }) => {
-      console.log('Saving risk score:', { userId, ...scoreData });
-      return apiRequest('POST', '/api/risk-scores', {
-        userId,
-        ...scoreData,
-      });
-    },
-    onSuccess: () => {
-      console.log('Risk score saved successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-scores', userId] });
-    },
-    onError: (error) => {
-      console.error('Failed to save risk score:', error);
-    },
-  });
 
   const initializeGamificationMutation = useMutation({
     mutationFn: async () => {
@@ -851,9 +799,8 @@ export default function Onboarding() {
   const stepProgress = {
     welcome: 0,
     consent: 15,
-    registration: 20, // Kept for type compatibility but skipped in flow
-    questionnaire: 20 + (currentQuestion / questions.length) * 70,
-    riskScore: 100,
+    registration: 20,
+    questionnaire: 20 + (currentQuestion / questions.length) * 80,
   };
 
   const handleConsentAccept = async () => {
@@ -896,8 +843,6 @@ export default function Onboarding() {
     setTimeInput('');
     setInputError('');
     setWantToSkip(false);
-    
-    fetchLiveScore(updatedAnswers);
 
     const updatedQuestions = getQuestionsWithFollowUps(updatedAnswers);
     
@@ -941,8 +886,6 @@ export default function Onboarding() {
     setNumberInput('');
     setInputError('');
     setWantToSkip(false);
-    
-    fetchLiveScore(updatedAnswers);
 
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
@@ -973,8 +916,6 @@ export default function Onboarding() {
     setTimeInput('');
     setInputError('');
     setWantToSkip(false);
-    
-    fetchLiveScore(updatedAnswers);
 
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => setCurrentQuestion(prev => prev + 1), 300);
@@ -984,54 +925,23 @@ export default function Onboarding() {
   };
   
   const handleGetEarlyResults = async () => {
-    setIsPredicting(true);
     if (userId) {
       localStorage.setItem(`loretta_questionnaire_${userId}`, JSON.stringify(answers));
     }
     saveQuestionnaireMutation.mutate(answers);
     
     try {
-      // Calculate and save risk score
-      const fallbackResponse = await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
-      const fallbackData = await fallbackResponse.json();
-      
-      const diabetesProbability = (fallbackData.diabetesRisk || 0) / 100;
-      const score = 100 - (fallbackData.overallScore || 50);
-      let color = 'text-muted-foreground';
-      let level = 'Unknown';
-      
-      if (score >= 80) { color = 'text-emerald-500'; level = 'Low'; }
-      else if (score >= 60) { color = 'text-[#013DC4]'; level = 'Moderate'; }
-      else if (score >= 40) { color = 'text-amber-500'; level = 'Elevated'; }
-      else { color = 'text-destructive'; level = 'High'; }
-      
-      const fullScore = {
-        diabetes_probability: diabetesProbability,
-        risk_level: level,
-        score,
-        level,
-        color,
-      };
-      
-      setRiskScore(fullScore);
-      if (userId) {
-        localStorage.setItem(`loretta_risk_score_${userId}`, JSON.stringify(fullScore));
-      }
-      initializeGamificationMutation.mutate();
-      initializeAchievementsMutation.mutate();
-      initializeMissionsMutation.mutate();
-      
-      // Mark questionnaire as complete and navigate to risk score page
-      await markQuestionnaireComplete();
-      navigate('/risk-score');
+      await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
     } catch (error) {
-      console.error('[Prediction] Failed to calculate risk score:', error);
-      // Fallback: still navigate even if calculation fails
-      await markQuestionnaireComplete();
-      navigate('/risk-score');
-    } finally {
-      setIsPredicting(false);
+      console.log('[Prediction] Risk score calculation failed, will recalculate later:', error);
     }
+    
+    initializeGamificationMutation.mutate();
+    initializeAchievementsMutation.mutate();
+    initializeMissionsMutation.mutate();
+    
+    await markQuestionnaireComplete();
+    navigate('/my-dashboard');
   };
   
   const handleContinueWithModules = () => {
@@ -1068,84 +978,23 @@ export default function Onboarding() {
   };
 
   const finishQuestionnaire = async (finalAnswers: QuestionnaireAnswer[]) => {
-    setIsPredicting(true);
     if (userId) {
       localStorage.setItem(`loretta_questionnaire_${userId}`, JSON.stringify(finalAnswers));
     }
     saveQuestionnaireMutation.mutate(finalAnswers);
     
-    // ML backend disabled - using legacy calculation endpoint directly
-    console.log('[Prediction] Using legacy calculation (ML backend disabled)');
-    
     try {
-      // Call the server-side calculation endpoint
-      const fallbackResponse = await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
-      const fallbackData = await fallbackResponse.json();
-      
-      const diabetesProbability = (fallbackData.diabetesRisk || 0) / 100;
-      const score = 100 - (fallbackData.overallScore || 50);
-      let color = 'text-muted-foreground';
-      let level = 'Unknown';
-      
-      if (score >= 80) { color = 'text-emerald-500'; level = 'Low'; }
-      else if (score >= 60) { color = 'text-[#013DC4]'; level = 'Moderate'; }
-      else if (score >= 40) { color = 'text-amber-500'; level = 'Elevated'; }
-      else { color = 'text-destructive'; level = 'High'; }
-      
-      const fullScore = {
-        diabetes_probability: diabetesProbability,
-        risk_level: level,
-        score,
-        level,
-        color,
-      };
-      
-      setRiskScore(fullScore);
-      if (userId) {
-        localStorage.setItem(`loretta_risk_score_${userId}`, JSON.stringify(fullScore));
-      }
-      initializeGamificationMutation.mutate();
-      initializeAchievementsMutation.mutate();
-      initializeMissionsMutation.mutate();
-      setStep('riskScore');
-    } catch (fallbackError) {
-      // Server-side calculation failed - use client-side calculation as fallback
-      console.log('[Fallback] Server calculation failed, using client-side calculation');
-      const fallbackScore = calculateRiskScore(finalAnswers);
-      const diabetesProbability = (100 - fallbackScore.score) / 100;
-      const fullScore = {
-        diabetes_probability: diabetesProbability,
-        risk_level: fallbackScore.level,
-        score: fallbackScore.score,
-        level: fallbackScore.level,
-        color: fallbackScore.color,
-      };
-      setRiskScore(fullScore);
-      if (userId) {
-        localStorage.setItem(`loretta_risk_score_${userId}`, JSON.stringify(fullScore));
-      }
-      
-      saveRiskScoreMutation.mutate({
-        overallScore: fallbackScore.score,
-        diabetesRisk: 100 - fallbackScore.score,
-        heartRisk: 0,
-        strokeRisk: 0,
-      });
-      
-      initializeGamificationMutation.mutate();
-      initializeAchievementsMutation.mutate();
-      initializeMissionsMutation.mutate();
-      setStep('riskScore');
-    } finally {
-      setIsPredicting(false);
+      await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
+    } catch (error) {
+      console.log('[Prediction] Risk score calculation failed, will recalculate later:', error);
     }
-  };
-
-  const handleComplete = async () => {
-    const success = await markQuestionnaireComplete();
-    if (success) {
-      navigate('/my-dashboard');
-    }
+    
+    initializeGamificationMutation.mutate();
+    initializeAchievementsMutation.mutate();
+    initializeMissionsMutation.mutate();
+    
+    await markQuestionnaireComplete();
+    navigate('/my-dashboard');
   };
 
   const handleSaveAndExit = async () => {
@@ -1950,100 +1799,6 @@ export default function Onboarding() {
     );
   };
 
-  const renderRiskScore = () => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="text-center space-y-6"
-    >
-      {isPredicting ? (
-        <div className="py-12">
-          <div className="w-16 h-16 mx-auto border-4 border-[#013DC4] border-t-transparent rounded-full animate-spin" />
-          <p className="mt-4 text-muted-foreground">Analyzing your health data...</p>
-        </div>
-      ) : (
-        <>
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ type: 'spring', bounce: 0.5 }}
-            className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-[#013DC4] via-[#0150FF] to-[#CDB6EF] p-1 shadow-xl shadow-[#013DC4]/20"
-          >
-            <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
-              <div className="text-center">
-                <span className={`text-4xl font-black ${riskScore?.color}`} data-testid="text-risk-score">{riskScore?.score}</span>
-                <p className="text-xs text-muted-foreground">Risk Score</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <div className="space-y-2">
-            <Badge 
-              className={`${riskScore?.color === 'text-emerald-500' ? 'bg-emerald-500' : riskScore?.color === 'text-[#013DC4]' ? 'bg-[#013DC4]' : riskScore?.color === 'text-amber-500' ? 'bg-amber-500' : 'bg-destructive'} text-white font-bold text-lg px-4 py-1 rounded-xl`}
-              data-testid="badge-risk-level"
-            >
-              {riskScore?.level} Risk
-            </Badge>
-            {riskScore?.diabetes_probability !== undefined && (
-              <p className="text-sm text-muted-foreground">
-                Diabetes Risk: {(riskScore.diabetes_probability * 100).toFixed(1)}%
-              </p>
-            )}
-          </div>
-
-          {skippedQuestions.length > 0 && (
-            <Card className="p-4 bg-muted/30 border-muted">
-              <p className="text-sm text-muted-foreground text-center" data-testid="text-skipped-count">
-                You did not answer {skippedQuestions.length} {skippedQuestions.length === 1 ? 'question' : 'questions'}
-              </p>
-            </Card>
-          )}
-
-          <Card className="p-6 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border border-white/50 dark:border-white/10 rounded-2xl shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center">
-                <Heart className="w-8 h-8 text-white" />
-              </div>
-              <div className="text-left">
-                <p className="font-bold text-foreground mb-1">
-                  {riskScore && riskScore.score >= 60 
-                    ? "Great start! Let's keep improving together." 
-                    : "We've identified areas where we can help you improve."}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Complete daily quests and healthy habits to lower your risk score!
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <Card className="p-2 sm:p-3 text-center backdrop-blur-xl bg-[#013DC4]/10 border border-[#013DC4]/20 rounded-xl">
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-[#013DC4] mx-auto mb-1" />
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Earn XP</p>
-            </Card>
-            <Card className="p-2 sm:p-3 text-center backdrop-blur-xl bg-amber-500/10 border border-amber-500/20 rounded-xl">
-              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 mx-auto mb-1" />
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Build Streaks</p>
-            </Card>
-            <Card className="p-2 sm:p-3 text-center backdrop-blur-xl bg-[#CDB6EF]/20 border border-[#CDB6EF]/30 rounded-xl">
-              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-[#CDB6EF]" style={{ filter: 'brightness(0.7)' }} />
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">Get Healthier</p>
-            </Card>
-          </div>
-
-          <button
-            onClick={handleComplete}
-            className="w-full py-4 bg-gradient-to-r from-[#013DC4] via-[#0150FF] to-[#CDB6EF] hover:opacity-90 text-white font-black text-lg rounded-2xl shadow-lg shadow-[#013DC4]/20 transition-all flex items-center justify-center gap-2 min-h-[56px]"
-            data-testid="button-go-to-dashboard"
-          >
-            Start Your Health Journey
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </>
-      )}
-    </motion.div>
-  );
 
   if (allLoading || !initialStepSet) {
     return (
@@ -2083,7 +1838,7 @@ export default function Onboarding() {
             <span>Consent</span>
             <span>Profile</span>
             <span>Assessment</span>
-            <span>Complete</span>
+            <span>Done</span>
           </div>
         </div>
 
@@ -2093,7 +1848,6 @@ export default function Onboarding() {
             {step === 'consent' && renderConsent()}
             {step === 'registration' && renderRegistration()}
             {step === 'questionnaire' && renderQuestionnaire()}
-            {step === 'riskScore' && renderRiskScore()}
           </AnimatePresence>
         </div>
       </div>
