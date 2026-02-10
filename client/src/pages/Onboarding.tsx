@@ -615,7 +615,8 @@ export default function Onboarding() {
   
   useEffect(() => {
     if (!savedAnswersLoaded || !userId || answers.length === 0) return;
-    if (answers.length === lastSavedCount) return; // No new answers
+    if (answers.length === lastSavedCount) return;
+    if (step === 'riskScore') return;
     
     const saveTimer = setTimeout(async () => {
       const answersRecord: Record<string, string> = {};
@@ -663,7 +664,7 @@ export default function Onboarding() {
     }, 1000); // Debounce 1 second
     
     return () => clearTimeout(saveTimer);
-  }, [answers, savedAnswersLoaded, userId, lastSavedCount]);
+  }, [answers, savedAnswersLoaded, userId, lastSavedCount, step]);
   
 
   const savePreferencesMutation = useMutation({
