@@ -42,7 +42,8 @@ import {
   ChevronUp,
   Briefcase,
   TrendingUp,
-  HelpCircle
+  HelpCircle,
+  CheckCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
@@ -65,7 +66,7 @@ interface QuestionnaireRecord {
 import lorettaLogo from '@assets/logos/loretta_logo.png';
 import lorettaLogoHorizontal from '@assets/logos/loretta_logo_horizontal.png';
 
-type OnboardingStep = 'welcome' | 'consent' | 'registration' | 'questionnaire';
+type OnboardingStep = 'welcome' | 'consent' | 'registration' | 'questionnaire' | 'riskScore';
 
 interface RegistrationData {
   firstName: string;
@@ -446,6 +447,9 @@ export default function Onboarding() {
   const [inputError, setInputError] = useState('');
   const [showModuleSelection, setShowModuleSelection] = useState(false);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
+  const [calculatedRiskScore, setCalculatedRiskScore] = useState<number | null>(null);
+  const [isCalculatingScore, setIsCalculatingScore] = useState(false);
+  const [scoreCalculationError, setScoreCalculationError] = useState(false);
   const { user } = useAuth();
   const userId = user?.id;
   const { markQuestionnaireComplete, markConsentComplete, isQuestionnaireComplete, isConsentComplete, isOnboardingComplete, isLoading: progressLoading } = useOnboardingProgress();
@@ -507,10 +511,10 @@ export default function Onboarding() {
   const effectiveOnboardingComplete = isOnboardingComplete || effectiveQuestionnaireComplete;
   
   useEffect(() => {
-    if (!allLoading && effectiveOnboardingComplete) {
+    if (!allLoading && effectiveOnboardingComplete && step !== 'riskScore') {
       navigate('/my-dashboard');
     }
-  }, [allLoading, effectiveOnboardingComplete, navigate]);
+  }, [allLoading, effectiveOnboardingComplete, navigate, step]);
 
   useEffect(() => {
     if (!allLoading && !initialStepSet && !effectiveOnboardingComplete) {
@@ -796,11 +800,12 @@ export default function Onboarding() {
 
   const questions = getQuestionsWithFollowUps(answers);
 
-  const stepProgress = {
+  const stepProgress: Record<OnboardingStep, number> = {
     welcome: 0,
     consent: 15,
     registration: 20,
-    questionnaire: 20 + (currentQuestion / questions.length) * 80,
+    questionnaire: 20 + (currentQuestion / questions.length) * 70,
+    riskScore: 100,
   };
 
   const handleConsentAccept = async () => {
@@ -925,23 +930,7 @@ export default function Onboarding() {
   };
   
   const handleGetEarlyResults = async () => {
-    if (userId) {
-      localStorage.setItem(`loretta_questionnaire_${userId}`, JSON.stringify(answers));
-    }
-    saveQuestionnaireMutation.mutate(answers);
-    
-    try {
-      await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
-    } catch (error) {
-      console.log('[Prediction] Risk score calculation failed, will recalculate later:', error);
-    }
-    
-    initializeGamificationMutation.mutate();
-    initializeAchievementsMutation.mutate();
-    initializeMissionsMutation.mutate();
-    
-    await markQuestionnaireComplete();
-    navigate('/my-dashboard');
+    await finishQuestionnaire(answers);
   };
   
   const handleContinueWithModules = () => {
@@ -981,18 +970,44 @@ export default function Onboarding() {
     if (userId) {
       localStorage.setItem(`loretta_questionnaire_${userId}`, JSON.stringify(finalAnswers));
     }
-    saveQuestionnaireMutation.mutate(finalAnswers);
+    
+    setIsCalculatingScore(true);
+    setScoreCalculationError(false);
+    setStep('riskScore');
     
     try {
-      await apiRequest('POST', `/api/risk-scores/${userId}/calculate`, {});
+      await saveQuestionnaireMutation.mutateAsync(finalAnswers);
     } catch (error) {
-      console.log('[Prediction] Risk score calculation failed, will recalculate later:', error);
+      console.error('[Onboarding] Failed to save questionnaire:', error);
     }
+    
+    try {
+      const response = await authenticatedFetch('/api/risk-scores/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const score = data.overallScore ?? data.diabetesRisk ?? null;
+        setCalculatedRiskScore(score);
+      } else {
+        console.log('[Prediction] Risk score calculation returned error:', response.status);
+        setScoreCalculationError(true);
+      }
+    } catch (error) {
+      console.log('[Prediction] Risk score calculation failed:', error);
+      setScoreCalculationError(true);
+    }
+    
+    setIsCalculatingScore(false);
     
     initializeGamificationMutation.mutate();
     initializeAchievementsMutation.mutate();
     initializeMissionsMutation.mutate();
-    
+  };
+  
+  const handleRiskScoreContinue = async () => {
     await markQuestionnaireComplete();
     navigate('/my-dashboard');
   };
@@ -1800,6 +1815,117 @@ export default function Onboarding() {
   };
 
 
+  const getRiskLevel = (score: number) => {
+    if (score <= 20) return { label: 'Low Risk', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', icon: '🟢' };
+    if (score <= 40) return { label: 'Mild Risk', color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-900/20', border: 'border-yellow-200 dark:border-yellow-800', icon: '🟡' };
+    if (score <= 60) return { label: 'Moderate Risk', color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', icon: '🟠' };
+    return { label: 'High Risk', color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', icon: '🔴' };
+  };
+
+  const renderRiskScore = () => {
+    if (isCalculatingScore) {
+      return (
+        <motion.div
+          key="risk-calculating"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="text-center py-8"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-xl shadow-[#013DC4]/20 mx-auto mb-6">
+            <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Calculating Your Health Score</h2>
+          <p className="text-gray-500 dark:text-gray-400">Analyzing your answers with our health model...</p>
+        </motion.div>
+      );
+    }
+
+    if (scoreCalculationError || calculatedRiskScore === null) {
+      return (
+        <motion.div
+          key="risk-error"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="text-center py-8"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#013DC4] to-[#0150FF] flex items-center justify-center shadow-xl shadow-[#013DC4]/20 mx-auto mb-6">
+            <CheckCircle className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Assessment Complete!</h2>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            Your answers have been saved. Your health risk score will be available on your dashboard shortly.
+          </p>
+          <button
+            onClick={handleRiskScoreContinue}
+            className="w-full py-4 px-6 bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/30 hover:shadow-xl hover:shadow-[#013DC4]/40 transition-all"
+          >
+            Continue to Dashboard
+          </button>
+        </motion.div>
+      );
+    }
+
+    const riskLevel = getRiskLevel(calculatedRiskScore);
+
+    return (
+      <motion.div
+        key="risk-result"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        className="text-center py-6"
+      >
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Your Health Risk Score</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">Based on your answers, here's your personalized assessment</p>
+
+        <div className="relative w-40 h-40 mx-auto mb-6">
+          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" strokeWidth="10" className="text-gray-200 dark:text-gray-700" />
+            <circle
+              cx="60" cy="60" r="52" fill="none"
+              strokeWidth="10"
+              strokeLinecap="round"
+              strokeDasharray={`${(calculatedRiskScore / 100) * 327} 327`}
+              className={calculatedRiskScore <= 20 ? 'stroke-green-500' : calculatedRiskScore <= 40 ? 'stroke-yellow-500' : calculatedRiskScore <= 60 ? 'stroke-orange-500' : 'stroke-red-500'}
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-3xl font-bold text-gray-900 dark:text-white">{calculatedRiskScore}</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">out of 100</span>
+          </div>
+        </div>
+
+        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${riskLevel.bg} ${riskLevel.border} border mb-4`}>
+          <span>{riskLevel.icon}</span>
+          <span className={`font-semibold ${riskLevel.color}`}>{riskLevel.label}</span>
+        </div>
+
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto">
+          {calculatedRiskScore <= 20
+            ? "Great news! Your current health indicators suggest a low risk level. Keep up your healthy habits!"
+            : calculatedRiskScore <= 40
+            ? "Your health indicators are mostly positive. A few small changes could further reduce your risk."
+            : calculatedRiskScore <= 60
+            ? "Some of your health indicators suggest moderate risk. Regular check-ups and lifestyle adjustments can help."
+            : "Your health indicators suggest elevated risk. We recommend consulting with a healthcare professional for personalized guidance."}
+        </p>
+
+        <button
+          onClick={handleRiskScoreContinue}
+          className="w-full py-4 px-6 bg-gradient-to-r from-[#013DC4] to-[#0150FF] text-white font-bold rounded-2xl shadow-lg shadow-[#013DC4]/30 hover:shadow-xl hover:shadow-[#013DC4]/40 transition-all"
+        >
+          Continue to Dashboard
+        </button>
+
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+          This score is an estimate based on your responses and should not replace professional medical advice.
+        </p>
+      </motion.div>
+    );
+  };
+
   if (allLoading || !initialStepSet) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 safe-area-top safe-area-bottom">
@@ -1838,7 +1964,7 @@ export default function Onboarding() {
             <span>Consent</span>
             <span>Profile</span>
             <span>Assessment</span>
-            <span>Done</span>
+            <span>Results</span>
           </div>
         </div>
 
@@ -1848,6 +1974,7 @@ export default function Onboarding() {
             {step === 'consent' && renderConsent()}
             {step === 'registration' && renderRegistration()}
             {step === 'questionnaire' && renderQuestionnaire()}
+            {step === 'riskScore' && renderRiskScore()}
           </AnimatePresence>
         </div>
       </div>
