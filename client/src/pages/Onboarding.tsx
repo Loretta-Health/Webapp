@@ -511,13 +511,13 @@ export default function Onboarding() {
   const effectiveOnboardingComplete = isOnboardingComplete || effectiveQuestionnaireComplete;
   
   useEffect(() => {
-    if (!allLoading && effectiveOnboardingComplete && step !== 'riskScore') {
+    if (!allLoading && isOnboardingComplete && step !== 'riskScore') {
       navigate('/my-dashboard');
     }
-  }, [allLoading, effectiveOnboardingComplete, navigate, step]);
+  }, [allLoading, isOnboardingComplete, navigate, step]);
 
   useEffect(() => {
-    if (!allLoading && !initialStepSet && !effectiveOnboardingComplete) {
+    if (!allLoading && !initialStepSet && !isOnboardingComplete) {
       let targetStep: OnboardingStep = 'consent';
       
       if (effectiveConsentComplete) {
@@ -527,7 +527,7 @@ export default function Onboarding() {
       setStep(targetStep);
       setInitialStepSet(true);
     }
-  }, [allLoading, effectiveConsentComplete, effectiveOnboardingComplete, initialStepSet]);
+  }, [allLoading, effectiveConsentComplete, isOnboardingComplete, initialStepSet]);
 
   // Load saved answers from database and pre-fill from profile data
   const [savedAnswersLoaded, setSavedAnswersLoaded] = useState(false);
