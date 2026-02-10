@@ -68,7 +68,7 @@ export function useXPUpdater() {
 
   const updateAllXPDisplays = useCallback((
     xpChange: number, 
-    source: 'mission' | 'checkin' | 'achievement' | 'bonus' | 'other',
+    source: 'mission' | 'mission_step' | 'checkin' | 'achievement' | 'bonus' | 'other',
     options?: {
       missionId?: number;
       checkinId?: number;

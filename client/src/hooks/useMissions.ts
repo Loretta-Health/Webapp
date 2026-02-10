@@ -152,16 +152,22 @@ export function useMissions() {
       return response.json();
     },
     onSuccess: (_, variables) => {
-      if (variables.data.progress !== undefined) {
+      const mission = missions.find(m => m.id === variables.id);
+      if (variables.data.progress !== undefined && mission) {
+        const previousProgress = mission.progress;
+        const progressDelta = variables.data.progress - previousProgress;
+        updateMissionProgressOptimistically(variables.id, variables.data.progress, variables.data.completed || false);
+        if (progressDelta > 0 && mission.xpReward > 0) {
+          const xpEarned = mission.xpReward * progressDelta;
+          const isCompletion = variables.data.completed === true;
+          updateAllXPDisplays(xpEarned, isCompletion ? 'mission' : 'mission_step', { missionId: parseInt(mission.id) });
+          trackGamification('xp_earned', { amount: xpEarned, source: 'mission' });
+        }
+      } else if (variables.data.progress !== undefined) {
         updateMissionProgressOptimistically(variables.id, variables.data.progress, variables.data.completed || false);
       }
-      if (variables.data.completed) {
-        const mission = missions.find(m => m.id === variables.id);
-        if (mission) {
-          updateAllXPDisplays(mission.xpReward, 'mission', { missionId: parseInt(mission.id) });
-          trackMission('completed', mission.title, mission.xpReward);
-          trackGamification('xp_earned', { amount: mission.xpReward, source: 'mission' });
-        }
+      if (variables.data.completed && mission) {
+        trackMission('completed', mission.title, mission.xpReward);
       }
       queryClient.invalidateQueries({ queryKey: ['/api/missions', userId] });
     },
