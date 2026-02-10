@@ -510,6 +510,13 @@ export default function Onboarding() {
   const effectiveConsentComplete = isConsentComplete || preferencesData?.consentAccepted === true;
   const effectiveOnboardingComplete = isOnboardingComplete || effectiveQuestionnaireComplete;
   
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+  useEffect(() => {
+    if (!allLoading && !hasInitiallyLoaded) {
+      setHasInitiallyLoaded(true);
+    }
+  }, [allLoading, hasInitiallyLoaded]);
+  
   useEffect(() => {
     if (!allLoading && isOnboardingComplete && step !== 'riskScore') {
       navigate('/my-dashboard');
@@ -655,7 +662,6 @@ export default function Onboarding() {
             userId,
             ...profileUpdates,
           });
-          queryClient.invalidateQueries({ queryKey: ['/api/profile', userId] });
           console.log('[Onboarding] Synced to profile:', Object.keys(profileUpdates).join(', '));
         }
       } catch (error) {
@@ -719,7 +725,6 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       console.log('Questionnaire saved successfully');
-      queryClient.invalidateQueries({ queryKey: ['/api/questionnaires'] });
     },
     onError: (error) => {
       console.error('Failed to save questionnaire:', error);
@@ -1934,7 +1939,7 @@ export default function Onboarding() {
     );
   };
 
-  if (allLoading || !initialStepSet) {
+  if (!hasInitiallyLoaded || !initialStepSet) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F0F4FF] via-[#E8EEFF] to-[#F5F0FF] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 safe-area-top safe-area-bottom">
         <div className="flex flex-col items-center gap-6">
