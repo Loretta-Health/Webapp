@@ -185,6 +185,50 @@ async function nativeHttpRequest(
 // Store the original fetch for use in our wrapper
 const originalFetch = window.fetch.bind(window);
 
+const RETRYABLE_ERROR_CODES = new Set([
+  'NSURLErrorDomain',
+  '-1005',
+  '-1001',
+  '-1004',
+  '-1009',
+]);
+
+function isRetryableError(error: any): boolean {
+  const code = String(error?.code || '');
+  const message = String(error?.message || '');
+  return (
+    RETRYABLE_ERROR_CODES.has(code) ||
+    message.includes('network connection was lost') ||
+    message.includes('CONNECTION_LOST') ||
+    message.includes('timed out') ||
+    message.includes('Could not connect') ||
+    message.includes('Socket is not connected')
+  );
+}
+
+async function fetchWithRetry(
+  fetchFn: () => Promise<Response>,
+  maxRetries: number = 2,
+  label: string = 'fetchWithRetry'
+): Promise<Response> {
+  let lastError: any;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fetchFn();
+    } catch (error: any) {
+      lastError = error;
+      if (attempt < maxRetries && isRetryableError(error)) {
+        const delay = Math.min(500 * Math.pow(2, attempt), 2000);
+        console.warn(`[${label}] Retry ${attempt + 1}/${maxRetries} after ${delay}ms - ${error?.message || error}`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw lastError;
+}
+
 // Unified fetch wrapper that includes auth token for native apps
 export async function authenticatedFetch(
   url: string,
@@ -207,12 +251,16 @@ export async function authenticatedFetch(
     if (isIOS()) {
       console.log('[authenticatedFetch] iOS - using WKWebView fetch');
       try {
-        const res = await originalFetch(fullUrl, {
-          ...options,
-          method,
-          headers,
-          credentials: "omit", // iOS native doesn't use session cookies
-        });
+        const res = await fetchWithRetry(
+          () => originalFetch(fullUrl, {
+            ...options,
+            method,
+            headers,
+            credentials: "omit",
+          }),
+          2,
+          'authenticatedFetch-iOS'
+        );
         console.log('[authenticatedFetch] iOS response status:', res.status);
         
         // Handle 401 on iOS
@@ -334,12 +382,16 @@ function setupFetchInterceptor() {
       // iOS: Use WKWebView fetch directly (avoid HTTP/2 protocol issues with CapacitorHttp)
       if (isIOS()) {
         console.log('[FetchInterceptor] iOS - using WKWebView fetch:', url);
-        return originalFetch(fullUrl, {
-          ...init,
-          method,
-          headers,
-          credentials: "omit",
-        });
+        return fetchWithRetry(
+          () => originalFetch(fullUrl, {
+            ...init,
+            method,
+            headers,
+            credentials: "omit",
+          }),
+          2,
+          'FetchInterceptor-iOS'
+        );
       }
       
       // Android: Use CapacitorHttp (native HTTP)
@@ -421,12 +473,17 @@ export async function apiRequest(
     if (isIOS()) {
       console.log('[apiRequest] iOS - using WKWebView fetch');
       try {
-        const res = await originalFetch(fullUrl, {
-          method,
-          headers,
-          body: data ? JSON.stringify(data) : undefined,
-          credentials: "omit",
-        });
+        const bodyStr = data ? JSON.stringify(data) : undefined;
+        const res = await fetchWithRetry(
+          () => originalFetch(fullUrl, {
+            method,
+            headers,
+            body: bodyStr,
+            credentials: "omit",
+          }),
+          2,
+          'apiRequest-iOS'
+        );
         
         console.log('[apiRequest] iOS response status:', res.status);
         
@@ -447,7 +504,6 @@ export async function apiRequest(
         if (!res.ok) {
           console.warn('[apiRequest] HTTP Error:', diagnoseHttpError(res.status));
           const text = await res.text();
-          // Parse JSON error messages for user-friendly display
           let errorMessage = text || res.statusText;
           try {
             const jsonError = JSON.parse(text);
@@ -455,7 +511,6 @@ export async function apiRequest(
               errorMessage = jsonError.message;
             }
           } catch {
-            // Not JSON, use as-is
           }
           throw new Error(errorMessage);
         }
@@ -557,11 +612,15 @@ export const getQueryFn: <T>(options: {
       if (isIOS()) {
         console.log('[getQueryFn] iOS - using WKWebView fetch');
         try {
-          const res = await originalFetch(url, {
-            method: 'GET',
-            headers,
-            credentials: "omit",
-          });
+          const res = await fetchWithRetry(
+            () => originalFetch(url, {
+              method: 'GET',
+              headers,
+              credentials: "omit",
+            }),
+            2,
+            'getQueryFn-iOS'
+          );
           
           console.log('[getQueryFn] iOS response status:', res.status);
           
