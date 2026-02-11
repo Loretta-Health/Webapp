@@ -37,7 +37,7 @@ const config: CapacitorConfig = {
       backgroundColor: '#013DC4'
     },
     CapacitorHttp: {
-      enabled: true
+      enabled: false
     }
   }
 };
