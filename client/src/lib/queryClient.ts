@@ -3,13 +3,51 @@ import { Capacitor, CapacitorHttp, registerPlugin } from "@capacitor/core";
 import { getAuthToken, clearAuthToken } from "./nativeAuth";
 import { toast } from "@/hooks/use-toast";
 
+interface HttpBridgeResult {
+  status: number;
+  data: string;
+  headers: Record<string, string>;
+  elapsedMs?: number;
+  url?: string;
+}
+
+interface HttpBridgeErrorData {
+  errorCode: string;
+  domain?: string;
+  code?: number;
+  detail?: string;
+  localizedDescription?: string;
+  elapsedMs?: number;
+  url?: string;
+  method?: string;
+  isCancellation?: boolean;
+  isTimeout?: boolean;
+  isOffline?: boolean;
+  isSSL?: boolean;
+  isDNS?: boolean;
+  isProtocolViolation?: boolean;
+  isConnectionReset?: boolean;
+  recoverable?: boolean;
+  retryAfterMs?: number;
+  underlyingErrors?: Array<{
+    depth: number;
+    errorCode: string;
+    domain: string;
+    code: number;
+    detail: string;
+    localizedDescription: string;
+  }>;
+  iosVersion?: string;
+  deviceModel?: string;
+}
+
 interface HttpBridgePlugin {
   request(options: {
     url: string;
     method: string;
     headers: Record<string, string>;
     body?: string;
-  }): Promise<{ status: number; data: string; headers: Record<string, string> }>;
+  }): Promise<HttpBridgeResult>;
 }
 
 const HttpBridge = registerPlugin<HttpBridgePlugin>('HttpBridge');
@@ -24,142 +62,376 @@ export function getApiUrl(path: string): string {
   return `${baseUrl}${path}`;
 }
 
-// Comprehensive iOS/Network error code mapping
-const ERROR_CODES: Record<string, string> = {
-  // NSURLErrorDomain codes
-  '-1001': 'TIMEOUT: Request timed out (NSURLErrorTimedOut)',
-  '-1003': 'DNS_FAILED: Cannot find host (NSURLErrorCannotFindHost)',
-  '-1004': 'CONNECT_FAILED: Cannot connect to host (NSURLErrorCannotConnectToHost)',
-  '-1009': 'OFFLINE: No internet connection (NSURLErrorNotConnectedToInternet)',
-  '-1011': 'BAD_RESPONSE: Bad server response (NSURLErrorBadServerResponse)',
-  '-1012': 'AUTH_CANCELLED: User cancelled authentication (NSURLErrorUserCancelledAuthentication)',
-  '-1022': 'ATS_BLOCKED: App Transport Security blocked request (NSURLErrorAppTransportSecurityRequiresSecureConnection)',
-  '-1200': 'SSL_HANDSHAKE: Secure connection failed (NSURLErrorSecureConnectionFailed)',
-  '-1201': 'SSL_CERT_EXPIRED: Server certificate expired (NSURLErrorServerCertificateHasBadDate)',
-  '-1202': 'SSL_CERT_UNTRUSTED: Server certificate untrusted (NSURLErrorServerCertificateUntrusted)',
-  '-1203': 'SSL_CERT_WRONG_HOST: Server certificate wrong host (NSURLErrorServerCertificateHasUnknownRoot)',
-  '-1204': 'SSL_CERT_NOT_YET_VALID: Server certificate not yet valid (NSURLErrorServerCertificateNotYetValid)',
-  '-1205': 'SSL_CLIENT_CERT_REJECTED: Client certificate rejected (NSURLErrorClientCertificateRejected)',
-  '-1206': 'SSL_CLIENT_CERT_REQUIRED: Client certificate required (NSURLErrorClientCertificateRequired)',
-  '-999': 'CANCELLED: Request cancelled (NSURLErrorCancelled)',
-  '-1000': 'BAD_URL: Bad URL (NSURLErrorBadURL)',
-  '-1002': 'UNSUPPORTED_URL: Unsupported URL (NSURLErrorUnsupportedURL)',
-  '-1005': 'CONNECTION_LOST: Network connection lost (NSURLErrorNetworkConnectionLost)',
-  '-1006': 'DNS_LOOKUP_FAILED: DNS lookup failed (NSURLErrorDNSLookupFailed)',
-  '-1007': 'TOO_MANY_REDIRECTS: Too many redirects (NSURLErrorHTTPTooManyRedirects)',
-  '-1008': 'RESOURCE_UNAVAILABLE: Resource unavailable (NSURLErrorResourceUnavailable)',
-  '-1010': 'REDIRECTED_ELSEWHERE: Redirected to non-existent location (NSURLErrorRedirectToNonExistentLocation)',
-  '-1013': 'AUTH_REQUIRED: Authentication required (NSURLErrorUserAuthenticationRequired)',
-  '-1014': 'ZERO_BYTE_RESOURCE: Zero byte resource (NSURLErrorZeroByteResource)',
-  '-1015': 'CANNOT_DECODE_RAW: Cannot decode raw data (NSURLErrorCannotDecodeRawData)',
-  '-1016': 'CANNOT_DECODE_CONTENT: Cannot decode content data (NSURLErrorCannotDecodeContentData)',
-  '-1017': 'CANNOT_PARSE_RESPONSE: Cannot parse response (NSURLErrorCannotParseResponse)',
-  '-1100': 'FILE_NOT_FOUND: File does not exist (NSURLErrorFileDoesNotExist)',
-  
-  // CFNetwork/SSL error codes
-  '-9800': 'SSL_PROTOCOL_ERROR: SSL protocol error (errSSLProtocol)',
-  '-9801': 'SSL_NEGOTIATION_FAILED: SSL negotiation failed (errSSLNegotiation)',
-  '-9802': 'SSL_FATAL_ALERT: Fatal SSL alert (errSSLFatalAlert)',
-  '-9803': 'SSL_HANDSHAKE_FAIL: SSL handshake failure (errSSLHandshakeFail)',
-  '-9804': 'SSL_MODULE_ATTACH: SSL module attach failure (errSSLModuleAttach)',
-  '-9805': 'SSL_UNKNOWN_ROOT_CERT: Unknown root certificate (errSSLUnknownRootCert)',
-  '-9806': 'SSL_NO_ROOT_CERT: No root certificate (errSSLNoRootCert)',
-  '-9807': 'SSL_CERT_EXPIRED: Certificate expired (errSSLCertExpired)',
-  '-9808': 'SSL_CERT_NOT_YET_VALID: Certificate not yet valid (errSSLCertNotYetValid)',
-  '-9809': 'SSL_CLOSED_GRACEFUL: Connection closed gracefully (errSSLClosedGraceful)',
-  '-9810': 'SSL_CLOSED_ABORT: Connection closed abnormally (errSSLClosedAbort)',
-  '-9811': 'SSL_XCER_CHAIN_INVALID: Invalid certificate chain (errSSLXCertChainInvalid)',
-  '-9812': 'SSL_BAD_CERT: Bad certificate (errSSLBadCert)',
-  '-9813': 'SSL_CRYPTO_ERROR: Crypto error (errSSLCrypto)',
-  '-9814': 'SSL_INTERNAL_ERROR: Internal SSL error (errSSLInternal)',
-  '-9815': 'SSL_CLOSED_NO_NOTIFY: Connection closed without notify (errSSLClosedNoNotify)',
-  '-9816': 'SSL_PEER_ACCESS_DENIED: Peer access denied (errSSLPeerAccessDenied)',
-  '-9830': 'SSL_HOST_MISMATCH: Host name mismatch (errSSLHostNameMismatch)',
-  '-9831': 'SSL_WEAK_PEER_KEY: Peer has weak ephemeral DH key (errSSLPeerHandshakeFail)',
-  
-  // WKWebView error codes (WKErrorDomain)
-  '1': 'WK_UNKNOWN: Unknown WKWebView error',
-  '2': 'WK_WEB_CONTENT_PROCESS_TERMINATED: Web content process terminated',
-  '3': 'WK_WEB_VIEW_INVALIDATED: WebView invalidated',
-  '4': 'WK_JAVA_SCRIPT_EXCEPTION_OCCURRED: JavaScript exception occurred',
-  '5': 'WK_JAVA_SCRIPT_RESULT_TYPE_IS_UNSUPPORTED: JavaScript result type unsupported',
-  '102': 'WK_FRAME_LOAD_INTERRUPTED_BY_POLICY_CHANGE: Frame load interrupted by policy change',
-  
-  // Common string patterns
-  'Load failed': 'LOAD_FAILED: WKWebView failed to load - likely CORS, ATS, or network issue',
-  'Failed to fetch': 'FETCH_FAILED: Fetch API failed - network or CORS issue',
-  'TypeError': 'TYPE_ERROR: Network request failed at JavaScript level',
-  'NetworkError': 'NETWORK_ERROR: Generic network error',
-  'AbortError': 'ABORT_ERROR: Request was aborted',
-  'CORS': 'CORS_ERROR: Cross-Origin Request Blocked',
+const NSURL_ERROR_CODES: Record<number, { code: string; desc: string; recoverable: boolean; retryMs: number }> = {
+  [-999]:  { code: 'NSURL_CANCELLED', desc: 'Request was cancelled by the system or user', recoverable: false, retryMs: 0 },
+  [-1000]: { code: 'NSURL_BAD_URL', desc: 'The URL string could not be parsed into a valid URL', recoverable: false, retryMs: 0 },
+  [-1001]: { code: 'NSURL_TIMED_OUT', desc: 'The request exceeded the configured timeout interval', recoverable: true, retryMs: 2000 },
+  [-1002]: { code: 'NSURL_UNSUPPORTED_URL', desc: 'The URL scheme is not supported by the system', recoverable: false, retryMs: 0 },
+  [-1003]: { code: 'NSURL_CANNOT_FIND_HOST', desc: 'DNS resolution failed - the hostname could not be resolved to an IP address', recoverable: true, retryMs: 3000 },
+  [-1004]: { code: 'NSURL_CANNOT_CONNECT_TO_HOST', desc: 'TCP connection to the server IP address was refused or unreachable', recoverable: true, retryMs: 2000 },
+  [-1005]: { code: 'NSURL_CONNECTION_LOST', desc: 'An established TCP connection was dropped mid-transfer (ECONNRESET/EPIPE)', recoverable: true, retryMs: 500 },
+  [-1006]: { code: 'NSURL_DNS_LOOKUP_FAILED', desc: 'DNS query returned an error or NXDOMAIN response', recoverable: true, retryMs: 3000 },
+  [-1007]: { code: 'NSURL_TOO_MANY_REDIRECTS', desc: 'The server redirected more than the maximum allowed number of times', recoverable: false, retryMs: 0 },
+  [-1008]: { code: 'NSURL_RESOURCE_UNAVAILABLE', desc: 'The requested resource is no longer available on the server', recoverable: false, retryMs: 0 },
+  [-1009]: { code: 'NSURL_NOT_CONNECTED_TO_INTERNET', desc: 'The device has no active network interface (WiFi/cellular both off)', recoverable: false, retryMs: 0 },
+  [-1010]: { code: 'NSURL_REDIRECT_TO_NONEXISTENT', desc: 'The server redirected to a URL that does not exist', recoverable: false, retryMs: 0 },
+  [-1011]: { code: 'NSURL_BAD_SERVER_RESPONSE', desc: 'The server returned a response that could not be interpreted as valid HTTP', recoverable: true, retryMs: 1000 },
+  [-1012]: { code: 'NSURL_USER_CANCELLED_AUTH', desc: 'The user cancelled an authentication challenge dialog', recoverable: false, retryMs: 0 },
+  [-1013]: { code: 'NSURL_USER_AUTH_REQUIRED', desc: 'The server requires authentication credentials that were not provided', recoverable: false, retryMs: 0 },
+  [-1014]: { code: 'NSURL_ZERO_BYTE_RESOURCE', desc: 'The server responded with a Content-Length of 0 or empty body where data was expected', recoverable: true, retryMs: 1000 },
+  [-1015]: { code: 'NSURL_CANNOT_DECODE_RAW_DATA', desc: 'The raw response data could not be decoded with the expected content encoding', recoverable: false, retryMs: 0 },
+  [-1016]: { code: 'NSURL_CANNOT_DECODE_CONTENT', desc: 'The response content could not be decoded (charset/encoding mismatch)', recoverable: false, retryMs: 0 },
+  [-1017]: { code: 'NSURL_CANNOT_PARSE_RESPONSE', desc: 'HTTP response parsing failed - likely HTTP/2 HEADERS frame corruption or QUIC protocol violation after alt-svc upgrade', recoverable: true, retryMs: 1000 },
+  [-1018]: { code: 'NSURL_INTERNATIONAL_ROAMING_OFF', desc: 'International data roaming is disabled in device settings', recoverable: false, retryMs: 0 },
+  [-1019]: { code: 'NSURL_CALL_IS_ACTIVE', desc: 'A phone call is active and the carrier does not support simultaneous data', recoverable: false, retryMs: 0 },
+  [-1020]: { code: 'NSURL_DATA_NOT_ALLOWED', desc: 'Cellular data is disabled in device settings or restricted by MDM policy', recoverable: false, retryMs: 0 },
+  [-1021]: { code: 'NSURL_REQUEST_BODY_STREAM_EXHAUSTED', desc: 'The request body input stream was fully consumed before the upload completed', recoverable: false, retryMs: 0 },
+  [-1022]: { code: 'NSURL_ATS_REQUIRES_SECURE', desc: 'App Transport Security policy blocked this request because it uses plain HTTP instead of HTTPS', recoverable: false, retryMs: 0 },
+  [-1100]: { code: 'NSURL_FILE_DOES_NOT_EXIST', desc: 'The local file referenced by the URL does not exist on disk', recoverable: false, retryMs: 0 },
+  [-1101]: { code: 'NSURL_FILE_IS_DIRECTORY', desc: 'The path points to a directory, not a file', recoverable: false, retryMs: 0 },
+  [-1102]: { code: 'NSURL_NO_PERMISSIONS_TO_READ', desc: 'The app does not have read permissions for the requested file', recoverable: false, retryMs: 0 },
+  [-1103]: { code: 'NSURL_DATA_LENGTH_EXCEEDS_MAX', desc: 'The response data exceeds the maximum allowed size', recoverable: false, retryMs: 0 },
+  [-1104]: { code: 'NSURL_FILE_OUTSIDE_SAFE_AREA', desc: 'The file URL points outside the app sandbox', recoverable: false, retryMs: 0 },
+  [-1200]: { code: 'NSURL_SECURE_CONNECTION_FAILED', desc: 'TLS handshake failed - could be protocol mismatch, cipher suite incompatibility, or ATS violation', recoverable: true, retryMs: 2000 },
+  [-1201]: { code: 'NSURL_SERVER_CERT_BAD_DATE', desc: 'The server TLS certificate has expired or its notBefore date is in the future', recoverable: false, retryMs: 0 },
+  [-1202]: { code: 'NSURL_SERVER_CERT_UNTRUSTED', desc: 'The server TLS certificate was signed by a CA not in the iOS trust store', recoverable: false, retryMs: 0 },
+  [-1203]: { code: 'NSURL_SERVER_CERT_UNKNOWN_ROOT', desc: 'The root CA of the server certificate chain is not recognized by iOS', recoverable: false, retryMs: 0 },
+  [-1204]: { code: 'NSURL_SERVER_CERT_NOT_YET_VALID', desc: 'The server TLS certificate notBefore date has not yet been reached', recoverable: false, retryMs: 0 },
+  [-1205]: { code: 'NSURL_CLIENT_CERT_REJECTED', desc: 'The server rejected the client TLS certificate during mutual TLS authentication', recoverable: false, retryMs: 0 },
+  [-1206]: { code: 'NSURL_CLIENT_CERT_REQUIRED', desc: 'The server requires a client TLS certificate (mutual TLS) but none was provided', recoverable: false, retryMs: 0 },
+  [-1207]: { code: 'NSURL_CANNOT_LOAD_FROM_NETWORK', desc: 'The resource must be loaded from cache but no cached version exists', recoverable: false, retryMs: 0 },
+  [-2000]: { code: 'NSURL_CANNOT_CREATE_FILE', desc: 'Failed to create the destination file for a download task', recoverable: false, retryMs: 0 },
+  [-2001]: { code: 'NSURL_CANNOT_OPEN_FILE', desc: 'Failed to open the destination file for writing', recoverable: false, retryMs: 0 },
+  [-2002]: { code: 'NSURL_CANNOT_CLOSE_FILE', desc: 'Failed to close the file handle after writing', recoverable: false, retryMs: 0 },
+  [-2003]: { code: 'NSURL_CANNOT_WRITE_TO_FILE', desc: 'Write to the destination file failed (disk full or I/O error)', recoverable: false, retryMs: 0 },
+  [-2004]: { code: 'NSURL_CANNOT_REMOVE_FILE', desc: 'Failed to remove an existing file before downloading replacement', recoverable: false, retryMs: 0 },
+  [-2005]: { code: 'NSURL_CANNOT_MOVE_FILE', desc: 'Failed to move the downloaded temp file to the final destination', recoverable: false, retryMs: 0 },
+  [-2006]: { code: 'NSURL_DOWNLOAD_DECODE_FAILED_MID', desc: 'Content decoding (gzip/brotli) failed partway through the download', recoverable: true, retryMs: 1000 },
+  [-2007]: { code: 'NSURL_DOWNLOAD_DECODE_FAILED_END', desc: 'Content decoding (gzip/brotli) produced incomplete data at end of download', recoverable: true, retryMs: 1000 },
+  [-3000]: { code: 'NSURL_BG_SESSION_NEEDS_SHARED_CONTAINER', desc: 'Background URLSession requires a shared app group container for downloads', recoverable: false, retryMs: 0 },
+  [-3001]: { code: 'NSURL_BG_SESSION_IN_USE', desc: 'Another process is already using this background session identifier', recoverable: false, retryMs: 0 },
+  [-3002]: { code: 'NSURL_BG_SESSION_DISCONNECTED', desc: 'The background session daemon disconnected unexpectedly', recoverable: true, retryMs: 2000 },
 };
 
-// HTTP status code descriptions
-const HTTP_STATUS_CODES: Record<number, string> = {
-  400: 'BAD_REQUEST: Server rejected the request',
-  401: 'UNAUTHORIZED: Authentication required or token invalid',
-  403: 'FORBIDDEN: Access denied - check permissions',
-  404: 'NOT_FOUND: Endpoint does not exist',
-  405: 'METHOD_NOT_ALLOWED: HTTP method not supported',
-  408: 'REQUEST_TIMEOUT: Server timed out waiting for request',
-  409: 'CONFLICT: Request conflicts with current state',
-  422: 'UNPROCESSABLE_ENTITY: Validation failed',
-  429: 'TOO_MANY_REQUESTS: Rate limited',
-  500: 'INTERNAL_SERVER_ERROR: Server crashed',
-  502: 'BAD_GATEWAY: Upstream server error',
-  503: 'SERVICE_UNAVAILABLE: Server temporarily down',
-  504: 'GATEWAY_TIMEOUT: Upstream server timeout',
+const SSL_ERROR_CODES: Record<number, { code: string; desc: string }> = {
+  [-9800]: { code: 'SSL_PROTOCOL', desc: 'SSL/TLS protocol error during record layer processing' },
+  [-9801]: { code: 'SSL_NEGOTIATION', desc: 'SSL/TLS version or cipher suite negotiation failed between client and server' },
+  [-9802]: { code: 'SSL_FATAL_ALERT', desc: 'Server sent a TLS fatal alert (check server logs for alert description)' },
+  [-9803]: { code: 'SSL_HANDSHAKE_FAIL', desc: 'TLS handshake did not complete - possible ClientHello/ServerHello mismatch' },
+  [-9804]: { code: 'SSL_MODULE_ATTACH', desc: 'SecureTransport module failed to attach to the connection context' },
+  [-9805]: { code: 'SSL_UNKNOWN_ROOT_CERT', desc: 'The certificate chain terminates at an unknown/untrusted root CA' },
+  [-9806]: { code: 'SSL_NO_ROOT_CERT', desc: 'No root certificate was found in the certificate chain' },
+  [-9807]: { code: 'SSL_CERT_EXPIRED', desc: 'A certificate in the chain has passed its notAfter expiry date' },
+  [-9808]: { code: 'SSL_CERT_NOT_YET_VALID', desc: 'A certificate in the chain has a notBefore date in the future' },
+  [-9809]: { code: 'SSL_CLOSED_GRACEFUL', desc: 'The TLS connection was closed with a proper close_notify alert' },
+  [-9810]: { code: 'SSL_CLOSED_ABORT', desc: 'The TLS connection was reset without close_notify (TCP RST received)' },
+  [-9811]: { code: 'SSL_CERT_CHAIN_INVALID', desc: 'Certificate chain validation failed - intermediate or root cert missing/invalid' },
+  [-9812]: { code: 'SSL_BAD_CERT', desc: 'The server certificate itself is malformed, corrupted, or uses unsupported extensions' },
+  [-9813]: { code: 'SSL_CRYPTO', desc: 'A cryptographic operation failed during TLS (signature verification, key exchange, etc.)' },
+  [-9814]: { code: 'SSL_INTERNAL', desc: 'Internal error in the SecureTransport/BoringSSL implementation' },
+  [-9815]: { code: 'SSL_CLOSED_NO_NOTIFY', desc: 'Connection closed by peer without sending TLS close_notify (truncation attack or server crash)' },
+  [-9816]: { code: 'SSL_PEER_ACCESS_DENIED', desc: 'TLS peer sent access_denied alert - client not authorized' },
+  [-9817]: { code: 'SSL_PEER_INSUFFICIENT_SECURITY', desc: 'TLS peer sent insufficient_security alert - cipher/protocol too weak' },
+  [-9818]: { code: 'SSL_PEER_INTERNAL_ERROR', desc: 'TLS peer reported an internal error via alert' },
+  [-9819]: { code: 'SSL_PEER_USER_CANCELLED', desc: 'TLS peer cancelled the handshake via user_cancelled alert' },
+  [-9820]: { code: 'SSL_PEER_NO_RENEGOTIATION', desc: 'TLS peer refused renegotiation request' },
+  [-9825]: { code: 'SSL_CONFIG_ERROR', desc: 'TLS configuration error in the SecureTransport context' },
+  [-9826]: { code: 'SSL_UNSUPPORTED_EXTENSION', desc: 'TLS extension not supported by the peer' },
+  [-9827]: { code: 'SSL_UNEXPECTED_MESSAGE', desc: 'Received an unexpected TLS handshake message (wrong message at this stage)' },
+  [-9828]: { code: 'SSL_DECOMPRESSION_FAIL', desc: 'TLS record decompression failed' },
+  [-9829]: { code: 'SSL_HANDSHAKE_RECORD_OVERFLOW', desc: 'TLS handshake record exceeded maximum allowed size' },
+  [-9830]: { code: 'SSL_HOST_NAME_MISMATCH', desc: 'Server certificate CN/SAN does not match the requested hostname' },
+  [-9831]: { code: 'SSL_WEAK_PEER_EPHEMERAL_DH', desc: 'Server offered a weak ephemeral Diffie-Hellman key (< 2048 bits)' },
+  [-9836]: { code: 'SSL_ATS_VIOLATION', desc: 'Connection parameters violate App Transport Security policy' },
+  [-9838]: { code: 'SSL_ATS_MIN_VERSION_VIOLATION', desc: 'Server TLS version is below the ATS minimum (TLS 1.2)' },
+  [-9839]: { code: 'SSL_ATS_CIPHER_VIOLATION', desc: 'Server selected a cipher suite not allowed by ATS policy' },
+  [-9840]: { code: 'SSL_ATS_MIN_KEY_SIZE_VIOLATION', desc: 'Server certificate key size is below ATS minimum (RSA 2048, ECC 256)' },
+  [-9841]: { code: 'SSL_ATS_CERT_HASH_VIOLATION', desc: 'Server certificate uses a hash algorithm not allowed by ATS (must be SHA-256+)' },
+  [-9842]: { code: 'SSL_ATS_CERT_TRUST_VIOLATION', desc: 'Server certificate trust evaluation failed under ATS requirements' },
 };
 
-function diagnoseNetworkError(error: any): string {
+const POSIX_ERROR_CODES: Record<number, { code: string; desc: string }> = {
+  [1]:  { code: 'POSIX_EPERM', desc: 'Operation not permitted by the OS' },
+  [2]:  { code: 'POSIX_ENOENT', desc: 'No such file or directory' },
+  [9]:  { code: 'POSIX_EBADF', desc: 'Bad file descriptor' },
+  [13]: { code: 'POSIX_EACCES', desc: 'Permission denied by the file system' },
+  [22]: { code: 'POSIX_EINVAL', desc: 'Invalid argument passed to system call' },
+  [28]: { code: 'POSIX_ENOSPC', desc: 'No space left on device' },
+  [32]: { code: 'POSIX_EPIPE', desc: 'Broken pipe - write to a closed socket/connection' },
+  [48]: { code: 'POSIX_EADDRINUSE', desc: 'Network address already in use' },
+  [50]: { code: 'POSIX_ENETDOWN', desc: 'Network subsystem is down' },
+  [51]: { code: 'POSIX_ENETUNREACH', desc: 'Network is unreachable from this device' },
+  [52]: { code: 'POSIX_ENETRESET', desc: 'Network connection reset by the network layer' },
+  [53]: { code: 'POSIX_ECONNABORTED', desc: 'Connection aborted by the local TCP stack' },
+  [54]: { code: 'POSIX_ECONNRESET', desc: 'Connection reset by peer (server sent TCP RST)' },
+  [57]: { code: 'POSIX_ENOTCONN', desc: 'Socket is not connected' },
+  [60]: { code: 'POSIX_ETIMEDOUT', desc: 'Connection timed out at the TCP level' },
+  [61]: { code: 'POSIX_ECONNREFUSED', desc: 'Connection refused by the server (no process listening on port)' },
+  [64]: { code: 'POSIX_EHOSTDOWN', desc: 'Host is down (no ARP response)' },
+  [65]: { code: 'POSIX_EHOSTUNREACH', desc: 'No route to host - routing table has no path' },
+};
+
+const WKWEBVIEW_ERROR_CODES: Record<number, { code: string; desc: string }> = {
+  [1]:   { code: 'WK_UNKNOWN', desc: 'Unknown WKWebView error' },
+  [2]:   { code: 'WK_WEB_CONTENT_TERMINATED', desc: 'WebKit content process was killed by the OS (memory pressure or watchdog)' },
+  [3]:   { code: 'WK_WEBVIEW_INVALIDATED', desc: 'The WKWebView instance was deallocated while a request was in flight' },
+  [4]:   { code: 'WK_JS_EXCEPTION', desc: 'JavaScript threw an exception during execution' },
+  [5]:   { code: 'WK_JS_RESULT_UNSUPPORTED', desc: 'JavaScript returned a value type that cannot be marshalled to native' },
+  [6]:   { code: 'WK_CONTENT_RULE_LIST_STORE', desc: 'Content rule list (ad blocker) store error' },
+  [7]:   { code: 'WK_ATTRIBUTED_STRING_CONTENT', desc: 'Error loading attributed string content' },
+  [8]:   { code: 'WK_NAVIGATION_APP_BOUND_DOMAIN', desc: 'Navigation to a non-app-bound domain was blocked' },
+  [9]:   { code: 'WK_JS_APP_BOUND_DOMAIN', desc: 'JavaScript execution blocked on non-app-bound domain' },
+  [102]: { code: 'WK_FRAME_LOAD_INTERRUPTED', desc: 'Frame load was interrupted by a navigation policy decision' },
+};
+
+const HTTP_STATUS_CODES: Record<number, { code: string; desc: string; recoverable: boolean; retryMs: number }> = {
+  [400]: { code: 'HTTP_BAD_REQUEST', desc: 'Server rejected the request due to malformed syntax or invalid parameters', recoverable: false, retryMs: 0 },
+  [401]: { code: 'HTTP_UNAUTHORIZED', desc: 'Authentication token is missing, expired, or invalid', recoverable: false, retryMs: 0 },
+  [403]: { code: 'HTTP_FORBIDDEN', desc: 'Server understood the request but refuses to authorize it', recoverable: false, retryMs: 0 },
+  [404]: { code: 'HTTP_NOT_FOUND', desc: 'The requested API endpoint or resource does not exist on this server', recoverable: false, retryMs: 0 },
+  [405]: { code: 'HTTP_METHOD_NOT_ALLOWED', desc: 'The HTTP method used is not supported for this endpoint', recoverable: false, retryMs: 0 },
+  [408]: { code: 'HTTP_REQUEST_TIMEOUT', desc: 'Server closed the connection because the request took too long to send', recoverable: true, retryMs: 2000 },
+  [409]: { code: 'HTTP_CONFLICT', desc: 'Request conflicts with current server state (e.g. duplicate resource)', recoverable: false, retryMs: 0 },
+  [410]: { code: 'HTTP_GONE', desc: 'The resource has been permanently removed from the server', recoverable: false, retryMs: 0 },
+  [413]: { code: 'HTTP_PAYLOAD_TOO_LARGE', desc: 'Request body exceeds the server maximum allowed size', recoverable: false, retryMs: 0 },
+  [414]: { code: 'HTTP_URI_TOO_LONG', desc: 'Request URL exceeds the server maximum allowed length', recoverable: false, retryMs: 0 },
+  [415]: { code: 'HTTP_UNSUPPORTED_MEDIA_TYPE', desc: 'Server does not support the Content-Type of the request body', recoverable: false, retryMs: 0 },
+  [422]: { code: 'HTTP_UNPROCESSABLE_ENTITY', desc: 'Request body was well-formed but contains semantic validation errors', recoverable: false, retryMs: 0 },
+  [429]: { code: 'HTTP_TOO_MANY_REQUESTS', desc: 'Rate limit exceeded - too many requests in the given time window', recoverable: true, retryMs: 5000 },
+  [431]: { code: 'HTTP_HEADER_FIELDS_TOO_LARGE', desc: 'Request header fields exceed server limits', recoverable: false, retryMs: 0 },
+  [451]: { code: 'HTTP_UNAVAILABLE_FOR_LEGAL', desc: 'Resource unavailable for legal/regulatory reasons', recoverable: false, retryMs: 0 },
+  [500]: { code: 'HTTP_INTERNAL_SERVER_ERROR', desc: 'Server encountered an unhandled exception or crash', recoverable: true, retryMs: 2000 },
+  [502]: { code: 'HTTP_BAD_GATEWAY', desc: 'Reverse proxy/load balancer received an invalid response from the upstream server', recoverable: true, retryMs: 3000 },
+  [503]: { code: 'HTTP_SERVICE_UNAVAILABLE', desc: 'Server is temporarily overloaded or in maintenance mode', recoverable: true, retryMs: 5000 },
+  [504]: { code: 'HTTP_GATEWAY_TIMEOUT', desc: 'Reverse proxy/load balancer timed out waiting for the upstream server to respond', recoverable: true, retryMs: 5000 },
+  [520]: { code: 'HTTP_CF_UNKNOWN_ERROR', desc: 'Cloudflare received an unknown error from the origin server', recoverable: true, retryMs: 3000 },
+  [521]: { code: 'HTTP_CF_WEB_SERVER_DOWN', desc: 'Cloudflare cannot establish a TCP connection to the origin server', recoverable: true, retryMs: 5000 },
+  [522]: { code: 'HTTP_CF_CONNECTION_TIMED_OUT', desc: 'Cloudflare TCP connection to the origin server timed out', recoverable: true, retryMs: 5000 },
+  [523]: { code: 'HTTP_CF_ORIGIN_UNREACHABLE', desc: 'Cloudflare cannot reach the origin server (DNS or routing issue)', recoverable: true, retryMs: 5000 },
+  [524]: { code: 'HTTP_CF_TIMEOUT_OCCURRED', desc: 'Cloudflare established TCP but the origin did not respond with HTTP in time', recoverable: true, retryMs: 5000 },
+  [525]: { code: 'HTTP_CF_SSL_HANDSHAKE_FAILED', desc: 'Cloudflare could not complete SSL/TLS handshake with the origin server', recoverable: true, retryMs: 3000 },
+  [526]: { code: 'HTTP_CF_INVALID_SSL_CERT', desc: 'Cloudflare could not validate the origin server SSL certificate', recoverable: false, retryMs: 0 },
+};
+
+const JS_ERROR_PATTERNS: Array<{ pattern: RegExp | string; code: string; desc: string; recoverable: boolean; retryMs: number }> = [
+  { pattern: 'Load failed', code: 'WKFETCH_LOAD_FAILED', desc: 'WKWebView fetch() rejected with "Load failed" - typically caused by CORS preflight rejection, ATS policy block, or TCP connection failure in the WebKit networking stack', recoverable: true, retryMs: 1000 },
+  { pattern: 'Failed to fetch', code: 'FETCH_FAILED', desc: 'Fetch API promise rejected - network unreachable, DNS failure, or CORS headers missing from server response', recoverable: true, retryMs: 1000 },
+  { pattern: 'NetworkError when attempting to fetch resource', code: 'FETCH_NETWORK_ERROR', desc: 'Firefox-style network error during fetch - connection refused or CORS failure', recoverable: true, retryMs: 1000 },
+  { pattern: 'The network connection was lost', code: 'IOS_CONNECTION_LOST', desc: 'iOS-specific: TCP connection dropped during data transfer', recoverable: true, retryMs: 500 },
+  { pattern: 'A server with the specified hostname could not be found', code: 'IOS_DNS_FAILED', desc: 'iOS-specific: DNS resolution returned no results for this hostname', recoverable: true, retryMs: 3000 },
+  { pattern: 'The Internet connection appears to be offline', code: 'IOS_OFFLINE', desc: 'iOS detected no active network interface', recoverable: false, retryMs: 0 },
+  { pattern: 'The request timed out', code: 'IOS_TIMEOUT', desc: 'iOS URLSession request exceeded timeout interval', recoverable: true, retryMs: 2000 },
+  { pattern: 'cancelled', code: 'REQUEST_CANCELLED', desc: 'The request was cancelled before completion', recoverable: false, retryMs: 0 },
+  { pattern: 'AbortError', code: 'ABORT_ERROR', desc: 'Request was aborted via AbortController.abort() or navigation away', recoverable: false, retryMs: 0 },
+  { pattern: 'Could not connect to the server', code: 'IOS_CONNECT_FAILED', desc: 'iOS could not establish TCP connection to the server', recoverable: true, retryMs: 2000 },
+  { pattern: /CORS/i, code: 'CORS_BLOCKED', desc: 'Cross-Origin Resource Sharing policy blocked this request - server Access-Control-Allow-Origin header missing or mismatched', recoverable: false, retryMs: 0 },
+  { pattern: 'Access-Control-Allow-Origin', code: 'CORS_ORIGIN_MISSING', desc: 'Server response is missing the Access-Control-Allow-Origin header required for cross-origin requests', recoverable: false, retryMs: 0 },
+  { pattern: 'preflight', code: 'CORS_PREFLIGHT_FAILED', desc: 'CORS preflight OPTIONS request was rejected by the server', recoverable: false, retryMs: 0 },
+  { pattern: /protocol.*violation/i, code: 'PROTOCOL_VIOLATION', desc: 'HTTP/2 or HTTP/3 protocol violation - likely caused by QUIC alt-svc upgrade failure or corrupted HEADERS frame', recoverable: true, retryMs: 1000 },
+  { pattern: 'XHR network request failed', code: 'XHR_NETWORK_FAILED', desc: 'XMLHttpRequest onerror fired - connection failed at the network layer', recoverable: true, retryMs: 1000 },
+  { pattern: 'XHR request timed out', code: 'XHR_TIMEOUT', desc: 'XMLHttpRequest exceeded the 30-second timeout', recoverable: true, retryMs: 2000 },
+  { pattern: 'JSON', code: 'JSON_PARSE_ERROR', desc: 'Response body could not be parsed as valid JSON', recoverable: false, retryMs: 0 },
+  { pattern: 'SyntaxError', code: 'RESPONSE_SYNTAX_ERROR', desc: 'Response parsing threw a SyntaxError - likely HTML error page returned instead of JSON', recoverable: false, retryMs: 0 },
+  { pattern: 'All fetch methods failed', code: 'ALL_METHODS_EXHAUSTED', desc: 'All 4 iOS fetch tiers failed: HttpBridge, WKWebView fetch, XMLHttpRequest, and CapacitorHttp with 3 retries', recoverable: false, retryMs: 0 },
+];
+
+type FetchTier = 'HttpBridge' | 'WKWebView' | 'XHR' | 'CapacitorHttp' | 'WebFetch' | 'AndroidCapHttp' | 'FetchInterceptor';
+
+interface DiagnosticReport {
+  errorCode: string;
+  description: string;
+  tier: FetchTier;
+  platform: string;
+  url: string;
+  method: string;
+  recoverable: boolean;
+  retryAfterMs: number;
+  elapsedMs?: number;
+  rawError: string;
+  nativeErrorData?: HttpBridgeErrorData;
+  underlyingCodes?: string[];
+  timestamp: string;
+}
+
+function extractHttpBridgeErrorData(error: any): HttpBridgeErrorData | undefined {
+  if (!error) return undefined;
+  if (error?.errorCode) return error as HttpBridgeErrorData;
+  if (error?.data?.errorCode) return error.data as HttpBridgeErrorData;
+  if (error?.message && typeof error.message === 'string') {
+    try {
+      const parsed = JSON.parse(error.message);
+      if (parsed?.errorCode) return parsed as HttpBridgeErrorData;
+    } catch {}
+  }
+  return undefined;
+}
+
+function diagnoseFromNSURLCode(code: number): { errorCode: string; desc: string; recoverable: boolean; retryMs: number } | null {
+  const nsurl = NSURL_ERROR_CODES[code];
+  if (nsurl) return { errorCode: nsurl.code, desc: nsurl.desc, recoverable: nsurl.recoverable, retryMs: nsurl.retryMs };
+  const ssl = SSL_ERROR_CODES[code];
+  if (ssl) return { errorCode: ssl.code, desc: ssl.desc, recoverable: false, retryMs: 0 };
+  const posix = POSIX_ERROR_CODES[code];
+  if (posix) return { errorCode: posix.code, desc: posix.desc, recoverable: code === 54 || code === 60, retryMs: code === 54 ? 500 : code === 60 ? 2000 : 0 };
+  return null;
+}
+
+function diagnoseNetworkError(error: any, tier: FetchTier, url: string, method: string, startTime?: number): DiagnosticReport {
+  const platform = Capacitor.getPlatform();
+  const elapsedMs = startTime ? Date.now() - startTime : undefined;
+  const errorMessage = error?.message || String(error || 'Unknown error');
   const errorName = error?.name || '';
-  const errorMessage = error?.message || '';
   const errorCode = error?.code;
-  const underlyingError = error?.cause || error?.underlyingError;
-  
-  console.error('[NetworkDiag] Full error object:', JSON.stringify({
-    name: errorName,
-    message: errorMessage,
-    code: errorCode,
-    stack: error?.stack?.substring(0, 500),
-    cause: underlyingError ? {
-      name: underlyingError?.name,
-      message: underlyingError?.message,
-      code: underlyingError?.code
-    } : undefined
-  }, null, 2));
-  
-  // Check for error code in our mapping
-  if (errorCode && ERROR_CODES[String(errorCode)]) {
-    return `[${ERROR_CODES[String(errorCode)]}] Code: ${errorCode}`;
+  const nativeData = extractHttpBridgeErrorData(error);
+  const timestamp = new Date().toISOString();
+
+  let report: DiagnosticReport = {
+    errorCode: 'UNDIAGNOSED',
+    description: `Unclassified error: ${errorMessage}`,
+    tier,
+    platform,
+    url,
+    method,
+    recoverable: false,
+    retryAfterMs: 0,
+    elapsedMs,
+    rawError: errorMessage,
+    nativeErrorData: nativeData,
+    timestamp,
+  };
+
+  if (nativeData?.errorCode) {
+    report.errorCode = nativeData.errorCode;
+    report.description = nativeData.detail || nativeData.localizedDescription || errorMessage;
+    report.recoverable = nativeData.recoverable ?? false;
+    report.retryAfterMs = nativeData.retryAfterMs ?? 0;
+    report.elapsedMs = nativeData.elapsedMs ?? elapsedMs;
+    if (nativeData.underlyingErrors?.length) {
+      report.underlyingCodes = nativeData.underlyingErrors.map(u => u.errorCode);
+    }
+    console.error(`[${tier}:${platform}] NATIVE ERROR ${report.errorCode}`, JSON.stringify(nativeData, null, 2));
+    return report;
   }
-  
-  // Check for error message patterns
-  for (const [pattern, description] of Object.entries(ERROR_CODES)) {
-    if (errorMessage.includes(pattern) || errorName.includes(pattern)) {
-      return `[${description}] ${errorMessage}`;
+
+  if (typeof errorCode === 'string' && errorCode.startsWith('HB_')) {
+    report.errorCode = errorCode;
+    report.description = errorMessage;
+    const numericCode = error?.data?.code ?? error?.code;
+    if (typeof numericCode === 'number') {
+      const diagnosed = diagnoseFromNSURLCode(numericCode);
+      if (diagnosed) {
+        report.description = diagnosed.desc;
+        report.recoverable = diagnosed.recoverable;
+        report.retryAfterMs = diagnosed.retryMs;
+      }
+    }
+    console.error(`[${tier}:${platform}] NATIVE ${report.errorCode}: ${report.description}`);
+    return report;
+  }
+
+  if (typeof errorCode === 'number' || (typeof errorCode === 'string' && /^-?\d+$/.test(errorCode))) {
+    const numCode = typeof errorCode === 'number' ? errorCode : parseInt(errorCode, 10);
+    const diagnosed = diagnoseFromNSURLCode(numCode);
+    if (diagnosed) {
+      report.errorCode = diagnosed.errorCode;
+      report.description = diagnosed.desc;
+      report.recoverable = diagnosed.recoverable;
+      report.retryAfterMs = diagnosed.retryMs;
+      console.error(`[${tier}:${platform}] ERROR ${report.errorCode}: ${report.description} (code=${numCode})`);
+      return report;
     }
   }
-  
-  // Extract any numeric code from the error message
-  const codeMatch = errorMessage.match(/-?\d{3,5}/);
-  if (codeMatch) {
-    const extractedCode = codeMatch[0];
-    if (ERROR_CODES[extractedCode]) {
-      return `[${ERROR_CODES[extractedCode]}] ${errorMessage}`;
+
+  const codeInMessage = errorMessage.match(/(?:code[=: ]*|^|NSURLError.*?)(-?\d{3,5})/i);
+  if (codeInMessage) {
+    const numCode = parseInt(codeInMessage[1], 10);
+    const diagnosed = diagnoseFromNSURLCode(numCode);
+    if (diagnosed) {
+      report.errorCode = diagnosed.errorCode;
+      report.description = `${diagnosed.desc} (extracted from: ${errorMessage})`;
+      report.recoverable = diagnosed.recoverable;
+      report.retryAfterMs = diagnosed.retryMs;
+      console.error(`[${tier}:${platform}] ERROR ${report.errorCode}: ${report.description}`);
+      return report;
     }
-    return `[UNKNOWN_CODE:${extractedCode}] ${errorMessage}`;
+    report.errorCode = `UNKNOWN_NATIVE_${numCode}`;
+    report.description = `Unrecognized native error code ${numCode}: ${errorMessage}`;
+    console.error(`[${tier}:${platform}] ERROR ${report.errorCode}: ${report.description}`);
+    return report;
   }
-  
-  // Fallback
-  return `[UNDIAGNOSED] name=${errorName} message=${errorMessage} code=${errorCode}`;
+
+  for (const pattern of JS_ERROR_PATTERNS) {
+    const matches = typeof pattern.pattern === 'string'
+      ? (errorMessage.includes(pattern.pattern) || errorName.includes(pattern.pattern))
+      : (pattern.pattern.test(errorMessage) || pattern.pattern.test(errorName));
+    if (matches) {
+      report.errorCode = pattern.code;
+      report.description = pattern.desc;
+      report.recoverable = pattern.recoverable;
+      report.retryAfterMs = pattern.retryMs;
+      console.error(`[${tier}:${platform}] ERROR ${report.errorCode}: ${report.description}`);
+      return report;
+    }
+  }
+
+  if (errorName === 'TypeError') {
+    report.errorCode = 'TYPE_ERROR_NETWORK';
+    report.description = `JavaScript TypeError in network layer: ${errorMessage}`;
+    report.recoverable = true;
+    report.retryAfterMs = 1000;
+  }
+
+  console.error(`[${tier}:${platform}] ${report.errorCode}: name=${errorName} message=${errorMessage} code=${errorCode}`, error);
+  return report;
 }
 
-function diagnoseHttpError(status: number): string {
-  return HTTP_STATUS_CODES[status] || `HTTP_${status}: Unknown HTTP error`;
+function diagnoseHttpError(status: number, url: string, method: string, tier: FetchTier): DiagnosticReport {
+  const platform = Capacitor.getPlatform();
+  const httpInfo = HTTP_STATUS_CODES[status];
+  if (httpInfo) {
+    return {
+      errorCode: httpInfo.code,
+      description: httpInfo.desc,
+      tier,
+      platform,
+      url,
+      method,
+      recoverable: httpInfo.recoverable,
+      retryAfterMs: httpInfo.retryMs,
+      rawError: `HTTP ${status}`,
+      timestamp: new Date().toISOString(),
+    };
+  }
+  const category = status >= 500 ? 'SERVER' : status >= 400 ? 'CLIENT' : 'UNEXPECTED';
+  return {
+    errorCode: `HTTP_${category}_${status}`,
+    description: `HTTP ${status} response from server`,
+    tier,
+    platform,
+    url,
+    method,
+    recoverable: status >= 500,
+    retryAfterMs: status >= 500 ? 2000 : 0,
+    rawError: `HTTP ${status}`,
+    timestamp: new Date().toISOString(),
+  };
 }
 
-// Native HTTP request using CapacitorHttp (bypasses WKWebView fetch issues)
+function formatDiagnosticLog(report: DiagnosticReport): string {
+  const parts = [
+    `[${report.tier}:${report.platform}]`,
+    report.errorCode,
+    report.description,
+    `url=${report.url}`,
+    `method=${report.method}`,
+    `recoverable=${report.recoverable}`,
+  ];
+  if (report.elapsedMs !== undefined) parts.push(`elapsed=${report.elapsedMs}ms`);
+  if (report.retryAfterMs > 0) parts.push(`retryAfter=${report.retryAfterMs}ms`);
+  if (report.underlyingCodes?.length) parts.push(`chain=[${report.underlyingCodes.join(' > ')}]`);
+  return parts.join(' | ');
+}
+
 async function nativeHttpRequest(
   url: string, 
   options: { 
@@ -169,8 +441,8 @@ async function nativeHttpRequest(
   } = {}
 ): Promise<{ status: number; data: any; headers: Record<string, string> }> {
   const method = options.method || 'GET';
-  console.log('[nativeHttp] Request:', method, url);
-  console.log('[nativeHttp] Headers:', JSON.stringify(options.headers || {}));
+  const startTime = Date.now();
+  console.log(`[AndroidCapHttp] ${method} ${url}`);
   
   try {
     const response = await CapacitorHttp.request({
@@ -180,16 +452,18 @@ async function nativeHttpRequest(
       data: options.body ? JSON.parse(options.body) : undefined,
     });
     
-    console.log('[nativeHttp] Response status:', response.status);
+    console.log(`[AndroidCapHttp] ${response.status} in ${Date.now() - startTime}ms`);
     return {
       status: response.status,
       data: response.data,
       headers: response.headers,
     };
   } catch (error: any) {
-    const diagnosis = diagnoseNetworkError(error);
-    console.error('[nativeHttp] FAILURE:', diagnosis);
-    throw new Error(`Network Error: ${diagnosis}`);
+    const report = diagnoseNetworkError(error, 'AndroidCapHttp', url, method, startTime);
+    console.error('[AndroidCapHttp] FAILURE:', formatDiagnosticLog(report));
+    const err = new Error(`Network Error: ${report.errorCode} - ${report.description}`);
+    (err as any).diagnosticReport = report;
+    throw err;
   }
 }
 
@@ -203,6 +477,7 @@ function xhrRequest(
   body?: string
 ): Promise<Response> {
   return new Promise((resolve, reject) => {
+    const startTime = Date.now();
     const xhr = new XMLHttpRequest();
     xhr.open(method, url, true);
     
@@ -211,6 +486,8 @@ function xhrRequest(
     }
     
     xhr.onload = function () {
+      const elapsed = Date.now() - startTime;
+      console.log(`[XHR] ${xhr.status} in ${elapsed}ms for ${method} ${url}`);
       const respHeaders = new Headers();
       const headerStr = xhr.getAllResponseHeaders();
       if (headerStr) {
@@ -223,11 +500,24 @@ function xhrRequest(
     };
     
     xhr.onerror = function () {
-      reject(new TypeError('XHR network request failed'));
+      const elapsed = Date.now() - startTime;
+      const err = new TypeError(`XHR network request failed after ${elapsed}ms`);
+      (err as any).xhrState = xhr.readyState;
+      (err as any).xhrStatus = xhr.status;
+      reject(err);
     };
     
     xhr.ontimeout = function () {
-      reject(new TypeError('XHR request timed out'));
+      const elapsed = Date.now() - startTime;
+      const err = new TypeError(`XHR request timed out after ${elapsed}ms (limit: 30000ms)`);
+      (err as any).xhrState = xhr.readyState;
+      reject(err);
+    };
+    
+    xhr.onabort = function () {
+      const elapsed = Date.now() - startTime;
+      const err = new TypeError(`XHR request aborted after ${elapsed}ms`);
+      reject(err);
     };
     
     xhr.timeout = 30000;
@@ -241,9 +531,14 @@ async function iosFetchWithFallback(
 ): Promise<Response> {
   const method = options.method || 'GET';
   const body = options.body as string | undefined;
-  console.log('[iosFetch] Requesting:', method, url);
+  const overallStart = Date.now();
+  const tierReports: DiagnosticReport[] = [];
   
+  console.log(`[iosFetch] START ${method} ${url}`);
+  
+  // Tier 1: HttpBridge (native Swift URLSession, fresh per request, HTTP/3 disabled)
   try {
+    const t1Start = Date.now();
     const bridgeResult = await HttpBridge.request({
       url,
       method,
@@ -251,42 +546,51 @@ async function iosFetchWithFallback(
       body: body,
     });
     
-    console.log('[iosFetch] HttpBridge succeeded, status:', bridgeResult.status);
+    console.log(`[iosFetch] T1_HttpBridge OK ${bridgeResult.status} in ${Date.now() - t1Start}ms`);
     
     return new Response(bridgeResult.data, {
       status: bridgeResult.status,
       headers: new Headers(bridgeResult.headers || {}),
     });
   } catch (bridgeError: any) {
-    console.warn('[iosFetch] HttpBridge failed:', bridgeError.message || bridgeError);
+    const report = diagnoseNetworkError(bridgeError, 'HttpBridge', url, method, overallStart);
+    tierReports.push(report);
+    console.warn(`[iosFetch] T1_HttpBridge FAIL: ${formatDiagnosticLog(report)}`);
   }
 
+  // Tier 2: WKWebView fetch (uses WebKit networking stack)
   try {
+    const t2Start = Date.now();
     const res = await originalFetch(url, {
       ...options,
       mode: 'cors',
       credentials: 'omit',
       cache: 'no-store',
     });
-    console.log('[iosFetch] WKWebView fetch succeeded, status:', res.status);
+    console.log(`[iosFetch] T2_WKWebView OK ${res.status} in ${Date.now() - t2Start}ms`);
     return res;
   } catch (wkError: any) {
-    console.warn('[iosFetch] WKWebView fetch failed:', wkError.message);
+    const report = diagnoseNetworkError(wkError, 'WKWebView', url, method);
+    tierReports.push(report);
+    console.warn(`[iosFetch] T2_WKWebView FAIL: ${formatDiagnosticLog(report)}`);
   }
 
-  console.log('[iosFetch] Trying XMLHttpRequest fallback');
+  // Tier 3: XMLHttpRequest (different JS API, may use different connection pool)
   try {
     const res = await xhrRequest(url, method, options.headers, body);
-    console.log('[iosFetch] XHR succeeded, status:', res.status);
+    console.log(`[iosFetch] T3_XHR OK ${res.status}`);
     return res;
   } catch (xhrError: any) {
-    console.warn('[iosFetch] XHR failed:', xhrError.message);
+    const report = diagnoseNetworkError(xhrError, 'XHR', url, method);
+    tierReports.push(report);
+    console.warn(`[iosFetch] T3_XHR FAIL: ${formatDiagnosticLog(report)}`);
   }
 
-  console.log('[iosFetch] Trying CapacitorHttp with retry');
-  let lastError: any;
+  // Tier 4: CapacitorHttp with retry (Capacitor's built-in native HTTP)
+  let lastCapReport: DiagnosticReport | null = null;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
+      const t4Start = Date.now();
       let parsedBody: any = undefined;
       if (body) {
         try { parsedBody = JSON.parse(body); } catch { parsedBody = body; }
@@ -299,7 +603,7 @@ async function iosFetchWithFallback(
         data: parsedBody,
       });
       
-      console.log('[iosFetch] CapacitorHttp attempt', attempt, 'succeeded, status:', nativeRes.status);
+      console.log(`[iosFetch] T4_CapHttp attempt ${attempt} OK ${nativeRes.status} in ${Date.now() - t4Start}ms`);
       
       const responseBody = typeof nativeRes.data === 'string' 
         ? nativeRes.data 
@@ -310,26 +614,42 @@ async function iosFetchWithFallback(
         headers: new Headers(nativeRes.headers),
       });
     } catch (capError: any) {
-      lastError = capError;
-      console.warn('[iosFetch] CapacitorHttp attempt', attempt, 'failed:', capError.message);
+      const report = diagnoseNetworkError(capError, 'CapacitorHttp', url, method);
+      lastCapReport = report;
+      tierReports.push(report);
+      console.warn(`[iosFetch] T4_CapHttp attempt ${attempt}/3 FAIL: ${formatDiagnosticLog(report)}`);
       if (attempt < 3) {
-        await new Promise(r => setTimeout(r, attempt * 500));
+        const backoff = report.retryAfterMs > 0 ? report.retryAfterMs : attempt * 500;
+        await new Promise(r => setTimeout(r, backoff));
       }
     }
   }
   
-  console.error('[iosFetch] All methods failed for:', url);
-  const diagnosis = diagnoseNetworkError(lastError || new Error('All fetch methods failed'));
-  throw new Error(`Network Error: ${diagnosis}`);
+  const totalElapsed = Date.now() - overallStart;
+  const tierSummary = tierReports.map(r => `${r.tier}:${r.errorCode}`).join(' → ');
+  
+  console.error(`[iosFetch] ALL_TIERS_EXHAUSTED in ${totalElapsed}ms for ${method} ${url}`);
+  console.error(`[iosFetch] Failure chain: ${tierSummary}`);
+  console.error(`[iosFetch] Full diagnostic reports:`, JSON.stringify(tierReports, null, 2));
+  
+  const err = new Error(
+    `ALL_METHODS_EXHAUSTED: All 4 iOS networking tiers failed for ${method} ${url} in ${totalElapsed}ms. ` +
+    `Chain: ${tierSummary}. ` +
+    `Last error: ${lastCapReport?.errorCode || tierReports[tierReports.length - 1]?.errorCode || 'unknown'} - ` +
+    `${lastCapReport?.description || tierReports[tierReports.length - 1]?.description || 'unknown'}`
+  );
+  (err as any).diagnosticReports = tierReports;
+  (err as any).totalElapsedMs = totalElapsed;
+  throw err;
 }
 
-// Unified fetch wrapper that includes auth token for native apps
 export async function authenticatedFetch(
   url: string,
   options: RequestInit = {}
 ): Promise<Response> {
   const fullUrl = url.startsWith('/api') ? getApiUrl(url) : url;
   const method = options.method || 'GET';
+  const startTime = Date.now();
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string> || {}),
   };
@@ -355,13 +675,13 @@ export async function authenticatedFetch(
         }
       }
       if (!res.ok) {
-        console.warn('[authenticatedFetch] HTTP Error:', diagnoseHttpError(res.status));
+        const httpReport = diagnoseHttpError(res.status, fullUrl, method, 'HttpBridge');
+        console.warn(`[authFetch:ios] ${formatDiagnosticLog(httpReport)}`);
       }
       return res;
     }
     
-    // Android: Use CapacitorHttp (native HTTP, no HTTP/2 issues)
-    console.log('[authenticatedFetch] Android - using CapacitorHttp');
+    console.log(`[authFetch:android] ${method} ${fullUrl}`);
     try {
       const nativeResponse = await CapacitorHttp.request({
         url: fullUrl,
@@ -370,67 +690,64 @@ export async function authenticatedFetch(
         data: options.body ? JSON.parse(options.body as string) : undefined,
       });
       
-      console.log('[authenticatedFetch] Android response status:', nativeResponse.status);
+      console.log(`[authFetch:android] ${nativeResponse.status} in ${Date.now() - startTime}ms`);
       
-      // Handle 401 on native
       if (nativeResponse.status === 401) {
         const hadToken = await getAuthToken();
         if (hadToken) {
-          console.log('[authenticatedFetch] 401 received - clearing invalid token');
           await clearAuthToken();
-          toast({
-            title: "Session expired",
-            description: "Please log in again.",
-            variant: "destructive",
-          });
+          toast({ title: "Session expired", description: "Please log in again.", variant: "destructive" });
         }
       }
       
-      // Create a Response-like object for compatibility
       const fakeResponse = new Response(JSON.stringify(nativeResponse.data), {
         status: nativeResponse.status,
         headers: new Headers(nativeResponse.headers),
       });
       
+      if (!fakeResponse.ok) {
+        const httpReport = diagnoseHttpError(nativeResponse.status, fullUrl, method, 'AndroidCapHttp');
+        console.warn(`[authFetch:android] ${formatDiagnosticLog(httpReport)}`);
+      }
+      
       return fakeResponse;
     } catch (error: any) {
-      const diagnosis = diagnoseNetworkError(error);
-      console.error('[authenticatedFetch] ANDROID FAILURE:', diagnosis);
-      throw new Error(`Network Error: ${diagnosis}`);
+      const report = diagnoseNetworkError(error, 'AndroidCapHttp', fullUrl, method, startTime);
+      console.error(`[authFetch:android] FAILURE: ${formatDiagnosticLog(report)}`);
+      const err = new Error(`Network Error: ${report.errorCode} - ${report.description}`);
+      (err as any).diagnosticReport = report;
+      throw err;
     }
   }
   
-  // Web platform uses regular fetch
+  console.log(`[authFetch:web] ${method} ${fullUrl}`);
   try {
-    console.log('[authenticatedFetch] Requesting:', fullUrl);
-    console.log('[authenticatedFetch] Platform:', Capacitor.getPlatform());
-    console.log('[authenticatedFetch] Headers:', JSON.stringify(headers));
     const res = await originalFetch(fullUrl, {
       ...options,
       headers,
       credentials: "include",
     });
-    console.log('[authenticatedFetch] Response status:', res.status);
+    console.log(`[authFetch:web] ${res.status} in ${Date.now() - startTime}ms`);
     if (!res.ok) {
-      console.warn('[authenticatedFetch] HTTP Error:', diagnoseHttpError(res.status));
+      const httpReport = diagnoseHttpError(res.status, fullUrl, method, 'WebFetch');
+      console.warn(`[authFetch:web] ${formatDiagnosticLog(httpReport)}`);
     }
     return res;
   } catch (error: any) {
-    const diagnosis = diagnoseNetworkError(error);
-    console.error('[authenticatedFetch] NETWORK FAILURE:', diagnosis);
-    throw new Error(`Network Error: ${diagnosis}`);
+    const report = diagnoseNetworkError(error, 'WebFetch', fullUrl, method, startTime);
+    console.error(`[authFetch:web] FAILURE: ${formatDiagnosticLog(report)}`);
+    const err = new Error(`Network Error: ${report.errorCode} - ${report.description}`);
+    (err as any).diagnosticReport = report;
+    throw err;
   }
 }
 
-// Global fetch interceptor - safety net for any missed direct fetch() calls
-// This patches window.fetch to automatically use CapacitorHttp for API calls on native platforms
 function setupFetchInterceptor() {
   if (typeof window === 'undefined') return;
   
   window.fetch = async function(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
     
-    // Only intercept API calls (starting with /api or the production URL)
     const isApiCall = url.startsWith('/api') || 
                       url.includes('/api/') || 
                       url.includes('loretta-care.replit.app/api');
@@ -439,7 +756,6 @@ function setupFetchInterceptor() {
       const existingHeaders = init?.headers as Record<string, string> | undefined;
       const headers: Record<string, string> = { ...(existingHeaders || {}) };
       
-      // Add auth token if not present
       if (!headers['X-Auth-Token'] && !headers['x-auth-token']) {
         const token = await getAuthToken();
         if (token) {
@@ -447,9 +763,9 @@ function setupFetchInterceptor() {
         }
       }
       
-      // Fix URL if it's a relative /api path
       const fullUrl = url.startsWith('/api') ? getApiUrl(url) : url;
       const method = init?.method || 'GET';
+      const startTime = Date.now();
       
       if (isIOS()) {
         return iosFetchWithFallback(fullUrl, {
@@ -460,8 +776,7 @@ function setupFetchInterceptor() {
         });
       }
       
-      // Android: Use CapacitorHttp (native HTTP)
-      console.log('[FetchInterceptor] Android - using CapacitorHttp:', url);
+      console.log(`[interceptor:android] ${method} ${fullUrl}`);
       try {
         const response = await CapacitorHttp.request({
           url: fullUrl,
@@ -470,19 +785,21 @@ function setupFetchInterceptor() {
           data: init?.body ? JSON.parse(init.body as string) : undefined,
         });
         
-        console.log('[FetchInterceptor] Android response status:', response.status);
+        console.log(`[interceptor:android] ${response.status} in ${Date.now() - startTime}ms`);
         
         return new Response(JSON.stringify(response.data), {
           status: response.status,
           headers: new Headers(response.headers),
         });
       } catch (error: any) {
-        console.error('[FetchInterceptor] Android request failed:', error);
-        throw error;
+        const report = diagnoseNetworkError(error, 'FetchInterceptor', fullUrl, method, startTime);
+        console.error(`[interceptor:android] FAILURE: ${formatDiagnosticLog(report)}`);
+        const err = new Error(`Network Error: ${report.errorCode} - ${report.description}`);
+        (err as any).diagnosticReport = report;
+        throw err;
       }
     }
     
-    // For non-API calls or web platform, use original fetch
     return originalFetch(input, init);
   };
 }
@@ -532,6 +849,7 @@ export async function apiRequest(
 ): Promise<Response> {
   const fullUrl = getApiUrl(url);
   const headers = await getRequestHeaders(!!data);
+  const startTime = Date.now();
   
   if (isNativePlatform()) {
     if (isIOS()) {
@@ -550,7 +868,8 @@ export async function apiRequest(
       }
       
       if (!res.ok) {
-        console.warn('[apiRequest] HTTP Error:', diagnoseHttpError(res.status));
+        const httpReport = diagnoseHttpError(res.status, fullUrl, method, 'HttpBridge');
+        console.warn(`[apiRequest:ios] ${formatDiagnosticLog(httpReport)}`);
         const text = await res.text();
         let errorMessage = text || res.statusText;
         try {
@@ -565,36 +884,29 @@ export async function apiRequest(
       return res;
     }
     
-    // Android: Use CapacitorHttp (native HTTP)
-    console.log('[apiRequest] Android - using CapacitorHttp');
+    console.log(`[apiRequest:android] ${method} ${fullUrl}`);
     const nativeResponse = await nativeHttpRequest(fullUrl, {
       method,
       headers,
       body: data ? JSON.stringify(data) : undefined,
     });
     
-    // Handle 401 on native
     if (nativeResponse.status === 401) {
       const hadToken = await getAuthToken();
       if (hadToken) {
-        console.log('[apiRequest] 401 received with stored token - clearing invalid token');
         await clearAuthToken();
-        toast({
-          title: "Session expired",
-          description: "Please log in again.",
-          variant: "destructive",
-        });
+        toast({ title: "Session expired", description: "Please log in again.", variant: "destructive" });
       }
     }
     
-    // Create a Response-like object for compatibility
     const fakeResponse = new Response(JSON.stringify(nativeResponse.data), {
       status: nativeResponse.status,
       headers: new Headers(nativeResponse.headers),
     });
     
     if (!fakeResponse.ok) {
-      console.warn('[apiRequest] HTTP Error:', diagnoseHttpError(nativeResponse.status));
+      const httpReport = diagnoseHttpError(nativeResponse.status, fullUrl, method, 'AndroidCapHttp');
+      console.warn(`[apiRequest:android] ${formatDiagnosticLog(httpReport)}`);
       const errorText = typeof nativeResponse.data === 'string' 
         ? nativeResponse.data 
         : JSON.stringify(nativeResponse.data);
@@ -604,14 +916,8 @@ export async function apiRequest(
     return fakeResponse;
   }
   
-  // Web platform uses regular fetch
+  console.log(`[apiRequest:web] ${method} ${fullUrl}`);
   try {
-    console.log('[apiRequest] Requesting:', method, fullUrl);
-    console.log('[apiRequest] Platform:', Capacitor.getPlatform());
-    console.log('[apiRequest] Headers:', JSON.stringify(headers));
-    if (data) {
-      console.log('[apiRequest] Body:', JSON.stringify(data).substring(0, 200));
-    }
     const res = await fetch(fullUrl, {
       method,
       headers,
@@ -619,20 +925,22 @@ export async function apiRequest(
       credentials: "include",
     });
 
-    console.log('[apiRequest] Response status:', res.status);
+    console.log(`[apiRequest:web] ${res.status} in ${Date.now() - startTime}ms`);
     if (!res.ok) {
-      console.warn('[apiRequest] HTTP Error:', diagnoseHttpError(res.status));
+      const httpReport = diagnoseHttpError(res.status, fullUrl, method, 'WebFetch');
+      console.warn(`[apiRequest:web] ${formatDiagnosticLog(httpReport)}`);
     }
     await throwIfResNotOk(res);
     return res;
   } catch (error: any) {
-    // Check if this is already a diagnosed error (from throwIfResNotOk) or a JSON error response
-    if (error.message?.startsWith('Network Error:') || error.message?.startsWith('[') || error.message?.startsWith('{')) {
+    if (error.message?.startsWith('Network Error:') || error.message?.startsWith('ALL_METHODS') || error.message?.startsWith('[') || error.message?.startsWith('{')) {
       throw error;
     }
-    const diagnosis = diagnoseNetworkError(error);
-    console.error('[apiRequest] NETWORK FAILURE:', diagnosis);
-    throw new Error(`Network Error: ${diagnosis}`);
+    const report = diagnoseNetworkError(error, 'WebFetch', fullUrl, method, startTime);
+    console.error(`[apiRequest:web] FAILURE: ${formatDiagnosticLog(report)}`);
+    const err = new Error(`Network Error: ${report.errorCode} - ${report.description}`);
+    (err as any).diagnosticReport = report;
+    throw err;
   }
 }
 
@@ -644,6 +952,7 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = getApiUrl(queryKey.join("/") as string);
     const headers = await getRequestHeaders(false);
+    const startTime = Date.now();
     
     if (isNativePlatform()) {
       if (isIOS()) {
@@ -665,7 +974,8 @@ export const getQueryFn: <T>(options: {
         }
         
         if (!res.ok) {
-          console.warn('[getQueryFn] HTTP Error:', diagnoseHttpError(res.status));
+          const httpReport = diagnoseHttpError(res.status, url, 'GET', 'HttpBridge');
+          console.warn(`[queryFn:ios] ${formatDiagnosticLog(httpReport)}`);
           const text = await res.text();
           let errorMessage = text;
           try {
@@ -678,25 +988,19 @@ export const getQueryFn: <T>(options: {
         return await res.json();
       }
       
-      // Android: Use CapacitorHttp (native HTTP)
-      console.log('[getQueryFn] Android - using CapacitorHttp');
+      console.log(`[queryFn:android] GET ${url}`);
       const nativeResponse = await nativeHttpRequest(url, {
         method: 'GET',
         headers,
       });
       
-      console.log('[getQueryFn] Android response status:', nativeResponse.status);
+      console.log(`[queryFn:android] ${nativeResponse.status} in ${Date.now() - startTime}ms`);
       
       if (nativeResponse.status === 401) {
         const hadToken = await getAuthToken();
         if (hadToken) {
-          console.log('[getQueryFn] 401 received - clearing invalid token');
           await clearAuthToken();
-          toast({
-            title: "Session expired",
-            description: "Please log in again to continue.",
-            variant: "destructive",
-          });
+          toast({ title: "Session expired", description: "Please log in again to continue.", variant: "destructive" });
         }
         if (unauthorizedBehavior === "returnNull") {
           return null;
@@ -705,26 +1009,25 @@ export const getQueryFn: <T>(options: {
       }
       
       if (nativeResponse.status >= 400) {
-        console.warn('[getQueryFn] HTTP Error:', diagnoseHttpError(nativeResponse.status));
+        const httpReport = diagnoseHttpError(nativeResponse.status, url, 'GET', 'AndroidCapHttp');
+        console.warn(`[queryFn:android] ${formatDiagnosticLog(httpReport)}`);
         throw new Error(`${nativeResponse.status}: ${JSON.stringify(nativeResponse.data)}`);
       }
       
       return nativeResponse.data;
     }
     
-    // Web platform uses regular fetch
+    console.log(`[queryFn:web] GET ${url}`);
     try {
-      console.log('[getQueryFn] Requesting:', url);
-      console.log('[getQueryFn] Platform:', Capacitor.getPlatform());
-      console.log('[getQueryFn] Headers:', JSON.stringify(headers));
       const res = await fetch(url, {
         credentials: "include",
         headers,
       });
 
-      console.log('[getQueryFn] Response status:', res.status);
+      console.log(`[queryFn:web] ${res.status} in ${Date.now() - startTime}ms`);
       if (!res.ok && res.status !== 401) {
-        console.warn('[getQueryFn] HTTP Error:', diagnoseHttpError(res.status));
+        const httpReport = diagnoseHttpError(res.status, url, 'GET', 'WebFetch');
+        console.warn(`[queryFn:web] ${formatDiagnosticLog(httpReport)}`);
       }
       if (res.status === 401) {
         if (unauthorizedBehavior === "returnNull") {
@@ -735,13 +1038,14 @@ export const getQueryFn: <T>(options: {
       await throwIfResNotOk(res);
       return await res.json();
     } catch (error: any) {
-      // Check if this is already a diagnosed error
-      if (error.message?.startsWith('Network Error:') || error.message?.startsWith('[')) {
+      if (error.message?.startsWith('Network Error:') || error.message?.startsWith('ALL_METHODS') || error.message?.startsWith('[') || error.message?.startsWith('{')) {
         throw error;
       }
-      const diagnosis = diagnoseNetworkError(error);
-      console.error('[getQueryFn] NETWORK FAILURE:', diagnosis);
-      throw new Error(`Network Error: ${diagnosis}`);
+      const report = diagnoseNetworkError(error, 'WebFetch', url, 'GET', startTime);
+      console.error(`[queryFn:web] FAILURE: ${formatDiagnosticLog(report)}`);
+      const err = new Error(`Network Error: ${report.errorCode} - ${report.description}`);
+      (err as any).diagnosticReport = report;
+      throw err;
     }
   };
 
