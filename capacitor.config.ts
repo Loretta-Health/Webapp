@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist/public',
   server: {
     androidScheme: 'https',
-    iosScheme: 'capacitor',
+    iosScheme: 'https',
     cleartext: false,
     hostname: 'loretta.app',
     allowNavigation: [
