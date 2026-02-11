@@ -185,6 +185,58 @@ async function nativeHttpRequest(
 // Store the original fetch for use in our wrapper
 const originalFetch = window.fetch.bind(window);
 
+async function iosFetchWithFallback(
+  url: string,
+  options: RequestInit & { headers: Record<string, string> }
+): Promise<Response> {
+  console.log('[iosFetch] Requesting:', options.method || 'GET', url);
+  
+  try {
+    const res = await originalFetch(url, {
+      ...options,
+      mode: 'cors',
+      credentials: 'omit',
+    });
+    console.log('[iosFetch] WKWebView fetch succeeded, status:', res.status);
+    return res;
+  } catch (wkError: any) {
+    console.warn('[iosFetch] WKWebView fetch failed:', wkError.message, '- falling back to CapacitorHttp');
+    
+    try {
+      let parsedBody: any = undefined;
+      if (options.body) {
+        try {
+          parsedBody = JSON.parse(options.body as string);
+        } catch {
+          parsedBody = options.body;
+        }
+      }
+      
+      const nativeRes = await CapacitorHttp.request({
+        url,
+        method: options.method || 'GET',
+        headers: options.headers,
+        data: parsedBody,
+      });
+      
+      console.log('[iosFetch] CapacitorHttp fallback succeeded, status:', nativeRes.status);
+      
+      const responseBody = typeof nativeRes.data === 'string' 
+        ? nativeRes.data 
+        : JSON.stringify(nativeRes.data);
+      
+      return new Response(responseBody, {
+        status: nativeRes.status,
+        headers: new Headers(nativeRes.headers),
+      });
+    } catch (capError: any) {
+      console.error('[iosFetch] Both WKWebView and CapacitorHttp failed');
+      const diagnosis = diagnoseNetworkError(wkError);
+      throw new Error(`Network Error: ${diagnosis}`);
+    }
+  }
+}
+
 // Unified fetch wrapper that includes auth token for native apps
 export async function authenticatedFetch(
   url: string,
@@ -202,42 +254,24 @@ export async function authenticatedFetch(
       headers["X-Auth-Token"] = token;
     }
     
-    // iOS: Use WKWebView's fetch to avoid HTTP/2 protocol issues with CapacitorHttp
-    // Android: Use CapacitorHttp which works reliably
     if (isIOS()) {
-      console.log('[authenticatedFetch] iOS - using WKWebView fetch');
-      try {
-        const res = await originalFetch(fullUrl, {
-          ...options,
-          method,
-          headers,
-          credentials: "omit", // iOS native doesn't use session cookies
-        });
-        console.log('[authenticatedFetch] iOS response status:', res.status);
-        
-        // Handle 401 on iOS
-        if (res.status === 401) {
-          const hadToken = await getAuthToken();
-          if (hadToken) {
-            console.log('[authenticatedFetch] 401 received - clearing invalid token');
-            await clearAuthToken();
-            toast({
-              title: "Session expired",
-              description: "Please log in again.",
-              variant: "destructive",
-            });
-          }
+      const res = await iosFetchWithFallback(fullUrl, {
+        ...options,
+        method,
+        headers,
+      });
+      
+      if (res.status === 401) {
+        const hadToken = await getAuthToken();
+        if (hadToken) {
+          await clearAuthToken();
+          toast({ title: "Session expired", description: "Please log in again.", variant: "destructive" });
         }
-        
-        if (!res.ok) {
-          console.warn('[authenticatedFetch] HTTP Error:', diagnoseHttpError(res.status));
-        }
-        return res;
-      } catch (error: any) {
-        const diagnosis = diagnoseNetworkError(error);
-        console.error('[authenticatedFetch] iOS FAILURE:', diagnosis);
-        throw new Error(`Network Error: ${diagnosis}`);
       }
+      if (!res.ok) {
+        console.warn('[authenticatedFetch] HTTP Error:', diagnoseHttpError(res.status));
+      }
+      return res;
     }
     
     // Android: Use CapacitorHttp (native HTTP, no HTTP/2 issues)
@@ -331,14 +365,12 @@ function setupFetchInterceptor() {
       const fullUrl = url.startsWith('/api') ? getApiUrl(url) : url;
       const method = init?.method || 'GET';
       
-      // iOS: Use WKWebView fetch directly (avoid HTTP/2 protocol issues with CapacitorHttp)
       if (isIOS()) {
-        console.log('[FetchInterceptor] iOS - using WKWebView fetch:', url);
-        return originalFetch(fullUrl, {
+        return iosFetchWithFallback(fullUrl, {
           ...init,
           method,
           headers,
-          credentials: "omit",
+          body: init?.body as string | undefined,
         });
       }
       
@@ -415,60 +447,36 @@ export async function apiRequest(
   const fullUrl = getApiUrl(url);
   const headers = await getRequestHeaders(!!data);
   
-  // Use native HTTP for native platforms
   if (isNativePlatform()) {
-    // iOS: Use WKWebView fetch to avoid HTTP/2 protocol issues
     if (isIOS()) {
-      console.log('[apiRequest] iOS - using WKWebView fetch');
-      try {
-        const res = await originalFetch(fullUrl, {
-          method,
-          headers,
-          body: data ? JSON.stringify(data) : undefined,
-          credentials: "omit",
-        });
-        
-        console.log('[apiRequest] iOS response status:', res.status);
-        
-        // Handle 401 on iOS
-        if (res.status === 401) {
-          const hadToken = await getAuthToken();
-          if (hadToken) {
-            console.log('[apiRequest] 401 received with stored token - clearing invalid token');
-            await clearAuthToken();
-            toast({
-              title: "Session expired",
-              description: "Please log in again.",
-              variant: "destructive",
-            });
-          }
+      const res = await iosFetchWithFallback(fullUrl, {
+        method,
+        headers,
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      
+      if (res.status === 401) {
+        const hadToken = await getAuthToken();
+        if (hadToken) {
+          await clearAuthToken();
+          toast({ title: "Session expired", description: "Please log in again.", variant: "destructive" });
         }
-        
-        if (!res.ok) {
-          console.warn('[apiRequest] HTTP Error:', diagnoseHttpError(res.status));
-          const text = await res.text();
-          // Parse JSON error messages for user-friendly display
-          let errorMessage = text || res.statusText;
-          try {
-            const jsonError = JSON.parse(text);
-            if (jsonError.message) {
-              errorMessage = jsonError.message;
-            }
-          } catch {
-            // Not JSON, use as-is
-          }
-          throw new Error(errorMessage);
-        }
-        
-        return res;
-      } catch (error: any) {
-        if (error.message?.startsWith('Network Error:') || error.message?.match(/^\d{3}:/)) {
-          throw error;
-        }
-        const diagnosis = diagnoseNetworkError(error);
-        console.error('[apiRequest] iOS FAILURE:', diagnosis);
-        throw new Error(`Network Error: ${diagnosis}`);
       }
+      
+      if (!res.ok) {
+        console.warn('[apiRequest] HTTP Error:', diagnoseHttpError(res.status));
+        const text = await res.text();
+        let errorMessage = text || res.statusText;
+        try {
+          const jsonError = JSON.parse(text);
+          if (jsonError.message) {
+            errorMessage = jsonError.message;
+          }
+        } catch {}
+        throw new Error(errorMessage);
+      }
+      
+      return res;
     }
     
     // Android: Use CapacitorHttp (native HTTP)
@@ -551,62 +559,37 @@ export const getQueryFn: <T>(options: {
     const url = getApiUrl(queryKey.join("/") as string);
     const headers = await getRequestHeaders(false);
     
-    // Use native HTTP for native platforms
     if (isNativePlatform()) {
-      // iOS: Use WKWebView fetch to avoid HTTP/2 protocol issues
       if (isIOS()) {
-        console.log('[getQueryFn] iOS - using WKWebView fetch');
-        try {
-          const res = await originalFetch(url, {
-            method: 'GET',
-            headers,
-            credentials: "omit",
-          });
-          
-          console.log('[getQueryFn] iOS response status:', res.status);
-          
-          if (res.status === 401) {
-            const hadToken = await getAuthToken();
-            if (hadToken) {
-              console.log('[getQueryFn] 401 received - clearing invalid token');
-              await clearAuthToken();
-              toast({
-                title: "Session expired",
-                description: "Please log in again to continue.",
-                variant: "destructive",
-              });
-            }
-            if (unauthorizedBehavior === "returnNull") {
-              return null;
-            }
-            throw new Error('401: Unauthorized');
+        const res = await iosFetchWithFallback(url, {
+          method: 'GET',
+          headers,
+        });
+        
+        if (res.status === 401) {
+          const hadToken = await getAuthToken();
+          if (hadToken) {
+            await clearAuthToken();
+            toast({ title: "Session expired", description: "Please log in again to continue.", variant: "destructive" });
           }
-          
-          if (!res.ok) {
-            console.warn('[getQueryFn] HTTP Error:', diagnoseHttpError(res.status));
-            const text = await res.text();
-            // Parse JSON error messages for user-friendly display
-            let errorMessage = text;
-            try {
-              const jsonError = JSON.parse(text);
-              if (jsonError.message) {
-                errorMessage = jsonError.message;
-              }
-            } catch {
-              // Not JSON, use as-is
-            }
-            throw new Error(errorMessage);
+          if (unauthorizedBehavior === "returnNull") {
+            return null;
           }
-          
-          return await res.json();
-        } catch (error: any) {
-          if (error.message?.startsWith('Network Error:') || error.message?.match(/^\d{3}:/)) {
-            throw error;
-          }
-          const diagnosis = diagnoseNetworkError(error);
-          console.error('[getQueryFn] iOS FAILURE:', diagnosis);
-          throw new Error(`Network Error: ${diagnosis}`);
+          throw new Error('401: Unauthorized');
         }
+        
+        if (!res.ok) {
+          console.warn('[getQueryFn] HTTP Error:', diagnoseHttpError(res.status));
+          const text = await res.text();
+          let errorMessage = text;
+          try {
+            const jsonError = JSON.parse(text);
+            if (jsonError.message) errorMessage = jsonError.message;
+          } catch {}
+          throw new Error(errorMessage);
+        }
+        
+        return await res.json();
       }
       
       // Android: Use CapacitorHttp (native HTTP)
