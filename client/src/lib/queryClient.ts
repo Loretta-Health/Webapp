@@ -1,7 +1,18 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { Capacitor, CapacitorHttp } from "@capacitor/core";
+import { Capacitor, CapacitorHttp, registerPlugin } from "@capacitor/core";
 import { getAuthToken, clearAuthToken } from "./nativeAuth";
 import { toast } from "@/hooks/use-toast";
+
+interface HttpBridgePlugin {
+  request(options: {
+    url: string;
+    method: string;
+    headers: Record<string, string>;
+    body?: string;
+  }): Promise<{ status: number; data: string; headers: Record<string, string> }>;
+}
+
+const HttpBridge = registerPlugin<HttpBridgePlugin>('HttpBridge');
 
 export const isNativePlatform = () => Capacitor.getPlatform() !== 'web';
 export const isIOS = () => Capacitor.getPlatform() === 'ios';
@@ -233,6 +244,24 @@ async function iosFetchWithFallback(
   console.log('[iosFetch] Requesting:', method, url);
   
   try {
+    const bridgeResult = await HttpBridge.request({
+      url,
+      method,
+      headers: options.headers,
+      body: body,
+    });
+    
+    console.log('[iosFetch] HttpBridge succeeded, status:', bridgeResult.status);
+    
+    return new Response(bridgeResult.data, {
+      status: bridgeResult.status,
+      headers: new Headers(bridgeResult.headers || {}),
+    });
+  } catch (bridgeError: any) {
+    console.warn('[iosFetch] HttpBridge failed:', bridgeError.message || bridgeError);
+  }
+
+  try {
     const res = await originalFetch(url, {
       ...options,
       mode: 'cors',
@@ -290,7 +319,7 @@ async function iosFetchWithFallback(
   }
   
   console.error('[iosFetch] All methods failed for:', url);
-  const diagnosis = diagnoseNetworkError(lastError);
+  const diagnosis = diagnoseNetworkError(lastError || new Error('All fetch methods failed'));
   throw new Error(`Network Error: ${diagnosis}`);
 }
 

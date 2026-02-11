@@ -4,8 +4,6 @@
 <dict>
         <key>NSAppTransportSecurity</key>
         <dict>
-                <key>NSAllowsArbitraryLoads</key>
-                <true/>
                 <key>NSAllowsArbitraryLoadsInWebContent</key>
                 <true/>
                 <key>NSExceptionDomains</key>
@@ -16,8 +14,6 @@
                                 <false/>
                                 <key>NSIncludesSubdomains</key>
                                 <true/>
-                                <key>NSExceptionRequiresForwardSecrecy</key>
-                                <false/>
                                 <key>NSExceptionMinimumTLSVersion</key>
                                 <string>TLSv1.2</string>
                         </dict>
@@ -27,8 +23,6 @@
                                 <false/>
                                 <key>NSIncludesSubdomains</key>
                                 <true/>
-                                <key>NSExceptionRequiresForwardSecrecy</key>
-                                <false/>
                                 <key>NSExceptionMinimumTLSVersion</key>
                                 <string>TLSv1.2</string>
                         </dict>
