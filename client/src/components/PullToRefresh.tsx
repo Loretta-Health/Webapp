@@ -137,7 +137,7 @@ export function PullToRefresh({
   const contentY = useTransform(pullDistance, (v) => v);
   
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ touchAction: 'pan-x pan-down' }}>
+    <div className={`relative overflow-hidden ${className}`} style={{ touchAction: 'pan-y pan-x' }}>
       <motion.div
         className="absolute left-1/2 -translate-x-1/2 z-10 flex items-center justify-center pointer-events-none"
         style={{ 
