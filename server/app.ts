@@ -26,7 +26,8 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
     "https://loretta-care.replit.app",
-    "https://loretta.app",  // Capacitor iOS/Android (from capacitor.config.ts hostname)
+    "https://loretta.app",
+    "capacitor://loretta.app",
     "https://localhost",
     "capacitor://localhost",
     "ionic://localhost",
