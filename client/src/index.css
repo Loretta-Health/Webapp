@@ -17,17 +17,13 @@
 }
 
 /* Safe area utility classes for seamless extension of elements */
-/* Uses border-top so it ADDS to existing Tailwind padding without conflicting */
 .safe-area-top {
-  border-top-style: solid !important;
-  border-top-color: transparent !important;
-  border-top-width: var(--safe-area-inset-top) !important;
-  background-origin: border-box;
+  padding-top: var(--safe-area-inset-top);
 }
 
 /* Android-specific: Ensure minimum safe area for status bar */
 .capacitor-android .safe-area-top {
-  border-top-width: max(28px, env(safe-area-inset-top, 28px)) !important;
+  padding-top: max(28px, env(safe-area-inset-top, 28px));
 }
 
 .safe-area-bottom {
