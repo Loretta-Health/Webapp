@@ -1,0 +1,25 @@
+⚡️  To Native ->  Preferences get 130549083
+⚡️  TO JS {"value":"9194960ea74a70561780b474a3630e1b8a066207ab447f7efb43d082f3df65b1"}
+⚡️  [log] - [iosFetch] Requesting: POST https://loretta-care.replit.app/api/login
+⚡️  [warn] - [iosFetch] WKWebView fetch failed: Load failed - falling back to CapacitorHttp
+⚡️  To Native ->  CapacitorHttp request 130549084
+nw_connection_copy_connected_local_endpoint_block_invoke [C7] Connection has no local endpoint
+nw_connection_copy_connected_local_endpoint_block_invoke [C7] Connection has no local endpoint
+quic_conn_change_current_path [C7.1.1.1:2] [-e049b20a25a1a983] tried to change paths, but no alternatives were found
+nw_flow_service_writes Failing write request <nw_write_request> [57: Socket is not connected]
+nw_write_request_report [C7] Send failed with error "Socket is not connected"
+Task <18CCA510-AE38-4946-9E99-40373A97FCE9>.<2> HTTP load failed, 427/0 bytes (error code: -1017 [4:-1])
+nw_connection_copy_connected_local_endpoint_block_invoke [C7] Connection has no local endpoint
+Task <18CCA510-AE38-4946-9E99-40373A97FCE9>.<2> finished with error [-1017] Error Domain=NSURLErrorDomain Code=-1017 "cannot parse response" UserInfo={_kCFStreamErrorCodeKey=-1, NSUnderlyingError=0x600000c96cd0 {Error Domain=kCFErrorDomainCFNetwork Code=-1017 "(null)" UserInfo={NSErrorPeerAddressKey=<CFData 0x60000214def0 [0x1e6ebb4f0]>{length = 16, capacity = 16, bytes = 0x100201bb227521e90000000000000000}, _kCFStreamErrorCodeKey=-1, _kCFStreamErrorDomainKey=4}}, _NSURLErrorFailingURLSessionTaskErrorKey=LocalDataTask <18CCA510-AE38-4946-9E99-40373A97FCE9>.<2>, _NSURLErrorRelatedURLSessionTaskErrorKey=(
+    "LocalDataTask <18CCA510-AE38-4946-9E99-40373A97FCE9>.<2>"
+), NSLocalizedDescription=cannot parse response, NSErrorFailingURLStringKey=https://loretta-care.replit.app/api/login, NSErrorFailingURLKey=https://loretta-care.replit.app/api/login, _kCFStreamErrorDomainKey=4}
+nw_protocol_implementation_lookup_path [C7.1.1.1:2] No path found for 37758e15a9e777fe
+ERROR MESSAGE:  {"code":"NSURLErrorDomain","message":"cannot parse response","errorMessage":"cannot parse response"}
+0x1068dfa18 7 Server protocol violation 0x02
+0x1068dfa18 7 Control stream closed but connection is alive
+⚡️  [error] - {"code":"NSURLErrorDomain","message":"cannot parse response","errorMessage":"cannot parse response"}
+⚡️  [error] - [iosFetch] Both WKWebView and CapacitorHttp failed
+⚡️  [error] - [NetworkDiag] Full error object: {
+  "name": "TypeError",
+  "message": "Load failed"
+}

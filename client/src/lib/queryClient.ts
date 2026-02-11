@@ -185,41 +185,92 @@ async function nativeHttpRequest(
 // Store the original fetch for use in our wrapper
 const originalFetch = window.fetch.bind(window);
 
+function xhrRequest(
+  url: string,
+  method: string,
+  headers: Record<string, string>,
+  body?: string
+): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url, true);
+    
+    for (const [key, value] of Object.entries(headers)) {
+      xhr.setRequestHeader(key, value);
+    }
+    
+    xhr.onload = function () {
+      const respHeaders = new Headers();
+      const headerStr = xhr.getAllResponseHeaders();
+      if (headerStr) {
+        headerStr.trim().split(/[\r\n]+/).forEach((line: string) => {
+          const idx = line.indexOf(': ');
+          if (idx > 0) respHeaders.append(line.substring(0, idx), line.substring(idx + 2));
+        });
+      }
+      resolve(new Response(xhr.responseText, { status: xhr.status, headers: respHeaders }));
+    };
+    
+    xhr.onerror = function () {
+      reject(new TypeError('XHR network request failed'));
+    };
+    
+    xhr.ontimeout = function () {
+      reject(new TypeError('XHR request timed out'));
+    };
+    
+    xhr.timeout = 30000;
+    xhr.send(body || null);
+  });
+}
+
 async function iosFetchWithFallback(
   url: string,
   options: RequestInit & { headers: Record<string, string> }
 ): Promise<Response> {
-  console.log('[iosFetch] Requesting:', options.method || 'GET', url);
+  const method = options.method || 'GET';
+  const body = options.body as string | undefined;
+  console.log('[iosFetch] Requesting:', method, url);
   
   try {
     const res = await originalFetch(url, {
       ...options,
       mode: 'cors',
       credentials: 'omit',
+      cache: 'no-store',
     });
     console.log('[iosFetch] WKWebView fetch succeeded, status:', res.status);
     return res;
   } catch (wkError: any) {
-    console.warn('[iosFetch] WKWebView fetch failed:', wkError.message, '- falling back to CapacitorHttp');
-    
+    console.warn('[iosFetch] WKWebView fetch failed:', wkError.message);
+  }
+
+  console.log('[iosFetch] Trying XMLHttpRequest fallback');
+  try {
+    const res = await xhrRequest(url, method, options.headers, body);
+    console.log('[iosFetch] XHR succeeded, status:', res.status);
+    return res;
+  } catch (xhrError: any) {
+    console.warn('[iosFetch] XHR failed:', xhrError.message);
+  }
+
+  console.log('[iosFetch] Trying CapacitorHttp with retry');
+  let lastError: any;
+  for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       let parsedBody: any = undefined;
-      if (options.body) {
-        try {
-          parsedBody = JSON.parse(options.body as string);
-        } catch {
-          parsedBody = options.body;
-        }
+      if (body) {
+        try { parsedBody = JSON.parse(body); } catch { parsedBody = body; }
       }
       
       const nativeRes = await CapacitorHttp.request({
         url,
-        method: options.method || 'GET',
+        method,
         headers: options.headers,
         data: parsedBody,
       });
       
-      console.log('[iosFetch] CapacitorHttp fallback succeeded, status:', nativeRes.status);
+      console.log('[iosFetch] CapacitorHttp attempt', attempt, 'succeeded, status:', nativeRes.status);
       
       const responseBody = typeof nativeRes.data === 'string' 
         ? nativeRes.data 
@@ -230,11 +281,17 @@ async function iosFetchWithFallback(
         headers: new Headers(nativeRes.headers),
       });
     } catch (capError: any) {
-      console.error('[iosFetch] Both WKWebView and CapacitorHttp failed');
-      const diagnosis = diagnoseNetworkError(wkError);
-      throw new Error(`Network Error: ${diagnosis}`);
+      lastError = capError;
+      console.warn('[iosFetch] CapacitorHttp attempt', attempt, 'failed:', capError.message);
+      if (attempt < 3) {
+        await new Promise(r => setTimeout(r, attempt * 500));
+      }
     }
   }
+  
+  console.error('[iosFetch] All methods failed for:', url);
+  const diagnosis = diagnoseNetworkError(lastError);
+  throw new Error(`Network Error: ${diagnosis}`);
 }
 
 // Unified fetch wrapper that includes auth token for native apps
