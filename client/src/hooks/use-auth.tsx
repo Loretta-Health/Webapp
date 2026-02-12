@@ -5,7 +5,7 @@ import {
   UseMutationResult,
 } from "@tanstack/react-query";
 import { User as SelectUser, InsertUser } from "@shared/schema";
-import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
+import { getQueryFn, apiRequest, queryClient, safeParseJSON, classifyAppError, isNativePlatform } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { trackAuth, identifyUser } from "@/lib/clarity";
 import { setAuthToken, clearAuthToken } from "@/lib/nativeAuth";
@@ -39,14 +39,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
       const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
+      const parsed = await safeParseJSON<AuthResponse>(res, 'login');
+      if (!parsed.ok) {
+        console.error(`[Auth:login] ${parsed.errorCode}: ${parsed.errorDesc}`);
+        throw new Error(`${parsed.errorCode}: ${parsed.errorDesc}`);
+      }
+      if (!parsed.data?.user) {
+        console.error('[Auth:login] APP_LOGIN_NO_USER_RETURNED: response missing user object');
+        throw new Error('APP_LOGIN_NO_USER_RETURNED: Login response is missing user data');
+      }
+      if (isNativePlatform() && !parsed.data.authToken) {
+        console.warn('[Auth:login] APP_LOGIN_NO_TOKEN_RETURNED: native platform but no authToken in response');
+      }
+      return parsed.data;
     },
     onSuccess: async (data: AuthResponse) => {
       const user = data.user;
       if (data.authToken) {
-        await setAuthToken(data.authToken);
+        try {
+          await setAuthToken(data.authToken);
+        } catch (tokenError: any) {
+          console.error(`[Auth:login] APP_LOGIN_TOKEN_STORE_FAILED: ${tokenError?.message || tokenError}`);
+          toast({
+            title: "Warning",
+            description: "Logged in but couldn't save your session. You may need to log in again later.",
+            variant: "destructive",
+          });
+        }
       }
-      // Clear any stale localStorage from previous users on this device
       localStorage.removeItem('loretta_profile');
       localStorage.removeItem('loretta_questionnaire_answers');
       localStorage.removeItem('loretta_questionnaire');
@@ -66,9 +86,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
+      const errorMsg = error.message;
+      console.error(`[Auth:login] Error: ${errorMsg}`);
+
+      let userMessage = errorMsg;
+      if (errorMsg.startsWith('APP_')) {
+        userMessage = errorMsg.substring(errorMsg.indexOf(':') + 2) || errorMsg;
+      }
+      try {
+        const parsed = JSON.parse(errorMsg);
+        if (parsed.message) {
+          const classified = classifyAppError('login', parsed.status || 401, parsed.message);
+          userMessage = classified.desc;
+          console.error(`[Auth:login] Classified: ${classified.code}`);
+        }
+      } catch {
+        if (!errorMsg.startsWith('APP_') && !errorMsg.startsWith('Network Error')) {
+          const statusMatch = errorMsg.match(/^(\d{3}):/);
+          if (statusMatch) {
+            const status = parseInt(statusMatch[1], 10);
+            const classified = classifyAppError('login', status, errorMsg);
+            userMessage = classified.desc;
+            console.error(`[Auth:login] Classified: ${classified.code}`);
+          }
+        }
+      }
+
       toast({
         title: "Login failed",
-        description: error.message,
+        description: userMessage,
         variant: "destructive",
       });
     },
@@ -77,14 +123,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const registerMutation = useMutation({
     mutationFn: async (credentials: InsertUser) => {
       const res = await apiRequest("POST", "/api/register", credentials);
-      return await res.json();
+      const parsed = await safeParseJSON<AuthResponse>(res, 'register');
+      if (!parsed.ok) {
+        console.error(`[Auth:register] ${parsed.errorCode}: ${parsed.errorDesc}`);
+        throw new Error(`${parsed.errorCode}: ${parsed.errorDesc}`);
+      }
+      if (!parsed.data?.user) {
+        console.error('[Auth:register] APP_REGISTER_NO_USER: response missing user object');
+        throw new Error('APP_REGISTER_NO_USER: Registration response is missing user data');
+      }
+      return parsed.data;
     },
     onSuccess: async (data: AuthResponse) => {
       const user = data.user;
       if (data.authToken) {
-        await setAuthToken(data.authToken);
+        try {
+          await setAuthToken(data.authToken);
+        } catch (tokenError: any) {
+          console.error(`[Auth:register] APP_REGISTER_TOKEN_STORE_FAILED: ${tokenError?.message || tokenError}`);
+          toast({
+            title: "Warning",
+            description: "Account created but couldn't save your session. You may need to log in again later.",
+            variant: "destructive",
+          });
+        }
       }
-      // Clear legacy localStorage keys after registration - registration data is now on server
       localStorage.removeItem('loretta_profile');
       localStorage.removeItem('loretta_questionnaire_answers');
       localStorage.removeItem('loretta_questionnaire');
@@ -104,9 +167,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
+      const errorMsg = error.message;
+      console.error(`[Auth:register] Error: ${errorMsg}`);
+
+      let userMessage = errorMsg;
+      if (errorMsg.startsWith('APP_')) {
+        userMessage = errorMsg.substring(errorMsg.indexOf(':') + 2) || errorMsg;
+      }
+      try {
+        const parsed = JSON.parse(errorMsg);
+        if (parsed.message) {
+          const classified = classifyAppError('register', parsed.status || 400, parsed.message);
+          userMessage = classified.desc;
+          console.error(`[Auth:register] Classified: ${classified.code}`);
+        }
+      } catch {
+        if (!errorMsg.startsWith('APP_') && !errorMsg.startsWith('Network Error')) {
+          const statusMatch = errorMsg.match(/^(\d{3}):/);
+          if (statusMatch) {
+            const status = parseInt(statusMatch[1], 10);
+            const classified = classifyAppError('register', status, errorMsg);
+            userMessage = classified.desc;
+            console.error(`[Auth:register] Classified: ${classified.code}`);
+          }
+        }
+      }
+
       toast({
         title: "Registration failed",
-        description: error.message,
+        description: userMessage,
         variant: "destructive",
       });
     },
@@ -135,7 +224,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiRequest("POST", "/api/logout");
     },
     onSuccess: async () => {
-      await clearAuthToken();
+      try {
+        await clearAuthToken();
+      } catch (clearError: any) {
+        console.error(`[Auth:logout] APP_AUTH_TOKEN_CLEAR_FAILED: ${clearError?.message || clearError}`);
+      }
       queryClient.clear();
       trackAuth('logout');
       toast({

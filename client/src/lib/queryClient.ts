@@ -233,7 +233,141 @@ const JS_ERROR_PATTERNS: Array<{ pattern: RegExp | string; code: string; desc: s
   { pattern: 'JSON', code: 'JSON_PARSE_ERROR', desc: 'Response body could not be parsed as valid JSON', recoverable: false, retryMs: 0 },
   { pattern: 'SyntaxError', code: 'RESPONSE_SYNTAX_ERROR', desc: 'Response parsing threw a SyntaxError - likely HTML error page returned instead of JSON', recoverable: false, retryMs: 0 },
   { pattern: 'All fetch methods failed', code: 'ALL_METHODS_EXHAUSTED', desc: 'All 4 iOS fetch tiers failed: HttpBridge, WKWebView fetch, XMLHttpRequest, and CapacitorHttp with 3 retries', recoverable: false, retryMs: 0 },
+  { pattern: 'Unexpected end of input', code: 'JSON_TRUNCATED', desc: 'Response body was truncated mid-stream before complete JSON could be received', recoverable: true, retryMs: 1000 },
+  { pattern: 'Unexpected token', code: 'JSON_UNEXPECTED_TOKEN', desc: 'Response body starts with unexpected character - likely HTML error page or proxy error instead of JSON', recoverable: false, retryMs: 0 },
+  { pattern: 'not valid JSON', code: 'JSON_INVALID', desc: 'Response body is not valid JSON - server may have returned plain text or binary data', recoverable: false, retryMs: 0 },
+  { pattern: 'body stream already read', code: 'BODY_ALREADY_CONSUMED', desc: 'Response body was already consumed by a previous .text() or .json() call', recoverable: false, retryMs: 0 },
+  { pattern: 'body stream is locked', code: 'BODY_STREAM_LOCKED', desc: 'Response body ReadableStream is locked by another reader', recoverable: false, retryMs: 0 },
+  { pattern: 'Content Security Policy', code: 'CSP_BLOCKED', desc: 'Content Security Policy directive blocked this request', recoverable: false, retryMs: 0 },
+  { pattern: 'ERR_BLOCKED_BY_CLIENT', code: 'BLOCKED_BY_EXTENSION', desc: 'Request was blocked by a browser extension or ad blocker', recoverable: false, retryMs: 0 },
 ];
+
+const APP_ERROR_CODES: Record<string, { code: string; desc: string; recoverable: boolean }> = {
+  LOGIN_INVALID_CREDENTIALS: { code: 'APP_LOGIN_INVALID_CREDENTIALS', desc: 'The username/email or password provided is incorrect', recoverable: false },
+  LOGIN_RESPONSE_PARSE_FAILED: { code: 'APP_LOGIN_RESPONSE_PARSE_FAILED', desc: 'Login succeeded at HTTP level but the server response could not be parsed as JSON - possible proxy interference or server misconfiguration', recoverable: true },
+  LOGIN_TOKEN_STORE_FAILED: { code: 'APP_LOGIN_TOKEN_STORE_FAILED', desc: 'Login succeeded but the auth token could not be saved to device storage (Capacitor Preferences) - device storage may be full or permission denied', recoverable: false },
+  LOGIN_NO_TOKEN_RETURNED: { code: 'APP_LOGIN_NO_TOKEN_RETURNED', desc: 'Login succeeded but server did not return an authToken in the response - native app requires token-based auth', recoverable: false },
+  LOGIN_NO_USER_RETURNED: { code: 'APP_LOGIN_NO_USER_RETURNED', desc: 'Login response is missing user data - server may have returned partial response', recoverable: true },
+  REGISTER_EMAIL_EXISTS: { code: 'APP_REGISTER_EMAIL_EXISTS', desc: 'An account with this email address already exists', recoverable: false },
+  REGISTER_USERNAME_EXISTS: { code: 'APP_REGISTER_USERNAME_EXISTS', desc: 'This username is already taken by another account', recoverable: false },
+  REGISTER_PASSWORD_WEAK: { code: 'APP_REGISTER_PASSWORD_WEAK', desc: 'Password does not meet minimum requirements (at least 6 characters)', recoverable: false },
+  REGISTER_MISSING_FIELDS: { code: 'APP_REGISTER_MISSING_FIELDS', desc: 'Email and password are required fields for registration', recoverable: false },
+  REGISTER_RESPONSE_PARSE_FAILED: { code: 'APP_REGISTER_RESPONSE_PARSE_FAILED', desc: 'Registration succeeded at HTTP level but the server response could not be parsed as JSON', recoverable: true },
+  REGISTER_TOKEN_STORE_FAILED: { code: 'APP_REGISTER_TOKEN_STORE_FAILED', desc: 'Registration succeeded but the auth token could not be saved to device storage', recoverable: false },
+  AUTH_TOKEN_EXPIRED: { code: 'APP_AUTH_TOKEN_EXPIRED', desc: 'The stored authentication token has expired or been invalidated on the server - user must log in again', recoverable: false },
+  AUTH_TOKEN_MISSING: { code: 'APP_AUTH_TOKEN_MISSING', desc: 'No auth token found in device storage - user may have been logged out or token was cleared', recoverable: false },
+  AUTH_TOKEN_CLEAR_FAILED: { code: 'APP_AUTH_TOKEN_CLEAR_FAILED', desc: 'Failed to clear the auth token from device storage during logout', recoverable: false },
+  AUTH_SESSION_INVALID: { code: 'APP_AUTH_SESSION_INVALID', desc: 'Server rejected the current session - both session cookie and auth token are invalid', recoverable: false },
+  RISK_INSUFFICIENT_DATA: { code: 'APP_RISK_INSUFFICIENT_DATA', desc: 'Not enough questionnaire answers to calculate risk score - at least 5 mapped features are required', recoverable: false },
+  RISK_ML_UNAVAILABLE: { code: 'APP_RISK_ML_UNAVAILABLE', desc: 'The external ML prediction service (XGBoost diabetes model) is temporarily unavailable', recoverable: true },
+  RISK_CALCULATION_FAILED: { code: 'APP_RISK_CALCULATION_FAILED', desc: 'Server-side risk calculation encountered an error while processing questionnaire data', recoverable: true },
+  RISK_RESPONSE_PARSE_FAILED: { code: 'APP_RISK_RESPONSE_PARSE_FAILED', desc: 'Risk score calculation succeeded at HTTP level but the response could not be parsed as JSON', recoverable: true },
+  RISK_RESPONSE_INVALID: { code: 'APP_RISK_RESPONSE_INVALID', desc: 'Risk score response is missing expected fields (overallScore or diabetesRisk) - ML model may have returned unexpected format', recoverable: true },
+  RISK_SAVE_QUESTIONNAIRE_FAILED: { code: 'APP_RISK_SAVE_QUESTIONNAIRE_FAILED', desc: 'Failed to save questionnaire answers to server before risk calculation', recoverable: true },
+  API_RESPONSE_NOT_JSON: { code: 'APP_API_RESPONSE_NOT_JSON', desc: 'Server returned a non-JSON response (likely HTML error page from reverse proxy, Cloudflare, or server crash)', recoverable: true },
+  API_RESPONSE_EMPTY: { code: 'APP_API_RESPONSE_EMPTY', desc: 'Server returned an empty response body where JSON data was expected', recoverable: true },
+  API_BODY_SERIALIZE_FAILED: { code: 'APP_API_BODY_SERIALIZE_FAILED', desc: 'Failed to serialize request data to JSON string for sending to server', recoverable: false },
+  CAPACITOR_PREFS_FAILED: { code: 'APP_CAPACITOR_PREFS_FAILED', desc: 'Capacitor Preferences plugin operation failed - device storage issue', recoverable: false },
+  CAPACITOR_PLUGIN_NOT_LOADED: { code: 'APP_CAPACITOR_PLUGIN_NOT_LOADED', desc: 'HttpBridge native plugin is not registered - plugin may not be compiled into the app binary', recoverable: false },
+  VERIFICATION_CODE_INVALID: { code: 'APP_VERIFICATION_CODE_INVALID', desc: 'The email verification code entered is incorrect', recoverable: false },
+  VERIFICATION_CODE_EXPIRED: { code: 'APP_VERIFICATION_CODE_EXPIRED', desc: 'The email verification code has expired - request a new one', recoverable: false },
+  VERIFICATION_LOCKED_OUT: { code: 'APP_VERIFICATION_LOCKED_OUT', desc: 'Too many failed verification attempts - account temporarily locked', recoverable: false },
+  PASSWORD_RESET_INVALID_CODE: { code: 'APP_PASSWORD_RESET_INVALID_CODE', desc: 'The password reset code is invalid or has already been used', recoverable: false },
+  PASSWORD_RESET_CODE_EXPIRED: { code: 'APP_PASSWORD_RESET_CODE_EXPIRED', desc: 'The password reset code has expired - request a new one', recoverable: false },
+};
+
+export function classifyAppError(context: string, httpStatus: number, serverMessage: string): { code: string; desc: string; recoverable: boolean } {
+  const msg = serverMessage.toLowerCase();
+
+  if (context === 'login') {
+    if (httpStatus === 401 || msg.includes('invalid') && (msg.includes('credential') || msg.includes('password') || msg.includes('username'))) {
+      return APP_ERROR_CODES.LOGIN_INVALID_CREDENTIALS;
+    }
+  }
+
+  if (context === 'register') {
+    if (msg.includes('email') && msg.includes('exist')) return APP_ERROR_CODES.REGISTER_EMAIL_EXISTS;
+    if (msg.includes('username') && msg.includes('exist')) return APP_ERROR_CODES.REGISTER_USERNAME_EXISTS;
+    if (msg.includes('password') && (msg.includes('6 char') || msg.includes('least'))) return APP_ERROR_CODES.REGISTER_PASSWORD_WEAK;
+    if (msg.includes('required') && (msg.includes('email') || msg.includes('password'))) return APP_ERROR_CODES.REGISTER_MISSING_FIELDS;
+  }
+
+  if (context === 'risk') {
+    if (httpStatus === 400 && (msg.includes('not enough') || msg.includes('features'))) return APP_ERROR_CODES.RISK_INSUFFICIENT_DATA;
+    if (httpStatus === 503 || msg.includes('unavailable') || msg.includes('temporarily')) return APP_ERROR_CODES.RISK_ML_UNAVAILABLE;
+    if (httpStatus === 500) return APP_ERROR_CODES.RISK_CALCULATION_FAILED;
+  }
+
+  if (context === 'verify') {
+    if (msg.includes('invalid') && msg.includes('code')) return APP_ERROR_CODES.VERIFICATION_CODE_INVALID;
+    if (msg.includes('expired')) return APP_ERROR_CODES.VERIFICATION_CODE_EXPIRED;
+    if (httpStatus === 429 || msg.includes('locked') || msg.includes('too many')) return APP_ERROR_CODES.VERIFICATION_LOCKED_OUT;
+  }
+
+  if (context === 'password_reset') {
+    if (msg.includes('invalid')) return APP_ERROR_CODES.PASSWORD_RESET_INVALID_CODE;
+    if (msg.includes('expired')) return APP_ERROR_CODES.PASSWORD_RESET_CODE_EXPIRED;
+  }
+
+  if (httpStatus === 401) return APP_ERROR_CODES.AUTH_TOKEN_EXPIRED;
+
+  return { code: `APP_${context.toUpperCase()}_HTTP_${httpStatus}`, desc: serverMessage || `HTTP ${httpStatus} error`, recoverable: httpStatus >= 500 };
+}
+
+export interface SafeJsonResult<T = any> {
+  ok: boolean;
+  data?: T;
+  errorCode: string;
+  errorDesc: string;
+  rawText?: string;
+}
+
+export async function safeParseJSON<T = any>(response: Response, context: string): Promise<SafeJsonResult<T>> {
+  let text: string;
+  try {
+    text = await response.text();
+  } catch (readError: any) {
+    const errMsg = readError?.message || String(readError);
+    console.error(`[safeParseJSON:${context}] Failed to read response body: ${errMsg}`);
+    if (errMsg.includes('already read') || errMsg.includes('already consumed')) {
+      return { ok: false, errorCode: 'BODY_ALREADY_CONSUMED', errorDesc: 'Response body was already consumed by a previous read operation', rawText: '' };
+    }
+    if (errMsg.includes('locked')) {
+      return { ok: false, errorCode: 'BODY_STREAM_LOCKED', errorDesc: 'Response body stream is locked by another reader', rawText: '' };
+    }
+    return { ok: false, errorCode: `APP_${context.toUpperCase()}_BODY_READ_FAILED`, errorDesc: `Failed to read response body: ${errMsg}`, rawText: '' };
+  }
+
+  if (!text || text.trim().length === 0) {
+    console.error(`[safeParseJSON:${context}] Empty response body (status=${response.status})`);
+    return { ok: false, errorCode: APP_ERROR_CODES.API_RESPONSE_EMPTY.code, errorDesc: APP_ERROR_CODES.API_RESPONSE_EMPTY.desc, rawText: text };
+  }
+
+  try {
+    const data = JSON.parse(text) as T;
+    return { ok: true, data, errorCode: '', errorDesc: '', rawText: text };
+  } catch (parseError: any) {
+    const firstChar = text.charAt(0);
+    const preview = text.substring(0, 200);
+    console.error(`[safeParseJSON:${context}] JSON parse failed. First char: '${firstChar}', preview: ${preview}`);
+
+    if (firstChar === '<') {
+      return { ok: false, errorCode: APP_ERROR_CODES.API_RESPONSE_NOT_JSON.code, errorDesc: `Server returned HTML instead of JSON. Preview: ${preview.substring(0, 100)}`, rawText: text };
+    }
+
+    const parseMsg = parseError?.message || '';
+    if (parseMsg.includes('Unexpected end')) {
+      return { ok: false, errorCode: 'JSON_TRUNCATED', errorDesc: `Response was truncated (${text.length} chars received). Possible network interruption during transfer.`, rawText: text };
+    }
+
+    const ctxCode = context === 'login' ? APP_ERROR_CODES.LOGIN_RESPONSE_PARSE_FAILED
+      : context === 'register' ? APP_ERROR_CODES.REGISTER_RESPONSE_PARSE_FAILED
+      : context === 'risk' ? APP_ERROR_CODES.RISK_RESPONSE_PARSE_FAILED
+      : { code: `APP_${context.toUpperCase()}_PARSE_FAILED`, desc: `Failed to parse ${context} response as JSON` };
+
+    return { ok: false, errorCode: ctxCode.code, errorDesc: `${ctxCode.desc}. Parse error: ${parseMsg}. Body preview: ${preview.substring(0, 80)}`, rawText: text };
+  }
+}
 
 type FetchTier = 'HttpBridge' | 'WKWebView' | 'XHR' | 'CapacitorHttp' | 'WebFetch' | 'AndroidCapHttp' | 'FetchInterceptor';
 
