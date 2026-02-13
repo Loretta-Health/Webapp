@@ -220,14 +220,48 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
+    const origin = req.headers.origin || 'no-origin';
+    const hasAuthHeader = !!req.headers['x-auth-token'];
+    const contentType = req.headers['content-type'] || 'none';
+    console.log(`[Auth:login] LOGIN_REQUEST_RECEIVED: origin=${origin} | contentType=${contentType} | hasAuthHeader=${hasAuthHeader} | bodyKeys=${Object.keys(req.body || {}).join(',')}`);
+    
+    if (!req.body || (!req.body.identifier && !req.body.username)) {
+      console.error(`[Auth:login] LOGIN_MISSING_IDENTIFIER: Request body has no identifier/username field. bodyKeys=${Object.keys(req.body || {}).join(',')}`);
+      return res.status(400).json({ message: "LOGIN_MISSING_IDENTIFIER: No username or email provided", errorCode: "LOGIN_MISSING_IDENTIFIER" });
+    }
+    if (!req.body.password) {
+      console.error(`[Auth:login] LOGIN_MISSING_PASSWORD: Request body has no password field`);
+      return res.status(400).json({ message: "LOGIN_MISSING_PASSWORD: No password provided", errorCode: "LOGIN_MISSING_PASSWORD" });
+    }
+    
     passport.authenticate("local", (err: Error | null, user: SelectUser | false, info: { message?: string } | undefined) => {
-      if (err) return next(err);
-      if (!user) {
-        return res.status(401).json({ message: info?.message || "Invalid credentials" });
+      if (err) {
+        console.error(`[Auth:login] LOGIN_PASSPORT_ERROR: Passport strategy threw: ${err.message}`);
+        return res.status(500).json({ message: `LOGIN_PASSPORT_ERROR: Authentication system error`, errorCode: "LOGIN_PASSPORT_ERROR" });
       }
-      req.login(user, async (err) => {
-        if (err) return next(err);
-        const authToken = await generateAuthToken(user.id);
+      if (!user) {
+        const reason = info?.message || "Invalid credentials";
+        console.log(`[Auth:login] LOGIN_AUTH_FAILED: Passport rejected credentials: ${reason}`);
+        return res.status(401).json({ message: reason, errorCode: "LOGIN_AUTH_FAILED" });
+      }
+      
+      console.log(`[Auth:login] LOGIN_PASSPORT_OK: User authenticated: ${user.username} (id=${user.id})`);
+      
+      req.login(user, async (loginErr) => {
+        if (loginErr) {
+          console.error(`[Auth:login] LOGIN_SESSION_CREATE_FAIL: req.login threw: ${loginErr.message}`);
+          return res.status(500).json({ message: "LOGIN_SESSION_CREATE_FAIL: Could not create session", errorCode: "LOGIN_SESSION_CREATE_FAIL" });
+        }
+        
+        let authToken: string;
+        try {
+          authToken = await generateAuthToken(user.id);
+        } catch (tokenErr: any) {
+          console.error(`[Auth:login] LOGIN_TOKEN_GENERATE_FAIL: Could not generate auth token for user ${user.id}: ${tokenErr?.message || tokenErr}`);
+          return res.status(500).json({ message: "LOGIN_TOKEN_GENERATE_FAIL: Could not generate authentication token", errorCode: "LOGIN_TOKEN_GENERATE_FAIL" });
+        }
+        
+        console.log(`[Auth:login] LOGIN_SUCCESS: user=${user.username} id=${user.id} tokenLength=${authToken.length}`);
         res.status(200).json({ user: sanitizeUser(user), authToken });
       });
     })(req, res, next);

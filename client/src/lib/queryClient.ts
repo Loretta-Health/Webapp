@@ -668,56 +668,81 @@ async function iosFetchWithFallback(
   const overallStart = Date.now();
   const tierReports: DiagnosticReport[] = [];
   
-  console.log(`[iosFetch] START ${method} ${url}`);
+  console.log(`[iosFetch] IOS_FETCH_START: ${method} ${url} | body=${body ? body.length + 'chars' : 'none'} | headers=${Object.keys(options.headers).join(',')}`);
   
   // Tier 1: HttpBridge (native Swift URLSession, fresh per request, HTTP/3 disabled)
   try {
     const t1Start = Date.now();
-    const bridgeResult = await HttpBridge.request({
-      url,
-      method,
-      headers: options.headers,
-      body: body,
-    });
+    console.log(`[iosFetch] IOS_T1_BRIDGE_START: Calling HttpBridge.request for ${method} ${url}`);
+    let bridgeResult: HttpBridgeResult;
+    try {
+      bridgeResult = await HttpBridge.request({
+        url,
+        method,
+        headers: options.headers,
+        body: body,
+      });
+    } catch (pluginError: any) {
+      const pluginMsg = pluginError?.message || String(pluginError);
+      if (pluginMsg.includes('not implemented') || pluginMsg.includes('not available')) {
+        console.error(`[iosFetch] IOS_T1_BRIDGE_NOT_REGISTERED: HttpBridge plugin not available in this binary: ${pluginMsg}`);
+      }
+      throw pluginError;
+    }
     
-    console.log(`[iosFetch] T1_HttpBridge OK ${bridgeResult.status} in ${Date.now() - t1Start}ms`);
+    const t1Elapsed = Date.now() - t1Start;
     
-    return new Response(bridgeResult.data, {
+    if (bridgeResult.data === undefined || bridgeResult.data === null) {
+      console.warn(`[iosFetch] IOS_T1_BRIDGE_EMPTY_DATA: HttpBridge returned status=${bridgeResult.status} but data is ${bridgeResult.data === null ? 'null' : 'undefined'} in ${t1Elapsed}ms`);
+    }
+    
+    console.log(`[iosFetch] IOS_T1_BRIDGE_OK: status=${bridgeResult.status} dataLength=${bridgeResult.data?.length ?? 0} elapsed=${t1Elapsed}ms`);
+    
+    return new Response(bridgeResult.data ?? '', {
       status: bridgeResult.status,
       headers: new Headers(bridgeResult.headers || {}),
     });
   } catch (bridgeError: any) {
     const report = diagnoseNetworkError(bridgeError, 'HttpBridge', url, method, overallStart);
     tierReports.push(report);
-    console.warn(`[iosFetch] T1_HttpBridge FAIL: ${formatDiagnosticLog(report)}`);
+    const bridgeMsg = bridgeError?.message || String(bridgeError);
+    const bridgeErrorCode = bridgeError?.errorCode || bridgeError?.data?.errorCode || 'UNKNOWN';
+    console.warn(`[iosFetch] IOS_T1_BRIDGE_FAIL: errorCode=${bridgeErrorCode} | msg=${bridgeMsg} | recoverable=${report.recoverable} | ${formatDiagnosticLog(report)}`);
   }
 
   // Tier 2: WKWebView fetch (uses WebKit networking stack)
   try {
     const t2Start = Date.now();
+    console.log(`[iosFetch] IOS_T2_WKWEBVIEW_START: Calling window.fetch (original) for ${method} ${url}`);
     const res = await originalFetch(url, {
       ...options,
       mode: 'cors',
       credentials: 'omit',
       cache: 'no-store',
     });
-    console.log(`[iosFetch] T2_WKWebView OK ${res.status} in ${Date.now() - t2Start}ms`);
+    const t2Elapsed = Date.now() - t2Start;
+    console.log(`[iosFetch] IOS_T2_WKWEBVIEW_OK: status=${res.status} elapsed=${t2Elapsed}ms`);
     return res;
   } catch (wkError: any) {
     const report = diagnoseNetworkError(wkError, 'WKWebView', url, method);
     tierReports.push(report);
-    console.warn(`[iosFetch] T2_WKWebView FAIL: ${formatDiagnosticLog(report)}`);
+    const wkMsg = wkError?.message || String(wkError);
+    console.warn(`[iosFetch] IOS_T2_WKWEBVIEW_FAIL: msg=${wkMsg} | recoverable=${report.recoverable} | ${formatDiagnosticLog(report)}`);
   }
 
   // Tier 3: XMLHttpRequest (different JS API, may use different connection pool)
   try {
+    console.log(`[iosFetch] IOS_T3_XHR_START: Creating XMLHttpRequest for ${method} ${url}`);
     const res = await xhrRequest(url, method, options.headers, body);
-    console.log(`[iosFetch] T3_XHR OK ${res.status}`);
+    console.log(`[iosFetch] IOS_T3_XHR_OK: status=${res.status}`);
     return res;
   } catch (xhrError: any) {
     const report = diagnoseNetworkError(xhrError, 'XHR', url, method);
     tierReports.push(report);
-    console.warn(`[iosFetch] T3_XHR FAIL: ${formatDiagnosticLog(report)}`);
+    const xhrMsg = xhrError?.message || String(xhrError);
+    const xhrStatus = (xhrError as any)?.xhrStatus || 'none';
+    const xhrState = (xhrError as any)?.xhrState || 'none';
+    console.warn(`[iosFetch] IOS_T3_XHR_FAIL: msg=${xhrMsg} | xhrStatus=${xhrStatus} | xhrState=${xhrState} | recoverable=${report.recoverable} | ${formatDiagnosticLog(report)}`);
   }
 
   // Tier 4: CapacitorHttp with retry (Capacitor's built-in native HTTP)
@@ -725,9 +750,13 @@ async function iosFetchWithFallback(
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const t4Start = Date.now();
+      console.log(`[iosFetch] IOS_T4_CAPHTTP_START: attempt=${attempt}/3 for ${method} ${url}`);
       let parsedBody: any = undefined;
       if (body) {
-        try { parsedBody = JSON.parse(body); } catch { parsedBody = body; }
+        try { parsedBody = JSON.parse(body); } catch {
+          console.warn(`[iosFetch] IOS_T4_CAPHTTP_BODY_PARSE_WARN: Could not JSON.parse body for CapacitorHttp, sending as raw string`);
+          parsedBody = body;
+        }
       }
       
       const nativeRes = await CapacitorHttp.request({
@@ -737,11 +766,12 @@ async function iosFetchWithFallback(
         data: parsedBody,
       });
       
-      console.log(`[iosFetch] T4_CapHttp attempt ${attempt} OK ${nativeRes.status} in ${Date.now() - t4Start}ms`);
-      
+      const t4Elapsed = Date.now() - t4Start;
       const responseBody = typeof nativeRes.data === 'string' 
         ? nativeRes.data 
         : JSON.stringify(nativeRes.data);
+      
+      console.log(`[iosFetch] IOS_T4_CAPHTTP_OK: attempt=${attempt} status=${nativeRes.status} dataLength=${responseBody.length} elapsed=${t4Elapsed}ms`);
       
       return new Response(responseBody, {
         status: nativeRes.status,
@@ -751,9 +781,11 @@ async function iosFetchWithFallback(
       const report = diagnoseNetworkError(capError, 'CapacitorHttp', url, method);
       lastCapReport = report;
       tierReports.push(report);
-      console.warn(`[iosFetch] T4_CapHttp attempt ${attempt}/3 FAIL: ${formatDiagnosticLog(report)}`);
+      const capMsg = capError?.message || String(capError);
+      console.warn(`[iosFetch] IOS_T4_CAPHTTP_FAIL: attempt=${attempt}/3 | msg=${capMsg} | recoverable=${report.recoverable} | ${formatDiagnosticLog(report)}`);
       if (attempt < 3) {
         const backoff = report.retryAfterMs > 0 ? report.retryAfterMs : attempt * 500;
+        console.log(`[iosFetch] IOS_T4_CAPHTTP_RETRY_WAIT: waiting ${backoff}ms before attempt ${attempt + 1}`);
         await new Promise(r => setTimeout(r, backoff));
       }
     }
@@ -762,18 +794,19 @@ async function iosFetchWithFallback(
   const totalElapsed = Date.now() - overallStart;
   const tierSummary = tierReports.map(r => `${r.tier}:${r.errorCode}`).join(' → ');
   
-  console.error(`[iosFetch] ALL_TIERS_EXHAUSTED in ${totalElapsed}ms for ${method} ${url}`);
-  console.error(`[iosFetch] Failure chain: ${tierSummary}`);
-  console.error(`[iosFetch] Full diagnostic reports:`, JSON.stringify(tierReports, null, 2));
+  console.error(`[iosFetch] IOS_ALL_TIERS_EXHAUSTED: All 4 networking tiers failed for ${method} ${url} in ${totalElapsed}ms`);
+  console.error(`[iosFetch] IOS_ALL_TIERS_CHAIN: ${tierSummary}`);
+  console.error(`[iosFetch] IOS_ALL_TIERS_DETAIL:`, JSON.stringify(tierReports, null, 2));
   
   const err = new Error(
-    `ALL_METHODS_EXHAUSTED: All 4 iOS networking tiers failed for ${method} ${url} in ${totalElapsed}ms. ` +
+    `IOS_ALL_TIERS_EXHAUSTED: All 4 iOS networking tiers failed for ${method} ${url} in ${totalElapsed}ms. ` +
     `Chain: ${tierSummary}. ` +
     `Last error: ${lastCapReport?.errorCode || tierReports[tierReports.length - 1]?.errorCode || 'unknown'} - ` +
     `${lastCapReport?.description || tierReports[tierReports.length - 1]?.description || 'unknown'}`
   );
   (err as any).diagnosticReports = tierReports;
   (err as any).totalElapsedMs = totalElapsed;
+  (err as any).errorCode = 'IOS_ALL_TIERS_EXHAUSTED';
   throw err;
 }
 
@@ -789,28 +822,52 @@ export async function authenticatedFetch(
   };
   
   if (isNativePlatform()) {
-    const token = await getAuthToken();
+    let token: string | null = null;
+    try {
+      token = await getAuthToken();
+    } catch (tokenErr: any) {
+      console.error(`[authFetch] IOS_AUTH_TOKEN_RETRIEVE_FAIL: Could not retrieve auth token: ${tokenErr?.message || tokenErr}`);
+    }
     if (token) {
       headers["X-Auth-Token"] = token;
+      console.log(`[authFetch] IOS_AUTH_TOKEN_ATTACHED: Token present (length=${token.length}) for ${method} ${fullUrl}`);
+    } else {
+      console.log(`[authFetch] IOS_AUTH_NO_TOKEN: No auth token available for ${method} ${fullUrl}`);
     }
     
     if (isIOS()) {
-      const res = await iosFetchWithFallback(fullUrl, {
-        ...options,
-        method,
-        headers,
-      });
+      let res: Response;
+      try {
+        res = await iosFetchWithFallback(fullUrl, {
+          ...options,
+          method,
+          headers,
+        });
+      } catch (fetchErr: any) {
+        const elapsed = Date.now() - startTime;
+        console.error(`[authFetch] IOS_AUTH_FETCH_FAIL: iosFetchWithFallback threw for ${method} ${fullUrl} in ${elapsed}ms: ${fetchErr?.message || fetchErr}`);
+        throw fetchErr;
+      }
+      
+      const elapsed = Date.now() - startTime;
       
       if (res.status === 401) {
-        const hadToken = await getAuthToken();
-        if (hadToken) {
-          await clearAuthToken();
+        console.warn(`[authFetch] IOS_AUTH_401_DETECTED: Server returned 401 for ${method} ${fullUrl} in ${elapsed}ms | hadToken=${!!token}`);
+        if (token) {
+          try {
+            await clearAuthToken();
+            console.log(`[authFetch] IOS_AUTH_401_TOKEN_CLEARED: Cleared invalid auth token`);
+          } catch (clearErr: any) {
+            console.error(`[authFetch] IOS_AUTH_TOKEN_CLEAR_FAIL: Could not clear auth token after 401: ${clearErr?.message || clearErr}`);
+          }
           toast({ title: "Session expired", description: "Please log in again.", variant: "destructive" });
         }
       }
       if (!res.ok) {
         const httpReport = diagnoseHttpError(res.status, fullUrl, method, 'HttpBridge');
-        console.warn(`[authFetch:ios] ${formatDiagnosticLog(httpReport)}`);
+        console.warn(`[authFetch] IOS_AUTH_HTTP_ERROR: status=${res.status} for ${method} ${fullUrl} in ${elapsed}ms | ${formatDiagnosticLog(httpReport)}`);
+      } else {
+        console.log(`[authFetch] IOS_AUTH_OK: status=${res.status} for ${method} ${fullUrl} in ${elapsed}ms`);
       }
       return res;
     }
@@ -984,34 +1041,67 @@ export async function apiRequest(
   const fullUrl = getApiUrl(url);
   const headers = await getRequestHeaders(!!data);
   const startTime = Date.now();
+  const bodyStr = data ? JSON.stringify(data) : undefined;
+  
+  console.log(`[apiRequest] IOS_API_REQ_START: ${method} ${url} -> ${fullUrl} | hasBody=${!!bodyStr} | hasToken=${!!headers['X-Auth-Token']}`);
   
   if (isNativePlatform()) {
     if (isIOS()) {
-      const res = await iosFetchWithFallback(fullUrl, {
-        method,
-        headers,
-        body: data ? JSON.stringify(data) : undefined,
-      });
+      let res: Response;
+      try {
+        res = await iosFetchWithFallback(fullUrl, {
+          method,
+          headers,
+          body: bodyStr,
+        });
+      } catch (fetchErr: any) {
+        const elapsed = Date.now() - startTime;
+        console.error(`[apiRequest] IOS_API_REQ_NETWORK_FAIL: iosFetchWithFallback threw for ${method} ${url} in ${elapsed}ms: ${fetchErr?.message || fetchErr}`);
+        throw fetchErr;
+      }
+      
+      const elapsed = Date.now() - startTime;
+      console.log(`[apiRequest] IOS_API_REQ_RESPONSE: status=${res.status} ok=${res.ok} for ${method} ${url} in ${elapsed}ms`);
       
       if (res.status === 401) {
-        const hadToken = await getAuthToken();
+        console.warn(`[apiRequest] IOS_API_REQ_401: Server returned 401 for ${method} ${url}`);
+        let hadToken: string | null = null;
+        try {
+          hadToken = await getAuthToken();
+        } catch (tokenErr: any) {
+          console.error(`[apiRequest] IOS_API_REQ_401_TOKEN_CHECK_FAIL: Could not check token after 401: ${tokenErr?.message || tokenErr}`);
+        }
         if (hadToken) {
-          await clearAuthToken();
+          try {
+            await clearAuthToken();
+            console.log(`[apiRequest] IOS_API_REQ_401_TOKEN_CLEARED: Cleared invalid token after 401 for ${method} ${url}`);
+          } catch (clearErr: any) {
+            console.error(`[apiRequest] IOS_API_REQ_401_TOKEN_CLEAR_FAIL: Could not clear token after 401: ${clearErr?.message || clearErr}`);
+          }
           toast({ title: "Session expired", description: "Please log in again.", variant: "destructive" });
         }
       }
       
       if (!res.ok) {
         const httpReport = diagnoseHttpError(res.status, fullUrl, method, 'HttpBridge');
-        console.warn(`[apiRequest:ios] ${formatDiagnosticLog(httpReport)}`);
-        const text = await res.text();
-        let errorMessage = text || res.statusText;
+        console.warn(`[apiRequest] IOS_API_REQ_HTTP_ERROR: status=${res.status} for ${method} ${url} in ${elapsed}ms | ${formatDiagnosticLog(httpReport)}`);
+        let bodyText: string;
         try {
-          const jsonError = JSON.parse(text);
+          bodyText = await res.clone().text();
+        } catch (cloneErr: any) {
+          console.error(`[apiRequest] IOS_API_REQ_BODY_CLONE_FAIL: Could not clone/read error response body: ${cloneErr?.message || cloneErr}`);
+          bodyText = '';
+        }
+        let errorMessage = bodyText || res.statusText || `HTTP ${res.status}`;
+        try {
+          const jsonError = JSON.parse(bodyText);
           if (jsonError.message) {
             errorMessage = jsonError.message;
+            console.log(`[apiRequest] IOS_API_REQ_ERROR_PARSED: Server error message: "${errorMessage}"`);
           }
-        } catch {}
+        } catch {
+          console.log(`[apiRequest] IOS_API_REQ_ERROR_RAW: Error body is not JSON, using raw text (length=${bodyText.length})`);
+        }
         throw new Error(errorMessage);
       }
       
