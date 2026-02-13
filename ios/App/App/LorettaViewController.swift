@@ -10,11 +10,6 @@ class LorettaViewController: CAPBridgeViewController {
         return config
     }
 
-    override open func viewDidLoad() {
-        clearAltSvcCache()
-        super.viewDidLoad()
-    }
-
     override open func capacitorDidLoad() {
         super.capacitorDidLoad()
 
@@ -29,19 +24,6 @@ class LorettaViewController: CAPBridgeViewController {
 
         print("[Loretta] LorettaViewController loaded")
         print("[Loretta] iOS \(UIDevice.current.systemVersion) | \(UIDevice.current.model)")
-    }
-
-    private func clearAltSvcCache() {
-        let dataStore = WKWebsiteDataStore.default()
-        let dataTypes: Set<String> = [
-            WKWebsiteDataTypeServiceWorkerRegistrations,
-            WKWebsiteDataTypeFetchCache,
-        ]
-        dataStore.removeData(ofTypes: dataTypes, modifiedSince: Date.distantPast) {
-            print("[Loretta] Cleared WKWebView fetch cache and service workers")
-        }
-
-        URLCache.shared.removeAllCachedResponses()
-        print("[Loretta] Cleared URLCache (Alt-Svc cache)")
+        print("[Loretta] NOTE: 'Server protocol violation 0x02' and 'Control stream closed' messages are benign iOS QUIC/HTTP3 fallback logs from WKWebView's transport layer. They do not affect app functionality.")
     }
 }

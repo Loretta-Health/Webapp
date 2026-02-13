@@ -23,8 +23,6 @@ export function log(message: string, source = "express") {
 export const app = express();
 
 app.use((req, res, next) => {
-  res.header("Alt-Svc", "clear");
-
   const origin = req.headers.origin;
   const allowedOrigins = [
     "https://loretta-care.replit.app",
@@ -44,6 +42,9 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-Auth-Token");
   }
   
+  // Allow requests from native iOS/Android apps (no origin header)
+  // Note: When no origin, we allow the request but don't set credentials
+  // since Access-Control-Allow-Origin: * with credentials is invalid per CORS spec
   if (!origin) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
