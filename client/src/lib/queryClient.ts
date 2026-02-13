@@ -391,6 +391,26 @@ function extractHttpBridgeErrorData(error: any): HttpBridgeErrorData | undefined
   if (!error) return undefined;
   if (error?.errorCode) return error as HttpBridgeErrorData;
   if (error?.data?.errorCode) return error.data as HttpBridgeErrorData;
+  if (error?.code && typeof error.code === 'string' && error.code.startsWith('HB_')) {
+    return {
+      errorCode: error.code,
+      detail: error.message || error.errorMessage || '',
+      localizedDescription: error.message || '',
+      recoverable: error.data?.recoverable ?? false,
+      retryAfterMs: error.data?.retryAfterMs ?? 0,
+      elapsedMs: error.data?.elapsedMs,
+      url: error.data?.url,
+      method: error.data?.method,
+      domain: error.data?.domain,
+      code: error.data?.code,
+      isTimeout: error.data?.isTimeout,
+      isOffline: error.data?.isOffline,
+      isSSL: error.data?.isSSL,
+      isDNS: error.data?.isDNS,
+      isConnectionReset: error.data?.isConnectionReset,
+      underlyingErrors: error.data?.underlyingErrors,
+    } as HttpBridgeErrorData;
+  }
   if (error?.message && typeof error.message === 'string') {
     try {
       const parsed = JSON.parse(error.message);
