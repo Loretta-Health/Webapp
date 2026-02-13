@@ -189,8 +189,14 @@ public class HttpBridgePlugin: CAPPlugin, CAPBridgedPlugin {
         config.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         config.urlCache = nil
         config.httpCookieStorage = nil
+        config.httpShouldUsePipelining = false
+        config.multipathServiceType = .none
         if #available(iOS 17.0, *) {
             config.assumesHTTP3Capable = false
+        }
+        if #available(iOS 14.5, *) {
+            config.tlsMinimumSupportedProtocolVersion = .TLSv12
+            config.tlsMaximumSupportedProtocolVersion = .TLSv13
         }
         return URLSession(configuration: config, delegate: nil, delegateQueue: nil)
     }
