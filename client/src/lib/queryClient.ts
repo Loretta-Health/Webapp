@@ -233,141 +233,7 @@ const JS_ERROR_PATTERNS: Array<{ pattern: RegExp | string; code: string; desc: s
   { pattern: 'JSON', code: 'JSON_PARSE_ERROR', desc: 'Response body could not be parsed as valid JSON', recoverable: false, retryMs: 0 },
   { pattern: 'SyntaxError', code: 'RESPONSE_SYNTAX_ERROR', desc: 'Response parsing threw a SyntaxError - likely HTML error page returned instead of JSON', recoverable: false, retryMs: 0 },
   { pattern: 'All fetch methods failed', code: 'ALL_METHODS_EXHAUSTED', desc: 'All 4 iOS fetch tiers failed: HttpBridge, WKWebView fetch, XMLHttpRequest, and CapacitorHttp with 3 retries', recoverable: false, retryMs: 0 },
-  { pattern: 'Unexpected end of input', code: 'JSON_TRUNCATED', desc: 'Response body was truncated mid-stream before complete JSON could be received', recoverable: true, retryMs: 1000 },
-  { pattern: 'Unexpected token', code: 'JSON_UNEXPECTED_TOKEN', desc: 'Response body starts with unexpected character - likely HTML error page or proxy error instead of JSON', recoverable: false, retryMs: 0 },
-  { pattern: 'not valid JSON', code: 'JSON_INVALID', desc: 'Response body is not valid JSON - server may have returned plain text or binary data', recoverable: false, retryMs: 0 },
-  { pattern: 'body stream already read', code: 'BODY_ALREADY_CONSUMED', desc: 'Response body was already consumed by a previous .text() or .json() call', recoverable: false, retryMs: 0 },
-  { pattern: 'body stream is locked', code: 'BODY_STREAM_LOCKED', desc: 'Response body ReadableStream is locked by another reader', recoverable: false, retryMs: 0 },
-  { pattern: 'Content Security Policy', code: 'CSP_BLOCKED', desc: 'Content Security Policy directive blocked this request', recoverable: false, retryMs: 0 },
-  { pattern: 'ERR_BLOCKED_BY_CLIENT', code: 'BLOCKED_BY_EXTENSION', desc: 'Request was blocked by a browser extension or ad blocker', recoverable: false, retryMs: 0 },
 ];
-
-const APP_ERROR_CODES: Record<string, { code: string; desc: string; recoverable: boolean }> = {
-  LOGIN_INVALID_CREDENTIALS: { code: 'APP_LOGIN_INVALID_CREDENTIALS', desc: 'The username/email or password provided is incorrect', recoverable: false },
-  LOGIN_RESPONSE_PARSE_FAILED: { code: 'APP_LOGIN_RESPONSE_PARSE_FAILED', desc: 'Login succeeded at HTTP level but the server response could not be parsed as JSON - possible proxy interference or server misconfiguration', recoverable: true },
-  LOGIN_TOKEN_STORE_FAILED: { code: 'APP_LOGIN_TOKEN_STORE_FAILED', desc: 'Login succeeded but the auth token could not be saved to device storage (Capacitor Preferences) - device storage may be full or permission denied', recoverable: false },
-  LOGIN_NO_TOKEN_RETURNED: { code: 'APP_LOGIN_NO_TOKEN_RETURNED', desc: 'Login succeeded but server did not return an authToken in the response - native app requires token-based auth', recoverable: false },
-  LOGIN_NO_USER_RETURNED: { code: 'APP_LOGIN_NO_USER_RETURNED', desc: 'Login response is missing user data - server may have returned partial response', recoverable: true },
-  REGISTER_EMAIL_EXISTS: { code: 'APP_REGISTER_EMAIL_EXISTS', desc: 'An account with this email address already exists', recoverable: false },
-  REGISTER_USERNAME_EXISTS: { code: 'APP_REGISTER_USERNAME_EXISTS', desc: 'This username is already taken by another account', recoverable: false },
-  REGISTER_PASSWORD_WEAK: { code: 'APP_REGISTER_PASSWORD_WEAK', desc: 'Password does not meet minimum requirements (at least 6 characters)', recoverable: false },
-  REGISTER_MISSING_FIELDS: { code: 'APP_REGISTER_MISSING_FIELDS', desc: 'Email and password are required fields for registration', recoverable: false },
-  REGISTER_RESPONSE_PARSE_FAILED: { code: 'APP_REGISTER_RESPONSE_PARSE_FAILED', desc: 'Registration succeeded at HTTP level but the server response could not be parsed as JSON', recoverable: true },
-  REGISTER_TOKEN_STORE_FAILED: { code: 'APP_REGISTER_TOKEN_STORE_FAILED', desc: 'Registration succeeded but the auth token could not be saved to device storage', recoverable: false },
-  AUTH_TOKEN_EXPIRED: { code: 'APP_AUTH_TOKEN_EXPIRED', desc: 'The stored authentication token has expired or been invalidated on the server - user must log in again', recoverable: false },
-  AUTH_TOKEN_MISSING: { code: 'APP_AUTH_TOKEN_MISSING', desc: 'No auth token found in device storage - user may have been logged out or token was cleared', recoverable: false },
-  AUTH_TOKEN_CLEAR_FAILED: { code: 'APP_AUTH_TOKEN_CLEAR_FAILED', desc: 'Failed to clear the auth token from device storage during logout', recoverable: false },
-  AUTH_SESSION_INVALID: { code: 'APP_AUTH_SESSION_INVALID', desc: 'Server rejected the current session - both session cookie and auth token are invalid', recoverable: false },
-  RISK_INSUFFICIENT_DATA: { code: 'APP_RISK_INSUFFICIENT_DATA', desc: 'Not enough questionnaire answers to calculate risk score - at least 5 mapped features are required', recoverable: false },
-  RISK_ML_UNAVAILABLE: { code: 'APP_RISK_ML_UNAVAILABLE', desc: 'The external ML prediction service (XGBoost diabetes model) is temporarily unavailable', recoverable: true },
-  RISK_CALCULATION_FAILED: { code: 'APP_RISK_CALCULATION_FAILED', desc: 'Server-side risk calculation encountered an error while processing questionnaire data', recoverable: true },
-  RISK_RESPONSE_PARSE_FAILED: { code: 'APP_RISK_RESPONSE_PARSE_FAILED', desc: 'Risk score calculation succeeded at HTTP level but the response could not be parsed as JSON', recoverable: true },
-  RISK_RESPONSE_INVALID: { code: 'APP_RISK_RESPONSE_INVALID', desc: 'Risk score response is missing expected fields (overallScore or diabetesRisk) - ML model may have returned unexpected format', recoverable: true },
-  RISK_SAVE_QUESTIONNAIRE_FAILED: { code: 'APP_RISK_SAVE_QUESTIONNAIRE_FAILED', desc: 'Failed to save questionnaire answers to server before risk calculation', recoverable: true },
-  API_RESPONSE_NOT_JSON: { code: 'APP_API_RESPONSE_NOT_JSON', desc: 'Server returned a non-JSON response (likely HTML error page from reverse proxy, Cloudflare, or server crash)', recoverable: true },
-  API_RESPONSE_EMPTY: { code: 'APP_API_RESPONSE_EMPTY', desc: 'Server returned an empty response body where JSON data was expected', recoverable: true },
-  API_BODY_SERIALIZE_FAILED: { code: 'APP_API_BODY_SERIALIZE_FAILED', desc: 'Failed to serialize request data to JSON string for sending to server', recoverable: false },
-  CAPACITOR_PREFS_FAILED: { code: 'APP_CAPACITOR_PREFS_FAILED', desc: 'Capacitor Preferences plugin operation failed - device storage issue', recoverable: false },
-  CAPACITOR_PLUGIN_NOT_LOADED: { code: 'APP_CAPACITOR_PLUGIN_NOT_LOADED', desc: 'HttpBridge native plugin is not registered - plugin may not be compiled into the app binary', recoverable: false },
-  VERIFICATION_CODE_INVALID: { code: 'APP_VERIFICATION_CODE_INVALID', desc: 'The email verification code entered is incorrect', recoverable: false },
-  VERIFICATION_CODE_EXPIRED: { code: 'APP_VERIFICATION_CODE_EXPIRED', desc: 'The email verification code has expired - request a new one', recoverable: false },
-  VERIFICATION_LOCKED_OUT: { code: 'APP_VERIFICATION_LOCKED_OUT', desc: 'Too many failed verification attempts - account temporarily locked', recoverable: false },
-  PASSWORD_RESET_INVALID_CODE: { code: 'APP_PASSWORD_RESET_INVALID_CODE', desc: 'The password reset code is invalid or has already been used', recoverable: false },
-  PASSWORD_RESET_CODE_EXPIRED: { code: 'APP_PASSWORD_RESET_CODE_EXPIRED', desc: 'The password reset code has expired - request a new one', recoverable: false },
-};
-
-export function classifyAppError(context: string, httpStatus: number, serverMessage: string): { code: string; desc: string; recoverable: boolean } {
-  const msg = serverMessage.toLowerCase();
-
-  if (context === 'login') {
-    if (httpStatus === 401 || msg.includes('invalid') && (msg.includes('credential') || msg.includes('password') || msg.includes('username'))) {
-      return APP_ERROR_CODES.LOGIN_INVALID_CREDENTIALS;
-    }
-  }
-
-  if (context === 'register') {
-    if (msg.includes('email') && msg.includes('exist')) return APP_ERROR_CODES.REGISTER_EMAIL_EXISTS;
-    if (msg.includes('username') && msg.includes('exist')) return APP_ERROR_CODES.REGISTER_USERNAME_EXISTS;
-    if (msg.includes('password') && (msg.includes('6 char') || msg.includes('least'))) return APP_ERROR_CODES.REGISTER_PASSWORD_WEAK;
-    if (msg.includes('required') && (msg.includes('email') || msg.includes('password'))) return APP_ERROR_CODES.REGISTER_MISSING_FIELDS;
-  }
-
-  if (context === 'risk') {
-    if (httpStatus === 400 && (msg.includes('not enough') || msg.includes('features'))) return APP_ERROR_CODES.RISK_INSUFFICIENT_DATA;
-    if (httpStatus === 503 || msg.includes('unavailable') || msg.includes('temporarily')) return APP_ERROR_CODES.RISK_ML_UNAVAILABLE;
-    if (httpStatus === 500) return APP_ERROR_CODES.RISK_CALCULATION_FAILED;
-  }
-
-  if (context === 'verify') {
-    if (msg.includes('invalid') && msg.includes('code')) return APP_ERROR_CODES.VERIFICATION_CODE_INVALID;
-    if (msg.includes('expired')) return APP_ERROR_CODES.VERIFICATION_CODE_EXPIRED;
-    if (httpStatus === 429 || msg.includes('locked') || msg.includes('too many')) return APP_ERROR_CODES.VERIFICATION_LOCKED_OUT;
-  }
-
-  if (context === 'password_reset') {
-    if (msg.includes('invalid')) return APP_ERROR_CODES.PASSWORD_RESET_INVALID_CODE;
-    if (msg.includes('expired')) return APP_ERROR_CODES.PASSWORD_RESET_CODE_EXPIRED;
-  }
-
-  if (httpStatus === 401) return APP_ERROR_CODES.AUTH_TOKEN_EXPIRED;
-
-  return { code: `APP_${context.toUpperCase()}_HTTP_${httpStatus}`, desc: serverMessage || `HTTP ${httpStatus} error`, recoverable: httpStatus >= 500 };
-}
-
-export interface SafeJsonResult<T = any> {
-  ok: boolean;
-  data?: T;
-  errorCode: string;
-  errorDesc: string;
-  rawText?: string;
-}
-
-export async function safeParseJSON<T = any>(response: Response, context: string): Promise<SafeJsonResult<T>> {
-  let text: string;
-  try {
-    text = await response.text();
-  } catch (readError: any) {
-    const errMsg = readError?.message || String(readError);
-    console.error(`[safeParseJSON:${context}] Failed to read response body: ${errMsg}`);
-    if (errMsg.includes('already read') || errMsg.includes('already consumed')) {
-      return { ok: false, errorCode: 'BODY_ALREADY_CONSUMED', errorDesc: 'Response body was already consumed by a previous read operation', rawText: '' };
-    }
-    if (errMsg.includes('locked')) {
-      return { ok: false, errorCode: 'BODY_STREAM_LOCKED', errorDesc: 'Response body stream is locked by another reader', rawText: '' };
-    }
-    return { ok: false, errorCode: `APP_${context.toUpperCase()}_BODY_READ_FAILED`, errorDesc: `Failed to read response body: ${errMsg}`, rawText: '' };
-  }
-
-  if (!text || text.trim().length === 0) {
-    console.error(`[safeParseJSON:${context}] Empty response body (status=${response.status})`);
-    return { ok: false, errorCode: APP_ERROR_CODES.API_RESPONSE_EMPTY.code, errorDesc: APP_ERROR_CODES.API_RESPONSE_EMPTY.desc, rawText: text };
-  }
-
-  try {
-    const data = JSON.parse(text) as T;
-    return { ok: true, data, errorCode: '', errorDesc: '', rawText: text };
-  } catch (parseError: any) {
-    const firstChar = text.charAt(0);
-    const preview = text.substring(0, 200);
-    console.error(`[safeParseJSON:${context}] JSON parse failed. First char: '${firstChar}', preview: ${preview}`);
-
-    if (firstChar === '<') {
-      return { ok: false, errorCode: APP_ERROR_CODES.API_RESPONSE_NOT_JSON.code, errorDesc: `Server returned HTML instead of JSON. Preview: ${preview.substring(0, 100)}`, rawText: text };
-    }
-
-    const parseMsg = parseError?.message || '';
-    if (parseMsg.includes('Unexpected end')) {
-      return { ok: false, errorCode: 'JSON_TRUNCATED', errorDesc: `Response was truncated (${text.length} chars received). Possible network interruption during transfer.`, rawText: text };
-    }
-
-    const ctxCode = context === 'login' ? APP_ERROR_CODES.LOGIN_RESPONSE_PARSE_FAILED
-      : context === 'register' ? APP_ERROR_CODES.REGISTER_RESPONSE_PARSE_FAILED
-      : context === 'risk' ? APP_ERROR_CODES.RISK_RESPONSE_PARSE_FAILED
-      : { code: `APP_${context.toUpperCase()}_PARSE_FAILED`, desc: `Failed to parse ${context} response as JSON` };
-
-    return { ok: false, errorCode: ctxCode.code, errorDesc: `${ctxCode.desc}. Parse error: ${parseMsg}. Body preview: ${preview.substring(0, 80)}`, rawText: text };
-  }
-}
 
 type FetchTier = 'HttpBridge' | 'WKWebView' | 'XHR' | 'CapacitorHttp' | 'WebFetch' | 'AndroidCapHttp' | 'FetchInterceptor';
 
@@ -668,81 +534,56 @@ async function iosFetchWithFallback(
   const overallStart = Date.now();
   const tierReports: DiagnosticReport[] = [];
   
-  console.log(`[iosFetch] IOS_FETCH_START: ${method} ${url} | body=${body ? body.length + 'chars' : 'none'} | headers=${Object.keys(options.headers).join(',')}`);
+  console.log(`[iosFetch] START ${method} ${url}`);
   
   // Tier 1: HttpBridge (native Swift URLSession, fresh per request, HTTP/3 disabled)
   try {
     const t1Start = Date.now();
-    console.log(`[iosFetch] IOS_T1_BRIDGE_START: Calling HttpBridge.request for ${method} ${url}`);
-    let bridgeResult: HttpBridgeResult;
-    try {
-      bridgeResult = await HttpBridge.request({
-        url,
-        method,
-        headers: options.headers,
-        body: body,
-      });
-    } catch (pluginError: any) {
-      const pluginMsg = pluginError?.message || String(pluginError);
-      if (pluginMsg.includes('not implemented') || pluginMsg.includes('not available')) {
-        console.error(`[iosFetch] IOS_T1_BRIDGE_NOT_REGISTERED: HttpBridge plugin not available in this binary: ${pluginMsg}`);
-      }
-      throw pluginError;
-    }
+    const bridgeResult = await HttpBridge.request({
+      url,
+      method,
+      headers: options.headers,
+      body: body,
+    });
     
-    const t1Elapsed = Date.now() - t1Start;
+    console.log(`[iosFetch] T1_HttpBridge OK ${bridgeResult.status} in ${Date.now() - t1Start}ms`);
     
-    if (bridgeResult.data === undefined || bridgeResult.data === null) {
-      console.warn(`[iosFetch] IOS_T1_BRIDGE_EMPTY_DATA: HttpBridge returned status=${bridgeResult.status} but data is ${bridgeResult.data === null ? 'null' : 'undefined'} in ${t1Elapsed}ms`);
-    }
-    
-    console.log(`[iosFetch] IOS_T1_BRIDGE_OK: status=${bridgeResult.status} dataLength=${bridgeResult.data?.length ?? 0} elapsed=${t1Elapsed}ms`);
-    
-    return new Response(bridgeResult.data ?? '', {
+    return new Response(bridgeResult.data, {
       status: bridgeResult.status,
       headers: new Headers(bridgeResult.headers || {}),
     });
   } catch (bridgeError: any) {
     const report = diagnoseNetworkError(bridgeError, 'HttpBridge', url, method, overallStart);
     tierReports.push(report);
-    const bridgeMsg = bridgeError?.message || String(bridgeError);
-    const bridgeErrorCode = bridgeError?.errorCode || bridgeError?.data?.errorCode || 'UNKNOWN';
-    console.warn(`[iosFetch] IOS_T1_BRIDGE_FAIL: errorCode=${bridgeErrorCode} | msg=${bridgeMsg} | recoverable=${report.recoverable} | ${formatDiagnosticLog(report)}`);
+    console.warn(`[iosFetch] T1_HttpBridge FAIL: ${formatDiagnosticLog(report)}`);
   }
 
   // Tier 2: WKWebView fetch (uses WebKit networking stack)
   try {
     const t2Start = Date.now();
-    console.log(`[iosFetch] IOS_T2_WKWEBVIEW_START: Calling window.fetch (original) for ${method} ${url}`);
     const res = await originalFetch(url, {
       ...options,
       mode: 'cors',
       credentials: 'omit',
       cache: 'no-store',
     });
-    const t2Elapsed = Date.now() - t2Start;
-    console.log(`[iosFetch] IOS_T2_WKWEBVIEW_OK: status=${res.status} elapsed=${t2Elapsed}ms`);
+    console.log(`[iosFetch] T2_WKWebView OK ${res.status} in ${Date.now() - t2Start}ms`);
     return res;
   } catch (wkError: any) {
     const report = diagnoseNetworkError(wkError, 'WKWebView', url, method);
     tierReports.push(report);
-    const wkMsg = wkError?.message || String(wkError);
-    console.warn(`[iosFetch] IOS_T2_WKWEBVIEW_FAIL: msg=${wkMsg} | recoverable=${report.recoverable} | ${formatDiagnosticLog(report)}`);
+    console.warn(`[iosFetch] T2_WKWebView FAIL: ${formatDiagnosticLog(report)}`);
   }
 
   // Tier 3: XMLHttpRequest (different JS API, may use different connection pool)
   try {
-    console.log(`[iosFetch] IOS_T3_XHR_START: Creating XMLHttpRequest for ${method} ${url}`);
     const res = await xhrRequest(url, method, options.headers, body);
-    console.log(`[iosFetch] IOS_T3_XHR_OK: status=${res.status}`);
+    console.log(`[iosFetch] T3_XHR OK ${res.status}`);
     return res;
   } catch (xhrError: any) {
     const report = diagnoseNetworkError(xhrError, 'XHR', url, method);
     tierReports.push(report);
-    const xhrMsg = xhrError?.message || String(xhrError);
-    const xhrStatus = (xhrError as any)?.xhrStatus || 'none';
-    const xhrState = (xhrError as any)?.xhrState || 'none';
-    console.warn(`[iosFetch] IOS_T3_XHR_FAIL: msg=${xhrMsg} | xhrStatus=${xhrStatus} | xhrState=${xhrState} | recoverable=${report.recoverable} | ${formatDiagnosticLog(report)}`);
+    console.warn(`[iosFetch] T3_XHR FAIL: ${formatDiagnosticLog(report)}`);
   }
 
   // Tier 4: CapacitorHttp with retry (Capacitor's built-in native HTTP)
@@ -750,13 +591,9 @@ async function iosFetchWithFallback(
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
       const t4Start = Date.now();
-      console.log(`[iosFetch] IOS_T4_CAPHTTP_START: attempt=${attempt}/3 for ${method} ${url}`);
       let parsedBody: any = undefined;
       if (body) {
-        try { parsedBody = JSON.parse(body); } catch {
-          console.warn(`[iosFetch] IOS_T4_CAPHTTP_BODY_PARSE_WARN: Could not JSON.parse body for CapacitorHttp, sending as raw string`);
-          parsedBody = body;
-        }
+        try { parsedBody = JSON.parse(body); } catch { parsedBody = body; }
       }
       
       const nativeRes = await CapacitorHttp.request({
@@ -766,12 +603,11 @@ async function iosFetchWithFallback(
         data: parsedBody,
       });
       
-      const t4Elapsed = Date.now() - t4Start;
+      console.log(`[iosFetch] T4_CapHttp attempt ${attempt} OK ${nativeRes.status} in ${Date.now() - t4Start}ms`);
+      
       const responseBody = typeof nativeRes.data === 'string' 
         ? nativeRes.data 
         : JSON.stringify(nativeRes.data);
-      
-      console.log(`[iosFetch] IOS_T4_CAPHTTP_OK: attempt=${attempt} status=${nativeRes.status} dataLength=${responseBody.length} elapsed=${t4Elapsed}ms`);
       
       return new Response(responseBody, {
         status: nativeRes.status,
@@ -781,11 +617,9 @@ async function iosFetchWithFallback(
       const report = diagnoseNetworkError(capError, 'CapacitorHttp', url, method);
       lastCapReport = report;
       tierReports.push(report);
-      const capMsg = capError?.message || String(capError);
-      console.warn(`[iosFetch] IOS_T4_CAPHTTP_FAIL: attempt=${attempt}/3 | msg=${capMsg} | recoverable=${report.recoverable} | ${formatDiagnosticLog(report)}`);
+      console.warn(`[iosFetch] T4_CapHttp attempt ${attempt}/3 FAIL: ${formatDiagnosticLog(report)}`);
       if (attempt < 3) {
         const backoff = report.retryAfterMs > 0 ? report.retryAfterMs : attempt * 500;
-        console.log(`[iosFetch] IOS_T4_CAPHTTP_RETRY_WAIT: waiting ${backoff}ms before attempt ${attempt + 1}`);
         await new Promise(r => setTimeout(r, backoff));
       }
     }
@@ -794,19 +628,18 @@ async function iosFetchWithFallback(
   const totalElapsed = Date.now() - overallStart;
   const tierSummary = tierReports.map(r => `${r.tier}:${r.errorCode}`).join(' → ');
   
-  console.error(`[iosFetch] IOS_ALL_TIERS_EXHAUSTED: All 4 networking tiers failed for ${method} ${url} in ${totalElapsed}ms`);
-  console.error(`[iosFetch] IOS_ALL_TIERS_CHAIN: ${tierSummary}`);
-  console.error(`[iosFetch] IOS_ALL_TIERS_DETAIL:`, JSON.stringify(tierReports, null, 2));
+  console.error(`[iosFetch] ALL_TIERS_EXHAUSTED in ${totalElapsed}ms for ${method} ${url}`);
+  console.error(`[iosFetch] Failure chain: ${tierSummary}`);
+  console.error(`[iosFetch] Full diagnostic reports:`, JSON.stringify(tierReports, null, 2));
   
   const err = new Error(
-    `IOS_ALL_TIERS_EXHAUSTED: All 4 iOS networking tiers failed for ${method} ${url} in ${totalElapsed}ms. ` +
+    `ALL_METHODS_EXHAUSTED: All 4 iOS networking tiers failed for ${method} ${url} in ${totalElapsed}ms. ` +
     `Chain: ${tierSummary}. ` +
     `Last error: ${lastCapReport?.errorCode || tierReports[tierReports.length - 1]?.errorCode || 'unknown'} - ` +
     `${lastCapReport?.description || tierReports[tierReports.length - 1]?.description || 'unknown'}`
   );
   (err as any).diagnosticReports = tierReports;
   (err as any).totalElapsedMs = totalElapsed;
-  (err as any).errorCode = 'IOS_ALL_TIERS_EXHAUSTED';
   throw err;
 }
 
@@ -822,52 +655,28 @@ export async function authenticatedFetch(
   };
   
   if (isNativePlatform()) {
-    let token: string | null = null;
-    try {
-      token = await getAuthToken();
-    } catch (tokenErr: any) {
-      console.error(`[authFetch] IOS_AUTH_TOKEN_RETRIEVE_FAIL: Could not retrieve auth token: ${tokenErr?.message || tokenErr}`);
-    }
+    const token = await getAuthToken();
     if (token) {
       headers["X-Auth-Token"] = token;
-      console.log(`[authFetch] IOS_AUTH_TOKEN_ATTACHED: Token present (length=${token.length}) for ${method} ${fullUrl}`);
-    } else {
-      console.log(`[authFetch] IOS_AUTH_NO_TOKEN: No auth token available for ${method} ${fullUrl}`);
     }
     
     if (isIOS()) {
-      let res: Response;
-      try {
-        res = await iosFetchWithFallback(fullUrl, {
-          ...options,
-          method,
-          headers,
-        });
-      } catch (fetchErr: any) {
-        const elapsed = Date.now() - startTime;
-        console.error(`[authFetch] IOS_AUTH_FETCH_FAIL: iosFetchWithFallback threw for ${method} ${fullUrl} in ${elapsed}ms: ${fetchErr?.message || fetchErr}`);
-        throw fetchErr;
-      }
-      
-      const elapsed = Date.now() - startTime;
+      const res = await iosFetchWithFallback(fullUrl, {
+        ...options,
+        method,
+        headers,
+      });
       
       if (res.status === 401) {
-        console.warn(`[authFetch] IOS_AUTH_401_DETECTED: Server returned 401 for ${method} ${fullUrl} in ${elapsed}ms | hadToken=${!!token}`);
-        if (token) {
-          try {
-            await clearAuthToken();
-            console.log(`[authFetch] IOS_AUTH_401_TOKEN_CLEARED: Cleared invalid auth token`);
-          } catch (clearErr: any) {
-            console.error(`[authFetch] IOS_AUTH_TOKEN_CLEAR_FAIL: Could not clear auth token after 401: ${clearErr?.message || clearErr}`);
-          }
+        const hadToken = await getAuthToken();
+        if (hadToken) {
+          await clearAuthToken();
           toast({ title: "Session expired", description: "Please log in again.", variant: "destructive" });
         }
       }
       if (!res.ok) {
         const httpReport = diagnoseHttpError(res.status, fullUrl, method, 'HttpBridge');
-        console.warn(`[authFetch] IOS_AUTH_HTTP_ERROR: status=${res.status} for ${method} ${fullUrl} in ${elapsed}ms | ${formatDiagnosticLog(httpReport)}`);
-      } else {
-        console.log(`[authFetch] IOS_AUTH_OK: status=${res.status} for ${method} ${fullUrl} in ${elapsed}ms`);
+        console.warn(`[authFetch:ios] ${formatDiagnosticLog(httpReport)}`);
       }
       return res;
     }
@@ -1041,67 +850,34 @@ export async function apiRequest(
   const fullUrl = getApiUrl(url);
   const headers = await getRequestHeaders(!!data);
   const startTime = Date.now();
-  const bodyStr = data ? JSON.stringify(data) : undefined;
-  
-  console.log(`[apiRequest] IOS_API_REQ_START: ${method} ${url} -> ${fullUrl} | hasBody=${!!bodyStr} | hasToken=${!!headers['X-Auth-Token']}`);
   
   if (isNativePlatform()) {
     if (isIOS()) {
-      let res: Response;
-      try {
-        res = await iosFetchWithFallback(fullUrl, {
-          method,
-          headers,
-          body: bodyStr,
-        });
-      } catch (fetchErr: any) {
-        const elapsed = Date.now() - startTime;
-        console.error(`[apiRequest] IOS_API_REQ_NETWORK_FAIL: iosFetchWithFallback threw for ${method} ${url} in ${elapsed}ms: ${fetchErr?.message || fetchErr}`);
-        throw fetchErr;
-      }
-      
-      const elapsed = Date.now() - startTime;
-      console.log(`[apiRequest] IOS_API_REQ_RESPONSE: status=${res.status} ok=${res.ok} for ${method} ${url} in ${elapsed}ms`);
+      const res = await iosFetchWithFallback(fullUrl, {
+        method,
+        headers,
+        body: data ? JSON.stringify(data) : undefined,
+      });
       
       if (res.status === 401) {
-        console.warn(`[apiRequest] IOS_API_REQ_401: Server returned 401 for ${method} ${url}`);
-        let hadToken: string | null = null;
-        try {
-          hadToken = await getAuthToken();
-        } catch (tokenErr: any) {
-          console.error(`[apiRequest] IOS_API_REQ_401_TOKEN_CHECK_FAIL: Could not check token after 401: ${tokenErr?.message || tokenErr}`);
-        }
+        const hadToken = await getAuthToken();
         if (hadToken) {
-          try {
-            await clearAuthToken();
-            console.log(`[apiRequest] IOS_API_REQ_401_TOKEN_CLEARED: Cleared invalid token after 401 for ${method} ${url}`);
-          } catch (clearErr: any) {
-            console.error(`[apiRequest] IOS_API_REQ_401_TOKEN_CLEAR_FAIL: Could not clear token after 401: ${clearErr?.message || clearErr}`);
-          }
+          await clearAuthToken();
           toast({ title: "Session expired", description: "Please log in again.", variant: "destructive" });
         }
       }
       
       if (!res.ok) {
         const httpReport = diagnoseHttpError(res.status, fullUrl, method, 'HttpBridge');
-        console.warn(`[apiRequest] IOS_API_REQ_HTTP_ERROR: status=${res.status} for ${method} ${url} in ${elapsed}ms | ${formatDiagnosticLog(httpReport)}`);
-        let bodyText: string;
+        console.warn(`[apiRequest:ios] ${formatDiagnosticLog(httpReport)}`);
+        const text = await res.text();
+        let errorMessage = text || res.statusText;
         try {
-          bodyText = await res.clone().text();
-        } catch (cloneErr: any) {
-          console.error(`[apiRequest] IOS_API_REQ_BODY_CLONE_FAIL: Could not clone/read error response body: ${cloneErr?.message || cloneErr}`);
-          bodyText = '';
-        }
-        let errorMessage = bodyText || res.statusText || `HTTP ${res.status}`;
-        try {
-          const jsonError = JSON.parse(bodyText);
+          const jsonError = JSON.parse(text);
           if (jsonError.message) {
             errorMessage = jsonError.message;
-            console.log(`[apiRequest] IOS_API_REQ_ERROR_PARSED: Server error message: "${errorMessage}"`);
           }
-        } catch {
-          console.log(`[apiRequest] IOS_API_REQ_ERROR_RAW: Error body is not JSON, using raw text (length=${bodyText.length})`);
-        }
+        } catch {}
         throw new Error(errorMessage);
       }
       

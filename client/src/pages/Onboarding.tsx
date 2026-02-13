@@ -48,7 +48,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'wouter';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiRequest, queryClient, authenticatedFetch, safeParseJSON, classifyAppError } from '@/lib/queryClient';
+import { apiRequest, queryClient, authenticatedFetch } from '@/lib/queryClient';
 import { useOnboardingProgress } from '@/hooks/useOnboardingProgress';
 import { useAuth } from '@/hooks/use-auth';
 import { 
@@ -991,29 +991,15 @@ export default function Onboarding() {
         body: JSON.stringify({}),
       });
       if (response.ok) {
-        const parsed = await safeParseJSON(response, 'risk');
-        if (parsed.ok && parsed.data) {
-          const score = parsed.data.overallScore ?? parsed.data.diabetesRisk ?? null;
-          if (score === null || score === undefined) {
-            console.error('[Prediction] APP_RISK_RESPONSE_INVALID: response missing overallScore and diabetesRisk fields', parsed.data);
-            setScoreCalculationError(true);
-          } else {
-            setCalculatedRiskScore(score);
-          }
-        } else {
-          console.error(`[Prediction] ${parsed.errorCode}: ${parsed.errorDesc}`);
-          setScoreCalculationError(true);
-        }
+        const data = await response.json();
+        const score = data.overallScore ?? data.diabetesRisk ?? null;
+        setCalculatedRiskScore(score);
       } else {
-        const errorParsed = await safeParseJSON(response, 'risk');
-        const serverMsg = errorParsed.ok ? (errorParsed.data?.error || errorParsed.data?.message || '') : '';
-        const classified = classifyAppError('risk', response.status, serverMsg);
-        console.error(`[Prediction] ${classified.code}: ${classified.desc} (HTTP ${response.status})`);
+        console.log('[Prediction] Risk score calculation returned error:', response.status);
         setScoreCalculationError(true);
       }
-    } catch (error: any) {
-      const errMsg = error?.message || String(error);
-      console.error(`[Prediction] Risk score network error: ${errMsg}`);
+    } catch (error) {
+      console.log('[Prediction] Risk score calculation failed:', error);
       setScoreCalculationError(true);
     }
     
